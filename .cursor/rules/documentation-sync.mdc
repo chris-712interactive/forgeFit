@@ -1,0 +1,62 @@
+---
+description: Mandatory documentation sync after every forgeFit change
+alwaysApply: true
+---
+
+# Documentation Sync Rule
+
+After **every meaningful change** (feature, fix, refactor, config, schema, design token), update documentation in the **same session** before finishing.
+
+## Required Updates
+
+### 1. AI handoff — `docs/PROGRESS.md`
+
+Append or update the latest session entry with:
+- **What was done** (bullet list)
+- **What's next** (next agent's first tasks)
+- **Blockers** (if any)
+- **Files touched** (paths)
+- Update the **Phase Completion** table if a phase milestone was reached
+
+### 2. Authoritative plan — `docs/BIBLE.md`
+
+Update when any of these change:
+- Tech stack, architecture, phases, features, freemium tiers, design tokens, success metrics
+- Mark **Current phase** and **Last updated** at the top
+
+If code diverges from the Bible, fix code **or** update the Bible — never leave both out of sync.
+
+### 3. Developer docs
+
+| Change type | Update |
+|-------------|--------|
+| Architecture / packages / API | `docs/ARCHITECTURE.md` |
+| Colors, typography, UI patterns | `docs/DESIGN.md` |
+| Phase scope or acceptance criteria | `docs/phases/NN-*.md` |
+| Significant technical choice | New `docs/ADRs/NNN-title.md` |
+
+### 4. Customer-facing docs
+
+| Change type | Update |
+|-------------|--------|
+| User-visible features | `README.md` (features section) |
+| Setup / env vars | `README.md` + `.env.example` comments |
+| Public API or integrations | `docs/integrations/` (when created) |
+
+## Workflow Checklist
+
+Before ending a session:
+
+```
+[ ] Code change complete and typechecks
+[ ] docs/PROGRESS.md updated
+[ ] docs/BIBLE.md updated (if plan/architecture changed)
+[ ] Relevant ARCHITECTURE / DESIGN / phase / ADR docs updated
+[ ] README.md / .env.example updated (if user- or dev-facing behavior changed)
+```
+
+## Do Not
+
+- Skip PROGRESS.md because the change "felt small"
+- Leave README promising features that are not built
+- Add ADRs for trivial changes (use judgment)

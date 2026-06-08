@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="forgeFit icon">
+  <defs>
+    <radialGradient id="glow" cx="42%" cy="44%" r="58%">
+      <stop offset="0%" stop-color="#FFD54F"/>
+      <stop offset="40%" stop-color="#FF8C42"/>
+      <stop offset="100%" stop-color="#FF6B35" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="metal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B9098"/>
+      <stop offset="50%" stop-color="#4A4F58"/>
+      <stop offset="100%" stop-color="#2A2E35"/>
+    </linearGradient>
+    <linearGradient id="hi" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8ECF2"/>
+      <stop offset="100%" stop-color="#5C6370"/>
+    </linearGradient>
+    <filter id="bloom" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feColorMatrix in="b" type="matrix"
+        values="1 0 0 0 0  0 0.45 0 0 0  0 0 0 0 0  0 0 0 0.9 0"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="256" height="256" rx="48" fill="#1C1917"/>
+  <ellipse cx="108" cy="118" rx="88" ry="80" fill="url(#glow)" filter="url(#bloom)"/>
+
+  <g transform="translate(48 28) scale(0.72)">
+    <g fill="url(#metal)" stroke="url(#hi)" stroke-width="1.5">
+      <rect x="8" y="72" width="18" height="14" rx="1"/>
+      <rect x="8" y="90" width="18" height="14" rx="1"/>
+      <rect x="8" y="108" width="18" height="14" rx="1"/>
+      <path d="M44 28 L44 248 L64 248 L78 232 L78 28 Z"/>
+      <path d="M44 28 L44 48 L170 48 L186 32 L186 28 Z"/>
+      <path d="M196 30 L228 18 L240 30 L228 42 Z"/>
+      <path d="M44 118 L44 138 L148 138 L162 124 L162 118 Z"/>
+    </g>
+    <rect x="30" y="98" width="36" height="6" rx="1" fill="#6E7682"/>
+    <rect x="24" y="92" width="10" height="18" rx="2" fill="url(#hi)"/>
+    <rect x="62" y="92" width="10" height="18" rx="2" fill="url(#hi)"/>
+    <path fill="none" stroke="#FF8C42" stroke-width="3" opacity="0.8" d="M52 36 L52 220"/>
+    <path fill="none" stroke="#FF6B35" stroke-width="2.5" opacity="0.75" d="M56 38 L168 38 M56 128 L140 128"/>
+    <circle cx="56" cy="168" r="5" fill="#3A3F47" stroke="#8A919C"/>
+    <circle cx="56" cy="198" r="5" fill="#3A3F47" stroke="#8A919C"/>
+  </g>
+</svg>

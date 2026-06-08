@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="forgeFit">
+  <defs>
+    <!-- Forge glow -->
+    <radialGradient id="forgeGlow" cx="28%" cy="42%" r="55%">
+      <stop offset="0%" stop-color="#FFD54F"/>
+      <stop offset="35%" stop-color="#FF8C42"/>
+      <stop offset="70%" stop-color="#FF6B35"/>
+      <stop offset="100%" stop-color="#FF6B35" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Metal face gradients -->
+    <linearGradient id="metalFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B9098"/>
+      <stop offset="45%" stop-color="#4A4F58"/>
+      <stop offset="100%" stop-color="#2A2E35"/>
+    </linearGradient>
+    <linearGradient id="metalHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8ECF2"/>
+      <stop offset="40%" stop-color="#A8B0BC"/>
+      <stop offset="100%" stop-color="#5C6370"/>
+    </linearGradient>
+    <linearGradient id="metalEdge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C5CCD6"/>
+      <stop offset="50%" stop-color="#6E7682"/>
+      <stop offset="100%" stop-color="#3A4049"/>
+    </linearGradient>
+
+    <filter id="emberBloom" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="1 0 0 0 0
+                0 0.45 0 0 0
+                0 0 0 0 0
+                0 0 0 0.85 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <!-- Background (omit for transparent; uncomment for marketing exports) -->
+  <!-- <rect width="820" height="320" fill="#0A0A0A"/> -->
+
+  <g transform="translate(24 20)">
+    <!-- Ambient forge glow behind icon -->
+    <ellipse cx="118" cy="138" rx="130" ry="118" fill="url(#forgeGlow)" opacity="0.9" filter="url(#emberBloom)"/>
+
+    <g filter="url(#softShadow)">
+      <!-- Weight plates (left of stem) -->
+      <g fill="url(#metalFace)" stroke="url(#metalEdge)" stroke-width="1.2">
+        <rect x="8" y="72" width="18" height="14" rx="1"/>
+        <rect x="8" y="90" width="18" height="14" rx="1"/>
+        <rect x="8" y="108" width="18" height="14" rx="1"/>
+        <rect x="8" y="126" width="18" height="14" rx="1"/>
+      </g>
+
+      <!-- Dumbbell on stem -->
+      <g transform="translate(0 88)">
+        <rect x="30" y="10" width="36" height="6" rx="1" fill="url(#metalEdge)"/>
+        <rect x="24" y="4" width="10" height="18" rx="2" fill="url(#metalHighlight)"/>
+        <rect x="62" y="4" width="10" height="18" rx="2" fill="url(#metalHighlight)"/>
+      </g>
+
+      <!-- F vertical stem -->
+      <path fill="url(#metalFace)" stroke="url(#metalHighlight)" stroke-width="1.5"
+        d="M44 28 L44 248 L64 248 L78 232 L78 28 Z"/>
+
+      <!-- Inner ember seam (vertical) -->
+      <path fill="none" stroke="#FF8C42" stroke-width="3" opacity="0.75"
+        d="M52 36 L52 220" stroke-linecap="round"/>
+
+      <!-- Top bar main -->
+      <path fill="url(#metalFace)" stroke="url(#metalHighlight)" stroke-width="1.5"
+        d="M44 28 L44 48 L170 48 L186 32 L186 28 Z"/>
+
+      <!-- Top bar detached shard -->
+      <path fill="url(#metalHighlight)" stroke="url(#metalEdge)" stroke-width="1.2"
+        d="M196 30 L228 18 L240 30 L228 42 Z"/>
+
+      <!-- Middle bar -->
+      <path fill="url(#metalFace)" stroke="url(#metalHighlight)" stroke-width="1.5"
+        d="M44 118 L44 138 L148 138 L162 124 L162 118 Z"/>
+
+      <!-- Inner ember seams (horizontal) -->
+      <path fill="none" stroke="#FF6B35" stroke-width="2.5" opacity="0.7"
+        d="M56 38 L168 38" stroke-linecap="round"/>
+      <path fill="none" stroke="#FF6B35" stroke-width="2.5" opacity="0.7"
+        d="M56 128 L140 128" stroke-linecap="round"/>
+
+      <!-- Rivets -->
+      <circle cx="56" cy="168" r="5" fill="#3A3F47" stroke="#8A919C" stroke-width="1"/>
+      <circle cx="56" cy="198" r="5" fill="#3A3F47" stroke="#8A919C" stroke-width="1"/>
+      <circle cx="56" cy="168" r="2" fill="#6E7682"/>
+      <circle cx="56" cy="198" r="2" fill="#6E7682"/>
+
+      <!-- Bevel highlights -->
+      <path fill="none" stroke="#D8DEE8" stroke-width="2" opacity="0.55"
+        d="M48 34 L176 34"/>
+      <path fill="none" stroke="#D8DEE8" stroke-width="1.5" opacity="0.4"
+        d="M48 124 L142 124"/>
+    </g>
+
+    <!-- Wordmark -->
+    <text x="268" y="188"
+      font-family="'Plus Jakarta Sans', Inter, system-ui, sans-serif"
+      font-size="56"
+      font-weight="700"
+      letter-spacing="-0.5"
+      fill="#8B919A">Forge<tspan fill="#A8AEB8">Fit</tspan></text>
+  </g>
+</svg>

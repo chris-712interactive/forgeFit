@@ -1,0 +1,24 @@
+---
+description: forgeFit build authority — read Bible and active phase before coding
+alwaysApply: true
+---
+
+# forgeFit Bible Rule
+
+Before writing or modifying forgeFit code:
+
+1. Read `docs/BIBLE.md` — authoritative architecture, phases, features, design
+2. Read `docs/PROGRESS.md` — current phase, last session, blockers, next steps
+3. Read the active `docs/phases/NN-*.md` file for acceptance criteria
+
+## Build Constraints
+
+- Program logic lives in `program-engine` + `evidence-kb` only — never LLM-generated workouts
+- Use Forge Ember tokens from `packages/ui` — no hardcoded hex colors
+- Mobile-first at 375px; offline workout logging is mandatory (Phase 3+)
+- One Supabase migration per logical schema change
+- Follow `documentation-sync.mdc` after every change
+
+## Phase Gate
+
+Do not skip phases. Mark phase complete in `docs/PROGRESS.md` only when that phase's "done when" checklist passes.

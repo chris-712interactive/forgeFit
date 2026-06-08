@@ -1,0 +1,32 @@
+/* Maps semantic tokens for shadcn/ui compatibility */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --color-forge-ember: var(--forge-ember);
+  --color-forge-glow: var(--forge-glow);
+  --color-forge-gold: var(--forge-gold);
+  --color-forge-coral: var(--forge-coral);
+  --color-forge-steel: var(--forge-steel);
+  --color-forge-success: var(--forge-success);
+  --color-forge-surface: var(--forge-surface);
+  --color-forge-surface-raised: var(--forge-surface-raised);
+  --color-forge-cream: var(--forge-cream);
+  --color-forge-text: var(--forge-text);
+  --color-forge-muted: var(--forge-muted);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
