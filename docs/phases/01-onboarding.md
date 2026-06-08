@@ -1,6 +1,6 @@
 # Phase 1 — Auth + Onboarding
 
-**Status:** Pending  
+**Status:** Complete (2026-06-08)  
 **Depends on:** Phase 0
 
 ## Goal
@@ -24,7 +24,18 @@ Supabase Auth, multi-step onboarding wizard, mobile bottom nav shell.
 
 ## Done When
 
-- [ ] User can sign up / sign in (email + Google)
-- [ ] Onboarding saves complete profile
-- [ ] Bottom nav: Home, Workout, Nutrition, Progress, Profile
-- [ ] Mobile layout at 375px passes visual review
+- [x] User can sign up / sign in (email + Google)
+- [x] Onboarding saves complete profile
+- [x] Bottom nav: Home, Workout, Nutrition, Progress, Profile
+- [x] Mobile layout at 375px passes visual review
+
+## Routes Added
+
+| Route | Purpose |
+|-------|---------|
+| `/login`, `/signup` | Auth |
+| `/auth/callback` | OAuth handler |
+| `/onboarding` | 7-step wizard |
+| `/home`, `/workout`, `/nutrition`, `/progress`, `/profile` | App shell |
+
+See [supabase-setup.md](../supabase-setup.md) for credentials.

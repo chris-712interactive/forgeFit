@@ -48,12 +48,18 @@ export default function Home() {
           ))}
         </section>
 
-        <button
-          type="button"
-          className="mt-auto min-h-[52px] w-full rounded-xl bg-forge-ember font-display text-base font-bold text-white transition-colors hover:bg-forge-glow active:scale-[0.98]"
+        <a
+          href="/signup"
+          className="mt-auto flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display text-base font-bold text-white transition-colors hover:bg-forge-glow active:scale-[0.98]"
         >
           Get Started
-        </button>
+        </a>
+        <a
+          href="/login"
+          className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-xl border border-white/30 font-medium text-white/90"
+        >
+          Sign In
+        </a>
       </main>
     </div>
   );

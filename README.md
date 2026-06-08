@@ -2,8 +2,14 @@
 
 Evidence-based fitness and nutrition — mobile-first web app that works offline in the gym.
 
-## Features (roadmap)
+## Features
 
+**Live now (Phase 1):**
+- Email + Google sign up / sign in
+- 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
+- Mobile app shell with bottom navigation
+
+**Coming soon:**
 - **Personalized programs** — fat loss, bodybuilding, powerlifting, strength, recomposition
 - **Offline workouts** — log sets and reps with no signal
 - **Nutrition tracking** — USDA + Open Food Facts food diary
@@ -34,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment
 
-Copy `.env.example` to `apps/web/.env.local` when Supabase is configured (Phase 1).
+Copy `.env.example` to `apps/web/.env.local` and follow [docs/supabase-setup.md](./docs/supabase-setup.md).
 
 ## Documentation
 

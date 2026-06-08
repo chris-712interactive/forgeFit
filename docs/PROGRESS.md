@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 0 — Scaffold (complete) → Phase 1 next |
+| **Active phase** | Phase 1 complete → Phase 2 (Evidence Engine) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Initial commit: Phase 0 scaffold + logo SVG |
+| **Last session focus** | Phase 1: Supabase auth, onboarding, app shell |
 
 ---
 
@@ -20,7 +20,7 @@
 | Phase | Name | Status | Completed |
 |-------|------|--------|-----------|
 | 0 | Scaffold | ✅ Complete | 2026-06-08 |
-| 1 | Auth + Onboarding | ⏳ Pending | — |
+| 1 | Auth + Onboarding | ✅ Complete | 2026-06-08 |
 | 2 | Evidence Engine | ⏳ Pending | — |
 | 3 | Workout + Offline PWA | ⏳ Pending | — |
 | 4 | Nutrition | ⏳ Pending | — |
@@ -33,6 +33,38 @@
 
 ## Session Log
 
+### 2026-06-08 — Phase 1 complete
+
+**What was done:**
+- Added Supabase migration: `profiles`, `equipment_inventory`, `recovery_equipment`, RLS, triggers
+- Wired Supabase Auth (email + Google OAuth) with middleware session refresh
+- Built login/signup pages and OAuth callback route
+- Built 7-step onboarding wizard with server action persistence
+- Added app shell with bottom nav (Home, Workout, Nutrition, Progress, Profile)
+- Added placeholder pages for Workout/Nutrition/Progress; profile with sign-out
+- Added `docs/supabase-setup.md` for developer onboarding
+- CI build uses placeholder Supabase env vars
+
+**What's next (Phase 2):**
+- Create `packages/program-engine`
+- Expand evidence-kb to 30 rules
+- `/api/programs/generate` endpoint
+- Dashboard week schedule from generated program
+
+**Blockers:** User must configure Supabase credentials locally (see `docs/supabase-setup.md`)
+
+**Files touched:**
+- `supabase/migrations/20260608160000_phase1_profiles_onboarding.sql`
+- `apps/web/src/lib/supabase/*`, `middleware.ts`
+- `apps/web/src/app/login`, `signup`, `onboarding`, `auth/callback`
+- `apps/web/src/app/(app)/*`
+- `apps/web/src/components/auth/*`, `onboarding/*`, `layout/*`
+- `apps/web/src/app/actions/onboarding.ts`
+- `docs/supabase-setup.md`, `docs/phases/01-onboarding.md`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `README.md`
+
+---
+
 ### 2026-06-08 — Logo SVG + initial commit
 
 **What was done:**
@@ -41,45 +73,14 @@
 - Integrated logo on landing page, favicon, and PWA manifest
 - Updated `docs/DESIGN.md` with logo asset table
 
-**Files touched:**
-- `apps/web/public/logo.svg`, `logo-icon.svg`
-- `apps/web/src/app/page.tsx`, `layout.tsx`, `manifest.json`
-- `docs/DESIGN.md`, `docs/assets/logo-concept-reference.png`
-
 ---
 
 ### 2026-06-08 — Phase 0 complete
 
 **What was done:**
-- Created `docs/BIBLE.md` — authoritative build plan
-- Created `docs/PROGRESS.md` — AI handoff log
-- Created `.cursor/rules/documentation-sync.mdc` — mandatory doc sync on every change
-- Created `.cursor/rules/forgefit-bible.mdc` — Bible + phase gate for agents
-- Scaffolded Turborepo monorepo with pnpm workspaces
-- Created `apps/web` — Next.js 15 + Tailwind 4 + Forge Ember landing page
-- Created `packages/ui` — Forge Ember CSS tokens + TS color constants
-- Created `packages/evidence-kb` — 10 peer-reviewed seed rules
-- Added `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/phases/00–08`
-- Added `README.md`, `.env.example`, `.github/workflows/ci.yml`
-- Added PWA `manifest.json` + SVG icon
-- Verified `pnpm turbo typecheck build` passes
-
-**What's next (Phase 1):**
-- Create Supabase project + `profiles` migration with RLS
-- Wire Supabase Auth (email + Google) in `apps/web`
-- Build multi-step onboarding wizard
-- Add mobile bottom navigation shell
-
-**Blockers:** None — Supabase credentials needed from user for Phase 1
-
-**Files touched:**
-- `docs/BIBLE.md`, `docs/PROGRESS.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`
-- `docs/phases/00-scaffold.md` through `08-gamification.md`
-- `.cursor/rules/documentation-sync.mdc`, `.cursor/rules/forgefit-bible.mdc`
-- `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `.gitignore`
-- `apps/web/**`, `packages/ui/**`, `packages/evidence-kb/**`
-- `README.md`, `.env.example`, `.github/workflows/ci.yml`
-- `supabase/migrations/.gitkeep`
+- Created `docs/BIBLE.md`, `PROGRESS.md`, Cursor rules
+- Scaffolded Turborepo, Next.js 15, Forge Ember tokens, evidence-kb seed
+- CI pipeline, README, phase docs
 
 ---
 
@@ -89,5 +90,5 @@
 |------|----------|-----------|
 | 2026-06-08 | Freemium model ($12.99/mo Pro) | Defer expensive APIs to paid tier |
 | 2026-06-08 | "Forge Ember" color scheme | Warm encouragement, dark-first for gym |
-| 2026-06-08 | Bible + PROGRESS sync rule | Keep AI sessions and user/dev docs aligned |
-| 2026-06-08 | `docs/BIBLE.md` as build authority | Single source of truth for all agents |
+| 2026-06-08 | Bible + PROGRESS sync rule | Keep AI sessions and docs aligned |
+| 2026-06-08 | Supabase `@supabase/ssr` | Cookie-based auth for Next.js App Router |
