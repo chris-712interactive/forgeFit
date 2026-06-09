@@ -1,12 +1,13 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-import { defaultCache } from "@serwist/turbopack/worker";
+import { defaultCache, PAGES_CACHE_NAME } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import {
   CacheableResponsePlugin,
+  CacheFirst,
+  ExpirationPlugin,
   NetworkFirst,
   Serwist,
-  StaleWhileRevalidate,
 } from "serwist";
 
 declare global {
@@ -19,12 +20,35 @@ declare const self: ServiceWorkerGlobalScope;
 
 const APP_ROUTES = /^\/(home|workout|nutrition|progress|profile)(\/.*)?$/;
 
+const staticAssetCache = {
+  cacheName: "forgefit-next-static",
+  plugins: [
+    new CacheableResponsePlugin({ statuses: [0, 200] }),
+    new ExpirationPlugin({
+      maxEntries: 256,
+      maxAgeSeconds: 30 * 24 * 60 * 60,
+      maxAgeFrom: "last-used",
+    }),
+  ],
+};
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
+    // Cache all Next.js/Turbopack static assets first — critical for offline chunk loads.
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin && url.pathname.startsWith("/_next/static/"),
+      handler: new CacheFirst(staticAssetCache),
+    },
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin && url.pathname.includes("/turbopack"),
+      handler: new CacheFirst(staticAssetCache),
+    },
     {
       matcher: ({ request, url }) =>
         request.mode === "navigate" && APP_ROUTES.test(url.pathname),
@@ -35,13 +59,19 @@ const serwist = new Serwist({
       }),
     },
     {
-      matcher: ({ request }) =>
-        request.headers.get("rsc") === "1" ||
-        request.headers.get("next-router-prefetch") === "1" ||
-        request.headers.get("next-router-state-tree") !== null,
-      handler: new StaleWhileRevalidate({
-        cacheName: "forgefit-rsc",
-        plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
+      matcher: ({ request, sameOrigin, url }) =>
+        sameOrigin &&
+        !url.pathname.startsWith("/api/") &&
+        (request.headers.get("RSC") === "1" ||
+          request.headers.get("next-router-prefetch") === "1" ||
+          request.headers.get("next-router-state-tree") !== null),
+      handler: new NetworkFirst({
+        cacheName: PAGES_CACHE_NAME.rsc,
+        networkTimeoutSeconds: 3,
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [0, 200] }),
+          new ExpirationPlugin({ maxEntries: 64, maxAgeSeconds: 7 * 24 * 60 * 60 }),
+        ],
       }),
     },
     ...defaultCache,

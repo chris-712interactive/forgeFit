@@ -33,17 +33,17 @@
 
 ## Session Log
 
-### 2026-06-08 — Offline workout navigation fix
+### 2026-06-08 — Offline Turbopack chunk load fix
 
 **What was done:**
-- Active workout stays on `/workout?active=clientId` (no offline RSC fetch to dynamic route)
-- Program plan cached in Dexie for offline start/resume
-- Bottom nav uses full-page links when offline; Serwist caches all tab routes + RSC payloads
+- Workout open/resume uses React state + `history.replaceState` (avoids Next.js router fetching lazy chunks offline)
+- SW prioritizes `/_next/static/` and turbopack assets with CacheFirst (256 entries)
+- `PrefetchAppShell` warms tab routes in SW cache while online
 
 **Files touched:**
-- `packages/offline-sync/src/program-cache.ts`, `workout-hub.tsx`, `active-workout.tsx`
-- `apps/web/src/components/layout/bottom-nav.tsx`, `apps/web/src/app/sw.ts`
-- `docs/PROGRESS.md`
+- `apps/web/src/components/workout/workout-hub.tsx`, `active-workout.tsx`
+- `apps/web/src/components/offline/prefetch-app-shell.tsx`, `apps/web/src/app/sw.ts`
+- `apps/web/src/app/(app)/layout.tsx`, `docs/PROGRESS.md`
 
 ---
 

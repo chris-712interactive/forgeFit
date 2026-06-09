@@ -9,7 +9,6 @@ import {
   type LocalExerciseSet,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
@@ -21,15 +20,8 @@ interface ActiveWorkoutProps {
 }
 
 export function ActiveWorkout({ clientId, userId, onBack }: ActiveWorkoutProps) {
-  const router = useRouter();
-
   function goBack() {
-    if (onBack) {
-      onBack();
-      return;
-    }
-    router.push("/workout");
-    router.refresh();
+    onBack?.();
   }
   const [session, setSession] = useState<LocalWorkoutSession | null>(null);
   const [sets, setSets] = useState<LocalExerciseSet[]>([]);

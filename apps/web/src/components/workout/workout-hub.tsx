@@ -8,7 +8,6 @@ import {
   startWorkoutSession,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActiveWorkout } from "./active-workout";
 
@@ -18,16 +17,31 @@ interface WorkoutHubProps {
   plan: ProgramPlan | null;
 }
 
+function replaceWorkoutUrl(clientId: string | null) {
+  const url = clientId ? `/workout?active=${clientId}` : "/workout";
+  window.history.replaceState(window.history.state, "", url);
+}
+
 export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const autoStarted = useRef(false);
+  const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [plan, setPlan] = useState<ProgramPlan | null>(serverPlan);
   const [cachedProgramId, setCachedProgramId] = useState<string | undefined>(programId);
   const [inProgress, setInProgress] = useState<LocalWorkoutSession[]>([]);
   const [startingDay, setStartingDay] = useState<number | null>(null);
 
-  const activeClientId = searchParams.get("active");
+  // Hydrate active session from URL without triggering a Next.js navigation.
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("active");
+    if (fromUrl) {
+      setActiveClientId(fromUrl);
+    }
+  }, []);
+
+  // Warm lazy chunks while online so Turbopack doesn't fetch them mid-workout.
+  useEffect(() => {
+    void import("@forgefit/offline-sync");
+  }, []);
 
   useEffect(() => {
     void getInProgressSessions(userId).then(setInProgress);
@@ -49,15 +63,15 @@ export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubPr
     });
   }, [serverPlan, programId, userId]);
 
-  const openWorkout = useCallback(
-    (clientId: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("active", clientId);
-      params.delete("day");
-      router.replace(`/workout?${params.toString()}`);
-    },
-    [router, searchParams]
-  );
+  const openWorkout = useCallback((clientId: string) => {
+    setActiveClientId(clientId);
+    replaceWorkoutUrl(clientId);
+  }, []);
+
+  const closeWorkout = useCallback(() => {
+    setActiveClientId(null);
+    replaceWorkoutUrl(null);
+  }, []);
 
   const handleStart = useCallback(
     async (dayIndex: number) => {
@@ -89,26 +103,22 @@ export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubPr
   );
 
   useEffect(() => {
-    const dayParam = searchParams.get("day");
-    if (!dayParam || !plan || autoStarted.current || activeClientId) return;
+    if (autoStarted.current || activeClientId || !plan) return;
+    const dayParam = new URLSearchParams(window.location.search).get("day");
+    if (!dayParam) return;
     const dayIndex = Number(dayParam);
     if (Number.isNaN(dayIndex)) return;
     if (!plan.week.some((s) => s.dayIndex === dayIndex)) return;
     autoStarted.current = true;
     void handleStart(dayIndex);
-  }, [searchParams, plan, handleStart, activeClientId]);
+  }, [plan, handleStart, activeClientId]);
 
   if (activeClientId) {
     return (
       <ActiveWorkout
         clientId={activeClientId}
         userId={userId}
-        onBack={() => {
-          const params = new URLSearchParams(searchParams.toString());
-          params.delete("active");
-          const query = params.toString();
-          router.replace(query ? `/workout?${query}` : "/workout");
-        }}
+        onBack={closeWorkout}
       />
     );
   }
