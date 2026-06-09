@@ -2,13 +2,15 @@
 
 import type { ProgramPlan } from "@forgefit/program-engine";
 import {
+  cacheProgramPlan,
+  getCachedProgramPlan,
   getInProgressSessions,
   startWorkoutSession,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ActiveWorkout } from "./active-workout";
 
 interface WorkoutHubProps {
   userId: string;
@@ -16,16 +18,46 @@ interface WorkoutHubProps {
   plan: ProgramPlan | null;
 }
 
-export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
+export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const autoStarted = useRef(false);
+  const [plan, setPlan] = useState<ProgramPlan | null>(serverPlan);
+  const [cachedProgramId, setCachedProgramId] = useState<string | undefined>(programId);
   const [inProgress, setInProgress] = useState<LocalWorkoutSession[]>([]);
   const [startingDay, setStartingDay] = useState<number | null>(null);
+
+  const activeClientId = searchParams.get("active");
 
   useEffect(() => {
     void getInProgressSessions(userId).then(setInProgress);
   }, [userId]);
+
+  useEffect(() => {
+    if (serverPlan) {
+      setPlan(serverPlan);
+      setCachedProgramId(programId);
+      void cacheProgramPlan(userId, serverPlan, programId);
+      return;
+    }
+
+    void getCachedProgramPlan(userId).then((cached) => {
+      if (cached) {
+        setPlan(cached.plan);
+        setCachedProgramId(cached.programId);
+      }
+    });
+  }, [serverPlan, programId, userId]);
+
+  const openWorkout = useCallback(
+    (clientId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("active", clientId);
+      params.delete("day");
+      router.replace(`/workout?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
 
   const handleStart = useCallback(
     async (dayIndex: number) => {
@@ -37,7 +69,7 @@ export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
       try {
         const clientId = await startWorkoutSession({
           userId,
-          programId,
+          programId: cachedProgramId,
           sessionName: session.name,
           dayIndex: session.dayIndex,
           exercises: session.exercises.map((ex) => ({
@@ -48,23 +80,40 @@ export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
             restSeconds: ex.restSeconds,
           })),
         });
-        router.push(`/workout/${clientId}`);
+        openWorkout(clientId);
       } finally {
         setStartingDay(null);
       }
     },
-    [plan, programId, router, userId]
+    [plan, cachedProgramId, openWorkout, userId]
   );
 
   useEffect(() => {
     const dayParam = searchParams.get("day");
-    if (!dayParam || !plan || autoStarted.current) return;
+    if (!dayParam || !plan || autoStarted.current || activeClientId) return;
     const dayIndex = Number(dayParam);
     if (Number.isNaN(dayIndex)) return;
     if (!plan.week.some((s) => s.dayIndex === dayIndex)) return;
     autoStarted.current = true;
     void handleStart(dayIndex);
-  }, [searchParams, plan, handleStart]);
+  }, [searchParams, plan, handleStart, activeClientId]);
+
+  if (activeClientId) {
+    return (
+      <ActiveWorkout
+        clientId={activeClientId}
+        userId={userId}
+        onBack={() => {
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete("active");
+          const query = params.toString();
+          router.replace(query ? `/workout?${query}` : "/workout");
+        }}
+      />
+    );
+  }
+
+  const offline = typeof navigator !== "undefined" && !navigator.onLine;
 
   return (
     <div className="px-6 py-8">
@@ -72,6 +121,12 @@ export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
       <p className="mt-2 text-forge-muted">
         Log sets offline in the gym — syncs when you&apos;re back online.
       </p>
+      {offline && (
+        <p className="mt-2 text-sm text-forge-steel">
+          Offline mode — resume in-progress workouts or start from your cached
+          plan.
+        </p>
+      )}
 
       {inProgress.length > 0 && (
         <section className="mt-6 space-y-3">
@@ -79,10 +134,11 @@ export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
             Resume
           </h2>
           {inProgress.map((session) => (
-            <Link
+            <button
               key={session.clientId}
-              href={`/workout/${session.clientId}`}
-              className="flex items-center justify-between rounded-2xl border border-forge-ember/30 bg-forge-ember/10 p-4"
+              type="button"
+              onClick={() => openWorkout(session.clientId)}
+              className="flex w-full items-center justify-between rounded-2xl border border-forge-ember/30 bg-forge-ember/10 p-4 text-left"
             >
               <div>
                 <p className="font-display font-semibold text-forge-text">
@@ -91,7 +147,7 @@ export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
                 <p className="text-sm text-forge-muted">Tap to continue</p>
               </div>
               <span className="text-sm font-semibold text-forge-ember">→</span>
-            </Link>
+            </button>
           ))}
         </section>
       )}
@@ -134,8 +190,9 @@ export function WorkoutHub({ userId, programId, plan }: WorkoutHubProps) {
       ) : (
         <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
           <p className="text-forge-muted">
-            Generate your program first — complete onboarding and apply the
-            programs migration.
+            {offline
+              ? "No cached program yet. Visit Workout once while online to save your plan for offline use."
+              : "Generate your program first — complete onboarding and apply the programs migration."}
           </p>
         </div>
       )}

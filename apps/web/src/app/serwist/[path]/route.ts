@@ -10,8 +10,11 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
     additionalPrecacheEntries: [
       { url: "/~offline", revision },
-      { url: "/workout", revision },
       { url: "/home", revision },
+      { url: "/workout", revision },
+      { url: "/nutrition", revision },
+      { url: "/progress", revision },
+      { url: "/profile", revision },
     ],
     swSrc: "src/app/sw.ts",
     useNativeEsbuild: true,

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
 
 const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: HomeIcon },
@@ -11,8 +12,30 @@ const NAV_ITEMS = [
   { href: "/profile", label: "Profile", icon: ProfileIcon },
 ] as const;
 
+function subscribeOnline(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getServerSnapshot() {
+  return true;
+}
+
 export function BottomNav() {
   const pathname = usePathname();
+  const online = useSyncExternalStore(
+    subscribeOnline,
+    getOnlineSnapshot,
+    getServerSnapshot
+  );
 
   return (
     <nav
@@ -22,17 +45,26 @@ export function BottomNav() {
       <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 py-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active =
-            pathname === href || pathname.startsWith(`${href}/`);
+            pathname === href ||
+            pathname.startsWith(`${href}/`) ||
+            (href === "/workout" && pathname === "/workout");
+          const className = `flex min-h-[52px] min-w-[56px] flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-xs font-medium transition-colors ${
+            active
+              ? "text-forge-ember"
+              : "text-forge-muted hover:text-forge-text"
+          }`;
+
+          if (!online) {
+            return (
+              <a key={href} href={href} className={className}>
+                <Icon active={active} />
+                <span>{label}</span>
+              </a>
+            );
+          }
+
           return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex min-h-[52px] min-w-[56px] flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-xs font-medium transition-colors ${
-                active
-                  ? "text-forge-ember"
-                  : "text-forge-muted hover:text-forge-text"
-              }`}
-            >
+            <Link key={href} href={href} className={className}>
               <Icon active={active} />
               <span>{label}</span>
             </Link>

@@ -1,15 +1,25 @@
 import Dexie, { type Table } from "dexie";
-import type { LocalExerciseSet, LocalWorkoutSession } from "./types";
+import type {
+  CachedProgram,
+  LocalExerciseSet,
+  LocalWorkoutSession,
+} from "./types";
 
 class ForgeFitDB extends Dexie {
   workoutSessions!: Table<LocalWorkoutSession, string>;
   exerciseSets!: Table<LocalExerciseSet, string>;
+  cachedPrograms!: Table<CachedProgram, string>;
 
   constructor() {
     super("forgefit-offline");
     this.version(1).stores({
       workoutSessions: "clientId, userId, status, updatedAt",
       exerciseSets: "clientId, sessionClientId, [sessionClientId+exerciseId+setNumber]",
+    });
+    this.version(2).stores({
+      workoutSessions: "clientId, userId, status, updatedAt",
+      exerciseSets: "clientId, sessionClientId, [sessionClientId+exerciseId+setNumber]",
+      cachedPrograms: "userId",
     });
   }
 }

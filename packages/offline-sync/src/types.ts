@@ -1,4 +1,13 @@
+import type { ProgramPlan } from "@forgefit/program-engine";
+
 export type WorkoutStatus = "in_progress" | "completed" | "cancelled";
+
+export interface CachedProgram {
+  userId: string;
+  programId?: string;
+  plan: ProgramPlan;
+  cachedAt: string;
+}
 
 export interface ExerciseSnapshot {
   exerciseId: string;

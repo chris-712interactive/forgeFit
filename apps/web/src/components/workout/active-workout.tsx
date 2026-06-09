@@ -17,10 +17,20 @@ import { SetRow } from "./set-row";
 interface ActiveWorkoutProps {
   clientId: string;
   userId: string;
+  onBack?: () => void;
 }
 
-export function ActiveWorkout({ clientId, userId }: ActiveWorkoutProps) {
+export function ActiveWorkout({ clientId, userId, onBack }: ActiveWorkoutProps) {
   const router = useRouter();
+
+  function goBack() {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    router.push("/workout");
+    router.refresh();
+  }
   const [session, setSession] = useState<LocalWorkoutSession | null>(null);
   const [sets, setSets] = useState<LocalExerciseSet[]>([]);
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
@@ -104,8 +114,7 @@ export function ActiveWorkout({ clientId, userId }: ActiveWorkoutProps) {
         // Queued locally until reconnect.
       }
     }
-    router.push("/workout");
-    router.refresh();
+    goBack();
   }
 
   if (loading) {
@@ -118,7 +127,7 @@ export function ActiveWorkout({ clientId, userId }: ActiveWorkoutProps) {
         <p className="text-forge-muted">Workout not found.</p>
         <button
           type="button"
-          onClick={() => router.push("/workout")}
+          onClick={goBack}
           className="mt-4 text-forge-ember"
         >
           Back to workouts

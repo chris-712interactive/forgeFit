@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 3 complete → Phase 4 (Nutrition) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Phase 3 — workout tracking + offline PWA |
+| **Last session focus** | Offline workout navigation + program cache |
 
 ---
 
@@ -32,6 +32,20 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Offline workout navigation fix
+
+**What was done:**
+- Active workout stays on `/workout?active=clientId` (no offline RSC fetch to dynamic route)
+- Program plan cached in Dexie for offline start/resume
+- Bottom nav uses full-page links when offline; Serwist caches all tab routes + RSC payloads
+
+**Files touched:**
+- `packages/offline-sync/src/program-cache.ts`, `workout-hub.tsx`, `active-workout.tsx`
+- `apps/web/src/components/layout/bottom-nav.tsx`, `apps/web/src/app/sw.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Phase 3 complete
 

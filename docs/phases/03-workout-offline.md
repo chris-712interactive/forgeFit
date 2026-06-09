@@ -12,6 +12,7 @@ Active workout UI, sets/reps/RIR logging, Serwist + Dexie offline sync.
 - [x] User completes workout fully offline (Dexie in `@forgefit/offline-sync`)
 - [x] Reconnect syncs sets to Supabase via `POST /api/sync` (idempotent `client_id` upserts)
 - [x] Rest timer uses `forge-gold` pulse (`.rest-timer-pulse` in globals.css)
-- [x] Serwist service worker precaches app shell, `/workout`, `/home`, `/~offline`
+- [x] Serwist service worker precaches app shell, all bottom-nav routes, `/~offline`
+- [x] Active workout uses `/workout?active=clientId` (no offline server fetch); program cached in Dexie
 - [x] `pnpm turbo typecheck build` passes
 - [ ] Migration `20260608200000_phase3_workouts.sql` applied in Supabase (user action)
