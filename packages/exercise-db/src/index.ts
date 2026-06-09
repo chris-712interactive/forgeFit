@@ -1,8 +1,27 @@
+import { isExerciseAvailable } from "./availability";
 import { EXERCISES } from "./exercises";
 import type { Exercise, ExerciseDifficulty, MovementPattern } from "./types";
 
-export type { Exercise, MovementPattern, ExerciseDifficulty } from "./types";
+export type {
+  CatalogExercise,
+  Exercise,
+  ExerciseDifficulty,
+  MovementPattern,
+} from "./types";
 export { EXERCISES };
+export {
+  EXERCISE_IMAGE_BASE,
+  exerciseImageUrl,
+  getCatalog,
+  getCatalogExerciseById,
+  searchCatalog,
+} from "./catalog";
+export {
+  getSubstitutions,
+  getUnavailableReason,
+} from "./substitutions";
+export { resolveExerciseDetail } from "./resolve";
+export { isExerciseAvailable } from "./availability";
 
 const DIFFICULTY_RANK: Record<ExerciseDifficulty, number> = {
   beginner: 1,
@@ -12,18 +31,6 @@ const DIFFICULTY_RANK: Record<ExerciseDifficulty, number> = {
 
 export function getExercises(): Exercise[] {
   return EXERCISES;
-}
-
-/** User must have every piece of equipment the exercise requires. */
-export function isExerciseAvailable(
-  exercise: Exercise,
-  userEquipment: string[]
-): boolean {
-  const gear = new Set(userEquipment);
-  if (gear.has("bodyweight_only") && exercise.equipment.includes("bodyweight_only")) {
-    return true;
-  }
-  return exercise.equipment.every((item) => gear.has(item));
 }
 
 export function pickExerciseForPattern(

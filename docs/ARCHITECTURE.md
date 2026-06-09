@@ -27,7 +27,7 @@ supabase/         → PostgreSQL migrations + RLS
 | `@forgefit/evidence-kb` | Citable fitness/nutrition rules | 0–2 |
 | `@forgefit/program-engine` | Goal templates, volume, scheduling | 2 |
 | `@forgefit/projection-engine` | Weight/strength forecasts | 5 |
-| `@forgefit/exercise-db` | Seed exercises, equipment tags (500+ GIFs in Phase 6) | 2 |
+| `@forgefit/exercise-db` | 873-exercise catalog, demos, substitutions | 2, 6 |
 | `@forgefit/nutrition-core` | USDA/OFF diary | 4 |
 | `@forgefit/projection-engine` | Caliper BF%, weight trends, 30-day forecasts | 5 |
 | `@forgefit/integrations` | OAuth device adapters | 7 |
@@ -73,6 +73,15 @@ supabase/         → PostgreSQL migrations + RLS
 2. `GET /api/nutrition/search` queries USDA (optional API key) + Open Food Facts in parallel
 3. User taps a result → `POST /api/nutrition/logs` stores scaled macros in `nutrition_logs`
 4. Daily totals computed with `sumMacros()` and compared to targets in `MacroSummary`
+
+## Exercise Library (Phase 6)
+
+1. Catalog built from open `free-exercise-db` dataset (873 exercises, dual-frame demos)
+2. `/exercises` searches `@forgefit/exercise-db` by name, pattern, muscle
+3. `/exercises/[id]` resolves curated program ids → catalog aliases for demos
+4. `getSubstitutions()` ranks same-pattern exercises by muscle overlap + user equipment
+5. `react-body-highlighter` renders muscle activation from `highlightMuscles`
+6. Serwist caches GitHub-hosted demo frames for offline viewing
 
 ## Measurements + Projections (Phase 5)
 

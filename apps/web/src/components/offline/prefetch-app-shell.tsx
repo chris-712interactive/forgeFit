@@ -2,7 +2,14 @@
 
 import { useEffect } from "react";
 
-const APP_TAB_ROUTES = ["/home", "/workout", "/nutrition", "/progress", "/profile"];
+const APP_TAB_ROUTES = [
+  "/home",
+  "/workout",
+  "/nutrition",
+  "/progress",
+  "/profile",
+  "/exercises",
+];
 
 /**
  * Warms the service worker cache for main app tabs while online so bottom-nav

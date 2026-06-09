@@ -44,6 +44,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/nutrition") ||
     path.startsWith("/progress") ||
     path.startsWith("/profile") ||
+    path.startsWith("/exercises") ||
     path.startsWith("/onboarding");
 
   if (!user && (isAppRoute || path.startsWith("/onboarding"))) {

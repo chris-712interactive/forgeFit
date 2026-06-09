@@ -18,6 +18,7 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
       { url: "/nutrition", revision },
       { url: "/progress", revision },
       { url: "/profile", revision },
+      { url: "/exercises", revision },
     ],
     swSrc: "src/app/sw.ts",
     useNativeEsbuild: true,

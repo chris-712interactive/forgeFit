@@ -32,7 +32,7 @@ function dedupePrecacheEntries(
   return [...byUrl.values()];
 }
 
-const APP_ROUTES = /^\/(home|workout|nutrition|progress|profile)(\/.*)?$/;
+const APP_ROUTES = /^\/(home|workout|nutrition|progress|profile|exercises)(\/.*)?$/;
 
 const staticAssetCache = {
   cacheName: "forgefit-next-static",
@@ -105,6 +105,22 @@ const serwist = new Serwist({
       handler: new CacheFirst({
         cacheName: "forgefit-static-images",
         plugins: iconCachePlugins,
+      }),
+    },
+    {
+      matcher: ({ url }) =>
+        url.hostname === "raw.githubusercontent.com" &&
+        url.pathname.includes("/free-exercise-db/"),
+      handler: new CacheFirst({
+        cacheName: "forgefit-exercise-media",
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [0, 200] }),
+          new ExpirationPlugin({
+            maxEntries: 512,
+            maxAgeSeconds: 60 * 24 * 60 * 60,
+            maxAgeFrom: "last-used",
+          }),
+        ],
       }),
     },
     {

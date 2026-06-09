@@ -4,7 +4,7 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 
 ## Features
 
-**Live now (Phase 1–5):**
+**Live now (Phase 1–6):**
 - Email + Google sign up / sign in
 - 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
 - Mobile app shell with bottom navigation
@@ -14,9 +14,9 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 - **Rest timer** — auto-starts between sets with Forge Gold pulse
 - **Nutrition diary** — USDA + Open Food Facts search, daily macro tracking vs evidence-based targets
 - **Progress tracking** — weight trends, Jackson-Pollock caliper BF%, 30-day weight projection
+- **Exercise library** — 800+ demos, muscle heatmaps, equipment substitution preview
 
 **Coming soon:**
-- **Exercise demos** — GIF animations + muscle activation maps
 - **Device sync** — Withings, Fitbit, Strava (Pro tier)
 
 See [docs/BIBLE.md](./docs/BIBLE.md) for the full build plan.
@@ -38,7 +38,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `apps/web` | Next.js 15 PWA |
 | `packages/ui` | Forge Ember design tokens |
 | `packages/evidence-kb` | 30 peer-reviewed fitness rules |
-| `packages/exercise-db` | Seed exercise library |
+| `packages/exercise-db` | 873-exercise catalog + substitution engine |
 | `packages/program-engine` | Program + nutrition generator |
 | `packages/offline-sync` | Dexie offline workout store + sync |
 | `packages/nutrition-core` | USDA/OFF food search + macro helpers |

@@ -9,6 +9,7 @@ import {
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
 import { useOfflineStatus } from "@/hooks/use-online-status";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
@@ -176,7 +177,12 @@ export function ActiveWorkout({
             >
               <div className="mb-4">
                 <h2 className="font-display text-base font-semibold text-forge-text sm:text-lg">
-                  {exercise.name}
+                  <Link
+                    href={`/exercises/${exercise.exerciseId}`}
+                    className="hover:text-forge-ember"
+                  >
+                    {exercise.name}
+                  </Link>
                 </h2>
                 <p className="mt-1 text-sm text-forge-muted">
                   Aim for {exercise.sets} sets of {exercise.reps} reps ·{" "}

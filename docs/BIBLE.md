@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-08 · **Current phase:** Phase 5 complete → Phase 6 next
+**Last updated:** 2026-06-08 · **Current phase:** Phase 6 complete → Phase 7 next
 
 ---
 
@@ -190,7 +190,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 | 3 | Workout tracking + offline PWA | Complete |
 | 4 | Nutrition diary | Complete |
 | 5 | Measurements + projections | Complete |
-| 6 | Exercise library UI | Pending |
+| 6 | Exercise library UI | Complete |
 | 7 | Pro integrations (Stripe, OAuth) | Pending |
 | 8 | Motivation + gamification | Pending |
 

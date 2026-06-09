@@ -24,3 +24,13 @@ export interface Exercise {
   /** Compound lifts rank higher when time is limited */
   priority: number;
 }
+
+export interface CatalogExercise extends Exercise {
+  sourceId: string;
+  secondaryMuscles: string[];
+  category: string;
+  mechanic: string | null;
+  instructions: string[];
+  imagePaths: string[];
+  highlightMuscles: string[];
+}

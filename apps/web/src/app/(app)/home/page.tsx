@@ -68,10 +68,20 @@ export default async function HomePage() {
         </p>
       )}
 
+      <Link
+        href="/exercises"
+        className="mt-6 block rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5 transition-colors hover:border-forge-ember/40"
+      >
+        <p className="font-display font-bold text-forge-text">Exercise library</p>
+        <p className="mt-1 text-sm text-forge-muted">
+          800+ demos, muscle maps, and equipment swaps
+        </p>
+      </Link>
+
       {todaySession && (
         <Link
           href={`/workout?day=${todaySession.dayIndex}`}
-          className="mt-6 flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display font-bold text-white"
+          className="mt-4 flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display font-bold text-white"
         >
           Start {todaySession.name}
         </Link>

@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 5 complete → Phase 6 (Exercise Library UI) next |
+| **Active phase** | Phase 6 complete → Phase 7 (Pro Integrations) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Phase 5 measurements + projections |
+| **Last session focus** | Phase 6 exercise library UI |
 
 ---
 
@@ -25,13 +25,32 @@
 | 3 | Workout + Offline PWA | ✅ Complete | 2026-06-08 |
 | 4 | Nutrition | ✅ Complete | 2026-06-08 |
 | 5 | Measurements + Projections | ✅ Complete | 2026-06-08 |
-| 6 | Exercise Library UI | ⏳ Pending | — |
+| 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Pending | — |
 | 8 | Motivation + Gamification | ⏳ Pending | — |
 
 ---
 
 ## Session Log
+
+### 2026-06-08 — Phase 6 complete (Exercise library UI)
+
+**What was done:**
+- Imported 873 exercises from `free-exercise-db` into `packages/exercise-db/data/catalog.json`
+- `searchCatalog`, `resolveExerciseDetail`, `getSubstitutions` + curated program id aliases
+- `/exercises` search/browse, `/exercises/[id]` detail with frame animation + muscle heatmap
+- `react-body-highlighter` muscle map, equipment swap preview vs user inventory
+- Active workout exercise names link to library; SW caches GitHub demo images offline
+
+**What's next:**
+- Phase 7: Stripe + device OAuth (Withings, Fitbit, Strava)
+
+**Files touched:**
+- `packages/exercise-db/` (catalog, resolve, substitutions, build script)
+- `apps/web/src/app/(app)/exercises/`, `components/exercises/`, `lib/exercises/`
+- `apps/web/next.config.ts`, `apps/web/src/app/sw.ts`, docs
+
+---
 
 ### 2026-06-08 — Phase 5 complete (Measurements + projections)
 

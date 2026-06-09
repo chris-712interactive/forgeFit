@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
     "@forgefit/nutrition-core",
     "@forgefit/projection-engine",
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+        pathname: "/yuhonas/free-exercise-db/**",
+      },
+    ],
+  },
   turbopack: {
     root: "../..",
   },
