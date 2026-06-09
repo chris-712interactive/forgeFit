@@ -1,5 +1,6 @@
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
+import { cmToFtIn, kgToLbs } from "@/lib/units/measurements";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -33,11 +34,22 @@ export default async function ProfilePage() {
         />
         <Row
           label="Weight"
-          value={profile?.weight_kg ? `${profile.weight_kg} kg` : undefined}
+          value={
+            profile?.weight_kg
+              ? `${profile.weight_kg} kg (${kgToLbs(profile.weight_kg)} lb)`
+              : undefined
+          }
         />
         <Row
           label="Height"
-          value={profile?.height_cm ? `${profile.height_cm} cm` : undefined}
+          value={
+            profile?.height_cm
+              ? (() => {
+                  const { feet, inches } = cmToFtIn(profile.height_cm);
+                  return `${profile.height_cm} cm (${feet}'${inches}")`;
+                })()
+              : undefined
+          }
         />
       </section>
 

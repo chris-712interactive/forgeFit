@@ -57,6 +57,12 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 - Manifest: `apps/web/public/manifest.json`
 - Icon: `logo-icon.svg`
 
+## Onboarding measurements
+
+- Each measurement field has a **Metric / Imperial** dropdown
+- Users enter familiar units; values convert to **kg** and **cm** before save
+- Height (imperial): feet + inches inputs
+
 ## Do / Don't
 
 | Do | Don't |

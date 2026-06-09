@@ -15,8 +15,8 @@ import type {
   ExperienceLevel,
   FitnessGoal,
   OnboardingData,
-  SexType,
 } from "@/lib/types/profile";
+import { MeasurementStep } from "@/components/onboarding/measurement-step";
 
 const TOTAL_STEPS = 7;
 
@@ -155,78 +155,9 @@ export function OnboardingWizard() {
         {step === 3 && (
           <StepShell
             title="Your measurements"
-            subtitle="Required fields help us personalize your plan."
+            subtitle="Enter values in whatever units you know — we handle the rest."
           >
-            <div className="space-y-4">
-              <SelectField
-                label="Sex"
-                value={data.sex ?? ""}
-                onChange={(v) => update({ sex: v as SexType })}
-                options={[
-                  { value: "male", label: "Male" },
-                  { value: "female", label: "Female" },
-                  { value: "other", label: "Other" },
-                  { value: "prefer_not_to_say", label: "Prefer not to say" },
-                ]}
-              />
-              <NumberField
-                label="Age"
-                required
-                value={data.age}
-                onChange={(v) => update({ age: v })}
-                min={13}
-                max={120}
-              />
-              <NumberField
-                label="Height (cm)"
-                required
-                value={data.height_cm}
-                onChange={(v) => update({ height_cm: v })}
-                min={100}
-                max={250}
-              />
-              <NumberField
-                label="Weight (kg)"
-                required
-                value={data.weight_kg}
-                onChange={(v) => update({ weight_kg: v })}
-                min={30}
-                max={300}
-              />
-              <p className="text-sm text-forge-muted">Optional measurements</p>
-              <div className="grid grid-cols-2 gap-3">
-                <NumberField
-                  label="Waist (cm)"
-                  value={data.waist_cm}
-                  onChange={(v) => update({ waist_cm: v })}
-                />
-                <NumberField
-                  label="Chest (cm)"
-                  value={data.chest_cm}
-                  onChange={(v) => update({ chest_cm: v })}
-                />
-                <NumberField
-                  label="Arms (cm)"
-                  value={data.arms_cm}
-                  onChange={(v) => update({ arms_cm: v })}
-                />
-                <NumberField
-                  label="Legs (cm)"
-                  value={data.legs_cm}
-                  onChange={(v) => update({ legs_cm: v })}
-                />
-                <NumberField
-                  label="Neck (cm)"
-                  value={data.neck_cm}
-                  onChange={(v) => update({ neck_cm: v })}
-                />
-                <NumberField
-                  label="Hips (cm)"
-                  value={data.hips_cm}
-                  onChange={(v) => update({ hips_cm: v })}
-                />
-              </div>
-            </div>
+            <MeasurementStep data={data} onChange={update} />
           </StepShell>
         )}
 
@@ -471,42 +402,6 @@ function SelectField({
           </option>
         ))}
       </select>
-    </div>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  required,
-  min,
-  max,
-}: {
-  label: string;
-  value?: number;
-  onChange: (value: number | undefined) => void;
-  required?: boolean;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-sm text-forge-muted">
-        {label}
-        {required && <span className="text-forge-ember"> *</span>}
-      </label>
-      <input
-        type="number"
-        required={required}
-        min={min}
-        max={max}
-        value={value ?? ""}
-        onChange={(e) =>
-          onChange(e.target.value ? Number(e.target.value) : undefined)
-        }
-        className="min-h-[52px] w-full rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 text-forge-text outline-none focus:border-forge-ember"
-      />
     </div>
   );
 }

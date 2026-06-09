@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 1 complete → Phase 2 (Evidence Engine) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Phase 1: Supabase auth, onboarding, app shell |
+| **Last session focus** | Onboarding imperial/metric unit selectors |
 
 ---
 
@@ -32,6 +32,21 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Onboarding unit selectors
+
+**What was done:**
+- Added per-field Metric / Imperial dropdown on measurement step
+- Conversions in `lib/units/measurements.ts` — stored as kg/cm in database
+- Height imperial uses feet + inches inputs
+
+**Files touched:**
+- `apps/web/src/lib/units/measurements.ts`
+- `apps/web/src/components/onboarding/measurement-step.tsx`
+- `apps/web/src/components/onboarding/onboarding-wizard.tsx`
+- `docs/DESIGN.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Phase 1 complete
 
