@@ -4,7 +4,6 @@ import {
   completeWorkoutSession,
   getSession,
   getSetsForSession,
-  syncWorkoutData,
   updateSet,
   type LocalExerciseSet,
   type LocalWorkoutSession,
@@ -12,14 +11,16 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
+import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
   clientId: string;
-  userId: string;
   onBack?: () => void;
 }
 
-export function ActiveWorkout({ clientId, userId, onBack }: ActiveWorkoutProps) {
+export function ActiveWorkout({ clientId, onBack }: ActiveWorkoutProps) {
+  const sync = useWorkoutSyncContext();
+
   function goBack() {
     onBack?.();
   }
@@ -88,24 +89,16 @@ export function ActiveWorkout({ clientId, userId, onBack }: ActiveWorkoutProps) 
       }
     }
 
+    void sync?.refreshPending();
     if (navigator.onLine) {
-      try {
-        await syncWorkoutData(userId);
-      } catch {
-        // Offline-first: data stays in Dexie until next sync.
-      }
+      void sync?.runSync();
     }
   }
 
   async function handleFinish() {
     await completeWorkoutSession(clientId, "completed");
-    if (navigator.onLine) {
-      try {
-        await syncWorkoutData(userId);
-      } catch {
-        // Queued locally until reconnect.
-      }
-    }
+    await sync?.refreshPending();
+    await sync?.runSync();
     goBack();
   }
 

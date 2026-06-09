@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 3 complete → Phase 4 (Nutrition) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Mobile workout logging UX (set cards, effort labels) |
+| **Last session focus** | Fix offline workout sync + history UI |
 
 ---
 
@@ -32,6 +32,25 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Offline workout sync fix
+
+**What was done:**
+- Aggressive sync on online/focus/visibility/pageshow + 15s retry when pending
+- Sync error banner with retry; no more silent failures
+- Finish workout always triggers sync; completing marks all sets unsynced
+- Recent workouts list on Workout tab (proves cross-device sync)
+- POST `/api/sync` bypasses service worker cache
+
+**Blockers:**
+- Phase 3 migration must be applied or sync returns 500 with clear error
+
+**Files touched:**
+- `packages/offline-sync/src/sync-client.ts`, `workout-store.ts`
+- `apps/web/src/hooks/use-workout-sync.ts`, sync components, `api/sync/route.ts`
+- `apps/web/src/lib/workouts/history.ts`, `workout-history.tsx`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Mobile workout set logging UX
 

@@ -8,13 +8,19 @@ import {
   startWorkoutSession,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
+import type { WorkoutHistoryItem } from "@/lib/workouts/history";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActiveWorkout } from "./active-workout";
+import { SyncStatusBanner } from "./sync-status-banner";
+import { useWorkoutSyncContext } from "./sync-manager";
+import { WorkoutHistory } from "./workout-history";
 
 interface WorkoutHubProps {
   userId: string;
   programId?: string;
   plan: ProgramPlan | null;
+  history?: WorkoutHistoryItem[];
 }
 
 function replaceWorkoutUrl(clientId: string | null) {
@@ -22,13 +28,26 @@ function replaceWorkoutUrl(clientId: string | null) {
   window.history.replaceState(window.history.state, "", url);
 }
 
-export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubProps) {
+export function WorkoutHub({
+  userId,
+  programId,
+  plan: serverPlan,
+  history = [],
+}: WorkoutHubProps) {
+  const router = useRouter();
+  const sync = useWorkoutSyncContext();
   const autoStarted = useRef(false);
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [plan, setPlan] = useState<ProgramPlan | null>(serverPlan);
   const [cachedProgramId, setCachedProgramId] = useState<string | undefined>(programId);
   const [inProgress, setInProgress] = useState<LocalWorkoutSession[]>([]);
   const [startingDay, setStartingDay] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (sync?.lastSyncedAt) {
+      router.refresh();
+    }
+  }, [sync?.lastSyncedAt, router]);
 
   // Hydrate active session from URL without triggering a Next.js navigation.
   useEffect(() => {
@@ -115,18 +134,15 @@ export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubPr
 
   if (activeClientId) {
     return (
-      <ActiveWorkout
-        clientId={activeClientId}
-        userId={userId}
-        onBack={closeWorkout}
-      />
+      <ActiveWorkout clientId={activeClientId} onBack={closeWorkout} />
     );
   }
 
   const offline = typeof navigator !== "undefined" && !navigator.onLine;
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-4 py-6 sm:px-6 sm:py-8">
+      <SyncStatusBanner />
       <h1 className="font-display text-2xl font-bold text-forge-text">Workout</h1>
       <p className="mt-2 text-forge-muted">
         Log sets offline in the gym — syncs when you&apos;re back online.
@@ -206,6 +222,8 @@ export function WorkoutHub({ userId, programId, plan: serverPlan }: WorkoutHubPr
           </p>
         </div>
       )}
+
+      <WorkoutHistory items={history} />
     </div>
   );
 }

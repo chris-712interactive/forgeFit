@@ -7,6 +7,7 @@ import {
   CacheFirst,
   ExpirationPlugin,
   NetworkFirst,
+  NetworkOnly,
   Serwist,
 } from "serwist";
 
@@ -38,6 +39,13 @@ const serwist = new Serwist({
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
+    {
+      matcher: ({ url, request, sameOrigin }) =>
+        sameOrigin &&
+        url.pathname.startsWith("/api/") &&
+        request.method !== "GET",
+      handler: new NetworkOnly(),
+    },
     // Cache all Next.js/Turbopack static assets first — critical for offline chunk loads.
     {
       matcher: ({ url, sameOrigin }) =>

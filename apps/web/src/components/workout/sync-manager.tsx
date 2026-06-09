@@ -1,32 +1,35 @@
 "use client";
 
-import { syncWorkoutData } from "@forgefit/offline-sync";
-import { useEffect } from "react";
+import { useWorkoutSync } from "@/hooks/use-workout-sync";
+import { createContext, useContext, type ReactNode } from "react";
 
-interface SyncManagerProps {
-  userId: string;
+interface SyncContextValue {
+  pendingCount: number;
+  syncing: boolean;
+  lastError: string | null;
+  lastSyncedAt: Date | null;
+  runSync: () => Promise<unknown>;
+  refreshPending: () => Promise<number>;
 }
 
-export function SyncManager({ userId }: SyncManagerProps) {
-  useEffect(() => {
-    async function runSync() {
-      if (!navigator.onLine) return;
-      try {
-        await syncWorkoutData(userId);
-      } catch {
-        // Retry on next online event.
-      }
-    }
+const WorkoutSyncContext = createContext<SyncContextValue | null>(null);
 
-    void runSync();
+export function useWorkoutSyncContext() {
+  return useContext(WorkoutSyncContext);
+}
 
-    function handleOnline() {
-      void runSync();
-    }
+export function SyncManager({
+  userId,
+  children,
+}: {
+  userId: string;
+  children?: ReactNode;
+}) {
+  const sync = useWorkoutSync(userId);
 
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
-  }, [userId]);
-
-  return null;
+  return (
+    <WorkoutSyncContext.Provider value={sync}>
+      {children}
+    </WorkoutSyncContext.Provider>
+  );
 }

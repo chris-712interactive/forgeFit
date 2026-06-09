@@ -1,12 +1,31 @@
 import { collectUnsyncedPayload, markSynced } from "./workout-store";
 import type { SyncRequestBody, SyncResponseBody } from "./types";
 
-export async function syncWorkoutData(userId: string): Promise<SyncResponseBody | null> {
+export interface SyncResult {
+  ok: true;
+  syncedSessions: number;
+  syncedSets: number;
+}
+
+export interface SyncError {
+  ok: false;
+  message: string;
+  status?: number;
+}
+
+export type SyncOutcome = SyncResult | SyncError | null;
+
+export async function getPendingSyncCount(userId: string): Promise<number> {
+  const { sessions, sets } = await collectUnsyncedPayload(userId);
+  return sessions.length + sets.length;
+}
+
+export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
   if (!navigator.onLine) return null;
 
   const { sessions, sets } = await collectUnsyncedPayload(userId);
   if (sessions.length === 0 && sets.length === 0) {
-    return { syncedSessions: 0, syncedSets: 0 };
+    return { ok: true, syncedSessions: 0, syncedSets: 0 };
   }
 
   const body: SyncRequestBody = {
@@ -37,12 +56,20 @@ export async function syncWorkoutData(userId: string): Promise<SyncResponseBody 
 
   const response = await fetch("/api/sync", {
     method: "POST",
+    credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    throw new Error(`Sync failed: ${response.status}`);
+    let message = `Sync failed (${response.status})`;
+    try {
+      const err = (await response.json()) as { error?: string };
+      if (err.error) message = err.error;
+    } catch {
+      // ignore parse errors
+    }
+    return { ok: false, message, status: response.status };
   }
 
   const result = (await response.json()) as SyncResponseBody;
@@ -50,5 +77,9 @@ export async function syncWorkoutData(userId: string): Promise<SyncResponseBody 
     sessions.map((s) => s.clientId),
     sets.map((s) => s.clientId)
   );
-  return result;
+  return {
+    ok: true,
+    syncedSessions: result.syncedSessions,
+    syncedSets: result.syncedSets,
+  };
 }

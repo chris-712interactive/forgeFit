@@ -11,9 +11,9 @@ const syncSchema = z.object({
       sessionName: z.string().min(1),
       dayIndex: z.number().int().min(0),
       status: z.enum(["in_progress", "completed", "cancelled"]),
-      startedAt: z.string(),
+      startedAt: z.string().min(1),
       completedAt: z.string().optional(),
-      updatedAt: z.string(),
+      updatedAt: z.string().min(1),
     })
   ),
   sets: z.array(
@@ -23,12 +23,12 @@ const syncSchema = z.object({
       exerciseId: z.string().min(1),
       exerciseName: z.string().min(1),
       setNumber: z.number().int().min(1),
-      reps: z.number().int().min(0).optional(),
-      weightKg: z.number().min(0).optional(),
+      reps: z.number().finite().optional(),
+      weightKg: z.number().finite().optional(),
       rir: z.number().int().min(0).max(10).optional(),
       completed: z.boolean(),
       completedAt: z.string().optional(),
-      updatedAt: z.string(),
+      updatedAt: z.string().min(1),
     })
   ),
 });
@@ -46,7 +46,14 @@ export async function POST(request: Request) {
   let body: SyncRequestBody;
   try {
     const json = await request.json();
-    body = syncSchema.parse(json);
+    const parsed = syncSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: `Invalid sync payload: ${parsed.error.issues[0]?.message}` },
+        { status: 400 }
+      );
+    }
+    body = parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid sync payload" }, { status: 400 });
   }
@@ -56,18 +63,22 @@ export async function POST(request: Request) {
   let syncedSets = 0;
 
   for (const session of body.sessions) {
-    const { data: existing } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from("workout_sessions")
       .select("id, updated_at")
       .eq("user_id", user.id)
       .eq("client_id", session.clientId)
       .maybeSingle();
 
+    if (lookupError) {
+      return NextResponse.json({ error: lookupError.message }, { status: 500 });
+    }
+
     if (existing) {
       const existingUpdated = new Date(existing.updated_at).getTime();
       const incomingUpdated = new Date(session.updatedAt).getTime();
       if (incomingUpdated >= existingUpdated) {
-        await supabase
+        const { error } = await supabase
           .from("workout_sessions")
           .update({
             program_id: session.programId ?? null,
@@ -79,6 +90,9 @@ export async function POST(request: Request) {
             updated_at: session.updatedAt,
           })
           .eq("id", existing.id);
+        if (error) {
+          return NextResponse.json({ error: error.message }, { status: 500 });
+        }
       }
       sessionIdByClientId.set(session.clientId, existing.id);
       syncedSessions++;
@@ -103,7 +117,11 @@ export async function POST(request: Request) {
 
     if (error || !inserted) {
       return NextResponse.json(
-        { error: error?.message ?? "Failed to sync session" },
+        {
+          error:
+            error?.message ??
+            "Failed to sync session. Apply the Phase 3 migration (workout_sessions table).",
+        },
         { status: 500 }
       );
     }
@@ -115,32 +133,46 @@ export async function POST(request: Request) {
   for (const set of body.sets) {
     let workoutSessionId = sessionIdByClientId.get(set.sessionClientId);
     if (!workoutSessionId) {
-      const { data: sessionRow } = await supabase
+      const { data: sessionRow, error: lookupError } = await supabase
         .from("workout_sessions")
         .select("id")
         .eq("user_id", user.id)
         .eq("client_id", set.sessionClientId)
         .maybeSingle();
+
+      if (lookupError) {
+        return NextResponse.json({ error: lookupError.message }, { status: 500 });
+      }
       workoutSessionId = sessionRow?.id;
     }
 
     if (!workoutSessionId) {
-      continue;
+      return NextResponse.json(
+        {
+          error:
+            "Workout session missing on server. Sync sessions before sets, or apply the Phase 3 migration.",
+        },
+        { status: 409 }
+      );
     }
 
-    const { data: existing } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from("exercise_sets")
       .select("id, updated_at")
       .eq("user_id", user.id)
       .eq("client_id", set.clientId)
       .maybeSingle();
 
+    if (lookupError) {
+      return NextResponse.json({ error: lookupError.message }, { status: 500 });
+    }
+
     const row = {
       workout_session_id: workoutSessionId,
       exercise_id: set.exerciseId,
       exercise_name: set.exerciseName,
       set_number: set.setNumber,
-      reps: set.reps ?? null,
+      reps: set.reps != null ? Math.round(set.reps) : null,
       weight_kg: set.weightKg ?? null,
       rir: set.rir ?? null,
       completed: set.completed,
@@ -152,7 +184,13 @@ export async function POST(request: Request) {
       const existingUpdated = new Date(existing.updated_at).getTime();
       const incomingUpdated = new Date(set.updatedAt).getTime();
       if (incomingUpdated >= existingUpdated) {
-        await supabase.from("exercise_sets").update(row).eq("id", existing.id);
+        const { error } = await supabase
+          .from("exercise_sets")
+          .update(row)
+          .eq("id", existing.id);
+        if (error) {
+          return NextResponse.json({ error: error.message }, { status: 500 });
+        }
       }
       syncedSets++;
       continue;

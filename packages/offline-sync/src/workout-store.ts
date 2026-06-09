@@ -133,11 +133,24 @@ export async function completeWorkoutSession(
 ): Promise<void> {
   const db = getOfflineDb();
   const timestamp = nowIso();
-  await db.workoutSessions.update(clientId, {
-    status,
-    completedAt: timestamp,
-    updatedAt: timestamp,
-    synced: false,
+  const sets = await db.exerciseSets
+    .where("sessionClientId")
+    .equals(clientId)
+    .toArray();
+
+  await db.transaction("rw", db.workoutSessions, db.exerciseSets, async () => {
+    await db.workoutSessions.update(clientId, {
+      status,
+      completedAt: timestamp,
+      updatedAt: timestamp,
+      synced: false,
+    });
+    for (const set of sets) {
+      await db.exerciseSets.update(set.clientId, {
+        updatedAt: timestamp,
+        synced: false,
+      });
+    }
   });
 }
 
