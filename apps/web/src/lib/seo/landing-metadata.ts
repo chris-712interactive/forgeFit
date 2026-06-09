@@ -38,20 +38,11 @@ export function buildLandingMetadata(): Metadata {
       siteName: "forgeFit",
       title,
       description,
-      images: [
-        {
-          url: "/logo-icon.svg",
-          width: 512,
-          height: 512,
-          alt: "forgeFit app icon",
-        },
-      ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description,
-      images: ["/logo-icon.svg"],
     },
     robots: {
       index: true,
