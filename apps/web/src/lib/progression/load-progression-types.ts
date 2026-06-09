@@ -1,4 +1,4 @@
-import type { ExperienceLevel } from "@/lib/types/profile";
+import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 
 export type LoadProgressionAction =
@@ -15,8 +15,15 @@ export interface ExerciseLoadProgression {
   extraSets: number;
   action: LoadProgressionAction;
   reason: string;
-  basedOn: "same_exercise" | "muscle_group";
+  basedOn:
+    | "same_exercise"
+    | "muscle_group"
+    | "estimated_1rm"
+    | "user_declared_1rm"
+    | "starter_load";
   lastAvgRir?: number;
+  estimatedE1rmKg?: number;
+  loadPercent1rm?: number;
 }
 
 export interface BuildLoadProgressionInput {
@@ -28,5 +35,8 @@ export interface BuildLoadProgressionInput {
   }[];
   sessions: WorkoutSessionRecord[];
   experienceLevel: ExperienceLevel;
+  goal: FitnessGoal;
+  bodyweightKg?: number;
+  declaredE1rmKg?: Map<string, number>;
   referenceDate?: Date;
 }

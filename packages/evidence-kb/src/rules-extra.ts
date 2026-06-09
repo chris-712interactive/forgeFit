@@ -244,7 +244,8 @@ export const EXTRA_RULES: EvidenceRule[] = [
       easy_rir_threshold: { min: 3, optimal: 4, max: 5 },
       weight_increase_pct_beginner: { min: 0.02, optimal: 0.025, max: 0.035 },
       weight_increase_pct_trained: { min: 0.04, optimal: 0.05, max: 0.06 },
-      note: "High-RIR sets trigger small load increases; near-failure sets hold or ease",
+      e1rm_formula: "epley_with_rir",
+      note: "Estimated 1RM from logged sets anchors %1RM prescriptions; RIR adjusts session to session",
     },
     citations: [
       {

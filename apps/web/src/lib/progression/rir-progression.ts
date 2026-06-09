@@ -1,11 +1,21 @@
 import { resolveExerciseDetail } from "@forgefit/exercise-db";
-import type { ExperienceLevel } from "@/lib/types/profile";
+import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "@/lib/workouts/sessions";
 import type {
   BuildLoadProgressionInput,
   ExerciseLoadProgression,
   LoadProgressionAction,
 } from "./load-progression-types";
+import {
+  buildExerciseE1rmMap,
+  clampWeightToE1rmBand,
+  mergeEffectiveE1rmMap,
+  percent1rmForReps,
+  roundWeightKg,
+  starterLoadKg,
+  workingWeightFromE1rm,
+  type EffectiveE1rmEntry,
+} from "./one-rep-max";
 
 const LOOKBACK_DAYS = 42;
 const EASY_RIR = 3;
@@ -24,10 +34,6 @@ export function parseTargetReps(reps: string): number {
   const matches = reps.match(/\d+/g);
   if (!matches?.length) return 8;
   return Math.max(...matches.map(Number));
-}
-
-function roundWeightKg(kg: number): number {
-  return Math.round(kg * 2) / 2;
 }
 
 function muscleKey(exerciseId: string): string | null {
@@ -124,11 +130,97 @@ function decideAction(avgRir: number | undefined): LoadProgressionAction {
   return "hold";
 }
 
+function applyE1rmGuardrails(
+  progression: ExerciseLoadProgression,
+  e1rmKg: number | undefined,
+  targetReps: string,
+  goal: FitnessGoal
+): ExerciseLoadProgression {
+  if (e1rmKg == null || progression.suggestedWeightKg == null) {
+    return progression;
+  }
+
+  const reps = progression.suggestedReps ?? parseTargetReps(targetReps);
+  const clamped = clampWeightToE1rmBand(
+    progression.suggestedWeightKg,
+    e1rmKg,
+    reps,
+    goal
+  );
+  const pct = percent1rmForReps(reps, goal);
+
+  return {
+    ...progression,
+    suggestedWeightKg: clamped,
+    estimatedE1rmKg: e1rmKg,
+    loadPercent1rm: pct,
+    reason: `${progression.reason} (~${Math.round(pct * 100)}% est. 1RM for ${reps} reps).`,
+  };
+}
+
+function e1rmReasonPrefix(entry: EffectiveE1rmEntry): string {
+  if (entry.source === "user_declared") {
+    return "Your entered 1RM";
+  }
+  if (entry.source === "blended") {
+    return "Updated max from your logs (above profile 1RM)";
+  }
+  return "Estimated max from your logs";
+}
+
+function buildE1rmBasedProgression(
+  exerciseId: string,
+  targetReps: string,
+  entry: EffectiveE1rmEntry,
+  goal: FitnessGoal
+): ExerciseLoadProgression {
+  const reps = parseTargetReps(targetReps);
+  const weight = workingWeightFromE1rm(entry.e1rmKg, reps, goal, 2);
+  const pct = percent1rmForReps(reps, goal);
+
+  return {
+    exerciseId,
+    suggestedWeightKg: weight,
+    suggestedReps: reps,
+    extraSets: 0,
+    action: "hold",
+    basedOn:
+      entry.source === "user_declared" ? "user_declared_1rm" : "estimated_1rm",
+    estimatedE1rmKg: entry.e1rmKg,
+    loadPercent1rm: pct,
+    reason: `${e1rmReasonPrefix(entry)} ~${roundWeightKg(entry.e1rmKg)} kg — aim for ${reps} reps at ~${Math.round(pct * 100)}% with 1–2 reps in reserve.`,
+  };
+}
+
+function buildStarterProgression(
+  exerciseId: string,
+  targetReps: string,
+  bodyweightKg: number,
+  experienceLevel: ExperienceLevel
+): ExerciseLoadProgression | null {
+  const weight = starterLoadKg(exerciseId, bodyweightKg, experienceLevel);
+  if (weight == null) return null;
+
+  const reps = parseTargetReps(targetReps);
+  return {
+    exerciseId,
+    suggestedWeightKg: weight,
+    suggestedReps: reps,
+    extraSets: 0,
+    action: "hold",
+    basedOn: "starter_load",
+    reason:
+      "First time on this lift — conservative starting weight from your profile. Adjust if it feels too easy or too heavy.",
+  };
+}
+
 function buildSameExerciseProgression(
   exerciseId: string,
   targetReps: string,
   history: WorkoutSessionRecord[],
-  experienceLevel: ExperienceLevel
+  experienceLevel: ExperienceLevel,
+  e1rmKg: number | undefined,
+  goal: FitnessGoal
 ): ExerciseLoadProgression | null {
   const latest = history[0];
   if (!latest) return null;
@@ -150,30 +242,40 @@ function buildSameExerciseProgression(
       lastWeight != null
         ? roundWeightKg(lastWeight * 0.95)
         : undefined;
-    return {
-      exerciseId,
-      suggestedWeightKg: easedWeight,
-      suggestedReps: lastReps ?? parsedTarget,
-      extraSets: 0,
-      action: "ease",
-      basedOn: "same_exercise",
-      lastAvgRir: avgRir,
-      reason:
-        "Last time felt near limit — same load today, focus on clean reps.",
-    };
+    return applyE1rmGuardrails(
+      {
+        exerciseId,
+        suggestedWeightKg: easedWeight,
+        suggestedReps: lastReps ?? parsedTarget,
+        extraSets: 0,
+        action: "ease",
+        basedOn: "same_exercise",
+        lastAvgRir: avgRir,
+        reason:
+          "Last time felt near limit — same load today, focus on clean reps.",
+      },
+      e1rmKg,
+      targetReps,
+      goal
+    );
   }
 
   if (action === "hold") {
-    return {
-      exerciseId,
-      suggestedWeightKg: lastWeight,
-      suggestedReps: lastReps ?? parsedTarget,
-      extraSets: 0,
-      action: "hold",
-      basedOn: "same_exercise",
-      lastAvgRir: avgRir,
-      reason: "Solid effort last time — match or beat those numbers.",
-    };
+    return applyE1rmGuardrails(
+      {
+        exerciseId,
+        suggestedWeightKg: lastWeight,
+        suggestedReps: lastReps ?? parsedTarget,
+        extraSets: 0,
+        action: "hold",
+        basedOn: "same_exercise",
+        lastAvgRir: avgRir,
+        reason: "Solid effort last time — match or beat those numbers.",
+      },
+      e1rmKg,
+      targetReps,
+      goal
+    );
   }
 
   // Easy — progress load
@@ -203,16 +305,21 @@ function buildSameExerciseProgression(
       "Two easy sessions in a row — slight weight bump and one extra working set.";
   }
 
-  return {
-    exerciseId,
-    suggestedWeightKg,
-    suggestedReps,
-    extraSets,
-    action: extraSets > 0 ? "add_set" : progressionAction,
-    basedOn: "same_exercise",
-    lastAvgRir: avgRir,
-    reason,
-  };
+  return applyE1rmGuardrails(
+    {
+      exerciseId,
+      suggestedWeightKg,
+      suggestedReps,
+      extraSets,
+      action: extraSets > 0 ? "add_set" : progressionAction,
+      basedOn: "same_exercise",
+      lastAvgRir: avgRir,
+      reason,
+    },
+    e1rmKg,
+    targetReps,
+    goal
+  );
 }
 
 function buildMuscleSignals(
@@ -272,20 +379,34 @@ export function buildSessionLoadProgressions(
     exercises,
     sessions,
     experienceLevel,
+    goal,
+    bodyweightKg = 0,
+    declaredE1rmKg,
     referenceDate = new Date(),
   } = input;
 
   const recent = recentCompletedSessions(sessions, referenceDate);
+  const estimatedE1rm = buildExerciseE1rmMap(
+    sessions.filter((session) => session.status === "completed")
+  );
+  const effectiveE1rm = mergeEffectiveE1rmMap(
+    declaredE1rmKg ?? new Map(),
+    estimatedE1rm
+  );
   const muscleSignals = buildMuscleSignals(recent);
   const progressions = new Map<string, ExerciseLoadProgression>();
 
   for (const exercise of exercises) {
+    const e1rmEntry = effectiveE1rm.get(exercise.exerciseId);
+    const e1rm = e1rmEntry?.e1rmKg;
     const history = findExerciseHistory(exercise.exerciseId, recent);
     const direct = buildSameExerciseProgression(
       exercise.exerciseId,
       exercise.reps,
       history,
-      experienceLevel
+      experienceLevel,
+      e1rm,
+      goal
     );
 
     if (direct) {
@@ -300,6 +421,30 @@ export function buildSessionLoadProgressions(
     );
     if (muscle) {
       progressions.set(exercise.exerciseId, muscle);
+      continue;
+    }
+
+    if (e1rmEntry != null) {
+      progressions.set(
+        exercise.exerciseId,
+        buildE1rmBasedProgression(
+          exercise.exerciseId,
+          exercise.reps,
+          e1rmEntry,
+          goal
+        )
+      );
+      continue;
+    }
+
+    const starter = buildStarterProgression(
+      exercise.exerciseId,
+      exercise.reps,
+      bodyweightKg,
+      experienceLevel
+    );
+    if (starter) {
+      progressions.set(exercise.exerciseId, starter);
     }
   }
 

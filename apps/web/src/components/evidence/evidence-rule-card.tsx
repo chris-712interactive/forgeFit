@@ -47,29 +47,31 @@ export function EvidenceRuleCard({
           : "border-[var(--border)]"
       }`}
     >
-      <summary className="cursor-pointer list-none px-4 py-4 sm:px-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-forge-muted">
+      <summary className="cursor-pointer list-none px-4 py-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+        <span className="flex items-start justify-between gap-3">
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-forge-muted">
                 {getDomainLabel(rule.domain)}
-              </p>
+              </span>
               {applied && (
                 <span className="rounded-full bg-forge-ember/10 px-2 py-0.5 text-[11px] font-semibold text-forge-ember">
                   In your plan
                 </span>
               )}
-            </div>
-            <h3 className="mt-1 font-display text-base font-semibold text-forge-text">
+            </span>
+            <span className="mt-1 block font-display text-base font-semibold text-forge-text">
               {getRuleTitle(rule)}
-            </h3>
-            <p className="mt-1 text-sm text-forge-muted">{getRuleSummary(rule)}</p>
-          </div>
+            </span>
+            <span className="mt-1 block text-sm text-forge-muted">
+              {getRuleSummary(rule)}
+            </span>
+          </span>
           <EvidenceConfidenceBadge confidence={rule.confidence} />
-        </div>
-        <p className="mt-3 text-xs font-medium text-forge-steel group-open:hidden">
+        </span>
+        <span className="mt-3 block text-xs font-medium text-forge-steel group-open:hidden">
           Tap to view recommendation and sources
-        </p>
+        </span>
       </summary>
 
       <div className="space-y-4 border-t border-[var(--border)] px-4 py-4 sm:px-5">

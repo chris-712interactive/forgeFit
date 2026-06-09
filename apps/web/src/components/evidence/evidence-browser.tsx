@@ -1,7 +1,7 @@
 "use client";
 
 import type { EvidenceRule } from "@forgefit/evidence-kb";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DOMAIN_LABELS, getDomainLabel } from "@/lib/evidence/present";
 import { EvidenceRuleCard } from "./evidence-rule-card";
 
@@ -20,10 +20,14 @@ export function EvidenceBrowser({
   focusRuleId,
   relatedRuleIds = [],
 }: EvidenceBrowserProps) {
-  const [view, setView] = useState<EvidenceView>(
-    appliedRuleIds.length > 0 ? "yours" : "all"
-  );
+  const [view, setView] = useState<EvidenceView>("all");
   const [domainFilter, setDomainFilter] = useState<string>("all");
+
+  useEffect(() => {
+    if (appliedRuleIds.length > 0) {
+      setView("yours");
+    }
+  }, [appliedRuleIds.length]);
 
   const appliedSet = useMemo(() => new Set(appliedRuleIds), [appliedRuleIds]);
   const highlightIds = useMemo(
@@ -146,23 +150,22 @@ function renderRuleGroups(
     const grouped = rules.filter((rule) => rule.domain === domain);
     if (grouped.length === 0) return [];
 
-    return [
-      <h2
-        key={`${domain}-heading`}
-        className="pt-2 font-display text-sm font-semibold uppercase tracking-wider text-forge-muted"
-      >
-        {getDomainLabel(domain as keyof typeof DOMAIN_LABELS)}
-      </h2>,
-      ...grouped.map((rule) => (
-        <EvidenceRuleCard
-          key={rule.id}
-          rule={rule}
-          applied={options.appliedSet.has(rule.id)}
-          highlighted={options.highlightIds.has(rule.id)}
-          defaultOpen={options.highlightIds.has(rule.id)}
-        />
-      )),
-    ];
+    return (
+      <div key={domain} className="space-y-3">
+        <h2 className="pt-2 font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+          {getDomainLabel(domain as keyof typeof DOMAIN_LABELS)}
+        </h2>
+        {grouped.map((rule) => (
+          <EvidenceRuleCard
+            key={rule.id}
+            rule={rule}
+            applied={options.appliedSet.has(rule.id)}
+            highlighted={options.highlightIds.has(rule.id)}
+            defaultOpen={options.highlightIds.has(rule.id)}
+          />
+        ))}
+      </div>
+    );
   });
 }
 

@@ -119,7 +119,7 @@ const RULE_COPY: Record<string, { title: string; summary: string }> = {
   rir_autoregulation: {
     title: "RIR autoregulation",
     summary:
-      "Uses your logged effort (Easy / Good / Hard) to nudge weight, reps, and volume on the next session.",
+      "Estimates 1RM from your logs, prescribes %1RM loads for your rep target, and uses effort chips to adjust session to session.",
   },
   warm_up_sets: {
     title: "Warm-up sets",

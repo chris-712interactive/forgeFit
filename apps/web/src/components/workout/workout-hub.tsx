@@ -27,7 +27,7 @@ import {
   progressionToPrefill,
 } from "@/lib/progression/rir-progression";
 import type { PromotionEvaluation } from "@/lib/progression/types";
-import type { ExperienceLevel } from "@/lib/types/profile";
+import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import {
   appPagePadding,
   appSectionStack,
@@ -49,6 +49,9 @@ interface WorkoutHubProps {
   workoutsTableReady?: boolean;
   promotion?: PromotionEvaluation | null;
   experienceLevel?: ExperienceLevel;
+  goal?: FitnessGoal;
+  bodyweightKg?: number;
+  declaredE1rmKg?: Record<string, number>;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -96,6 +99,9 @@ export function WorkoutHub({
   workoutsTableReady = true,
   promotion = null,
   experienceLevel = "beginner",
+  goal = "general_strength",
+  bodyweightKg,
+  declaredE1rmKg,
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -245,6 +251,11 @@ export function WorkoutHub({
           exercises: session.exercises,
           sessions: allSessions,
           experienceLevel,
+          goal,
+          bodyweightKg,
+          declaredE1rmKg: declaredE1rmKg
+            ? new Map(Object.entries(declaredE1rmKg))
+            : undefined,
         });
 
         const setPrefills: Record<string, { weightKg?: number; reps?: number }> =
@@ -286,6 +297,9 @@ export function WorkoutHub({
       userId,
       allSessions,
       experienceLevel,
+      goal,
+      bodyweightKg,
+      declaredE1rmKg,
     ]
   );
 

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 6 complete → Phase 7 (Pro Integrations) next |
 | **Last updated** | 2026-06-09 |
-| **Last session focus** | RIR-based load progression |
+| **Last session focus** | Profile one-rep max entry + prescription |
 
 ---
 
@@ -32,6 +32,25 @@
 ---
 
 ## Session Log
+
+### 2026-06-09 — Profile one-rep maxes
+
+**What was done:**
+- Migration `user_one_rep_maxes` — user-declared 1RM per lift (stored in kg)
+- Profile section: 8 compound lifts with unit-aware inputs + save/clear
+- Load prescription merges profile 1RM with log-derived e1RM (logs can raise effective max)
+- Workout start uses merged max for %1RM weight suggestions
+
+**Apply migration:** `20260608700000_user_one_rep_maxes.sql`
+
+**Files touched:**
+- `supabase/migrations/20260608700000_user_one_rep_maxes.sql`
+- `apps/web/src/lib/progression/one-rep-max-lifts.ts`, `user-maxes.ts`, `one-rep-max.ts`, `rir-progression.ts`
+- `apps/web/src/app/actions/one-rep-maxes.ts`
+- `apps/web/src/components/profile/one-rep-max-setting.tsx`
+- `apps/web/src/app/(app)/profile/page.tsx`, `workout/page.tsx`, `workout-hub.tsx`
+
+---
 
 ### 2026-06-09 — RIR-based load progression
 
