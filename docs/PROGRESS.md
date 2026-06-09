@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 1 complete → Phase 2 (Evidence Engine) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Single tile-based unit system for onboarding measurements |
+| **Last session focus** | CI fix: pnpm version conflict in GitHub Actions |
 
 ---
 
@@ -32,6 +32,17 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — CI pnpm version fix
+
+**What was done:**
+- Removed duplicate `version: 9` from `.github/workflows/ci.yml`
+- CI now uses `packageManager: pnpm@9.15.0` from root `package.json` only
+
+**Files touched:**
+- `.github/workflows/ci.yml`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Onboarding unit system tiles
 
