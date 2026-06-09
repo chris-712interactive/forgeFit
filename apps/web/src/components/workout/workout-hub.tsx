@@ -5,6 +5,7 @@ import {
   cacheProgramPlan,
   getCachedProgramPlan,
   getSession,
+  reconcileLocalWithServer,
   startWorkoutSession,
 } from "@forgefit/offline-sync";
 import {
@@ -140,10 +141,14 @@ export function WorkoutHub({
   }, []);
 
   const refreshSessions = useCallback(async () => {
+    await reconcileLocalWithServer(
+      userId,
+      serverSessions.map((s) => s.clientId)
+    );
     const local = await loadLocalSessionRecords(userId);
     setLocalSessions(local);
     setSessionsReady(true);
-  }, [userId]);
+  }, [userId, serverSessions]);
 
   useEffect(() => {
     void refreshSessions();

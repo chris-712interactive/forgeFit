@@ -27,35 +27,51 @@ export interface DayPlanStatus {
   priorCompleted: WorkoutSessionRecord[];
 }
 
-function sessionKey(record: WorkoutSessionRecord): string {
-  return `${record.clientId}:${record.startedAt}`;
+function completedSetCount(record: WorkoutSessionRecord): number {
+  return record.sets.filter((s) => s.completed).length;
 }
 
 export function mergeSessionRecords(
   local: WorkoutSessionRecord[],
   server: WorkoutSessionRecord[]
 ): WorkoutSessionRecord[] {
-  const byKey = new Map<string, WorkoutSessionRecord>();
+  const serverByClientId = new Map(server.map((record) => [record.clientId, record]));
+  const localByClientId = new Map(local.map((record) => [record.clientId, record]));
+  const clientIds = new Set([
+    ...serverByClientId.keys(),
+    ...localByClientId.keys(),
+  ]);
 
-  for (const record of server) {
-    byKey.set(sessionKey(record), record);
-  }
+  const merged: WorkoutSessionRecord[] = [];
 
-  for (const record of local) {
-    const key = sessionKey(record);
-    const existing = byKey.get(key);
-    if (!existing || record.pendingSync) {
-      byKey.set(key, record);
+  for (const clientId of clientIds) {
+    const serverRecord = serverByClientId.get(clientId);
+    const localRecord = localByClientId.get(clientId);
+
+    if (serverRecord && localRecord) {
+      const preferLocalSets =
+        completedSetCount(localRecord) > completedSetCount(serverRecord);
+      const base = preferLocalSets ? localRecord : serverRecord;
+      merged.push({
+        ...base,
+        sets: preferLocalSets ? localRecord.sets : serverRecord.sets,
+        // Server has this session — it's on the account even if local synced flag is stale.
+        pendingSync: false,
+      });
       continue;
     }
-    const localCompleted = record.sets.filter((s) => s.completed).length;
-    const existingCompleted = existing.sets.filter((s) => s.completed).length;
-    if (localCompleted > existingCompleted) {
-      byKey.set(key, record);
+
+    if (localRecord) {
+      merged.push(localRecord);
+      continue;
+    }
+
+    if (serverRecord) {
+      merged.push({ ...serverRecord, pendingSync: false });
     }
   }
 
-  return [...byKey.values()].sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+  return merged.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
 
 export function buildDayStatusMap(
