@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "@forgefit/evidence-kb",
     "@forgefit/exercise-db",
     "@forgefit/offline-sync",
+    "@forgefit/nutrition-core",
   ],
   turbopack: {
     root: "../..",

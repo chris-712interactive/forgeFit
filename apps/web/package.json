@@ -12,6 +12,7 @@
   "dependencies": {
     "@forgefit/evidence-kb": "workspace:*",
     "@forgefit/exercise-db": "workspace:*",
+    "@forgefit/nutrition-core": "workspace:*",
     "@forgefit/offline-sync": "workspace:*",
     "@forgefit/program-engine": "workspace:*",
     "@forgefit/ui": "workspace:*",

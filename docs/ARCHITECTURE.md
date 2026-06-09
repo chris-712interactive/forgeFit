@@ -13,6 +13,7 @@ packages/evidence-kb → 30 peer-reviewed rules + citations
 packages/exercise-db → Seed exercise library + equipment tags
 packages/program-engine → Goal splits, volume, nutrition targets
 packages/offline-sync   → Dexie workout store + sync client
+packages/nutrition-core → USDA/OFF food search + macro helpers
 supabase/         → PostgreSQL migrations + RLS
 ```
 
@@ -63,6 +64,13 @@ supabase/         → PostgreSQL migrations + RLS
 4. `SyncManager` in app layout calls `syncWorkoutData()` on load and `online` event
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
 6. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
+
+## Nutrition Diary (Phase 4)
+
+1. Active program `nutrition` targets shown on Nutrition tab (from `program-engine`)
+2. `GET /api/nutrition/search` queries USDA (optional API key) + Open Food Facts in parallel
+3. User taps a result → `POST /api/nutrition/logs` stores scaled macros in `nutrition_logs`
+4. Daily totals computed with `sumMacros()` and compared to targets in `MacroSummary`
 
 ## API Surface
 

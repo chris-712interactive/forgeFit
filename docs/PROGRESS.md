@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 3 complete → Phase 4 (Nutrition) next |
+| **Active phase** | Phase 4 complete → Phase 5 (Measurements + Projections) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Fix Finish workout button (offline + sync) |
+| **Last session focus** | Phase 4 nutrition diary |
 
 ---
 
@@ -23,7 +23,7 @@
 | 1 | Auth + Onboarding | ✅ Complete | 2026-06-08 |
 | 2 | Evidence Engine | ✅ Complete | 2026-06-08 |
 | 3 | Workout + Offline PWA | ✅ Complete | 2026-06-08 |
-| 4 | Nutrition | ⏳ Pending | — |
+| 4 | Nutrition | ✅ Complete | 2026-06-08 |
 | 5 | Measurements + Projections | ⏳ Pending | — |
 | 6 | Exercise Library UI | ⏳ Pending | — |
 | 7 | Pro Integrations | ⏳ Pending | — |
@@ -32,6 +32,26 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Phase 4 complete (Nutrition diary)
+
+**What was done:**
+- `@forgefit/nutrition-core` — USDA + Open Food Facts parallel search, macro scaling
+- Migration `20260608300000_phase4_nutrition.sql` — `nutrition_logs` table + RLS
+- APIs: `GET /api/nutrition/search`, `GET/POST /api/nutrition/logs`, `DELETE /api/nutrition/logs/[id]`
+- Nutrition tab: macro progress vs program targets, food search, daily log list
+- Optional `USDA_FDC_API_KEY` for branded US foods (OFF works without key)
+
+**What's next:**
+- Phase 5: body measurements, calipers, projection charts
+- Apply Phase 4 migration: `supabase db push`
+
+**Files touched:**
+- `packages/nutrition-core/`, `supabase/migrations/20260608300000_phase4_nutrition.sql`
+- `apps/web/src/app/api/nutrition/`, `lib/nutrition/`, `components/nutrition/`
+- `apps/web/src/app/(app)/nutrition/page.tsx`, docs, `.env.example`, `README.md`
+
+---
 
 ### 2026-06-08 — Finish workout button fix
 

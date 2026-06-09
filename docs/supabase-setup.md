@@ -1,4 +1,4 @@
-# Supabase Setup (Phase 1–3)
+# Supabase Setup (Phase 1–4)
 
 ## 1. Create project
 
@@ -27,6 +27,7 @@ Or paste SQL from these migrations into the SQL Editor (in order):
 1. `supabase/migrations/20260608160000_phase1_profiles_onboarding.sql`
 2. `supabase/migrations/20260608180000_phase2_programs.sql`
 3. `supabase/migrations/20260608200000_phase3_workouts.sql`
+4. `supabase/migrations/20260608300000_phase4_nutrition.sql`
 
 ## 4. Auth providers
 

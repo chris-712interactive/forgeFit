@@ -23,6 +23,9 @@ importers:
       '@forgefit/exercise-db':
         specifier: workspace:*
         version: link:../../packages/exercise-db
+      '@forgefit/nutrition-core':
+        specifier: workspace:*
+        version: link:../../packages/nutrition-core
       '@forgefit/offline-sync':
         specifier: workspace:*
         version: link:../../packages/offline-sync
@@ -95,6 +98,12 @@ importers:
         version: 5.9.3
 
   packages/exercise-db:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/nutrition-core:
     devDependencies:
       typescript:
         specifier: ^5.9.3
