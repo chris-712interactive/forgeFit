@@ -9,31 +9,46 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10;
 }
 
+/** Precise conversions for input/storage — do not round mid-typing. */
 export function lbsToKg(lbs: number): number {
-  return round1(lbs * KG_PER_LB);
+  return lbs * KG_PER_LB;
 }
 
 export function kgToLbs(kg: number): number {
-  return round1(kg / KG_PER_LB);
+  return kg / KG_PER_LB;
 }
 
 export function inToCm(inches: number): number {
-  return round1(inches * CM_PER_IN);
+  return inches * CM_PER_IN;
 }
 
 export function cmToIn(cm: number): number {
-  return round1(cm / CM_PER_IN);
+  return cm / CM_PER_IN;
 }
 
 export function ftInToCm(feet: number, inches: number): number {
-  return round1((feet * 12 + inches) * CM_PER_IN);
+  return (feet * 12 + inches) * CM_PER_IN;
 }
 
 export function cmToFtIn(cm: number): { feet: number; inches: number } {
   const totalIn = cm / CM_PER_IN;
   const feet = Math.floor(totalIn / 12);
-  const inches = round1(totalIn - feet * 12);
+  const inches = totalIn - feet * 12;
   return { feet, inches };
+}
+
+/** Rounded values for read-only display (profile, summaries). */
+export function formatKgToLbs(kg: number): number {
+  return round1(kgToLbs(kg));
+}
+
+export function formatCmToIn(cm: number): number {
+  return round1(cmToIn(cm));
+}
+
+export function formatFtIn(cm: number): { feet: number; inches: number } {
+  const { feet, inches } = cmToFtIn(cm);
+  return { feet, inches: round1(inches) };
 }
 
 export const UNIT_SYSTEM_TILES: {

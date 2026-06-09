@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { OnboardingData, SexType } from "@/lib/types/profile";
+import { useUnitInput } from "@/components/onboarding/use-unit-input";
 import {
   UNIT_SYSTEM_TILES,
   cmToFtIn,
@@ -153,31 +154,47 @@ function HeightField({
   metricValue?: number;
   onMetricChange: (metric: number | undefined) => void;
 }) {
-  if (unit === "imperial") {
-    const { feet, inches } =
-      metricValue != null
-        ? cmToFtIn(metricValue)
-        : { feet: undefined, inches: undefined };
+  const [ftText, setFtText] = useState("");
+  const [inText, setInText] = useState("");
+  const { text, setText } = useUnitInput(unit, metricValue, (m) => String(m));
 
+  useEffect(() => {
+    if (unit !== "imperial") return;
+    if (metricValue != null) {
+      const { feet, inches } = cmToFtIn(metricValue);
+      setFtText(feet > 0 ? String(feet) : "");
+      setInText(inches > 0 ? String(inches) : "");
+    } else {
+      setFtText("");
+      setInText("");
+    }
+  }, [unit]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function syncHeightFromImperial(ft: string, inches: string) {
+    if (!ft && !inches) {
+      onMetricChange(undefined);
+      return;
+    }
+    const feet = ft ? parseFloat(ft) : 0;
+    const inch = inches ? parseFloat(inches) : 0;
+    if (Number.isNaN(feet) || Number.isNaN(inch)) return;
+    onMetricChange(ftInToCm(feet, inch));
+  }
+
+  if (unit === "imperial") {
     return (
       <div>
         <FieldLabel label="Height" required={required} />
         <div className="flex gap-2">
           <div className="flex-1">
             <input
-              type="number"
-              min={3}
-              max={8}
+              type="text"
+              inputMode="numeric"
               placeholder="ft"
-              value={feet ?? ""}
+              value={ftText}
               onChange={(e) => {
-                const ft = e.target.value ? Number(e.target.value) : 0;
-                const inVal = inches ?? 0;
-                if (!e.target.value && (inches == null || inches === 0)) {
-                  onMetricChange(undefined);
-                } else {
-                  onMetricChange(ftInToCm(ft, inVal));
-                }
+                setFtText(e.target.value);
+                syncHeightFromImperial(e.target.value, inText);
               }}
               className={inputClass}
             />
@@ -185,20 +202,13 @@ function HeightField({
           </div>
           <div className="flex-1">
             <input
-              type="number"
-              min={0}
-              max={11.9}
-              step={0.1}
+              type="text"
+              inputMode="decimal"
               placeholder="in"
-              value={inches ?? ""}
+              value={inText}
               onChange={(e) => {
-                const inVal = e.target.value ? Number(e.target.value) : 0;
-                const ft = feet ?? 0;
-                if (!e.target.value && (feet == null || feet === 0)) {
-                  onMetricChange(undefined);
-                } else {
-                  onMetricChange(ftInToCm(ft, inVal));
-                }
+                setInText(e.target.value);
+                syncHeightFromImperial(ftText, e.target.value);
               }}
               className={inputClass}
             />
@@ -213,16 +223,17 @@ function HeightField({
     <div>
       <FieldLabel label="Height" required={required} />
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         required={required}
-        min={100}
-        max={250}
-        step={0.1}
         placeholder="cm"
-        value={metricValue ?? ""}
-        onChange={(e) =>
-          onMetricChange(e.target.value ? Number(e.target.value) : undefined)
-        }
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          const parsed = parseFloat(e.target.value);
+          if (!e.target.value) onMetricChange(undefined);
+          else if (!Number.isNaN(parsed)) onMetricChange(parsed);
+        }}
         className={inputClass}
       />
       <span className="mt-1 block text-xs text-forge-muted">centimeters</span>
@@ -242,31 +253,30 @@ function WeightField({
   onMetricChange: (metric: number | undefined) => void;
 }) {
   const isMetric = unit === "metric";
-  const display =
-    metricValue != null
-      ? isMetric
-        ? metricValue
-        : kgToLbs(metricValue)
-      : undefined;
+  const { text, setText } = useUnitInput(unit, metricValue, (m, u) =>
+    u === "metric" ? String(m) : String(kgToLbs(m))
+  );
 
   return (
     <div>
       <FieldLabel label="Weight" required={required} />
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         required={required}
-        min={isMetric ? 30 : 66}
-        max={isMetric ? 300 : 660}
-        step={0.1}
         placeholder={isMetric ? "kg" : "lbs"}
-        value={display ?? ""}
+        value={text}
         onChange={(e) => {
-          if (!e.target.value) {
+          const val = e.target.value;
+          setText(val);
+          if (!val) {
             onMetricChange(undefined);
             return;
           }
-          const raw = Number(e.target.value);
-          onMetricChange(isMetric ? raw : lbsToKg(raw));
+          const parsed = parseFloat(val);
+          if (!Number.isNaN(parsed)) {
+            onMetricChange(isMetric ? parsed : lbsToKg(parsed));
+          }
         }}
         className={inputClass}
       />
@@ -289,30 +299,29 @@ function LengthField({
   onMetricChange: (metric: number | undefined) => void;
 }) {
   const isMetric = unit === "metric";
-  const display =
-    metricValue != null
-      ? isMetric
-        ? metricValue
-        : cmToIn(metricValue)
-      : undefined;
+  const { text, setText } = useUnitInput(unit, metricValue, (m, u) =>
+    u === "metric" ? String(m) : String(cmToIn(m))
+  );
 
   return (
     <div>
       <FieldLabel label={label} />
       <input
-        type="number"
-        min={1}
-        max={isMetric ? 250 : 100}
-        step={0.1}
+        type="text"
+        inputMode="decimal"
         placeholder={isMetric ? "cm" : "in"}
-        value={display ?? ""}
+        value={text}
         onChange={(e) => {
-          if (!e.target.value) {
+          const val = e.target.value;
+          setText(val);
+          if (!val) {
             onMetricChange(undefined);
             return;
           }
-          const raw = Number(e.target.value);
-          onMetricChange(isMetric ? raw : inToCm(raw));
+          const parsed = parseFloat(val);
+          if (!Number.isNaN(parsed)) {
+            onMetricChange(isMetric ? parsed : inToCm(parsed));
+          }
         }}
         className={inputClass}
       />

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 1 complete → Phase 2 (Evidence Engine) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | CI fix: pnpm version conflict in GitHub Actions |
+| **Last session focus** | Fix imperial weight input round-trip rounding bug |
 
 ---
 
@@ -32,6 +32,21 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Imperial weight input fix
+
+**What was done:**
+- Removed mid-typing rounding on lbs↔kg conversion (was turning 25 into 24.9)
+- Local text buffer while typing so display is not rewritten each keystroke
+- Removed HTML `min` on imperial weight that blocked low values while typing
+
+**Files touched:**
+- `apps/web/src/lib/units/measurements.ts`
+- `apps/web/src/components/onboarding/measurement-step.tsx`
+- `apps/web/src/components/onboarding/use-unit-input.ts`
+- `apps/web/src/app/(app)/profile/page.tsx`
+
+---
 
 ### 2026-06-08 — CI pnpm version fix
 
