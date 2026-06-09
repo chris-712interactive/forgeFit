@@ -22,6 +22,11 @@ export {
 } from "./substitutions";
 export { resolveExerciseDetail } from "./resolve";
 export { isExerciseAvailable } from "./availability";
+export {
+  sanitizeHighlighterMuscles,
+  toHighlighterMuscles,
+  VALID_HIGHLIGHTER_MUSCLES,
+} from "./muscle-map";
 
 const DIFFICULTY_RANK: Record<ExerciseDifficulty, number> = {
   beginner: 1,

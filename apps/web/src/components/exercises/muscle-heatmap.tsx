@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { sanitizeHighlighterMuscles } from "@forgefit/exercise-db";
+import { useEffect, useMemo, useState } from "react";
 import Model from "react-body-highlighter";
 
 interface MuscleHeatmapProps {
@@ -11,11 +12,16 @@ interface MuscleHeatmapProps {
 export function MuscleHeatmap({ exerciseName, muscles }: MuscleHeatmapProps) {
   const [mounted, setMounted] = useState(false);
 
+  const safeMuscles = useMemo(
+    () => sanitizeHighlighterMuscles(muscles),
+    [muscles]
+  );
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted || muscles.length === 0) {
+  if (!mounted || safeMuscles.length === 0) {
     return (
       <div className="flex h-56 items-center justify-center rounded-xl border border-dashed border-[var(--border)] bg-forge-surface text-sm text-forge-muted sm:h-64">
         No muscle map for this movement
@@ -30,7 +36,7 @@ export function MuscleHeatmap({ exerciseName, muscles }: MuscleHeatmapProps) {
           data={[
             {
               name: exerciseName,
-              muscles: muscles as never[],
+              muscles: safeMuscles as never[],
             },
           ]}
           style={{

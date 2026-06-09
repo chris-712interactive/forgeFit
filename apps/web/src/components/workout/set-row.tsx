@@ -1,5 +1,11 @@
 "use client";
 
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  kgFromDisplayValue,
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import type { LocalExerciseSet } from "@forgefit/offline-sync";
 
 interface SetRowProps {
@@ -25,7 +31,11 @@ function effortFromRir(rir?: number): number | undefined {
 }
 
 export function SetRow({ set, targetReps, onUpdate }: SetRowProps) {
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
   const selectedEffort = effortFromRir(set.rir);
+  const displayWeight =
+    set.weightKg != null ? kgToDisplayValue(set.weightKg, unit) : "";
 
   return (
     <div
@@ -59,19 +69,21 @@ export function SetRow({ set, targetReps, onUpdate }: SetRowProps) {
       <div className="grid grid-cols-2 gap-3">
         <label className="min-w-0">
           <span className="mb-1 block text-xs font-medium text-forge-muted">
-            Weight (kg)
+            Weight ({weightLabel})
           </span>
           <input
             type="number"
             inputMode="decimal"
             min={0}
-            step={0.5}
+            step={unit === "imperial" ? 2.5 : 0.5}
             placeholder="0"
-            value={set.weightKg ?? ""}
+            value={displayWeight}
             onChange={(e) =>
               onUpdate(set.clientId, {
                 weightKg:
-                  e.target.value === "" ? undefined : Number(e.target.value),
+                  e.target.value === ""
+                    ? undefined
+                    : kgFromDisplayValue(Number(e.target.value), unit),
               })
             }
             className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"

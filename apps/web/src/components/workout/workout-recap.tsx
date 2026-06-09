@@ -1,5 +1,11 @@
 "use client";
 
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  formatWeight,
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import { compareSessions, formatShortDate } from "@/lib/workouts/comparison";
 import type { DayPlanStatus, WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { getPriorSessionForComparison } from "@/lib/workouts/sessions";
@@ -20,6 +26,8 @@ export function WorkoutRecap({
   onBack,
   onStartAgain,
 }: WorkoutRecapProps) {
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
   const prior = getPriorSessionForComparison(dayStatus, session.clientId);
   const comparisons = compareSessions(session, prior);
   const completedSets = session.sets.filter((s) => s.completed).length;
@@ -79,8 +87,13 @@ export function WorkoutRecap({
                       : "bg-forge-coral/15 text-forge-coral"
                   }`}
                 >
-                  {exercise.weightDeltaKg > 0 ? "+" : ""}
-                  {exercise.weightDeltaKg} kg best set
+                  {exercise.weightDeltaKg > 0
+                    ? "+"
+                    : exercise.weightDeltaKg < 0
+                      ? "-"
+                      : ""}
+                  {kgToDisplayValue(Math.abs(exercise.weightDeltaKg), unit)}{" "}
+                  {weightLabel} best set
                 </span>
               )}
             </div>
@@ -98,7 +111,7 @@ export function WorkoutRecap({
                   <span>Set {set.setNumber}</span>
                   <span>
                     {set.completed && set.weightKg != null && set.reps != null
-                      ? `${set.weightKg} kg × ${set.reps}`
+                      ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
                       : "—"}
                   </span>
                 </div>
@@ -107,12 +120,13 @@ export function WorkoutRecap({
 
             {prior && exercise.priorBest && (
               <p className="mt-3 text-xs text-forge-muted">
-                Last time best: {exercise.priorBest.weightKg} kg ×{" "}
+                Last time best:{" "}
+                {formatWeight(exercise.priorBest.weightKg, unit)} ×{" "}
                 {exercise.priorBest.reps}
                 {exercise.currentBest && (
                   <>
                     {" "}
-                    → now {exercise.currentBest.weightKg} kg ×{" "}
+                    → now {formatWeight(exercise.currentBest.weightKg, unit)} ×{" "}
                     {exercise.currentBest.reps}
                   </>
                 )}

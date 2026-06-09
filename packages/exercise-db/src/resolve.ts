@@ -1,5 +1,6 @@
 import { EXERCISES } from "./exercises";
 import { getCatalogExerciseById } from "./catalog";
+import { toHighlighterMuscles } from "./muscle-map";
 import type { CatalogExercise, Exercise } from "./types";
 
 /** Program-engine curated ids → best catalog match for demos. */
@@ -25,25 +26,6 @@ const CURATED_CATALOG_ALIASES: Record<string, string> = {
   bike_intervals: "recumbent_bike",
 };
 
-const HIGHLIGHTER_MAP: Record<string, string[]> = {
-  quadriceps: ["quadriceps"],
-  glutes: ["gluteal"],
-  chest: ["chest"],
-  triceps: ["triceps"],
-  shoulders: ["deltoids"],
-  back: ["upper-back", "lower-back", "trapezius"],
-  biceps: ["biceps"],
-  hamstrings: ["hamstring"],
-  core: ["abs", "obliques"],
-  cardio: [],
-};
-
-function toHighlightMuscles(muscles: string[]): string[] {
-  return [
-    ...new Set(muscles.flatMap((muscle) => HIGHLIGHTER_MAP[muscle] ?? [])),
-  ];
-}
-
 function curatedToCatalog(exercise: Exercise): CatalogExercise {
   return {
     ...exercise,
@@ -53,7 +35,7 @@ function curatedToCatalog(exercise: Exercise): CatalogExercise {
     mechanic: "compound",
     instructions: [],
     imagePaths: [],
-    highlightMuscles: toHighlightMuscles(exercise.primaryMuscles),
+    highlightMuscles: toHighlighterMuscles(exercise.primaryMuscles),
   };
 }
 

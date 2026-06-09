@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
 import { createClient } from "@/lib/supabase/server";
-import { formatFtIn, formatKgToLbs } from "@/lib/units/measurements";
+import {
+  formatHeight,
+  formatWeight,
+  normalizeUnitSystem,
+} from "@/lib/units/measurements";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -17,6 +22,8 @@ export default async function ProfilePage() {
         .single()
     : { data: null };
 
+  const unit = normalizeUnitSystem(profile?.unit_system);
+
   return (
     <div className="px-6 py-8">
       <h1 className="font-display text-2xl font-bold text-forge-text">Profile</h1>
@@ -29,6 +36,8 @@ export default async function ProfilePage() {
         <p className="font-display font-semibold text-forge-text">Exercise library</p>
         <p className="mt-1 text-forge-muted">Demos, muscle maps, equipment swaps</p>
       </Link>
+
+      <UnitPreferenceSetting initialUnit={unit} />
 
       <section className="mt-6 space-y-3 rounded-2xl bg-forge-surface-raised p-5 text-sm">
         <Row label="Goal" value={profile?.primary_goal?.replace(/_/g, " ")} />
@@ -45,7 +54,7 @@ export default async function ProfilePage() {
           label="Weight"
           value={
             profile?.weight_kg
-              ? `${profile.weight_kg} kg (${formatKgToLbs(profile.weight_kg)} lb)`
+              ? formatWeight(Number(profile.weight_kg), unit)
               : undefined
           }
         />
@@ -53,10 +62,7 @@ export default async function ProfilePage() {
           label="Height"
           value={
             profile?.height_cm
-              ? (() => {
-                  const { feet, inches } = formatFtIn(profile.height_cm);
-                  return `${profile.height_cm} cm (${feet}'${inches}")`;
-                })()
+              ? formatHeight(Number(profile.height_cm), unit)
               : undefined
           }
         />

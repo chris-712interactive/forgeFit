@@ -1,5 +1,12 @@
 "use client";
 
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  cmFromDisplayValue,
+  kgFromDisplayValue,
+  lengthUnitLabel,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,17 +19,21 @@ interface LogMeasurementFormProps {
 
 export function LogMeasurementForm({ defaultDate }: LogMeasurementFormProps) {
   const router = useRouter();
+  const unit = useUnitPreference();
   const [saving, setSaving] = useState(false);
   const [measuredDate, setMeasuredDate] = useState(
     defaultDate ?? new Date().toISOString().slice(0, 10)
   );
-  const [weightKg, setWeightKg] = useState("");
-  const [waistCm, setWaistCm] = useState("");
+  const [weight, setWeight] = useState("");
+  const [waist, setWaist] = useState("");
   const [notes, setNotes] = useState("");
+
+  const weightLabel = weightUnitLabel(unit);
+  const lengthLabel = lengthUnitLabel(unit);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!weightKg && !waistCm) {
+    if (!weight && !waist) {
       window.alert("Enter at least weight or waist.");
       return;
     }
@@ -34,8 +45,12 @@ export function LogMeasurementForm({ defaultDate }: LogMeasurementFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           measuredDate,
-          weightKg: weightKg ? Number(weightKg) : undefined,
-          waistCm: waistCm ? Number(waistCm) : undefined,
+          weightKg: weight
+            ? kgFromDisplayValue(Number(weight), unit)
+            : undefined,
+          waistCm: waist
+            ? cmFromDisplayValue(Number(waist), unit)
+            : undefined,
           notes: notes || undefined,
         }),
       });
@@ -45,8 +60,8 @@ export function LogMeasurementForm({ defaultDate }: LogMeasurementFormProps) {
         throw new Error(err.error ?? "Could not save measurement");
       }
 
-      setWeightKg("");
-      setWaistCm("");
+      setWeight("");
+      setWaist("");
       setNotes("");
       router.refresh();
     } catch (error) {
@@ -73,29 +88,33 @@ export function LogMeasurementForm({ defaultDate }: LogMeasurementFormProps) {
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block text-sm">
-          <span className="mb-1 block text-forge-muted">Weight (kg)</span>
+          <span className="mb-1 block text-forge-muted">
+            Weight ({weightLabel})
+          </span>
           <input
             type="number"
             step="0.1"
-            min="30"
-            max="300"
+            min={unit === "imperial" ? 66 : 30}
+            max={unit === "imperial" ? 660 : 300}
             className={inputClass}
-            value={weightKg}
-            onChange={(event) => setWeightKg(event.target.value)}
-            placeholder="72.5"
+            value={weight}
+            onChange={(event) => setWeight(event.target.value)}
+            placeholder={unit === "imperial" ? "160" : "72.5"}
           />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-forge-muted">Waist (cm)</span>
+          <span className="mb-1 block text-forge-muted">
+            Waist ({lengthLabel})
+          </span>
           <input
             type="number"
             step="0.1"
-            min="30"
-            max="250"
+            min={unit === "imperial" ? 12 : 30}
+            max={unit === "imperial" ? 100 : 250}
             className={inputClass}
-            value={waistCm}
-            onChange={(event) => setWaistCm(event.target.value)}
-            placeholder="82"
+            value={waist}
+            onChange={(event) => setWaist(event.target.value)}
+            placeholder={unit === "imperial" ? "32" : "82"}
           />
         </label>
       </div>

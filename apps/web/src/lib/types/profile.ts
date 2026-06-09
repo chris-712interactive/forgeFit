@@ -11,6 +11,8 @@ export type SexType = "male" | "female" | "other" | "prefer_not_to_say";
 
 export type EquipmentLocation = "home" | "gym" | "both";
 
+export type UnitSystem = "metric" | "imperial";
+
 export interface Profile {
   id: string;
   email: string | null;
@@ -32,6 +34,7 @@ export interface Profile {
   hips_cm: number | null;
   onboarding_complete: boolean;
   gamification_opt_in: boolean;
+  unit_system: UnitSystem;
   created_at: string;
   updated_at: string;
 }

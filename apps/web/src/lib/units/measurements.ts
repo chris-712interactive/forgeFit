@@ -51,6 +51,54 @@ export function formatFtIn(cm: number): { feet: number; inches: number } {
   return { feet, inches: round1(inches) };
 }
 
+export function weightUnitLabel(unit: UnitSystem): string {
+  return unit === "metric" ? "kg" : "lb";
+}
+
+export function lengthUnitLabel(unit: UnitSystem): string {
+  return unit === "metric" ? "cm" : "in";
+}
+
+export function formatWeight(kg: number, unit: UnitSystem): string {
+  return unit === "imperial"
+    ? `${formatKgToLbs(kg)} lb`
+    : `${round1(kg)} kg`;
+}
+
+export function formatLength(cm: number, unit: UnitSystem): string {
+  return unit === "imperial"
+    ? `${formatCmToIn(cm)} in`
+    : `${round1(cm)} cm`;
+}
+
+export function formatHeight(cm: number, unit: UnitSystem): string {
+  if (unit === "imperial") {
+    const { feet, inches } = formatFtIn(cm);
+    return `${feet}'${inches}"`;
+  }
+  return `${round1(cm)} cm`;
+}
+
+export function kgFromDisplayValue(value: number, unit: UnitSystem): number {
+  return unit === "imperial" ? lbsToKg(value) : value;
+}
+
+export function cmFromDisplayValue(value: number, unit: UnitSystem): number {
+  return unit === "imperial" ? inToCm(value) : value;
+}
+
+export function kgToDisplayValue(kg: number, unit: UnitSystem): number {
+  return unit === "imperial" ? formatKgToLbs(kg) : round1(kg);
+}
+
+export function cmToDisplayValue(cm: number, unit: UnitSystem): number {
+  return unit === "imperial" ? formatCmToIn(cm) : round1(cm);
+}
+
+export function normalizeUnitSystem(value: unknown): UnitSystem {
+  return value === "imperial" ? "imperial" : "metric";
+}
+
 export const UNIT_SYSTEM_TILES: {
   value: UnitSystem;
   label: string;

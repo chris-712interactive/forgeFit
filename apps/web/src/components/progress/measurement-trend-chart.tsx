@@ -1,5 +1,10 @@
 "use client";
 
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import type { TrendSeries } from "@forgefit/projection-engine";
 import { useMemo } from "react";
 import {
@@ -39,6 +44,9 @@ function paddedDomain(values: number[]): [number, number] {
 }
 
 export function MeasurementTrendChart({ series }: MeasurementTrendChartProps) {
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
+
   const weightSeries = useMemo(
     () => series.find((item) => item.metric === "weightKg") ?? null,
     [series]
@@ -48,12 +56,12 @@ export function MeasurementTrendChart({ series }: MeasurementTrendChartProps) {
     if (!weightSeries) return [];
     return weightSeries.points.map((point) => ({
       date: point.date,
-      weightKg: point.value,
+      weight: kgToDisplayValue(point.value, unit),
     }));
-  }, [weightSeries]);
+  }, [weightSeries, unit]);
 
   const yDomain = useMemo(
-    () => paddedDomain(chartData.map((row) => row.weightKg)),
+    () => paddedDomain(chartData.map((row) => row.weight)),
     [chartData]
   );
 
@@ -94,7 +102,7 @@ export function MeasurementTrendChart({ series }: MeasurementTrendChartProps) {
                 domain={yDomain}
                 tickFormatter={(value) => `${value}`}
                 label={{
-                  value: "kg",
+                  value: weightLabel,
                   angle: -90,
                   position: "insideLeft",
                   fill: CHART_COLORS.muted,
@@ -108,13 +116,13 @@ export function MeasurementTrendChart({ series }: MeasurementTrendChartProps) {
                   borderRadius: "12px",
                   color: CHART_COLORS.text,
                 }}
-                formatter={(value) => [`${value} kg`, "Weight"]}
+                formatter={(value) => [`${value} ${weightLabel}`, "Weight"]}
                 labelFormatter={(label) => String(label)}
               />
               <Line
                 type="monotone"
-                dataKey="weightKg"
-                name="Weight (kg)"
+                dataKey="weight"
+                name={`Weight (${weightLabel})`}
                 stroke={CHART_COLORS.ember}
                 strokeWidth={2.5}
                 dot={{ r: 4, fill: CHART_COLORS.ember, strokeWidth: 0 }}

@@ -54,7 +54,7 @@ const HIGHLIGHTER_MAP = {
   back: ["upper-back", "lower-back", "trapezius"],
   neck: ["trapezius"],
   quadriceps: ["quadriceps"],
-  shoulders: ["deltoids"],
+  shoulders: ["front-deltoids", "back-deltoids"],
   triceps: ["triceps"],
   cardio: [],
 };

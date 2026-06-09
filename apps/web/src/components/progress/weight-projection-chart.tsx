@@ -1,6 +1,12 @@
 "use client";
 
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import type { WeightProjectionResult } from "@forgefit/projection-engine";
+import { useMemo } from "react";
 import {
   CartesianGrid,
   Line,
@@ -24,6 +30,29 @@ function formatTick(date: string): string {
 }
 
 export function WeightProjectionChart({ projection }: WeightProjectionChartProps) {
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
+
+  const chartData = useMemo(() => {
+    if (!projection) return [];
+    const actual = projection.points.filter((point) => !point.projected);
+    const pivotDate = actual[actual.length - 1]?.date;
+
+    return projection.points.map((point) => ({
+      date: point.date,
+      actual: point.projected
+        ? null
+        : kgToDisplayValue(point.weightKg, unit),
+      projected: point.projected
+        ? kgToDisplayValue(point.weightKg, unit)
+        : null,
+      bridge:
+        point.date === pivotDate
+          ? kgToDisplayValue(point.weightKg, unit)
+          : null,
+    }));
+  }, [projection, unit]);
+
   if (!projection) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-forge-muted">
@@ -34,21 +63,19 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
 
   const actual = projection.points.filter((point) => !point.projected);
   const pivotDate = actual[actual.length - 1]?.date;
-
-  const chartData = projection.points.map((point) => ({
-    date: point.date,
-    actual: point.projected ? null : point.weightKg,
-    projected: point.projected ? point.weightKg : null,
-    bridge: point.date === pivotDate ? point.weightKg : null,
-  }));
+  const weeklyDisplay = kgToDisplayValue(
+    Math.abs(projection.weeklyChangeKg),
+    unit
+  );
+  const weeklySign = projection.weeklyChangeKg > 0 ? "+" : "-";
 
   return (
     <div className="space-y-3">
       <p className="text-sm text-forge-muted">
         Trend pace:{" "}
         <span className="font-medium text-forge-gold">
-          {projection.weeklyChangeKg > 0 ? "+" : ""}
-          {projection.weeklyChangeKg} kg/week
+          {weeklySign}
+          {weeklyDisplay} {weightLabel}/week
         </span>{" "}
         ({projection.weeklyChangePct > 0 ? "+" : ""}
         {projection.weeklyChangePct}% BW) · evidence rule{" "}
@@ -75,6 +102,7 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
                 fontSize={12}
                 width={44}
                 domain={["auto", "auto"]}
+                tickFormatter={(value) => `${value}`}
               />
               <Tooltip
                 contentStyle={{
@@ -84,7 +112,7 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
                   color: CHART_COLORS.text,
                 }}
                 formatter={(value) =>
-                  value != null ? [`${value} kg`, ""] : ["—", ""]
+                  value != null ? [`${value} ${weightLabel}`, ""] : ["—", ""]
                 }
               />
               {pivotDate && (

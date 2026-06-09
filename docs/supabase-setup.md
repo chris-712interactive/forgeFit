@@ -29,6 +29,7 @@ Or paste SQL from these migrations into the SQL Editor (in order):
 3. `supabase/migrations/20260608200000_phase3_workouts.sql`
 4. `supabase/migrations/20260608300000_phase4_nutrition.sql`
 5. `supabase/migrations/20260608400000_phase5_measurements.sql`
+6. `supabase/migrations/20260608500000_profile_unit_system.sql`
 
 ## 4. Auth providers
 
