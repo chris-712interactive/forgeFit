@@ -9,9 +9,11 @@ import { useEffect, useState } from "react";
 interface FoodSearchProps {
   onAdd: (food: FoodSearchResult, quantity: number, servingGrams: number) => Promise<void>;
   adding: boolean;
+  /** Omit card chrome when nested inside FoodSearchPanel */
+  embedded?: boolean;
 }
 
-export function FoodSearch({ onAdd, adding }: FoodSearchProps) {
+export function FoodSearch({ onAdd, adding, embedded = false }: FoodSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -59,17 +61,19 @@ export function FoodSearch({ onAdd, adding }: FoodSearchProps) {
     };
   }, [query]);
 
-  return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-        Add food
-      </h2>
+  const content = (
+    <>
+      {!embedded && (
+        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+          Add food
+        </h2>
+      )}
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search chicken, oats, yogurt…"
-        className="mt-3 min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-base text-forge-text outline-none focus:border-forge-ember"
+        className={`${embedded ? "" : "mt-3 "}min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-base text-forge-text outline-none focus:border-forge-ember`}
       />
       {!usdaEnabled && query.length >= 2 && (
         <p className="mt-2 text-xs text-forge-muted">
@@ -79,7 +83,7 @@ export function FoodSearch({ onAdd, adding }: FoodSearchProps) {
       {loading && <p className="mt-3 text-sm text-forge-steel">Searching…</p>}
       {error && <p className="mt-3 text-sm text-forge-coral">{error}</p>}
 
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-4 flex flex-col gap-3">
         {results.map((food) => {
           const preview = scaleMacrosFrom100g(food.per100g, 100);
           return (
@@ -105,6 +109,16 @@ export function FoodSearch({ onAdd, adding }: FoodSearchProps) {
           );
         })}
       </ul>
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+      {content}
     </section>
   );
 }

@@ -3,6 +3,8 @@
 import type { ProgramPlan } from "@forgefit/program-engine";
 import {
   cacheProgramPlan,
+  cancelInProgressSessionsForDay,
+  cancelWorkoutSession,
   getCachedProgramPlan,
   getSession,
   startWorkoutSession,
@@ -17,6 +19,21 @@ import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
+import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
+import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
+import {
+  buildSessionLoadProgressions,
+  progressionToPrefill,
+} from "@/lib/progression/rir-progression";
+import type { PromotionEvaluation } from "@/lib/progression/types";
+import type { ExperienceLevel } from "@/lib/types/profile";
+import {
+  appPagePadding,
+  appSectionStack,
+  appSectionStackTight,
+} from "@/components/layout/page-layout";
+import { buildEvidenceHref } from "@/lib/evidence/present";
 import { ActiveWorkout } from "./active-workout";
 import { SyncStatusBanner } from "./sync-status-banner";
 import { useWorkoutSyncContext } from "./sync-manager";
@@ -30,6 +47,8 @@ interface WorkoutHubProps {
   plan: ProgramPlan | null;
   serverSessions?: WorkoutSessionRecord[];
   workoutsTableReady?: boolean;
+  promotion?: PromotionEvaluation | null;
+  experienceLevel?: ExperienceLevel;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -75,6 +94,8 @@ export function WorkoutHub({
   plan: serverPlan,
   serverSessions = [],
   workoutsTableReady = true,
+  promotion = null,
+  experienceLevel = "beginner",
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -86,6 +107,9 @@ export function WorkoutHub({
   const [localSessions, setLocalSessions] = useState<WorkoutSessionRecord[]>([]);
   const [sessionsReady, setSessionsReady] = useState(false);
   const [startingDay, setStartingDay] = useState<number | null>(null);
+  const [discardingClientId, setDiscardingClientId] = useState<string | null>(
+    null
+  );
   const offline = useOfflineStatus();
 
   const allSessions = useMemo(
@@ -155,6 +179,11 @@ export function WorkoutHub({
     setSessionsReady(true);
   }, [userId, serverSessions]);
 
+  const refreshAllSessions = useCallback(async () => {
+    await refreshSessions();
+    router.refresh();
+  }, [refreshSessions, router]);
+
   useEffect(() => {
     void refreshSessions();
   }, [refreshSessions]);
@@ -200,27 +229,97 @@ export function WorkoutHub({
       const session = plan.week.find((s) => s.dayIndex === dayIndex);
       if (!session) return;
 
+      const dayStatus = dayStatusMap.get(dayIndex);
+      if (dayStatus?.inProgress) {
+        openWorkout(dayStatus.inProgress.clientId);
+        return;
+      }
+      if (dayStatus?.latestCompleted) {
+        openReview(dayStatus.latestCompleted.clientId);
+        return;
+      }
+
       setStartingDay(dayIndex);
       try {
+        const loadProgressions = buildSessionLoadProgressions({
+          exercises: session.exercises,
+          sessions: allSessions,
+          experienceLevel,
+        });
+
+        const setPrefills: Record<string, { weightKg?: number; reps?: number }> =
+          {};
+        for (const [exerciseId, progression] of loadProgressions) {
+          setPrefills[exerciseId] = progressionToPrefill(progression);
+        }
+
         const clientId = await startWorkoutSession({
           userId,
           programId: cachedProgramId,
           sessionName: session.name,
           dayIndex: session.dayIndex,
-          exercises: session.exercises.map((ex) => ({
-            exerciseId: ex.exerciseId,
-            name: ex.name,
-            sets: ex.sets,
-            reps: ex.reps,
-            restSeconds: ex.restSeconds,
-          })),
+          exercises: session.exercises.map((ex) => {
+            const progression = loadProgressions.get(ex.exerciseId);
+            return {
+              exerciseId: ex.exerciseId,
+              name: ex.name,
+              sets: ex.sets,
+              reps: ex.reps,
+              restSeconds: ex.restSeconds,
+              extraSets: progression?.extraSets,
+              progressionNote: progression?.reason,
+            };
+          }),
+          setPrefills,
         });
         openWorkout(clientId);
       } finally {
         setStartingDay(null);
       }
     },
-    [plan, cachedProgramId, openWorkout, userId]
+    [
+      plan,
+      cachedProgramId,
+      dayStatusMap,
+      openWorkout,
+      openReview,
+      userId,
+      allSessions,
+      experienceLevel,
+    ]
+  );
+
+  const handleDiscard = useCallback(
+    async (clientId: string) => {
+      const confirmed = window.confirm(
+        "Discard this in-progress workout? Logged sets won't count toward your week."
+      );
+      if (!confirmed) return;
+
+      setDiscardingClientId(clientId);
+      try {
+        const session = await getSession(clientId);
+        if (session) {
+          await cancelInProgressSessionsForDay(userId, session.dayIndex);
+        } else {
+          await cancelWorkoutSession(clientId);
+        }
+
+        if (activeClientId === clientId) {
+          setActiveClientId(null);
+          replaceWorkoutUrl("hub", null);
+        }
+
+        void sync?.refreshPending();
+        if (navigator.onLine) {
+          await sync?.runSync();
+        }
+        await refreshAllSessions();
+      } finally {
+        setDiscardingClientId(null);
+      }
+    },
+    [activeClientId, refreshAllSessions, sync, userId]
   );
 
   useEffect(() => {
@@ -239,7 +338,7 @@ export function WorkoutHub({
       <ActiveWorkout
         clientId={activeClientId}
         onBack={closeToHub}
-        onFinished={refreshSessions}
+        onFinished={refreshAllSessions}
       />
     );
   }
@@ -272,58 +371,94 @@ export function WorkoutHub({
         dayStatus={reviewDayStatus}
         workoutsTableReady={workoutsTableReady}
         onBack={closeToHub}
-        onStartAgain={() => void handleStart(reviewSession.dayIndex)}
       />
     );
   }
 
   return (
-    <div className="px-4 py-6 sm:px-6 sm:py-8">
-      <SyncStatusBanner />
-      {!workoutsTableReady && (
-        <WorkoutSyncNotice
-          workoutsTableReady={workoutsTableReady}
-          syncedToAccount={false}
-        />
-      )}
-      <h1 className="font-display text-2xl font-bold text-forge-text">Workout</h1>
-      <p className="mt-2 text-forge-muted">
-        Your weekly plan — completed days are checked off. Tap results to compare
-        with prior sessions.
-      </p>
-      {offline && (
-        <p className="mt-2 text-sm text-forge-steel">
-          Offline mode — progress is saved on this device and syncs when
-          you&apos;re back online.
-        </p>
-      )}
+    <div className={appPagePadding}>
+      <div className={appSectionStack}>
+        <SyncStatusBanner />
+        {!workoutsTableReady && (
+          <WorkoutSyncNotice
+            workoutsTableReady={workoutsTableReady}
+            syncedToAccount={false}
+          />
+        )}
 
-      {plan ? (
-        <section className="mt-6 space-y-3">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-            This week
-          </h2>
-          {plan.week.map((session) => (
-            <WeekPlanCard
-              key={`${session.dayIndex}-${session.name}`}
-              session={session}
-              dayStatus={dayStatusMap.get(session.dayIndex)}
-              starting={startingDay === session.dayIndex}
-              onStart={() => void handleStart(session.dayIndex)}
-              onContinue={openWorkout}
-              onViewResults={openReview}
-            />
-          ))}
-        </section>
-      ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
-          <p className="text-forge-muted">
-            {offline
-              ? "No cached program yet. Visit Workout once while online to save your plan for offline use."
-              : "Generate your program first — complete onboarding and apply the programs migration."}
+        <header>
+          <h1 className="font-display text-2xl font-bold text-forge-text">
+            Workout
+          </h1>
+          <p className="mt-2 text-forge-muted">
+            Your weekly plan — completed days are highlighted in green. Tap
+            results to compare with prior sessions.
           </p>
-        </div>
-      )}
+          {offline && (
+            <p className="mt-2 text-sm text-forge-steel">
+              Offline mode — progress is saved on this device and syncs when
+              you&apos;re back online.
+            </p>
+          )}
+        </header>
+
+        {promotion?.showNudge && (
+          <ExperiencePromotionBanner evaluation={promotion} />
+        )}
+
+        {promotion && !promotion.showNudge && promotion.nextLevel && (
+          <TrainingConsistencyCard evaluation={promotion} />
+        )}
+
+        {plan ? (
+          <section className={appSectionStackTight}>
+            <div className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised px-4 py-3 sm:px-5">
+              <p className="text-sm text-forge-muted">
+                Built from{" "}
+                <span className="font-medium text-forge-text">
+                  {plan.appliedRuleIds.length} evidence-backed rules
+                </span>{" "}
+                — volume, rest, recovery, and nutrition targets are cited, not
+                guessed.
+              </p>
+              <div className="mt-2">
+                <EvidenceExplainerLink
+                  href={buildEvidenceHref()}
+                  label="See your evidence basis"
+                />
+              </div>
+            </div>
+
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+              This week
+            </h2>
+            {plan.week.map((session) => (
+              <WeekPlanCard
+                key={`${session.dayIndex}-${session.name}`}
+                session={session}
+                dayStatus={dayStatusMap.get(session.dayIndex)}
+                starting={startingDay === session.dayIndex}
+                discarding={
+                  discardingClientId ===
+                  dayStatusMap.get(session.dayIndex)?.inProgress?.clientId
+                }
+                onStart={() => void handleStart(session.dayIndex)}
+                onContinue={openWorkout}
+                onDiscard={(clientId) => void handleDiscard(clientId)}
+                onViewResults={openReview}
+              />
+            ))}
+          </section>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
+            <p className="text-forge-muted">
+              {offline
+                ? "No cached program yet. Visit Workout once while online to save your plan for offline use."
+                : "Generate your program first — complete onboarding and apply the programs migration."}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

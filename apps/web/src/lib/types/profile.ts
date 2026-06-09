@@ -35,6 +35,8 @@ export interface Profile {
   onboarding_complete: boolean;
   gamification_opt_in: boolean;
   unit_system: UnitSystem;
+  experience_promoted_at: string | null;
+  promotion_snoozed_until: string | null;
   created_at: string;
   updated_at: string;
 }

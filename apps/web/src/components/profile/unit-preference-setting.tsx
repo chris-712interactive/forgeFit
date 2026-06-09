@@ -38,7 +38,7 @@ export function UnitPreferenceSetting({
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
       <h2 className="font-display text-sm font-semibold text-forge-text">
         Measurement units
       </h2>

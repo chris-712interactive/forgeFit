@@ -1,4 +1,5 @@
 export { generateProgram } from "./generate";
+export { getMatchedRules } from "./nutrition";
 export type {
   ProgramPlan,
   ProgramUserProfile,

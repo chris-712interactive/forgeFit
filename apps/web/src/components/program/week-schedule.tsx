@@ -1,3 +1,5 @@
+import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
+import { buildEvidenceHref } from "@/lib/evidence/present";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import Link from "next/link";
 
@@ -81,9 +83,12 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
           <MacroPill label="Carbs" value={`${plan.nutrition.carbsG}g`} accent="gold" />
           <MacroPill label="Fat" value={`${plan.nutrition.fatG}g`} accent="steel" />
         </div>
-        <p className="mt-3 text-xs text-forge-muted">
-          Based on {plan.appliedRuleIds.length} evidence-backed rules
-        </p>
+        <div className="mt-3">
+          <EvidenceExplainerLink
+            href={buildEvidenceHref()}
+            label={`Based on ${plan.appliedRuleIds.length} evidence-backed rules`}
+          />
+        </div>
       </section>
     </div>
   );

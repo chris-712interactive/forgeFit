@@ -318,7 +318,7 @@ function StepShell({
         {title}
       </h1>
       <p className="mt-2 text-forge-muted">{subtitle}</p>
-      <div className="mt-6">{children}</div>
+      <div className="mt-6 sm:mt-8">{children}</div>
     </div>
   );
 }

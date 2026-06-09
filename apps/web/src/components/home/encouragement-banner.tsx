@@ -4,7 +4,7 @@ interface EncouragementBannerProps {
 
 export function EncouragementBanner({ message }: EncouragementBannerProps) {
   return (
-    <section className="gradient-forge-ignite rounded-2xl p-5">
+    <section className="gradient-forge-ignite rounded-2xl p-4 sm:p-5">
       <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
         Today&apos;s spark
       </p>

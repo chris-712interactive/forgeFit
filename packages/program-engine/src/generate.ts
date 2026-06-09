@@ -78,31 +78,83 @@ function restForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): n
   return goal === "powerlifting" || goal === "general_strength" ? 180 : 90;
 }
 
+const RECOVERY_BLOCK_PRIORITY: {
+  equipment: string;
+  name: string;
+  defaultMinutes: number;
+}[] = [
+  { equipment: "foam_roller", name: "Foam Roll & Mobility", defaultMinutes: 8 },
+  {
+    equipment: "trigger_point_ball",
+    name: "Trigger Point Release",
+    defaultMinutes: 8,
+  },
+  {
+    equipment: "lacrosse_ball",
+    name: "Lacrosse Ball Release",
+    defaultMinutes: 8,
+  },
+  { equipment: "massage_gun", name: "Percussive Recovery", defaultMinutes: 8 },
+  { equipment: "yoga_blocks_strap", name: "Supported Stretch", defaultMinutes: 10 },
+  { equipment: "yoga_mat", name: "Stretch & Breathe", defaultMinutes: 10 },
+  { equipment: "resistance_bands", name: "Band Mobility", defaultMinutes: 8 },
+  {
+    equipment: "compression_boots",
+    name: "Compression Boot Session",
+    defaultMinutes: 15,
+  },
+  {
+    equipment: "compression_gear",
+    name: "Compression Recovery",
+    defaultMinutes: 10,
+  },
+  { equipment: "cold_plunge", name: "Cold Exposure", defaultMinutes: 5 },
+  { equipment: "cryotherapy", name: "Cryotherapy", defaultMinutes: 3 },
+  { equipment: "sauna", name: "Sauna Cooldown", defaultMinutes: 12 },
+  { equipment: "steam_room", name: "Steam Session", defaultMinutes: 10 },
+  { equipment: "hot_tub", name: "Hot Tub Relax", defaultMinutes: 12 },
+  {
+    equipment: "red_light_therapy",
+    name: "Red Light Recovery",
+    defaultMinutes: 10,
+  },
+  {
+    equipment: "active_recovery_access",
+    name: "Easy Active Recovery",
+    defaultMinutes: 15,
+  },
+];
+
+function recoveryDurationMinutes(
+  equipment: string,
+  rules: EvidenceRule[],
+  fallback: number
+): number {
+  const rule = rules.find((r) =>
+    r.applies_to.includes(`recovery:${equipment}`)
+  );
+  if (!rule) return fallback;
+  const rec = rule.recommendation.duration_minutes;
+  if (rec && typeof rec === "object" && "optimal" in rec) {
+    return (rec as { optimal: number }).optimal;
+  }
+  return fallback;
+}
+
 function buildRecoveryBlock(
   recoveryEquipment: string[],
   rules: EvidenceRule[]
 ): RecoveryBlock | undefined {
-  if (recoveryEquipment.includes("foam_roller")) {
-    const mins =
-      getRecommendationValue<number>(rules, "duration_minutes", "optimal") ?? 8;
+  for (const block of RECOVERY_BLOCK_PRIORITY) {
+    if (!recoveryEquipment.includes(block.equipment)) continue;
     return {
-      name: "Foam Roll & Mobility",
-      durationMinutes: mins,
-      equipment: "foam_roller",
-    };
-  }
-  if (recoveryEquipment.includes("massage_gun")) {
-    return {
-      name: "Percussive Recovery",
-      durationMinutes: 8,
-      equipment: "massage_gun",
-    };
-  }
-  if (recoveryEquipment.includes("yoga_mat")) {
-    return {
-      name: "Stretch & Breathe",
-      durationMinutes: 10,
-      equipment: "yoga_mat",
+      name: block.name,
+      durationMinutes: recoveryDurationMinutes(
+        block.equipment,
+        rules,
+        block.defaultMinutes
+      ),
+      equipment: block.equipment,
     };
   }
   return undefined;

@@ -46,12 +46,19 @@ export async function getSetsForSession(
   );
 }
 
+export interface SetPrefill {
+  weightKg?: number;
+  reps?: number;
+}
+
 export async function startWorkoutSession(input: {
   userId: string;
   programId?: string;
   sessionName: string;
   dayIndex: number;
   exercises: ExerciseSnapshot[];
+  /** Prefill logged targets for the first working set per exercise */
+  setPrefills?: Record<string, SetPrefill>;
 }): Promise<string> {
   const db = getOfflineDb();
   const clientId = crypto.randomUUID();
@@ -72,7 +79,10 @@ export async function startWorkoutSession(input: {
 
   const sets: LocalExerciseSet[] = [];
   for (const exercise of input.exercises) {
-    for (let setNumber = 1; setNumber <= exercise.sets; setNumber++) {
+    const totalSets = exercise.sets + (exercise.extraSets ?? 0);
+    const prefill = input.setPrefills?.[exercise.exerciseId];
+
+    for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
       sets.push({
         clientId: crypto.randomUUID(),
         sessionClientId: clientId,
@@ -80,6 +90,8 @@ export async function startWorkoutSession(input: {
         exerciseId: exercise.exerciseId,
         exerciseName: exercise.name,
         setNumber,
+        weightKg: prefill?.weightKg,
+        reps: prefill?.reps,
         completed: false,
         updatedAt: timestamp,
         synced: false,
@@ -133,6 +145,22 @@ export async function updateSet(
   });
 
   return updated;
+}
+
+export async function cancelWorkoutSession(clientId: string): Promise<void> {
+  return completeWorkoutSession(clientId, "cancelled");
+}
+
+export async function cancelInProgressSessionsForDay(
+  userId: string,
+  dayIndex: number
+): Promise<void> {
+  const inProgress = await getInProgressSessions(userId);
+  await Promise.all(
+    inProgress
+      .filter((session) => session.dayIndex === dayIndex)
+      .map((session) => completeWorkoutSession(session.clientId, "cancelled"))
+  );
 }
 
 export async function completeWorkoutSession(

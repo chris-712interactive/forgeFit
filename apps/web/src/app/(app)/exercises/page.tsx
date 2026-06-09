@@ -1,6 +1,11 @@
 import { Suspense } from "react";
 import { ExerciseList } from "@/components/exercises/exercise-list";
 import { ExerciseSearch } from "@/components/exercises/exercise-search";
+import {
+  appHeaderGap,
+  appPagePadding,
+  appSectionStack,
+} from "@/components/layout/page-layout";
 import { getExerciseLibraryData } from "@/lib/exercises/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -25,7 +30,7 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
     : { total: 0, results: [], userEquipment: [] };
 
   return (
-    <div className="px-4 py-6 sm:px-6 sm:py-8">
+    <div className={appPagePadding}>
       <h1 className="font-display text-2xl font-bold text-forge-text">
         Exercise Library
       </h1>
@@ -34,14 +39,16 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
       </p>
 
       {user ? (
-        <div className="mt-6 space-y-6">
+        <div className={`${appHeaderGap} ${appSectionStack}`}>
           <Suspense fallback={<p className="text-sm text-forge-muted">Loading search…</p>}>
             <ExerciseSearch total={data.total} />
           </Suspense>
           <ExerciseList results={data.results} />
         </div>
       ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
+        <div
+          className={`${appHeaderGap} rounded-2xl border border-dashed border-[var(--border)] p-8 text-center`}
+        >
           <p className="text-forge-muted">Sign in to browse exercises.</p>
         </div>
       )}

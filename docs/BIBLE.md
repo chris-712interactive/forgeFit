@@ -150,11 +150,11 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 
 1. **Research-backed strategies** — evidence-kb + program-engine
 2. **Mobile PWA + offline** — Serwist + Dexie
-3. **Beginner → advanced** — experience level multipliers
+3. **Beginner → advanced** — experience multipliers + adherence-based promotion (regenerates program on level-up)
 4. **All goal types** — fat_loss, bodybuilding, powerlifting, general_strength, recomposition
 5. **Body measurements + calipers** — onboarding + Jackson-Pollock
 6. **Calorie tracking** — USDA/OFF free; Nutritionix Pro
-7. **Sets/reps tracking** — active workout UI, offline-first
+7. **Sets/reps tracking** — active workout UI, offline-first, RIR autoregulated load progression
 8. **Measurement trends + integrations** — charts; Withings/Fitbit/Strava Pro
 9. **Exercise animations + muscle maps** — GIFs + body-highlighter
 10. **Equipment-aware plans** — filter + substitution engine

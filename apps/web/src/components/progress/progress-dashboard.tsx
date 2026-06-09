@@ -1,6 +1,9 @@
 "use client";
 
 import type { ProgressDashboardData } from "@/lib/measurements/types";
+import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
+import { appHeaderGap, appSectionStack } from "@/components/layout/page-layout";
+import { buildEvidenceHref } from "@/lib/evidence/present";
 import { CaliperCalculator } from "./caliper-calculator";
 import { LogMeasurementForm } from "./log-measurement-form";
 import { MeasurementTrendChart } from "./measurement-trend-chart";
@@ -12,7 +15,7 @@ interface ProgressDashboardProps {
 
 export function ProgressDashboard({ data }: ProgressDashboardProps) {
   return (
-    <div className="mt-6 space-y-6">
+    <div className={`${appHeaderGap} ${appSectionStack}`}>
       {!data.tableReady && (
         <div className="rounded-2xl border border-forge-gold/40 bg-forge-surface-raised p-4 text-sm text-forge-muted">
           Apply the Phase 5 migration (`body_measurements` tables) to save new
@@ -20,7 +23,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         </div>
       )}
 
-      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Weight trend
         </h2>
@@ -29,20 +32,26 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           30-day projection
         </h2>
-        <p className="mt-1 text-xs text-forge-muted">
-          Free tier · evidence-capped trend from your log
-          {data.goal ? ` (${data.goal.replace(/_/g, " ")})` : ""}
-        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-forge-muted">
+          <span>
+            Free tier · evidence-capped trend from your log
+            {data.goal ? ` (${data.goal.replace(/_/g, " ")})` : ""}
+          </span>
+          <EvidenceExplainerLink
+            href={buildEvidenceHref({ focus: "fat_loss_rate" })}
+            label="How we cap projections"
+          />
+        </div>
         <div className="mt-4">
           <WeightProjectionChart projection={data.projection} />
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Log measurement
         </h2>
@@ -51,7 +60,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Caliper body fat
         </h2>

@@ -71,11 +71,20 @@ export const GYM_EQUIPMENT = [
 export const RECOVERY_EQUIPMENT = [
   { value: "foam_roller", label: "Foam Roller" },
   { value: "lacrosse_ball", label: "Lacrosse Ball" },
+  { value: "trigger_point_ball", label: "Trigger Point Ball" },
   { value: "massage_gun", label: "Massage Gun" },
   { value: "resistance_bands", label: "Resistance Bands" },
   { value: "yoga_mat", label: "Yoga Mat" },
+  { value: "yoga_blocks_strap", label: "Yoga Blocks / Strap" },
   { value: "compression_gear", label: "Compression Gear" },
+  { value: "compression_boots", label: "Compression Boots" },
   { value: "sauna", label: "Sauna Access" },
+  { value: "steam_room", label: "Steam Room" },
+  { value: "hot_tub", label: "Hot Tub" },
+  { value: "cold_plunge", label: "Cold Plunge" },
+  { value: "cryotherapy", label: "Cryotherapy" },
+  { value: "red_light_therapy", label: "Red Light Therapy" },
+  { value: "active_recovery_access", label: "Active Recovery" },
 ] as const;
 
 export const SESSIONS_PER_WEEK_OPTIONS = [2, 3, 4, 5, 6];

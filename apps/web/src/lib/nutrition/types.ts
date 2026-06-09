@@ -24,3 +24,12 @@ export interface DailyNutritionSummary {
   totals: MacroTotals;
   entries: NutritionLogRow[];
 }
+
+/** Deduplicated macro entry for quick-log recents */
+export interface MacroQuickEntry {
+  foodName: string;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}

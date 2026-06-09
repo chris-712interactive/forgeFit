@@ -2,6 +2,13 @@ import { EncouragementBanner } from "@/components/home/encouragement-banner";
 import { HomeMacroTracker } from "@/components/home/home-macro-tracker";
 import { WeekAccountability } from "@/components/home/week-accountability";
 import { WeeklyWorkStatsGrid } from "@/components/home/weekly-work-stats";
+import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
+import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
+import {
+  appHeaderGap,
+  appPagePadding,
+  appSectionStack,
+} from "@/components/layout/page-layout";
 import { getHomeDashboardData } from "@/lib/home/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,7 +33,7 @@ export default async function HomePage() {
     : "Let's forge it";
 
   return (
-    <div className="px-4 py-6 sm:px-6 sm:py-8">
+    <div className={appPagePadding}>
       <p className="font-display text-sm font-semibold uppercase tracking-widest text-forge-gold">
         Home
       </p>
@@ -34,8 +41,16 @@ export default async function HomePage() {
         {greeting}
       </h1>
 
-      <div className="mt-6 space-y-6">
+      <div className={`${appHeaderGap} ${appSectionStack}`}>
         <EncouragementBanner message={data.encouragement} />
+
+        {data.promotion?.showNudge && (
+          <ExperiencePromotionBanner evaluation={data.promotion} />
+        )}
+
+        {data.promotion && !data.promotion.showNudge && (
+          <TrainingConsistencyCard evaluation={data.promotion} />
+        )}
 
         <HomeMacroTracker summary={data.nutrition} />
 

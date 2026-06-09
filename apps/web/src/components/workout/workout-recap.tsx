@@ -9,6 +9,10 @@ import {
 import { compareSessions, formatShortDate } from "@/lib/workouts/comparison";
 import type { DayPlanStatus, WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { getPriorSessionForComparison } from "@/lib/workouts/sessions";
+import {
+  appPagePadding,
+  appSectionStackTight,
+} from "@/components/layout/page-layout";
 import { WorkoutSyncNotice } from "./workout-sync-notice";
 
 interface WorkoutRecapProps {
@@ -16,7 +20,6 @@ interface WorkoutRecapProps {
   dayStatus?: DayPlanStatus;
   workoutsTableReady: boolean;
   onBack: () => void;
-  onStartAgain?: () => void;
 }
 
 export function WorkoutRecap({
@@ -24,7 +27,6 @@ export function WorkoutRecap({
   dayStatus,
   workoutsTableReady,
   onBack,
-  onStartAgain,
 }: WorkoutRecapProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
@@ -34,7 +36,7 @@ export function WorkoutRecap({
   const syncedToAccount = !session.pendingSync;
 
   return (
-    <div className="px-4 py-6 pb-36 sm:px-6 sm:py-8">
+    <div className={`${appPagePadding} pb-36`}>
       <button
         type="button"
         onClick={onBack}
@@ -69,7 +71,7 @@ export function WorkoutRecap({
         </p>
       )}
 
-      <div className="mt-6 space-y-5">
+      <div className={`mt-6 sm:mt-8 ${appSectionStackTight}`}>
         {comparisons.map((exercise) => (
           <section
             key={exercise.exerciseId}
@@ -135,16 +137,6 @@ export function WorkoutRecap({
           </section>
         ))}
       </div>
-
-      {onStartAgain && (
-        <button
-          type="button"
-          onClick={onStartAgain}
-          className="mt-8 flex min-h-[52px] w-full items-center justify-center rounded-xl border border-forge-ember bg-forge-ember/10 font-display font-bold text-forge-ember"
-        >
-          Start this day again
-        </button>
-      )}
     </div>
   );
 }

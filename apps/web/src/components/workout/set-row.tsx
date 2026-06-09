@@ -11,6 +11,7 @@ import type { LocalExerciseSet } from "@forgefit/offline-sync";
 interface SetRowProps {
   set: LocalExerciseSet;
   targetReps: string;
+  showProgressionHint?: boolean;
   onUpdate: (
     clientId: string,
     patch: Partial<Pick<LocalExerciseSet, "reps" | "weightKg" | "rir" | "completed">>
@@ -30,7 +31,12 @@ function effortFromRir(rir?: number): number | undefined {
   return 0;
 }
 
-export function SetRow({ set, targetReps, onUpdate }: SetRowProps) {
+export function SetRow({
+  set,
+  targetReps,
+  showProgressionHint = false,
+  onUpdate,
+}: SetRowProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
   const selectedEffort = effortFromRir(set.rir);
@@ -70,6 +76,11 @@ export function SetRow({ set, targetReps, onUpdate }: SetRowProps) {
         <label className="min-w-0">
           <span className="mb-1 block text-xs font-medium text-forge-muted">
             Weight ({weightLabel})
+            {showProgressionHint && set.weightKg != null && (
+              <span className="ml-1 font-normal text-forge-steel">
+                · suggested
+              </span>
+            )}
           </span>
           <input
             type="number"
@@ -92,6 +103,11 @@ export function SetRow({ set, targetReps, onUpdate }: SetRowProps) {
         <label className="min-w-0">
           <span className="mb-1 block text-xs font-medium text-forge-muted">
             Reps
+            {showProgressionHint && set.reps != null && (
+              <span className="ml-1 font-normal text-forge-steel">
+                · suggested
+              </span>
+            )}
           </span>
           <input
             type="number"

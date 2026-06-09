@@ -71,6 +71,22 @@ export function computeWeeklyWorkStats(
       isInWeek(session.completedAt ?? session.startedAt, start, end)
   );
 
+  const latestCompletedByDay = new Map<number, WorkoutSessionRecord>();
+  for (const session of completedThisWeek) {
+    const existing = latestCompletedByDay.get(session.dayIndex);
+    if (!existing) {
+      latestCompletedByDay.set(session.dayIndex, session);
+      continue;
+    }
+    const sessionTime = session.completedAt ?? session.startedAt;
+    const existingTime = existing.completedAt ?? existing.startedAt;
+    if (sessionTime.localeCompare(existingTime) > 0) {
+      latestCompletedByDay.set(session.dayIndex, session);
+    }
+  }
+
+  const sessionsForStats = [...latestCompletedByDay.values()];
+
   let totalVolumeKg = 0;
   let totalSets = 0;
   let cardioMinutes = 0;
@@ -78,7 +94,7 @@ export function computeWeeklyWorkStats(
   let recoveryMinutes = 0;
   let trainingMinutes = 0;
 
-  for (const session of completedThisWeek) {
+  for (const session of sessionsForStats) {
     trainingMinutes += sessionMinutes(session);
 
     const planSession = plan?.week.find((s) => s.dayIndex === session.dayIndex);
@@ -106,7 +122,7 @@ export function computeWeeklyWorkStats(
   }
 
   return {
-    workoutsCompleted: completedThisWeek.length,
+    workoutsCompleted: latestCompletedByDay.size,
     workoutsPlanned: planned,
     totalVolumeKg: Math.round(totalVolumeKg),
     totalSets,

@@ -1,14 +1,22 @@
 "use client";
 
+import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
+import { buildEvidenceHref } from "@/lib/evidence/present";
 import type { MacroTotals } from "@forgefit/nutrition-core";
 import type { NutritionTargets } from "@forgefit/program-engine";
 
 interface MacroSummaryProps {
   totals: MacroTotals;
   targets: NutritionTargets | null;
+  /** Omit outer card shell when nested inside another section */
+  embedded?: boolean;
 }
 
-export function MacroSummary({ totals, targets }: MacroSummaryProps) {
+export function MacroSummary({
+  totals,
+  targets,
+  embedded = false,
+}: MacroSummaryProps) {
   const items = [
     {
       label: "Calories",
@@ -40,14 +48,22 @@ export function MacroSummary({ totals, targets }: MacroSummaryProps) {
     },
   ];
 
-  return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+  const content = (
+    <>
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Today&apos;s macros
         </h2>
         {targets && (
-          <span className="text-xs text-forge-muted">Evidence-based targets</span>
+          <EvidenceExplainerLink
+            href={buildEvidenceHref({
+              focus: targets.proteinRuleId,
+              related: targets.calorieRuleId
+                ? [targets.calorieRuleId]
+                : undefined,
+            })}
+            label="Why these targets?"
+          />
         )}
       </div>
 
@@ -92,6 +108,16 @@ export function MacroSummary({ totals, targets }: MacroSummaryProps) {
           Generate your program to see personalized calorie and macro targets.
         </p>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+      {content}
     </section>
   );
 }

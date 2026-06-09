@@ -237,6 +237,24 @@ export const EXTRA_RULES: EvidenceRule[] = [
     confidence: "high",
   },
   {
+    id: "rir_autoregulation",
+    domain: "training",
+    applies_to: ["*"],
+    recommendation: {
+      easy_rir_threshold: { min: 3, optimal: 4, max: 5 },
+      weight_increase_pct_beginner: { min: 0.02, optimal: 0.025, max: 0.035 },
+      weight_increase_pct_trained: { min: 0.04, optimal: 0.05, max: 0.06 },
+      note: "High-RIR sets trigger small load increases; near-failure sets hold or ease",
+    },
+    citations: [
+      {
+        url: "https://sportrxiv.org/index.php/server/preprint/view/460",
+        summary: "Proximity to failure (RIR/RPE) guides sustainable load progression",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
     id: "warm_up_sets",
     domain: "training",
     applies_to: ["experience:intermediate", "experience:advanced"],
@@ -282,6 +300,128 @@ export const EXTRA_RULES: EvidenceRule[] = [
       },
     ],
     confidence: "low",
+  },
+  {
+    id: "cold_plunge_recovery",
+    domain: "recovery",
+    applies_to: ["recovery:cold_plunge"],
+    recommendation: {
+      duration_minutes: { min: 2, optimal: 5, max: 10 },
+      timing: "post_workout",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Cold water immersion may reduce perceived soreness after training",
+      },
+    ],
+    confidence: "low",
+  },
+  {
+    id: "cryotherapy_recovery",
+    domain: "recovery",
+    applies_to: ["recovery:cryotherapy"],
+    recommendation: {
+      duration_minutes: { min: 2, optimal: 3, max: 5 },
+      timing: "post_workout",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Whole-body cryotherapy used for short post-session recovery",
+      },
+    ],
+    confidence: "low",
+  },
+  {
+    id: "sauna_recovery",
+    domain: "recovery",
+    applies_to: ["recovery:sauna"],
+    recommendation: {
+      duration_minutes: { min: 10, optimal: 12, max: 20 },
+      timing: "post_workout",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Heat exposure may support relaxation and perceived recovery",
+      },
+    ],
+    confidence: "low",
+  },
+  {
+    id: "red_light_recovery",
+    domain: "recovery",
+    applies_to: ["recovery:red_light_therapy"],
+    recommendation: {
+      duration_minutes: { min: 5, optimal: 10, max: 15 },
+      timing: "post_workout",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Photobiomodulation used for localized muscle recovery support",
+      },
+    ],
+    confidence: "low",
+  },
+  {
+    id: "active_recovery_access",
+    domain: "recovery",
+    applies_to: ["recovery:active_recovery_access"],
+    recommendation: {
+      duration_minutes: { min: 10, optimal: 15, max: 25 },
+      timing: "post_workout",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Low-intensity movement aids blood flow and next-day readiness",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "experience_promotion_beginner",
+    domain: "training",
+    applies_to: ["experience:beginner"],
+    recommendation: {
+      lookback_weeks: { min: 4, optimal: 4, max: 6 },
+      min_weeks_passing: { min: 3, optimal: 3, max: 4 },
+      weekly_adherence_pct: { min: 0.7, optimal: 0.75, max: 0.85 },
+      min_quality_sessions: { min: 8, optimal: 10, max: 14 },
+      note: "Promote to intermediate after consistent plan adherence, not self-report alone",
+    },
+    citations: [
+      {
+        url: "https://sportrxiv.org/index.php/server/preprint/view/460",
+        summary: "Trained individuals tolerate higher volume after adaptation to consistent training",
+      },
+      {
+        url: "https://www.acsm.org",
+        summary: "Gradual progression reduces injury risk as trainees build work capacity",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "experience_promotion_intermediate",
+    domain: "training",
+    applies_to: ["experience:intermediate"],
+    recommendation: {
+      lookback_weeks: { min: 6, optimal: 8, max: 10 },
+      min_weeks_passing: { min: 5, optimal: 6, max: 8 },
+      weekly_adherence_pct: { min: 0.75, optimal: 0.8, max: 0.9 },
+      min_quality_sessions: { min: 24, optimal: 28, max: 36 },
+      note: "Advanced tier requires sustained adherence over a longer window",
+    },
+    citations: [
+      {
+        url: "https://elementssystem.com/wp-content/uploads/2018/08/Schoenfeld-volumen-review.pdf",
+        summary: "Higher weekly volumes benefit lifters with established training tolerance",
+      },
+    ],
+    confidence: "moderate",
   },
   {
     id: "recomposition_training",

@@ -1,3 +1,4 @@
+import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
 import { ProgressDashboard } from "@/components/progress/progress-dashboard";
 import { getProgressDashboardData } from "@/lib/measurements/service";
 import { createClient } from "@/lib/supabase/server";
@@ -11,7 +12,7 @@ export default async function ProgressPage() {
   const data = user ? await getProgressDashboardData(user.id) : null;
 
   return (
-    <div className="px-4 py-6 sm:px-6 sm:py-8">
+    <div className={appPagePadding}>
       <h1 className="font-display text-2xl font-bold text-forge-text">
         Progress
       </h1>
@@ -23,7 +24,9 @@ export default async function ProgressPage() {
       {data ? (
         <ProgressDashboard data={data} />
       ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
+        <div
+          className={`${appHeaderGap} rounded-2xl border border-dashed border-[var(--border)] p-8 text-center`}
+        >
           <p className="text-forge-muted">Sign in to view your progress.</p>
         </div>
       )}

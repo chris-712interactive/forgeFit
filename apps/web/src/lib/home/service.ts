@@ -1,4 +1,5 @@
 import { getDailyNutritionSummary } from "@/lib/nutrition/service";
+import { getPromotionEvaluation } from "@/lib/progression/service";
 import { ensureActiveProgram } from "@/lib/programs/service";
 import type { FitnessGoal } from "@/lib/types/profile";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -25,7 +26,7 @@ export async function getHomeDashboardData(
       .single(),
     ensureActiveProgram(userId),
     getDailyNutritionSummary(userId),
-    getServerSessionRecords(userId, 80),
+    getServerSessionRecords(userId, 120),
   ]);
 
   const profile = profileResult.data;
@@ -34,6 +35,11 @@ export async function getHomeDashboardData(
     plan
   );
   const next = findNextPlannedSession(sessionResult.records, plan);
+  const promotion = await getPromotionEvaluation(
+    userId,
+    sessionResult.records,
+    plan
+  );
 
   return {
     displayName: profile?.display_name ?? null,
@@ -53,5 +59,6 @@ export async function getHomeDashboardData(
     nextSessionDayIndex: next?.dayIndex ?? null,
     nextSessionName: next?.name ?? null,
     workoutsTableReady: sessionResult.tableReady,
+    promotion,
   };
 }

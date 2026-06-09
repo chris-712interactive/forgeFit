@@ -57,7 +57,7 @@ export function WeeklyWorkStatsGrid({ stats }: WeeklyWorkStatsProps) {
   ];
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
       <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
         Body of work
       </h2>

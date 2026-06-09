@@ -21,7 +21,7 @@ export function WeekAccountability({
       : 0;
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           This week

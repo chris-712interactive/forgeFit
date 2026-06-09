@@ -29,7 +29,7 @@ export function ExerciseSearch({ total }: ExerciseSearchProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <section className="space-y-4 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
       <p className="text-sm text-forge-muted">{total.toLocaleString()} exercises in library</p>
       <input
         type="search"
@@ -86,6 +86,6 @@ export function ExerciseSearch({ total }: ExerciseSearchProps) {
       >
         {pending ? "Searching…" : "Search"}
       </button>
-    </div>
+    </section>
   );
 }

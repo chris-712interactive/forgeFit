@@ -183,3 +183,14 @@ export function getRules(): EvidenceRule[] {
 export function getRuleById(id: string): EvidenceRule | undefined {
   return ALL_RULES.find((r) => r.id === id);
 }
+
+export function getRulesByIds(ids: string[]): EvidenceRule[] {
+  const seen = new Set<string>();
+  return ids
+    .map((id) => getRuleById(id))
+    .filter((rule): rule is EvidenceRule => {
+      if (!rule || seen.has(rule.id)) return false;
+      seen.add(rule.id);
+      return true;
+    });
+}

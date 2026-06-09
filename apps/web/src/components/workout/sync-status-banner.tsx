@@ -10,7 +10,7 @@ export function SyncStatusBanner() {
 
   if (lastError) {
     return (
-      <div className="mx-4 mb-4 rounded-xl border border-forge-coral/40 bg-forge-coral/10 p-3 text-sm">
+      <div className="rounded-xl border border-forge-coral/40 bg-forge-coral/10 p-3 text-sm sm:p-4">
         <p className="font-medium text-forge-coral">Sync failed</p>
         <p className="mt-1 text-forge-muted">{lastError}</p>
         <button
@@ -26,13 +26,13 @@ export function SyncStatusBanner() {
 
   if (syncing) {
     return (
-      <p className="mx-4 mb-4 text-sm text-forge-steel">Syncing workout data…</p>
+      <p className="text-sm text-forge-steel">Syncing workout data…</p>
     );
   }
 
   if (pendingCount > 0) {
     return (
-      <div className="mx-4 mb-4 rounded-xl border border-forge-gold/30 bg-forge-gold/10 p-3 text-sm">
+      <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/10 p-3 text-sm sm:p-4">
         <p className="text-forge-gold">
           {pendingCount} item{pendingCount === 1 ? "" : "s"} waiting to sync
         </p>

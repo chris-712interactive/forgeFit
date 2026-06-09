@@ -17,6 +17,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { EvidenceRuleInline } from "@/components/evidence/evidence-rule-inline";
 import { ChartShell } from "./chart-shell";
 import { CHART_COLORS } from "./chart-colors";
 
@@ -78,8 +79,8 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
           {weeklyDisplay} {weightLabel}/week
         </span>{" "}
         ({projection.weeklyChangePct > 0 ? "+" : ""}
-        {projection.weeklyChangePct}% BW) · evidence rule{" "}
-        <span className="font-mono text-xs">{projection.ruleId}</span>
+        {projection.weeklyChangePct}% BW) · capped by{" "}
+        <EvidenceRuleInline ruleId={projection.ruleId} />
       </p>
 
       <ChartShell>

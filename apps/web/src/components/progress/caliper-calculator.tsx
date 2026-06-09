@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 const inputClass =
-  "min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-forge-surface-raised px-3 text-forge-text outline-none focus:border-forge-ember";
+  "min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 text-base text-forge-text outline-none focus:border-forge-ember";
+
+const segmentButtonClass = (active: boolean) =>
+  `min-h-[48px] rounded-xl border px-3 text-base font-medium transition-colors ${
+    active
+      ? "border-forge-ember bg-forge-ember/10 text-forge-text"
+      : "border-[var(--border)] bg-forge-surface text-forge-muted hover:border-forge-ember/40"
+  }`;
 
 interface CaliperCalculatorProps {
   sex: string | null;
@@ -107,20 +114,27 @@ export function CaliperCalculator({ sex, age }: CaliperCalculatorProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-sm">
-          <span className="mb-1 block text-forge-muted">Formula</span>
-          <select
-            className={inputClass}
-            value={formula}
-            onChange={(event) =>
-              setFormula(event.target.value as CaliperFormula)
-            }
+      <div>
+        <span className="mb-2 block text-sm text-forge-muted">Formula</span>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setFormula("jp3")}
+            className={segmentButtonClass(formula === "jp3")}
           >
-            <option value="jp3">Jackson-Pollock 3-site</option>
-            <option value="jp7">Jackson-Pollock 7-site</option>
-          </select>
-        </label>
+            3-site
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormula("jp7")}
+            className={segmentButtonClass(formula === "jp7")}
+          >
+            7-site
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         <label className="block text-sm">
           <span className="mb-1 block text-forge-muted">Date</span>
           <input
@@ -130,22 +144,6 @@ export function CaliperCalculator({ sex, age }: CaliperCalculatorProps) {
             onChange={(event) => setMeasuredDate(event.target.value)}
             required
           />
-        </label>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block text-sm">
-          <span className="mb-1 block text-forge-muted">Sex</span>
-          <select
-            className={inputClass}
-            value={selectedSex}
-            onChange={(event) =>
-              setSelectedSex(event.target.value as "male" | "female")
-            }
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block text-forge-muted">Age</span>
@@ -159,6 +157,26 @@ export function CaliperCalculator({ sex, age }: CaliperCalculatorProps) {
             required
           />
         </label>
+      </div>
+
+      <div>
+        <span className="mb-2 block text-sm text-forge-muted">Sex</span>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedSex("male")}
+            className={segmentButtonClass(selectedSex === "male")}
+          >
+            Male
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedSex("female")}
+            className={segmentButtonClass(selectedSex === "female")}
+          >
+            Female
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

@@ -1,4 +1,9 @@
 import { ExerciseDetailMedia } from "@/components/exercises/exercise-detail-media";
+import {
+  appHeaderGap,
+  appPagePadding,
+  appSectionStack,
+} from "@/components/layout/page-layout";
 import { SubstitutionList } from "@/components/exercises/substitution-list";
 import { getExerciseDetailData } from "@/lib/exercises/service";
 import { formatEquipment, formatPattern } from "@/lib/exercises/labels";
@@ -33,7 +38,7 @@ export default async function ExerciseDetailPage({
   const { exercise, substitutions, userEquipment } = data;
 
   return (
-    <div className="px-4 py-6 sm:px-6 sm:py-8">
+    <div className={appPagePadding}>
       <Link
         href="/exercises"
         className="text-sm font-medium text-forge-steel hover:text-forge-ember"
@@ -49,7 +54,7 @@ export default async function ExerciseDetailPage({
         {exercise.equipment.map(formatEquipment).join(" · ")}
       </p>
 
-      <div className="mt-6 space-y-6">
+      <div className={`${appHeaderGap} ${appSectionStack}`}>
         <ExerciseDetailMedia
           name={exercise.name}
           imagePaths={exercise.imagePaths}
@@ -58,14 +63,14 @@ export default async function ExerciseDetailPage({
           secondaryMuscles={exercise.secondaryMuscles}
         />
 
-        <section>
+        <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
             Equipment swaps
           </h2>
           <p className="mt-1 text-xs text-forge-muted">
             Same movement pattern, matched to your inventory
           </p>
-          <div className="mt-3">
+          <div className="mt-4">
             <SubstitutionList
               substitutions={substitutions}
               userEquipment={userEquipment}
@@ -74,7 +79,7 @@ export default async function ExerciseDetailPage({
         </section>
 
         {exercise.instructions.length > 0 && (
-          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               Instructions
             </h2>

@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 6 complete → Phase 7 (Pro Integrations) next |
-| **Last updated** | 2026-06-08 |
-| **Last session focus** | Phase 6 exercise library UI |
+| **Last updated** | 2026-06-09 |
+| **Last session focus** | RIR-based load progression |
 
 ---
 
@@ -32,6 +32,89 @@
 ---
 
 ## Session Log
+
+### 2026-06-09 — RIR-based load progression
+
+**What was done:**
+- `lib/progression/rir-progression.ts` — analyzes logged RIR/effort and history to suggest weight, reps, and extra sets
+- On workout start: prefills sets from last session + autoregulated bump; muscle-group carryover (+1 rep) when related work runs easy
+- Active workout UI: progression notes, extra set count, "suggested" labels on prefilled fields
+- Evidence rule: `rir_autoregulation`
+
+**Logic summary:**
+- Easy (RIR ≥ 3): +2.5% weight (beginner) or +5% (intermediate/advanced); bodyweight → +1 rep
+- Two consecutive easy sessions: +1 working set (max 1 extra)
+- Good (RIR ~2): hold load
+- Hard (RIR 0): hold or −5% weight suggestion
+- Muscle group: 4+ easy sets for same primary muscle → +1 rep target on related exercises
+
+**Files touched:**
+- `apps/web/src/lib/progression/rir-progression.ts`, `load-progression-types.ts`
+- `packages/offline-sync/src/workout-store.ts`, `types.ts`
+- `apps/web/src/components/workout/workout-hub.tsx`, `active-workout.tsx`, `set-row.tsx`
+- `apps/web/src/app/(app)/workout/page.tsx`
+- `packages/evidence-kb/src/rules-extra.ts`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-06-09 — Adherence-based experience promotion
+
+**What was done:**
+- `lib/progression/` — weekly adherence scoring, promotion gates (beginner→intermediate, intermediate→advanced)
+- Migration: `experience_promoted_at`, `promotion_snoozed_until` on `profiles`
+- `acceptExperiencePromotion` / `snoozeExperiencePromotion` server actions → updates level + regenerates program
+- Home / Workout / Profile UI: gold promotion banner when eligible; consistency progress card otherwise
+- Evidence rules: `experience_promotion_beginner`, `experience_promotion_intermediate`
+
+**Promotion gates:**
+- Beginner → Intermediate: 3 of last 4 weeks ≥75% planned sessions + 10 quality sessions (≥50% sets logged)
+- Intermediate → Advanced: 6 of last 8 weeks ≥80% + 28 quality sessions (≥60% sets logged)
+
+**What's next:**
+- Apply `20260608600000_experience_promotion.sql` migration
+- Phase 7: Stripe + device OAuth
+
+**Files touched:**
+- `supabase/migrations/20260608600000_experience_promotion.sql`
+- `apps/web/src/lib/progression/*`
+- `apps/web/src/app/actions/progression.ts`
+- `apps/web/src/components/progression/*`
+- `apps/web/src/lib/home/service.ts`, `home/page.tsx`
+- `apps/web/src/app/(app)/workout/page.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/(app)/profile/page.tsx`
+- `packages/evidence-kb/src/rules-extra.ts`
+- `docs/BIBLE.md`, `docs/PROGRESS.md`
+
+---
+
+### 2026-06-09 — Evidence transparency + recovery equipment
+
+**What was done:**
+- Expanded `RECOVERY_EQUIPMENT` (cold plunge, cryotherapy, red light, active recovery, etc.) and wired all options into `buildRecoveryBlock`
+- Fixed caliper formula/sex pickers (segmented buttons instead of broken native `<select>` on iOS)
+- Added `/evidence` page with browsable rule cards: recommendations, confidence, applies-when tags, and cited sources (DOI/URL)
+- Contextual “View evidence” links on Workout, Nutrition macros, Progress projection, and Profile
+- Presentation layer: `lib/evidence/present.ts`, `getRulesByIds()` in evidence-kb
+
+**What's next:**
+- Profile editor for recovery equipment (onboarding-only today)
+- Phase 7: Stripe + device OAuth
+
+**Files touched:**
+- `apps/web/src/lib/constants/onboarding.ts`
+- `apps/web/src/lib/evidence/*`
+- `apps/web/src/components/evidence/*`
+- `apps/web/src/app/(app)/evidence/page.tsx`
+- `apps/web/src/components/nutrition/macro-summary.tsx`
+- `apps/web/src/components/workout/workout-hub.tsx`
+- `apps/web/src/components/progress/*`
+- `apps/web/src/app/(app)/profile/page.tsx`
+- `packages/program-engine/src/generate.ts`
+- `packages/evidence-kb/src/rules-extra.ts`, `index.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Phase 6 complete (Exercise library UI)
 

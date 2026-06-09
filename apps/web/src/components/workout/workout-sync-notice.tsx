@@ -19,7 +19,7 @@ export function WorkoutSyncNotice({
     return (
       <div
         className={`rounded-xl border border-forge-coral/40 bg-forge-coral/10 text-sm ${
-          compact ? "mt-3 p-3" : "mx-4 mb-4 p-3"
+          compact ? "mt-3 p-3" : "p-3 sm:p-4"
         }`}
       >
         <p className="font-medium text-forge-coral">Workout sync not set up</p>
@@ -42,7 +42,7 @@ export function WorkoutSyncNotice({
     return (
       <div
         className={`rounded-xl border border-forge-coral/40 bg-forge-coral/10 text-sm ${
-          compact ? "mt-3 p-3" : "mx-4 mb-4 p-3"
+          compact ? "mt-3 p-3" : "p-3 sm:p-4"
         }`}
       >
         <p className="font-medium text-forge-coral">Not in your account yet</p>
@@ -61,7 +61,7 @@ export function WorkoutSyncNotice({
   return (
     <div
       className={`rounded-xl border border-forge-gold/30 bg-forge-gold/10 text-sm ${
-        compact ? "mt-3 p-3" : "mx-4 mb-4 p-3"
+        compact ? "mt-3 p-3" : "p-3 sm:p-4"
       }`}
     >
       <p className="font-medium text-forge-gold">Saved on this device only</p>

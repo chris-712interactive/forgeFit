@@ -8,19 +8,23 @@ interface HomeMacroTrackerProps {
 
 export function HomeMacroTracker({ summary }: HomeMacroTrackerProps) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3 px-1">
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <p className="text-xs text-forge-muted">
-          Log meals to close the gap on your targets
+          Quick-log macros to close the gap on your targets
         </p>
         <Link
           href="/nutrition"
           className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
         >
-          Log food →
+          Log macros →
         </Link>
       </div>
-      <MacroSummary totals={summary.totals} targets={summary.targets} />
-    </div>
+      <MacroSummary
+        totals={summary.totals}
+        targets={summary.targets}
+        embedded
+      />
+    </section>
   );
 }

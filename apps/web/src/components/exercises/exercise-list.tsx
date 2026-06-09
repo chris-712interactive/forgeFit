@@ -16,7 +16,7 @@ export function ExerciseList({ results }: ExerciseListProps) {
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="flex flex-col gap-4 sm:gap-5">
       {results.map((exercise) => (
         <li key={exercise.id}>
           <Link

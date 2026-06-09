@@ -15,6 +15,10 @@ export interface ExerciseSnapshot {
   sets: number;
   reps: string;
   restSeconds: number;
+  /** Extra working sets added by RIR-based progression */
+  extraSets?: number;
+  /** Human-readable note shown during the workout */
+  progressionNote?: string;
 }
 
 export interface LocalWorkoutSession {

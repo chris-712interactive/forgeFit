@@ -1,22 +1,37 @@
 "use client";
 
 import type { FoodSearchResult } from "@forgefit/nutrition-core";
-import type { DailyNutritionSummary } from "@/lib/nutrition/types";
+import { appSectionStack } from "@/components/layout/page-layout";
+import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FoodSearch } from "./food-search";
+import { FoodSearchPanel } from "./food-search-panel";
+import { LoggedEntries } from "./logged-entries";
+import { MacroPresets } from "./macro-presets";
 import { MacroSummary } from "./macro-summary";
+import { QuickMacroLog } from "./quick-macro-log";
 
 interface NutritionDiaryProps {
   initialSummary: DailyNutritionSummary;
+  recentEntries: MacroQuickEntry[];
+  yesterdayEntryCount: number;
+  yesterdayDate: string;
 }
 
-export function NutritionDiary({ initialSummary }: NutritionDiaryProps) {
+export function NutritionDiary({
+  initialSummary,
+  recentEntries,
+  yesterdayEntryCount,
+  yesterdayDate,
+}: NutritionDiaryProps) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copying, setCopying] = useState(false);
+  const [copyError, setCopyError] = useState<string | null>(null);
+  const [presetVersion, setPresetVersion] = useState(0);
 
-  async function handleAdd(
+  async function handleFoodAdd(
     food: FoodSearchResult,
     quantity: number,
     servingGrams: number
@@ -72,56 +87,77 @@ export function NutritionDiary({ initialSummary }: NutritionDiaryProps) {
     }
   }
 
+  async function handleCopyYesterday() {
+    setCopying(true);
+    setCopyError(null);
+    try {
+      const response = await fetch("/api/nutrition/copy-day", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceDate: yesterdayDate,
+          targetDate: initialSummary.date,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = (await response.json()) as { error?: string };
+        throw new Error(err.error ?? "Could not copy yesterday");
+      }
+
+      router.refresh();
+    } catch (error) {
+      setCopyError(
+        error instanceof Error ? error.message : "Could not copy yesterday."
+      );
+    } finally {
+      setCopying(false);
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <div className={appSectionStack}>
       <MacroSummary
         totals={initialSummary.totals}
         targets={initialSummary.targets}
       />
 
-      <FoodSearch onAdd={handleAdd} adding={adding} />
+      <QuickMacroLog
+        loggedDate={initialSummary.date}
+        onApplied={() => setPresetVersion((v) => v + 1)}
+      />
 
-      <section className="space-y-3">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-          Logged today
-        </h2>
-        {initialSummary.entries.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
-            <p className="text-forge-muted">
-              Search and tap a food to start your diary.
-            </p>
-          </div>
-        ) : (
-          initialSummary.entries.map((entry) => (
-            <article
-              key={entry.id}
-              className="flex items-start justify-between gap-3 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4"
-            >
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-forge-text">
-                  {entry.foodName}
-                </p>
-                <p className="mt-1 text-sm text-forge-muted">
-                  {entry.quantity}× {entry.servingDescription}
-                  {entry.brand ? ` · ${entry.brand}` : ""}
-                </p>
-                <p className="mt-1 text-sm text-forge-steel">
-                  {Math.round(entry.calories)} kcal · P {entry.proteinG}g · C{" "}
-                  {entry.carbsG}g · F {entry.fatG}g
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled={deletingId === entry.id}
-                onClick={() => void handleDelete(entry.id)}
-                className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-forge-coral disabled:opacity-50"
-              >
-                {deletingId === entry.id ? "…" : "Remove"}
-              </button>
-            </article>
-          ))
-        )}
-      </section>
+      <MacroPresets
+        key={presetVersion}
+        loggedDate={initialSummary.date}
+        recentEntries={recentEntries}
+      />
+
+      {yesterdayEntryCount > 0 && (
+        <div className="rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 py-3 sm:px-5">
+          <button
+            type="button"
+            disabled={copying}
+            onClick={() => void handleCopyYesterday()}
+            className="text-sm font-semibold text-forge-steel hover:text-forge-ember disabled:opacity-50"
+          >
+            {copying
+              ? "Copying…"
+              : `Copy yesterday (${yesterdayEntryCount} ${yesterdayEntryCount === 1 ? "entry" : "entries"})`}
+          </button>
+          {copyError && (
+            <p className="mt-2 text-sm text-forge-coral">{copyError}</p>
+          )}
+        </div>
+      )}
+
+      <LoggedEntries
+        entries={initialSummary.entries}
+        deletingId={deletingId}
+        onDelete={(id) => void handleDelete(id)}
+      />
+
+      <FoodSearchPanel onAdd={handleFoodAdd} adding={adding} />
     </div>
   );
 }

@@ -31,6 +31,59 @@ function completedSetCount(record: WorkoutSessionRecord): number {
   return record.sets.filter((s) => s.completed).length;
 }
 
+function isTerminalStatus(status: string): boolean {
+  return status === "completed" || status === "cancelled";
+}
+
+function recordSortTime(record: WorkoutSessionRecord): string {
+  return record.completedAt ?? record.startedAt;
+}
+
+function mergeSessionPair(
+  localRecord: WorkoutSessionRecord,
+  serverRecord: WorkoutSessionRecord
+): WorkoutSessionRecord {
+  const localTerminal = isTerminalStatus(localRecord.status);
+  const serverTerminal = isTerminalStatus(serverRecord.status);
+
+  if (localTerminal && !serverTerminal) {
+    return {
+      ...localRecord,
+      sets: localRecord.sets,
+      pendingSync: Boolean(localRecord.pendingSync),
+    };
+  }
+
+  if (serverTerminal && !localTerminal) {
+    return {
+      ...serverRecord,
+      sets: serverRecord.sets,
+      pendingSync: false,
+    };
+  }
+
+  if (localTerminal && serverTerminal) {
+    const preferLocal =
+      recordSortTime(localRecord).localeCompare(recordSortTime(serverRecord)) >=
+      0;
+    const base = preferLocal ? localRecord : serverRecord;
+    return {
+      ...base,
+      sets: preferLocal ? localRecord.sets : serverRecord.sets,
+      pendingSync: preferLocal ? Boolean(localRecord.pendingSync) : false,
+    };
+  }
+
+  const preferLocalSets =
+    completedSetCount(localRecord) > completedSetCount(serverRecord);
+  const base = preferLocalSets ? localRecord : serverRecord;
+  return {
+    ...base,
+    sets: preferLocalSets ? localRecord.sets : serverRecord.sets,
+    pendingSync: preferLocalSets ? Boolean(localRecord.pendingSync) : false,
+  };
+}
+
 export function mergeSessionRecords(
   local: WorkoutSessionRecord[],
   server: WorkoutSessionRecord[]
@@ -49,15 +102,7 @@ export function mergeSessionRecords(
     const localRecord = localByClientId.get(clientId);
 
     if (serverRecord && localRecord) {
-      const preferLocalSets =
-        completedSetCount(localRecord) > completedSetCount(serverRecord);
-      const base = preferLocalSets ? localRecord : serverRecord;
-      merged.push({
-        ...base,
-        sets: preferLocalSets ? localRecord.sets : serverRecord.sets,
-        // Server has this session — it's on the account even if local synced flag is stale.
-        pendingSync: false,
-      });
+      merged.push(mergeSessionPair(localRecord, serverRecord));
       continue;
     }
 
