@@ -37,6 +37,10 @@ export interface Profile {
   unit_system: UnitSystem;
   experience_promoted_at: string | null;
   promotion_snoozed_until: string | null;
+  is_travel_mode?: boolean;
+  home_equipment_types?: string[];
+  home_recovery_equipment_types?: string[];
+  home_equipment_location?: EquipmentLocation | null;
   created_at: string;
   updated_at: string;
 }

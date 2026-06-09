@@ -1,5 +1,6 @@
 "use server";
 
+import { replaceUserEquipment } from "@/lib/equipment/service";
 import { generateAndSaveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type { OnboardingData } from "@/lib/types/profile";
@@ -68,35 +69,18 @@ export async function completeOnboarding(data: OnboardingData) {
     return { error: profileError.message };
   }
 
-  await supabase.from("equipment_inventory").delete().eq("user_id", user.id);
-  if (equipment.length > 0) {
-    const { error: equipError } = await supabase
-      .from("equipment_inventory")
-      .insert(
-        equipment.map((equipment_type) => ({
-          user_id: user.id,
-          equipment_type,
-          location: equipment_location,
-        }))
-      );
-    if (equipError) {
-      return { error: equipError.message };
-    }
-  }
-
-  await supabase.from("recovery_equipment").delete().eq("user_id", user.id);
-  if (recovery_equipment.length > 0) {
-    const { error: recoveryError } = await supabase
-      .from("recovery_equipment")
-      .insert(
-        recovery_equipment.map((equipment_type) => ({
-          user_id: user.id,
-          equipment_type,
-        }))
-      );
-    if (recoveryError) {
-      return { error: recoveryError.message };
-    }
+  const equipmentResult = await replaceUserEquipment(
+    supabase,
+    user.id,
+    {
+      equipment,
+      equipmentLocation: equipment_location,
+      recoveryEquipment: recovery_equipment,
+    },
+    { updateHomeSnapshot: true }
+  );
+  if (equipmentResult.error) {
+    return { error: equipmentResult.error };
   }
 
   await generateAndSaveProgram(user.id);

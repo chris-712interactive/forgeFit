@@ -5,8 +5,10 @@ import {
   appPagePadding,
   appSectionStack,
 } from "@/components/layout/page-layout";
+import { EquipmentSetting } from "@/components/profile/equipment-setting";
 import { OneRepMaxSetting } from "@/components/profile/one-rep-max-setting";
 import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
+import { getUserEquipmentSettings } from "@/lib/equipment/service";
 import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
 import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
 import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
@@ -36,13 +38,28 @@ export default async function ProfilePage() {
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [plan, sessionResult, oneRepMaxes] = user
+  const [plan, sessionResult, oneRepMaxes, equipmentSettings] = user
     ? await Promise.all([
         getActiveProgram(user.id),
         getServerSessionRecords(user.id, 120),
         getUserOneRepMaxes(user.id),
+        getUserEquipmentSettings(user.id),
       ])
-    : [null, { records: [], tableReady: true }, { rows: [], tableReady: true }];
+    : [
+        null,
+        { records: [], tableReady: true },
+        { rows: [], tableReady: true },
+        {
+          equipment: [],
+          equipmentLocation: "gym" as const,
+          recoveryEquipment: [],
+          isTravelMode: false,
+          homeEquipment: [],
+          homeRecoveryEquipment: [],
+          homeEquipmentLocation: null,
+          travelModeReady: false,
+        },
+      ];
 
   const promotion = user
     ? await getPromotionEvaluation(user.id, sessionResult.records, plan)
@@ -79,6 +96,8 @@ export default async function ProfilePage() {
         </Link>
 
         <UnitPreferenceSetting initialUnit={unit} />
+
+        <EquipmentSetting initialSettings={equipmentSettings} />
 
         <OneRepMaxSetting
           initialMaxes={oneRepMaxes.rows}
