@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     root: "../..",
   },
   serverExternalPackages: ["esbuild"],
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/logo-icon.svg" }];
+  },
 };
 
 export default withSerwist(nextConfig);

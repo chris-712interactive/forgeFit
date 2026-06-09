@@ -23,7 +23,29 @@ interface WorkoutHubProps {
   history?: WorkoutHistoryItem[];
 }
 
+const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
+
+function isOffline() {
+  return typeof navigator !== "undefined" && !navigator.onLine;
+}
+
+function persistActiveWorkout(clientId: string | null) {
+  if (clientId) {
+    sessionStorage.setItem(OFFLINE_ACTIVE_KEY, clientId);
+  } else {
+    sessionStorage.removeItem(OFFLINE_ACTIVE_KEY);
+  }
+}
+
 function replaceWorkoutUrl(clientId: string | null) {
+  // Avoid history.replaceState offline — it can trigger Next.js / SW fetches
+  // that fail without network and crash the active workout view.
+  if (isOffline()) {
+    persistActiveWorkout(clientId);
+    return;
+  }
+
+  persistActiveWorkout(null);
   const url = clientId ? `/workout?active=${clientId}` : "/workout";
   window.history.replaceState(window.history.state, "", url);
 }
@@ -48,11 +70,13 @@ export function WorkoutHub({
     router.refresh();
   }, [sync?.lastSyncedAt, activeClientId, router]);
 
-  // Hydrate active session from URL without triggering a Next.js navigation.
+  // Hydrate active session from URL or offline session storage (no router navigation).
   useEffect(() => {
     const fromUrl = new URLSearchParams(window.location.search).get("active");
-    if (fromUrl) {
-      setActiveClientId(fromUrl);
+    const fromStorage = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
+    const clientId = fromUrl ?? (isOffline() ? fromStorage : null);
+    if (clientId) {
+      setActiveClientId(clientId);
     }
   }, []);
 
@@ -146,7 +170,7 @@ export function WorkoutHub({
     );
   }
 
-  const offline = typeof navigator !== "undefined" && !navigator.onLine;
+  const offline = isOffline();
 
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-8">

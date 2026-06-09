@@ -33,6 +33,21 @@ const staticAssetCache = {
   ],
 };
 
+const iconCachePlugins = [
+  new CacheableResponsePlugin({ statuses: [0, 200] }),
+  new ExpirationPlugin({
+    maxEntries: 16,
+    maxAgeSeconds: 30 * 24 * 60 * 60,
+    maxAgeFrom: "last-used",
+  }),
+  {
+    handlerDidError: async () => {
+      const cache = await caches.open("forgefit-icons");
+      return cache.match("/logo-icon.svg");
+    },
+  },
+];
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -56,6 +71,28 @@ const serwist = new Serwist({
       matcher: ({ url, sameOrigin }) =>
         sameOrigin && url.pathname.includes("/turbopack"),
       handler: new CacheFirst(staticAssetCache),
+    },
+    // Browsers always request /favicon.ico; defaultCache uses StaleWhileRevalidate
+    // which throws no-response offline when the icon was never cached.
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin &&
+        (url.pathname === "/favicon.ico" ||
+          url.pathname === "/logo-icon.svg" ||
+          url.pathname === "/manifest.json"),
+      handler: new CacheFirst({
+        cacheName: "forgefit-icons",
+        plugins: iconCachePlugins,
+      }),
+    },
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin &&
+        /\.(?:ico|svg|png|jpg|jpeg|gif|webp)$/i.test(url.pathname),
+      handler: new CacheFirst({
+        cacheName: "forgefit-static-images",
+        plugins: iconCachePlugins,
+      }),
     },
     {
       matcher: ({ request, url }) =>
