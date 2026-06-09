@@ -19,6 +19,19 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+/** Keep one revision per URL — duplicate precache entries crash SW install. */
+function dedupePrecacheEntries(
+  entries: (PrecacheEntry | string)[] | undefined
+): (PrecacheEntry | string)[] {
+  if (!entries?.length) return [];
+  const byUrl = new Map<string, PrecacheEntry | string>();
+  for (const entry of entries) {
+    const url = typeof entry === "string" ? entry : entry.url;
+    byUrl.set(url, entry);
+  }
+  return [...byUrl.values()];
+}
+
 const APP_ROUTES = /^\/(home|workout|nutrition|progress|profile)(\/.*)?$/;
 
 const staticAssetCache = {
@@ -49,7 +62,7 @@ const iconCachePlugins = [
 ];
 
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
+  precacheEntries: dedupePrecacheEntries(self.__SW_MANIFEST),
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,

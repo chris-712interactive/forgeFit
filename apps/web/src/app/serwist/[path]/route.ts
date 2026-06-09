@@ -8,6 +8,9 @@ const revision =
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
+    // Don't precache /logo-icon.svg, /favicon.ico, or /manifest.json here —
+    // Turbopack already adds them to __SW_MANIFEST; duplicate URLs with
+    // different revisions crash the SW (add-to-cache-list-conflicting-entries).
     additionalPrecacheEntries: [
       { url: "/~offline", revision },
       { url: "/home", revision },
@@ -15,9 +18,6 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
       { url: "/nutrition", revision },
       { url: "/progress", revision },
       { url: "/profile", revision },
-      { url: "/logo-icon.svg", revision },
-      { url: "/favicon.ico", revision },
-      { url: "/manifest.json", revision },
     ],
     swSrc: "src/app/sw.ts",
     useNativeEsbuild: true,
