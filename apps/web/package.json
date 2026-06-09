@@ -12,6 +12,7 @@
   "dependencies": {
     "@forgefit/evidence-kb": "workspace:*",
     "@forgefit/exercise-db": "workspace:*",
+    "@forgefit/offline-sync": "workspace:*",
     "@forgefit/program-engine": "workspace:*",
     "@forgefit/ui": "workspace:*",
     "@supabase/ssr": "^0.10.3",
@@ -22,6 +23,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@serwist/turbopack": "^9.4.2",
+    "esbuild": "^0.25.12",
+    "serwist": "^9.4.2",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

@@ -34,7 +34,9 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     path.startsWith("/login") ||
     path.startsWith("/signup") ||
-    path.startsWith("/auth");
+    path.startsWith("/auth") ||
+    path.startsWith("/serwist") ||
+    path.startsWith("/~offline");
   const isPublicRoute = path === "/";
   const isAppRoute =
     path.startsWith("/home") ||

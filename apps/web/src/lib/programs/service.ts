@@ -45,17 +45,24 @@ export async function loadUserProgramContext(userId: string) {
 export async function getActiveProgram(
   userId: string
 ): Promise<ProgramPlan | null> {
+  const row = await getActiveProgramRow(userId);
+  return (row?.plan as ProgramPlan | null) ?? null;
+}
+
+export async function getActiveProgramRow(userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("programs")
-    .select("plan")
+    .select("id, plan")
     .eq("user_id", userId)
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  return (data?.plan as ProgramPlan | null) ?? null;
+  return data
+    ? { id: data.id as string, plan: data.plan as ProgramPlan }
+    : null;
 }
 
 export async function generateAndSaveProgram(

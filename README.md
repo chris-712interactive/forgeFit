@@ -4,15 +4,16 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 
 ## Features
 
-**Live now (Phase 1–2):**
+**Live now (Phase 1–3):**
 - Email + Google sign up / sign in
 - 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
 - Mobile app shell with bottom navigation
 - **Personalized programs** — evidence-based plans for fat loss, bodybuilding, powerlifting, strength, recomposition
 - **Home dashboard** — weekly workout schedule + macro targets with cited evidence rules
+- **Offline workouts** — log sets, reps, and RIR in the gym; syncs when back online
+- **Rest timer** — auto-starts between sets with Forge Gold pulse
 
 **Coming soon:**
-- **Offline workouts** — log sets and reps with no signal
 - **Nutrition tracking** — USDA + Open Food Facts food diary
 - **Body measurements** — trends and projections
 - **Exercise demos** — GIF animations + muscle activation maps
@@ -39,6 +40,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `packages/evidence-kb` | 30 peer-reviewed fitness rules |
 | `packages/exercise-db` | Seed exercise library |
 | `packages/program-engine` | Program + nutrition generator |
+| `packages/offline-sync` | Dexie offline workout store + sync |
 | `docs/` | Bible, progress log, architecture |
 
 ## Environment

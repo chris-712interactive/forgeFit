@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 2 complete → Phase 3 (Workout + Offline PWA) next |
+| **Active phase** | Phase 3 complete → Phase 4 (Nutrition) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Fix auth routes blocked by onboarding redirect |
+| **Last session focus** | Phase 3 — workout tracking + offline PWA |
 
 ---
 
@@ -22,7 +22,7 @@
 | 0 | Scaffold | ✅ Complete | 2026-06-08 |
 | 1 | Auth + Onboarding | ✅ Complete | 2026-06-08 |
 | 2 | Evidence Engine | ✅ Complete | 2026-06-08 |
-| 3 | Workout + Offline PWA | ⏳ Pending | — |
+| 3 | Workout + Offline PWA | ✅ Complete | 2026-06-08 |
 | 4 | Nutrition | ⏳ Pending | — |
 | 5 | Measurements + Projections | ⏳ Pending | — |
 | 6 | Exercise Library UI | ⏳ Pending | — |
@@ -32,6 +32,31 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Phase 3 complete
+
+**What was done:**
+- `@forgefit/offline-sync` — Dexie store for sessions/sets, sync client
+- Migration `20260608200000_phase3_workouts.sql` — `workout_sessions`, `exercise_sets` + RLS
+- `POST /api/sync` — idempotent upsert by `client_id`
+- Active workout UI at `/workout/[clientId]` — sets/reps/RIR logging, rest timer
+- Serwist PWA via `@serwist/turbopack` — SW at `/serwist/sw.js`, offline fallback `/~offline`
+- `SyncManager` auto-syncs on load and reconnect
+
+**What's next:**
+- Phase 4: nutrition diary (USDA + Open Food Facts)
+- Apply Phase 3 migration: `supabase db push`
+
+**Blockers:**
+- User must apply `20260608200000_phase3_workouts.sql` before server-side workout history persists
+
+**Files touched:**
+- `packages/offline-sync/`, `supabase/migrations/20260608200000_phase3_workouts.sql`
+- `apps/web/src/app/api/sync/route.ts`, `apps/web/src/app/(app)/workout/`
+- `apps/web/src/components/workout/`, `apps/web/src/app/sw.ts`, `apps/web/src/app/serwist/`
+- `apps/web/next.config.ts`, `apps/web/package.json`, docs
+
+---
 
 ### 2026-06-08 — Auth routes no longer blocked by onboarding
 

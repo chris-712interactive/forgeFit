@@ -70,7 +70,7 @@ export default async function HomePage() {
 
       {todaySession && (
         <Link
-          href="/workout"
+          href={`/workout?day=${todaySession.dayIndex}`}
           className="mt-6 flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display font-bold text-white"
         >
           Start {todaySession.name}

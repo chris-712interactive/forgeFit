@@ -25,3 +25,17 @@ body {
 .gradient-forge-celebrate {
   background: var(--gradient-forge-celebrate);
 }
+
+@keyframes forge-gold-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(251 191 36 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgb(251 191 36 / 0);
+  }
+}
+
+.rest-timer-pulse {
+  animation: forge-gold-pulse 1.5s ease-in-out infinite;
+}

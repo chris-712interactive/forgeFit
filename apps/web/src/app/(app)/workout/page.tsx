@@ -1,14 +1,27 @@
-export default function WorkoutPage() {
+import { WorkoutHub } from "@/components/workout/workout-hub";
+import { getActiveProgramRow } from "@/lib/programs/service";
+import { createClient } from "@/lib/supabase/server";
+import { Suspense } from "react";
+
+export default async function WorkoutPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const programRow = user ? await getActiveProgramRow(user.id) : null;
+
   return (
-    <div className="px-6 py-8">
-      <h1 className="font-display text-2xl font-bold text-forge-text">Workout</h1>
-      <p className="mt-2 text-forge-muted">
-        Active workout tracking arrives in Phase 3 — offline sets, reps, and rest
-        timers.
-      </p>
-      <div className="mt-6 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
-        <p className="font-display text-forge-gold">Coming in Phase 3</p>
-      </div>
-    </div>
+    <Suspense
+      fallback={
+        <div className="px-6 py-8 text-forge-muted">Loading workouts…</div>
+      }
+    >
+      <WorkoutHub
+        userId={user!.id}
+        programId={programRow?.id}
+        plan={programRow?.plan ?? null}
+      />
+    </Suspense>
   );
 }

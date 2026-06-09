@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { SerwistProvider } from "@/components/serwist-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -45,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${plusJakarta.variable} antialiased`}>
-        {children}
+        <SerwistProvider swUrl="/serwist/sw.js">{children}</SerwistProvider>
       </body>
     </html>
   );

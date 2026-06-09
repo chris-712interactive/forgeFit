@@ -36,7 +36,7 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
               </p>
             </div>
             <Link
-              href="/workout"
+              href={`/workout?day=${session.dayIndex}`}
               className="shrink-0 rounded-lg bg-forge-ember/15 px-3 py-2 text-xs font-semibold text-forge-ember"
             >
               Start
