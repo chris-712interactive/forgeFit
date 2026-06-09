@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     "@forgefit/exercise-db",
     "@forgefit/offline-sync",
     "@forgefit/nutrition-core",
+    "@forgefit/projection-engine",
   ],
   turbopack: {
     root: "../..",

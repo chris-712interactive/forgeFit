@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-08 · **Current phase:** Phase 4 complete → Phase 5 next
+**Last updated:** 2026-06-08 · **Current phase:** Phase 5 complete → Phase 6 next
 
 ---
 
@@ -102,6 +102,7 @@ forgeFit/
 │   ├── projection-engine/      # Trajectory forecasting
 │   ├── exercise-db/            # Exercises, equipment, muscle mappings
 │   ├── nutrition-core/         # USDA/OFF food search + diary logic
+│   ├── projection-engine/      # Caliper BF% + weight projections
 │   ├── integrations/           # OAuth adapters
 │   ├── offline-sync/           # Dexie schema + conflict resolution
 │   └── ui/                     # Shared components + Forge Ember tokens
@@ -188,7 +189,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 | 2 | Evidence engine + program generation | Complete |
 | 3 | Workout tracking + offline PWA | Complete |
 | 4 | Nutrition diary | Complete |
-| 5 | Measurements + projections | Pending |
+| 5 | Measurements + projections | Complete |
 | 6 | Exercise library UI | Pending |
 | 7 | Pro integrations (Stripe, OAuth) | Pending |
 | 8 | Motivation + gamification | Pending |

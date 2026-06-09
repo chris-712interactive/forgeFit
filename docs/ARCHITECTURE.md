@@ -14,6 +14,7 @@ packages/exercise-db → Seed exercise library + equipment tags
 packages/program-engine → Goal splits, volume, nutrition targets
 packages/offline-sync   → Dexie workout store + sync client
 packages/nutrition-core → USDA/OFF food search + macro helpers
+packages/projection-engine → Jackson-Pollock calipers + weight projections
 supabase/         → PostgreSQL migrations + RLS
 ```
 
@@ -28,6 +29,7 @@ supabase/         → PostgreSQL migrations + RLS
 | `@forgefit/projection-engine` | Weight/strength forecasts | 5 |
 | `@forgefit/exercise-db` | Seed exercises, equipment tags (500+ GIFs in Phase 6) | 2 |
 | `@forgefit/nutrition-core` | USDA/OFF diary | 4 |
+| `@forgefit/projection-engine` | Caliper BF%, weight trends, 30-day forecasts | 5 |
 | `@forgefit/integrations` | OAuth device adapters | 7 |
 | `@forgefit/offline-sync` | Dexie sessions/sets + `/api/sync` client | 3 |
 
@@ -72,6 +74,14 @@ supabase/         → PostgreSQL migrations + RLS
 3. User taps a result → `POST /api/nutrition/logs` stores scaled macros in `nutrition_logs`
 4. Daily totals computed with `sumMacros()` and compared to targets in `MacroSummary`
 
+## Measurements + Projections (Phase 5)
+
+1. Progress tab loads `body_measurements` history (falls back to onboarding profile baseline)
+2. `POST /api/measurements` upserts daily weight/circumference; updates `profiles.weight_kg`
+3. `POST /api/measurements/caliper` runs Jackson-Pollock 3/7-site via `@forgefit/projection-engine`
+4. `projectWeight()` blends logged trend with evidence-capped goal rate → 30-day chart
+5. Projection JSON cached in `projections` table for fast reload
+
 ## API Surface
 
 | Route | Purpose | Phase |
@@ -81,6 +91,8 @@ supabase/         → PostgreSQL migrations + RLS
 | `/api/sync` | Offline batch upload | 3 |
 | `/api/programs/generate` | Create program from profile | 2 |
 | `/api/nutrition/search` | Food lookup | 4 |
+| `/api/measurements` | Log body measurements | 5 |
+| `/api/measurements/caliper` | Jackson-Pollock BF% | 5 |
 | `/api/integrations/*` | OAuth callbacks | 7 |
 
 ## Security

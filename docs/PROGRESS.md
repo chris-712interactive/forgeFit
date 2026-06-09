@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 4 complete → Phase 5 (Measurements + Projections) next |
+| **Active phase** | Phase 5 complete → Phase 6 (Exercise Library UI) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Phase 4 nutrition diary |
+| **Last session focus** | Phase 5 measurements + projections |
 
 ---
 
@@ -24,7 +24,7 @@
 | 2 | Evidence Engine | ✅ Complete | 2026-06-08 |
 | 3 | Workout + Offline PWA | ✅ Complete | 2026-06-08 |
 | 4 | Nutrition | ✅ Complete | 2026-06-08 |
-| 5 | Measurements + Projections | ⏳ Pending | — |
+| 5 | Measurements + Projections | ✅ Complete | 2026-06-08 |
 | 6 | Exercise Library UI | ⏳ Pending | — |
 | 7 | Pro Integrations | ⏳ Pending | — |
 | 8 | Motivation + Gamification | ⏳ Pending | — |
@@ -32,6 +32,27 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Phase 5 complete (Measurements + projections)
+
+**What was done:**
+- `@forgefit/projection-engine` — Jackson-Pollock 3/7-site caliper math, evidence-capped `projectWeight()`, trend series builder
+- Migration `20260608400000_phase5_measurements.sql` — `body_measurements`, `caliper_measurements`, `projections` + RLS
+- APIs: `POST /api/measurements`, `POST /api/measurements/caliper`
+- Progress tab: Recharts trend chart, 30-day projection, log form, caliper calculator
+- Onboarding profile used as chart baseline when no logs exist yet
+
+**What's next:**
+- Phase 6: exercise library UI (GIFs, muscle maps)
+- Apply Phase 5 migration: `supabase db push`
+
+**Files touched:**
+- `packages/projection-engine/`, `supabase/migrations/20260608400000_phase5_measurements.sql`
+- `apps/web/src/lib/measurements/`, `apps/web/src/app/api/measurements/`
+- `apps/web/src/components/progress/`, `apps/web/src/app/(app)/progress/page.tsx`
+- `apps/web/package.json`, `apps/web/next.config.ts`, docs
+
+---
 
 ### 2026-06-08 — Phase 4 complete (Nutrition diary)
 
