@@ -21,6 +21,13 @@ class ForgeFitDB extends Dexie {
       exerciseSets: "clientId, sessionClientId, [sessionClientId+exerciseId+setNumber]",
       cachedPrograms: "userId",
     });
+    // userId index required for collectUnsyncedPayload / getPendingSyncCount
+    this.version(3).stores({
+      workoutSessions: "clientId, userId, status, updatedAt",
+      exerciseSets:
+        "clientId, sessionClientId, userId, [sessionClientId+exerciseId+setNumber]",
+      cachedPrograms: "userId",
+    });
   }
 }
 

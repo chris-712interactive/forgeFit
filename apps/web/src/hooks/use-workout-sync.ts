@@ -15,9 +15,18 @@ export function useWorkoutSync(userId: string) {
   const syncingRef = useRef(false);
 
   const refreshPending = useCallback(async () => {
-    const count = await getPendingSyncCount(userId);
-    setPendingCount(count);
-    return count;
+    try {
+      const count = await getPendingSyncCount(userId);
+      setPendingCount(count);
+      return count;
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not read offline workout data.";
+      setLastError(message);
+      return 0;
+    }
   }, [userId]);
 
   const runSync = useCallback(async (): Promise<SyncOutcome> => {
@@ -37,6 +46,13 @@ export function useWorkoutSync(userId: string) {
       }
       await refreshPending();
       return result;
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Sync failed due to a local storage error.";
+      setLastError(message);
+      return { ok: false, message };
     } finally {
       syncingRef.current = false;
       setSyncing(false);
