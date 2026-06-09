@@ -36,7 +36,19 @@ export function cmToFtIn(cm: number): { feet: number; inches: number } {
   return { feet, inches };
 }
 
-export const UNIT_OPTIONS: { value: UnitSystem; label: string }[] = [
-  { value: "metric", label: "Metric" },
-  { value: "imperial", label: "Imperial" },
+export const UNIT_SYSTEM_TILES: {
+  value: UnitSystem;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "metric",
+    label: "Metric (cm/kg)",
+    description: "Centimeters & kilograms",
+  },
+  {
+    value: "imperial",
+    label: "Imperial (ft/in/lbs)",
+    description: "Feet, inches & pounds",
+  },
 ];

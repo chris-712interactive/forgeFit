@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 1 complete → Phase 2 (Evidence Engine) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Onboarding imperial/metric unit selectors |
+| **Last session focus** | Single tile-based unit system for onboarding measurements |
 
 ---
 
@@ -33,17 +33,16 @@
 
 ## Session Log
 
-### 2026-06-08 — Onboarding unit selectors
+### 2026-06-08 — Onboarding unit system tiles
 
 **What was done:**
-- Added per-field Metric / Imperial dropdown on measurement step
-- Conversions in `lib/units/measurements.ts` — stored as kg/cm in database
-- Height imperial uses feet + inches inputs
+- Replaced per-field dropdowns with one tile row: Metric (cm/kg) vs Imperial (ft/in/lbs)
+- All measurement inputs switch units together from that selection
+- Still stores kg/cm in database with behind-the-scenes conversion
 
 **Files touched:**
 - `apps/web/src/lib/units/measurements.ts`
 - `apps/web/src/components/onboarding/measurement-step.tsx`
-- `apps/web/src/components/onboarding/onboarding-wizard.tsx`
 - `docs/DESIGN.md`, `docs/PROGRESS.md`
 
 ---

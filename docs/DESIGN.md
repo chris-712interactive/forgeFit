@@ -59,9 +59,9 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 
 ## Onboarding measurements
 
-- Each measurement field has a **Metric / Imperial** dropdown
-- Users enter familiar units; values convert to **kg** and **cm** before save
-- Height (imperial): feet + inches inputs
+- Single **unit system** tile row above all body measurements: **Metric (cm/kg)** or **Imperial (ft/in/lbs)**
+- All inputs switch together when the tile is selected
+- Values convert to **kg** and **cm** before save; height (imperial) uses feet + inches
 
 ## Do / Don't
 

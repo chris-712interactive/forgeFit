@@ -155,7 +155,7 @@ export function OnboardingWizard() {
         {step === 3 && (
           <StepShell
             title="Your measurements"
-            subtitle="Enter values in whatever units you know — we handle the rest."
+            subtitle="Choose your units once — we handle conversions behind the scenes."
           >
             <MeasurementStep data={data} onChange={update} />
           </StepShell>
