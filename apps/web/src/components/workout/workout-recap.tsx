@@ -3,10 +3,12 @@
 import { compareSessions, formatShortDate } from "@/lib/workouts/comparison";
 import type { DayPlanStatus, WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { getPriorSessionForComparison } from "@/lib/workouts/sessions";
+import { WorkoutSyncNotice } from "./workout-sync-notice";
 
 interface WorkoutRecapProps {
   session: WorkoutSessionRecord;
   dayStatus?: DayPlanStatus;
+  workoutsTableReady: boolean;
   onBack: () => void;
   onStartAgain?: () => void;
 }
@@ -14,12 +16,14 @@ interface WorkoutRecapProps {
 export function WorkoutRecap({
   session,
   dayStatus,
+  workoutsTableReady,
   onBack,
   onStartAgain,
 }: WorkoutRecapProps) {
   const prior = getPriorSessionForComparison(dayStatus, session.clientId);
   const comparisons = compareSessions(session, prior);
   const completedSets = session.sets.filter((s) => s.completed).length;
+  const syncedToAccount = !session.pendingSync;
 
   return (
     <div className="px-4 py-6 pb-36 sm:px-6 sm:py-8">
@@ -40,10 +44,15 @@ export function WorkoutRecap({
       <p className="mt-2 text-sm text-forge-muted">
         {formatShortDate(session.completedAt ?? session.startedAt)} ·{" "}
         {completedSets}/{session.sets.length} sets logged
-        {session.pendingSync && (
-          <span className="ml-2 text-forge-gold">· Pending sync</span>
-        )}
       </p>
+
+      {!syncedToAccount && (
+        <WorkoutSyncNotice
+          workoutsTableReady={workoutsTableReady}
+          syncedToAccount={syncedToAccount}
+          compact
+        />
+      )}
 
       {prior && (
         <p className="mt-3 rounded-xl border border-forge-steel/20 bg-forge-surface-raised px-3 py-2 text-sm text-forge-muted">

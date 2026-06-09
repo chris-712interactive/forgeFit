@@ -3,6 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+function friendlySyncError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes("workout_sessions") && lower.includes("does not exist")) {
+    return "workout_sessions table missing — run 20260608200000_phase3_workouts.sql in Supabase.";
+  }
+  if (lower.includes("exercise_sets") && lower.includes("does not exist")) {
+    return "exercise_sets table missing — run 20260608200000_phase3_workouts.sql in Supabase.";
+  }
+  if (lower.includes("violates foreign key constraint") && lower.includes("program")) {
+    return "Program link invalid — retrying sync without program_id.";
+  }
+  return message;
+}
+
 const syncSchema = z.object({
   sessions: z.array(
     z.object({
@@ -71,7 +85,10 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (lookupError) {
-      return NextResponse.json({ error: lookupError.message }, { status: 500 });
+      return NextResponse.json(
+        { error: friendlySyncError(lookupError.message) },
+        { status: 500 }
+      );
     }
 
     if (existing) {
@@ -93,7 +110,10 @@ export async function POST(request: Request) {
           })
           .eq("id", existing.id);
         if (error) {
-          return NextResponse.json({ error: error.message }, { status: 500 });
+          return NextResponse.json(
+            { error: friendlySyncError(error.message) },
+            { status: 500 }
+          );
         }
       }
       sessionIdByClientId.set(session.clientId, existing.id);
@@ -101,28 +121,42 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const { data: inserted, error } = await supabase
+    const sessionRow = {
+      user_id: user.id,
+      client_id: session.clientId,
+      program_id: session.programId ?? null,
+      session_name: session.sessionName,
+      day_index: session.dayIndex,
+      status: session.status,
+      started_at: session.startedAt,
+      completed_at: session.completedAt ?? null,
+      updated_at: session.updatedAt,
+    };
+
+    let { data: inserted, error } = await supabase
       .from("workout_sessions")
-      .insert({
-        user_id: user.id,
-        client_id: session.clientId,
-        program_id: session.programId ?? null,
-        session_name: session.sessionName,
-        day_index: session.dayIndex,
-        status: session.status,
-        started_at: session.startedAt,
-        completed_at: session.completedAt ?? null,
-        updated_at: session.updatedAt,
-      })
+      .insert(sessionRow)
       .select("id")
       .single();
+
+    if (
+      error?.message?.toLowerCase().includes("foreign key") &&
+      sessionRow.program_id
+    ) {
+      ({ data: inserted, error } = await supabase
+        .from("workout_sessions")
+        .insert({ ...sessionRow, program_id: null })
+        .select("id")
+        .single());
+    }
 
     if (error || !inserted) {
       return NextResponse.json(
         {
-          error:
+          error: friendlySyncError(
             error?.message ??
-            "Failed to sync session. Apply the Phase 3 migration (workout_sessions table).",
+              "Failed to sync session. Apply the Phase 3 migration (workout_sessions table)."
+          ),
         },
         { status: 500 }
       );
@@ -166,7 +200,10 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (lookupError) {
-      return NextResponse.json({ error: lookupError.message }, { status: 500 });
+      return NextResponse.json(
+        { error: friendlySyncError(lookupError.message) },
+        { status: 500 }
+      );
     }
 
     const row = {
@@ -191,7 +228,10 @@ export async function POST(request: Request) {
           .update(row)
           .eq("id", existing.id);
         if (error) {
-          return NextResponse.json({ error: error.message }, { status: 500 });
+          return NextResponse.json(
+            { error: friendlySyncError(error.message) },
+            { status: 500 }
+          );
         }
       }
       syncedSets++;
@@ -205,7 +245,10 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: friendlySyncError(error.message) },
+        { status: 500 }
+      );
     }
 
     syncedSets++;

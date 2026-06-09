@@ -10,14 +10,17 @@ export default async function WorkoutPage() {
   } = await supabase.auth.getUser();
 
   const programRow = user ? await getActiveProgramRow(user.id) : null;
-  const serverSessions = user ? await getServerSessionRecords(user.id) : [];
+  const serverSessionsResult = user
+    ? await getServerSessionRecords(user.id)
+    : { records: [], tableReady: true };
 
   return (
     <WorkoutHub
       userId={user!.id}
       programId={programRow?.id}
       plan={programRow?.plan ?? null}
-      serverSessions={serverSessions}
+      serverSessions={serverSessionsResult.records}
+      workoutsTableReady={serverSessionsResult.tableReady}
     />
   );
 }

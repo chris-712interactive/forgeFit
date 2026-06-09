@@ -1,10 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "./sessions";
 
+export interface ServerSessionsResult {
+  records: WorkoutSessionRecord[];
+  /** False when workout_sessions table is missing (Phase 3 migration not applied). */
+  tableReady: boolean;
+}
+
+function isWorkoutTableMissing(error: { message?: string; code?: string }): boolean {
+  const message = error.message?.toLowerCase() ?? "";
+  return (
+    error.code === "PGRST205" ||
+    message.includes("workout_sessions") ||
+    message.includes("schema cache")
+  );
+}
+
 export async function getServerSessionRecords(
   userId: string,
   limit = 50
-): Promise<WorkoutSessionRecord[]> {
+): Promise<ServerSessionsResult> {
   const supabase = await createClient();
 
   const { data: sessions, error } = await supabase
@@ -16,8 +31,12 @@ export async function getServerSessionRecords(
     .order("started_at", { ascending: false })
     .limit(limit);
 
-  if (error || !sessions?.length) {
-    return [];
+  if (error) {
+    return { records: [], tableReady: !isWorkoutTableMissing(error) };
+  }
+
+  if (!sessions?.length) {
+    return { records: [], tableReady: true };
   }
 
   const sessionIds = sessions.map((s) => s.id);
@@ -43,17 +62,20 @@ export async function getServerSessionRecords(
     setsBySession.set(set.workout_session_id, group);
   }
 
-  return sessions.map((session) => ({
-    id: session.id,
-    clientId: session.client_id,
-    dayIndex: session.day_index,
-    sessionName: session.session_name,
-    status: session.status,
-    startedAt: session.started_at,
-    completedAt: session.completed_at,
-    sets: (setsBySession.get(session.id) ?? []).sort(
-      (a, b) =>
-        a.exerciseId.localeCompare(b.exerciseId) || a.setNumber - b.setNumber
-    ),
-  }));
+  return {
+    tableReady: true,
+    records: sessions.map((session) => ({
+      id: session.id,
+      clientId: session.client_id,
+      dayIndex: session.day_index,
+      sessionName: session.session_name,
+      status: session.status,
+      startedAt: session.started_at,
+      completedAt: session.completed_at,
+      sets: (setsBySession.get(session.id) ?? []).sort(
+        (a, b) =>
+          a.exerciseId.localeCompare(b.exerciseId) || a.setNumber - b.setNumber
+      ),
+    })),
+  };
 }

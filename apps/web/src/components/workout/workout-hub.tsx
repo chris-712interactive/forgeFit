@@ -21,12 +21,14 @@ import { SyncStatusBanner } from "./sync-status-banner";
 import { useWorkoutSyncContext } from "./sync-manager";
 import { WeekPlanCard } from "./week-plan-card";
 import { WorkoutRecap } from "./workout-recap";
+import { WorkoutSyncNotice } from "./workout-sync-notice";
 
 interface WorkoutHubProps {
   userId: string;
   programId?: string;
   plan: ProgramPlan | null;
   serverSessions?: WorkoutSessionRecord[];
+  workoutsTableReady?: boolean;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -71,6 +73,7 @@ export function WorkoutHub({
   programId,
   plan: serverPlan,
   serverSessions = [],
+  workoutsTableReady = true,
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -265,6 +268,7 @@ export function WorkoutHub({
       <WorkoutRecap
         session={reviewSession}
         dayStatus={reviewDayStatus}
+        workoutsTableReady={workoutsTableReady}
         onBack={closeToHub}
         onStartAgain={() => void handleStart(reviewSession.dayIndex)}
       />
@@ -276,6 +280,12 @@ export function WorkoutHub({
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-8">
       <SyncStatusBanner />
+      {!workoutsTableReady && (
+        <WorkoutSyncNotice
+          workoutsTableReady={workoutsTableReady}
+          syncedToAccount={false}
+        />
+      )}
       <h1 className="font-display text-2xl font-bold text-forge-text">Workout</h1>
       <p className="mt-2 text-forge-muted">
         Your weekly plan — completed days are checked off. Tap results to compare
