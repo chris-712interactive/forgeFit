@@ -8,6 +8,7 @@ import {
   type LocalExerciseSet,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
+import { useOfflineStatus } from "@/hooks/use-online-status";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
@@ -31,6 +32,7 @@ export function ActiveWorkout({
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
+  const offline = useOfflineStatus();
 
   const goBack = useCallback(() => {
     onBack?.();
@@ -159,7 +161,7 @@ export function ActiveWorkout({
       </h1>
       <p className="mt-2 text-sm text-forge-muted">
         {completedCount}/{totalCount} sets logged
-        {!navigator.onLine && (
+        {offline && (
           <span className="ml-2 text-forge-steel">· Offline mode</span>
         )}
       </p>

@@ -13,6 +13,7 @@ import {
   mergeSessionRecords,
   type WorkoutSessionRecord,
 } from "@/lib/workouts/sessions";
+import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -33,7 +34,7 @@ interface WorkoutHubProps {
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
 
-function isOffline() {
+function isOfflineNow() {
   return typeof navigator !== "undefined" && !navigator.onLine;
 }
 
@@ -49,7 +50,7 @@ function replaceWorkoutUrl(
   mode: "hub" | "active" | "review",
   clientId: string | null
 ) {
-  if (isOffline()) {
+  if (isOfflineNow()) {
     if (mode === "active") {
       persistActiveWorkout(clientId);
     } else {
@@ -85,6 +86,7 @@ export function WorkoutHub({
   const [localSessions, setLocalSessions] = useState<WorkoutSessionRecord[]>([]);
   const [sessionsReady, setSessionsReady] = useState(false);
   const [startingDay, setStartingDay] = useState<number | null>(null);
+  const offline = useOfflineStatus();
 
   const allSessions = useMemo(
     () => mergeSessionRecords(localSessions, serverSessions),
@@ -115,7 +117,7 @@ export function WorkoutHub({
       const reviewFromUrl = params.get("review");
       const fromStorage = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
       const activeClientIdCandidate =
-        activeFromUrl ?? (isOffline() ? fromStorage : null);
+        activeFromUrl ?? (isOfflineNow() ? fromStorage : null);
 
       if (reviewFromUrl) {
         setReviewClientId(reviewFromUrl);
@@ -131,7 +133,7 @@ export function WorkoutHub({
       }
 
       persistActiveWorkout(null);
-      if (activeFromUrl && !isOffline()) {
+      if (activeFromUrl && !isOfflineNow()) {
         window.history.replaceState(window.history.state, "", "/workout");
       }
     }
@@ -274,8 +276,6 @@ export function WorkoutHub({
       />
     );
   }
-
-  const offline = isOffline();
 
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-8">
