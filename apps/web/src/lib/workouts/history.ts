@@ -8,6 +8,7 @@ export interface WorkoutHistoryItem {
   completedAt: string | null;
   setCount: number;
   completedSetCount: number;
+  pendingSync?: boolean;
 }
 
 export async function getWorkoutHistory(

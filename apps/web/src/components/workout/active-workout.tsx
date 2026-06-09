@@ -16,7 +16,7 @@ import { useWorkoutSyncContext } from "./sync-manager";
 interface ActiveWorkoutProps {
   clientId: string;
   onBack?: () => void;
-  onFinished?: () => void;
+  onFinished?: () => void | Promise<void>;
 }
 
 export function ActiveWorkout({
@@ -110,10 +110,12 @@ export function ActiveWorkout({
 
     try {
       await completeWorkoutSession(clientId, "completed");
-      onFinished?.();
-      goBack();
+      await onFinished?.();
       void sync?.refreshPending();
-      void sync?.runSync();
+      if (navigator.onLine) {
+        await sync?.runSync();
+      }
+      goBack();
     } catch {
       setFinishError("Could not save workout on this device. Try again.");
       setFinishing(false);

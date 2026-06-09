@@ -20,6 +20,10 @@ export async function getPendingSyncCount(userId: string): Promise<number> {
   return sessions.length + sets.length;
 }
 
+function finiteOrUndefined(value: number | undefined): number | undefined {
+  return value != null && Number.isFinite(value) ? value : undefined;
+}
+
 export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
   if (!navigator.onLine) return null;
 
@@ -45,9 +49,9 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
       exerciseId: s.exerciseId,
       exerciseName: s.exerciseName,
       setNumber: s.setNumber,
-      reps: s.reps,
-      weightKg: s.weightKg,
-      rir: s.rir,
+      reps: finiteOrUndefined(s.reps),
+      weightKg: finiteOrUndefined(s.weightKg),
+      rir: finiteOrUndefined(s.rir),
       completed: s.completed,
       completedAt: s.completedAt,
       updatedAt: s.updatedAt,

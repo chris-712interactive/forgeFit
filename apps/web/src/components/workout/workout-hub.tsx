@@ -5,6 +5,9 @@ import {
   cacheProgramPlan,
   getCachedProgramPlan,
   getInProgressSessions,
+  getSession,
+  getSetsForSession,
+  listSessionsForUser,
   startWorkoutSession,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
@@ -24,6 +27,46 @@ interface WorkoutHubProps {
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
+
+async function loadLocalHistory(
+  userId: string,
+  limit = 10
+): Promise<WorkoutHistoryItem[]> {
+  const sessions = await listSessionsForUser(userId);
+  const finished = sessions.filter((s) => s.status !== "in_progress").slice(0, limit);
+
+  return Promise.all(
+    finished.map(async (session) => {
+      const sets = await getSetsForSession(session.clientId);
+      return {
+        id: session.clientId,
+        sessionName: session.sessionName,
+        status: session.status,
+        startedAt: session.startedAt,
+        completedAt: session.completedAt ?? null,
+        setCount: sets.length,
+        completedSetCount: sets.filter((s) => s.completed).length,
+        pendingSync: !session.synced,
+      };
+    })
+  );
+}
+
+function mergeHistory(
+  server: WorkoutHistoryItem[],
+  local: WorkoutHistoryItem[]
+): WorkoutHistoryItem[] {
+  const seen = new Set(
+    server.map((item) => `${item.sessionName}:${item.startedAt}`)
+  );
+  const merged = [
+    ...server,
+    ...local.filter((item) => !seen.has(`${item.sessionName}:${item.startedAt}`)),
+  ];
+  return merged
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+    .slice(0, 10);
+}
 
 function isOffline() {
   return typeof navigator !== "undefined" && !navigator.onLine;
@@ -63,6 +106,7 @@ export function WorkoutHub({
   const [plan, setPlan] = useState<ProgramPlan | null>(serverPlan);
   const [cachedProgramId, setCachedProgramId] = useState<string | undefined>(programId);
   const [inProgress, setInProgress] = useState<LocalWorkoutSession[]>([]);
+  const [localHistory, setLocalHistory] = useState<WorkoutHistoryItem[]>([]);
   const [startingDay, setStartingDay] = useState<number | null>(null);
 
   useEffect(() => {
@@ -70,14 +114,27 @@ export function WorkoutHub({
     router.refresh();
   }, [sync?.lastSyncedAt, activeClientId, router]);
 
-  // Hydrate active session from URL or offline session storage (no router navigation).
+  // Hydrate only in-progress sessions — ignore stale ?active= after finish.
   useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get("active");
-    const fromStorage = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
-    const clientId = fromUrl ?? (isOffline() ? fromStorage : null);
-    if (clientId) {
-      setActiveClientId(clientId);
+    async function hydrateActiveSession() {
+      const fromUrl = new URLSearchParams(window.location.search).get("active");
+      const fromStorage = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
+      const clientId = fromUrl ?? (isOffline() ? fromStorage : null);
+      if (!clientId) return;
+
+      const session = await getSession(clientId);
+      if (session?.status === "in_progress") {
+        setActiveClientId(clientId);
+        return;
+      }
+
+      persistActiveWorkout(null);
+      if (fromUrl && !isOffline()) {
+        window.history.replaceState(window.history.state, "", "/workout");
+      }
     }
+
+    void hydrateActiveSession();
   }, []);
 
   // Warm lazy chunks while online so Turbopack doesn't fetch them mid-workout.
@@ -85,9 +142,18 @@ export function WorkoutHub({
     void import("@forgefit/offline-sync");
   }, []);
 
-  useEffect(() => {
-    void getInProgressSessions(userId).then(setInProgress);
+  const refreshWorkoutLists = useCallback(async () => {
+    const [sessions, completed] = await Promise.all([
+      getInProgressSessions(userId),
+      loadLocalHistory(userId),
+    ]);
+    setInProgress(sessions);
+    setLocalHistory(completed);
   }, [userId]);
+
+  useEffect(() => {
+    void refreshWorkoutLists();
+  }, [refreshWorkoutLists]);
 
   useEffect(() => {
     if (serverPlan) {
@@ -110,15 +176,11 @@ export function WorkoutHub({
     replaceWorkoutUrl(clientId);
   }, []);
 
-  const refreshInProgress = useCallback(() => {
-    void getInProgressSessions(userId).then(setInProgress);
-  }, [userId]);
-
   const closeWorkout = useCallback(() => {
     setActiveClientId(null);
     replaceWorkoutUrl(null);
-    refreshInProgress();
-  }, [refreshInProgress]);
+    void refreshWorkoutLists();
+  }, [refreshWorkoutLists]);
 
   const handleStart = useCallback(
     async (dayIndex: number) => {
@@ -165,7 +227,7 @@ export function WorkoutHub({
       <ActiveWorkout
         clientId={activeClientId}
         onBack={closeWorkout}
-        onFinished={refreshInProgress}
+        onFinished={refreshWorkoutLists}
       />
     );
   }
@@ -255,7 +317,7 @@ export function WorkoutHub({
         </div>
       )}
 
-      <WorkoutHistory items={history} />
+      <WorkoutHistory items={mergeHistory(history, localHistory)} />
     </div>
   );
 }

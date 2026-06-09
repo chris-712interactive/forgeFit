@@ -37,6 +37,7 @@ export function WorkoutHistory({ items }: WorkoutHistoryProps) {
                 {formatDate(item.startedAt)}
                 {item.completedSetCount > 0 &&
                   ` · ${item.completedSetCount}/${item.setCount} sets logged`}
+                {item.pendingSync && " · Saved on this device"}
               </p>
             </div>
             <span

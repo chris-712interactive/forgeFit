@@ -77,7 +77,9 @@ export async function POST(request: Request) {
     if (existing) {
       const existingUpdated = new Date(existing.updated_at).getTime();
       const incomingUpdated = new Date(session.updatedAt).getTime();
-      if (incomingUpdated >= existingUpdated) {
+      const isTerminal =
+        session.status === "completed" || session.status === "cancelled";
+      if (isTerminal || incomingUpdated >= existingUpdated) {
         const { error } = await supabase
           .from("workout_sessions")
           .update({

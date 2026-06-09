@@ -105,9 +105,17 @@ export async function updateSet(
   const existing = await db.exerciseSets.get(clientId);
   if (!existing) return undefined;
 
+  const sanitizedPatch = { ...patch };
+  if (sanitizedPatch.reps != null && !Number.isFinite(sanitizedPatch.reps)) {
+    sanitizedPatch.reps = undefined;
+  }
+  if (sanitizedPatch.weightKg != null && !Number.isFinite(sanitizedPatch.weightKg)) {
+    sanitizedPatch.weightKg = undefined;
+  }
+
   const updated: LocalExerciseSet = {
     ...existing,
-    ...patch,
+    ...sanitizedPatch,
     completedAt:
       patch.completed === true
         ? (patch.completedAt ?? nowIso())
@@ -132,6 +140,11 @@ export async function completeWorkoutSession(
   status: Extract<WorkoutStatus, "completed" | "cancelled"> = "completed"
 ): Promise<void> {
   const db = getOfflineDb();
+  const existing = await db.workoutSessions.get(clientId);
+  if (!existing) {
+    throw new Error("Workout session not found on this device.");
+  }
+
   const timestamp = nowIso();
   const sets = await db.exerciseSets
     .where("sessionClientId")
@@ -139,12 +152,15 @@ export async function completeWorkoutSession(
     .toArray();
 
   await db.transaction("rw", db.workoutSessions, db.exerciseSets, async () => {
-    await db.workoutSessions.update(clientId, {
+    const updated = await db.workoutSessions.update(clientId, {
       status,
       completedAt: timestamp,
       updatedAt: timestamp,
       synced: false,
     });
+    if (updated === 0) {
+      throw new Error("Could not update workout session.");
+    }
     for (const set of sets) {
       await db.exerciseSets.update(set.clientId, {
         updatedAt: timestamp,
@@ -152,6 +168,11 @@ export async function completeWorkoutSession(
       });
     }
   });
+
+  const saved = await db.workoutSessions.get(clientId);
+  if (!saved || saved.status !== status) {
+    throw new Error("Workout completion did not save locally.");
+  }
 }
 
 export async function collectUnsyncedPayload(userId: string): Promise<{
