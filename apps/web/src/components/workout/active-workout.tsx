@@ -129,11 +129,19 @@ export function ActiveWorkout({ clientId, userId, onBack }: ActiveWorkoutProps) 
   }
 
   return (
-    <div className="px-6 py-8 pb-32">
+    <div className="px-4 py-6 pb-32 sm:px-6 sm:py-8">
+      <button
+        type="button"
+        onClick={goBack}
+        className="mb-4 text-sm font-medium text-forge-steel"
+      >
+        ← Back to workouts
+      </button>
+
       <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
         {session.status === "in_progress" ? "In progress" : session.status}
       </p>
-      <h1 className="font-display text-2xl font-bold text-forge-text">
+      <h1 className="font-display text-xl font-bold text-forge-text sm:text-2xl">
         {session.sessionName}
       </h1>
       <p className="mt-2 text-sm text-forge-muted">
@@ -143,33 +151,25 @@ export function ActiveWorkout({ clientId, userId, onBack }: ActiveWorkoutProps) 
         )}
       </p>
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-6 space-y-5">
         {session.exercises.map((exercise) => {
           const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
           return (
             <section
               key={exercise.exerciseId}
-              className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4"
+              className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-3 sm:p-4"
             >
-              <div className="mb-3">
-                <h2 className="font-display font-semibold text-forge-text">
+              <div className="mb-4">
+                <h2 className="font-display text-base font-semibold text-forge-text sm:text-lg">
                   {exercise.name}
                 </h2>
-                <p className="text-sm text-forge-muted">
-                  Target {exercise.sets}×{exercise.reps} · {exercise.restSeconds}s
-                  rest
+                <p className="mt-1 text-sm text-forge-muted">
+                  Aim for {exercise.sets} sets of {exercise.reps} reps ·{" "}
+                  {exercise.restSeconds}s rest between sets
                 </p>
               </div>
 
-              <div className="mb-2 grid grid-cols-[2rem_1fr_1fr_3rem_3rem] gap-2 px-2 text-xs font-semibold uppercase tracking-wide text-forge-muted">
-                <span>Set</span>
-                <span>kg</span>
-                <span>Reps</span>
-                <span>RIR</span>
-                <span />
-              </div>
-
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {exerciseSets.map((set) => (
                   <SetRow
                     key={set.clientId}

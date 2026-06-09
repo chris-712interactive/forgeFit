@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 3 complete → Phase 4 (Nutrition) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Offline workout navigation + program cache |
+| **Last session focus** | Mobile workout logging UX (set cards, effort labels) |
 
 ---
 
@@ -32,6 +32,18 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Mobile workout set logging UX
+
+**What was done:**
+- Replaced cramped 5-column grid with stacked set cards (weight + reps side by side)
+- Replaced RIR jargon with optional "How hard was it?" chips: Easy / Good / Hard
+- Added back link and tighter mobile padding on active workout screen
+
+**Files touched:**
+- `apps/web/src/components/workout/set-row.tsx`, `active-workout.tsx`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Offline Turbopack chunk load fix
 

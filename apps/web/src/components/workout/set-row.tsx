@@ -11,78 +11,124 @@ interface SetRowProps {
   ) => void;
 }
 
+const EFFORT_LEVELS = [
+  { label: "Easy", rir: 4, description: "Could do more reps" },
+  { label: "Good", rir: 2, description: "1–2 reps left" },
+  { label: "Hard", rir: 0, description: "Near my limit" },
+] as const;
+
+function effortFromRir(rir?: number): number | undefined {
+  if (rir === undefined) return undefined;
+  if (rir >= 3) return 4;
+  if (rir >= 1) return 2;
+  return 0;
+}
+
 export function SetRow({ set, targetReps, onUpdate }: SetRowProps) {
+  const selectedEffort = effortFromRir(set.rir);
+
   return (
     <div
-      className={`grid grid-cols-[2rem_1fr_1fr_3rem_3rem] items-center gap-2 rounded-xl border px-2 py-2 ${
+      className={`rounded-xl border p-3 ${
         set.completed
           ? "border-forge-success/40 bg-forge-success/5"
-          : "border-[var(--border)]"
+          : "border-[var(--border)] bg-forge-surface"
       }`}
     >
-      <span className="text-center text-sm font-semibold text-forge-muted">
-        {set.setNumber}
-      </span>
-      <input
-        type="number"
-        inputMode="decimal"
-        min={0}
-        step={0.5}
-        placeholder="kg"
-        value={set.weightKg ?? ""}
-        onChange={(e) =>
-          onUpdate(set.clientId, {
-            weightKg: e.target.value === "" ? undefined : Number(e.target.value),
-          })
-        }
-        className="min-h-[44px] rounded-lg border border-[var(--border)] bg-forge-surface px-2 text-sm text-forge-text outline-none focus:border-forge-ember"
-        aria-label={`Set ${set.setNumber} weight`}
-      />
-      <input
-        type="number"
-        inputMode="numeric"
-        min={0}
-        placeholder={targetReps}
-        value={set.reps ?? ""}
-        onChange={(e) =>
-          onUpdate(set.clientId, {
-            reps: e.target.value === "" ? undefined : Number(e.target.value),
-          })
-        }
-        className="min-h-[44px] rounded-lg border border-[var(--border)] bg-forge-surface px-2 text-sm text-forge-text outline-none focus:border-forge-ember"
-        aria-label={`Set ${set.setNumber} reps`}
-      />
-      <input
-        type="number"
-        inputMode="numeric"
-        min={0}
-        max={10}
-        placeholder="RIR"
-        value={set.rir ?? ""}
-        onChange={(e) =>
-          onUpdate(set.clientId, {
-            rir: e.target.value === "" ? undefined : Number(e.target.value),
-          })
-        }
-        className="min-h-[44px] rounded-lg border border-[var(--border)] bg-forge-surface px-2 text-sm text-forge-text outline-none focus:border-forge-ember"
-        aria-label={`Set ${set.setNumber} reps in reserve`}
-      />
-      <button
-        type="button"
-        onClick={() =>
-          onUpdate(set.clientId, {
-            completed: !set.completed,
-          })
-        }
-        className={`min-h-[44px] rounded-lg text-xs font-bold ${
-          set.completed
-            ? "bg-forge-success text-white"
-            : "bg-forge-ember/15 text-forge-ember"
-        }`}
-        aria-label={set.completed ? "Mark set incomplete" : "Complete set"}
-      >
-        {set.completed ? "✓" : "Go"}
-      </button>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="font-display text-sm font-semibold text-forge-text">
+          Set {set.setNumber}
+        </span>
+        <button
+          type="button"
+          onClick={() =>
+            onUpdate(set.clientId, {
+              completed: !set.completed,
+            })
+          }
+          className={`min-h-[44px] shrink-0 rounded-lg px-4 text-sm font-bold ${
+            set.completed
+              ? "bg-forge-success text-white"
+              : "bg-forge-ember text-white"
+          }`}
+        >
+          {set.completed ? "Done ✓" : "Log set"}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="min-w-0">
+          <span className="mb-1 block text-xs font-medium text-forge-muted">
+            Weight (kg)
+          </span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={0.5}
+            placeholder="0"
+            value={set.weightKg ?? ""}
+            onChange={(e) =>
+              onUpdate(set.clientId, {
+                weightKg:
+                  e.target.value === "" ? undefined : Number(e.target.value),
+              })
+            }
+            className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+          />
+        </label>
+        <label className="min-w-0">
+          <span className="mb-1 block text-xs font-medium text-forge-muted">
+            Reps
+          </span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder={targetReps}
+            value={set.reps ?? ""}
+            onChange={(e) =>
+              onUpdate(set.clientId, {
+                reps: e.target.value === "" ? undefined : Number(e.target.value),
+              })
+            }
+            className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+          />
+        </label>
+      </div>
+
+      <div className="mt-3">
+        <p className="text-xs font-medium text-forge-muted">
+          How hard was it?{" "}
+          <span className="font-normal text-forge-muted/80">optional</span>
+        </p>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {EFFORT_LEVELS.map((level) => {
+            const selected = selectedEffort === level.rir;
+            return (
+              <button
+                key={level.label}
+                type="button"
+                onClick={() =>
+                  onUpdate(set.clientId, {
+                    rir: selected ? undefined : level.rir,
+                  })
+                }
+                className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border px-1 text-center transition-colors ${
+                  selected
+                    ? "border-forge-ember bg-forge-ember/15 text-forge-ember"
+                    : "border-[var(--border)] text-forge-muted hover:border-forge-muted"
+                }`}
+              >
+                <span className="text-sm font-semibold">{level.label}</span>
+                <span className="mt-0.5 text-[10px] leading-tight opacity-80">
+                  {level.description}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
