@@ -4,69 +4,31 @@ import type { ProgramPlan } from "@forgefit/program-engine";
 import {
   cacheProgramPlan,
   getCachedProgramPlan,
-  getInProgressSessions,
   getSession,
-  getSetsForSession,
-  listSessionsForUser,
   startWorkoutSession,
-  type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
-import type { WorkoutHistoryItem } from "@/lib/workouts/history";
+import {
+  buildDayStatusMap,
+  mergeSessionRecords,
+  type WorkoutSessionRecord,
+} from "@/lib/workouts/sessions";
+import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveWorkout } from "./active-workout";
 import { SyncStatusBanner } from "./sync-status-banner";
 import { useWorkoutSyncContext } from "./sync-manager";
-import { WorkoutHistory } from "./workout-history";
+import { WeekPlanCard } from "./week-plan-card";
+import { WorkoutRecap } from "./workout-recap";
 
 interface WorkoutHubProps {
   userId: string;
   programId?: string;
   plan: ProgramPlan | null;
-  history?: WorkoutHistoryItem[];
+  serverSessions?: WorkoutSessionRecord[];
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
-
-async function loadLocalHistory(
-  userId: string,
-  limit = 10
-): Promise<WorkoutHistoryItem[]> {
-  const sessions = await listSessionsForUser(userId);
-  const finished = sessions.filter((s) => s.status !== "in_progress").slice(0, limit);
-
-  return Promise.all(
-    finished.map(async (session) => {
-      const sets = await getSetsForSession(session.clientId);
-      return {
-        id: session.clientId,
-        sessionName: session.sessionName,
-        status: session.status,
-        startedAt: session.startedAt,
-        completedAt: session.completedAt ?? null,
-        setCount: sets.length,
-        completedSetCount: sets.filter((s) => s.completed).length,
-        pendingSync: !session.synced,
-      };
-    })
-  );
-}
-
-function mergeHistory(
-  server: WorkoutHistoryItem[],
-  local: WorkoutHistoryItem[]
-): WorkoutHistoryItem[] {
-  const seen = new Set(
-    server.map((item) => `${item.sessionName}:${item.startedAt}`)
-  );
-  const merged = [
-    ...server,
-    ...local.filter((item) => !seen.has(`${item.sessionName}:${item.startedAt}`)),
-  ];
-  return merged
-    .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
-    .slice(0, 10);
-}
 
 function isOffline() {
   return typeof navigator !== "undefined" && !navigator.onLine;
@@ -80,16 +42,26 @@ function persistActiveWorkout(clientId: string | null) {
   }
 }
 
-function replaceWorkoutUrl(clientId: string | null) {
-  // Avoid history.replaceState offline — it can trigger Next.js / SW fetches
-  // that fail without network and crash the active workout view.
+function replaceWorkoutUrl(
+  mode: "hub" | "active" | "review",
+  clientId: string | null
+) {
   if (isOffline()) {
-    persistActiveWorkout(clientId);
+    if (mode === "active") {
+      persistActiveWorkout(clientId);
+    } else {
+      persistActiveWorkout(null);
+    }
     return;
   }
 
   persistActiveWorkout(null);
-  const url = clientId ? `/workout?active=${clientId}` : "/workout";
+  let url = "/workout";
+  if (mode === "active" && clientId) {
+    url = `/workout?active=${clientId}`;
+  } else if (mode === "review" && clientId) {
+    url = `/workout?review=${clientId}`;
+  }
   window.history.replaceState(window.history.state, "", url);
 }
 
@@ -97,63 +69,85 @@ export function WorkoutHub({
   userId,
   programId,
   plan: serverPlan,
-  history = [],
+  serverSessions = [],
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
   const autoStarted = useRef(false);
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
+  const [reviewClientId, setReviewClientId] = useState<string | null>(null);
   const [plan, setPlan] = useState<ProgramPlan | null>(serverPlan);
   const [cachedProgramId, setCachedProgramId] = useState<string | undefined>(programId);
-  const [inProgress, setInProgress] = useState<LocalWorkoutSession[]>([]);
-  const [localHistory, setLocalHistory] = useState<WorkoutHistoryItem[]>([]);
+  const [localSessions, setLocalSessions] = useState<WorkoutSessionRecord[]>([]);
+  const [sessionsReady, setSessionsReady] = useState(false);
   const [startingDay, setStartingDay] = useState<number | null>(null);
 
+  const allSessions = useMemo(
+    () => mergeSessionRecords(localSessions, serverSessions),
+    [localSessions, serverSessions]
+  );
+
+  const dayStatusMap = useMemo(() => buildDayStatusMap(allSessions), [allSessions]);
+
+  const reviewSession = useMemo(
+    () => allSessions.find((s) => s.clientId === reviewClientId) ?? null,
+    [allSessions, reviewClientId]
+  );
+
+  const reviewDayStatus = useMemo(() => {
+    if (!reviewSession) return undefined;
+    return dayStatusMap.get(reviewSession.dayIndex);
+  }, [dayStatusMap, reviewSession]);
+
   useEffect(() => {
-    if (activeClientId || !sync?.lastSyncedAt) return;
+    if (activeClientId || reviewClientId || !sync?.lastSyncedAt) return;
     router.refresh();
-  }, [sync?.lastSyncedAt, activeClientId, router]);
+  }, [sync?.lastSyncedAt, activeClientId, reviewClientId, router]);
 
-  // Hydrate only in-progress sessions — ignore stale ?active= after finish.
   useEffect(() => {
-    async function hydrateActiveSession() {
-      const fromUrl = new URLSearchParams(window.location.search).get("active");
+    async function hydrateFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const activeFromUrl = params.get("active");
+      const reviewFromUrl = params.get("review");
       const fromStorage = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
-      const clientId = fromUrl ?? (isOffline() ? fromStorage : null);
-      if (!clientId) return;
+      const activeClientIdCandidate =
+        activeFromUrl ?? (isOffline() ? fromStorage : null);
 
-      const session = await getSession(clientId);
+      if (reviewFromUrl) {
+        setReviewClientId(reviewFromUrl);
+        return;
+      }
+
+      if (!activeClientIdCandidate) return;
+
+      const session = await getSession(activeClientIdCandidate);
       if (session?.status === "in_progress") {
-        setActiveClientId(clientId);
+        setActiveClientId(activeClientIdCandidate);
         return;
       }
 
       persistActiveWorkout(null);
-      if (fromUrl && !isOffline()) {
+      if (activeFromUrl && !isOffline()) {
         window.history.replaceState(window.history.state, "", "/workout");
       }
     }
 
-    void hydrateActiveSession();
+    void hydrateFromUrl();
   }, []);
 
-  // Warm lazy chunks while online so Turbopack doesn't fetch them mid-workout.
   useEffect(() => {
     void import("@forgefit/offline-sync");
   }, []);
 
-  const refreshWorkoutLists = useCallback(async () => {
-    const [sessions, completed] = await Promise.all([
-      getInProgressSessions(userId),
-      loadLocalHistory(userId),
-    ]);
-    setInProgress(sessions);
-    setLocalHistory(completed);
+  const refreshSessions = useCallback(async () => {
+    const local = await loadLocalSessionRecords(userId);
+    setLocalSessions(local);
+    setSessionsReady(true);
   }, [userId]);
 
   useEffect(() => {
-    void refreshWorkoutLists();
-  }, [refreshWorkoutLists]);
+    void refreshSessions();
+  }, [refreshSessions]);
 
   useEffect(() => {
     if (serverPlan) {
@@ -172,15 +166,23 @@ export function WorkoutHub({
   }, [serverPlan, programId, userId]);
 
   const openWorkout = useCallback((clientId: string) => {
+    setReviewClientId(null);
     setActiveClientId(clientId);
-    replaceWorkoutUrl(clientId);
+    replaceWorkoutUrl("active", clientId);
   }, []);
 
-  const closeWorkout = useCallback(() => {
+  const openReview = useCallback((clientId: string) => {
     setActiveClientId(null);
-    replaceWorkoutUrl(null);
-    void refreshWorkoutLists();
-  }, [refreshWorkoutLists]);
+    setReviewClientId(clientId);
+    replaceWorkoutUrl("review", clientId);
+  }, []);
+
+  const closeToHub = useCallback(() => {
+    setActiveClientId(null);
+    setReviewClientId(null);
+    replaceWorkoutUrl("hub", null);
+    void refreshSessions();
+  }, [refreshSessions]);
 
   const handleStart = useCallback(
     async (dayIndex: number) => {
@@ -212,7 +214,7 @@ export function WorkoutHub({
   );
 
   useEffect(() => {
-    if (autoStarted.current || activeClientId || !plan) return;
+    if (autoStarted.current || activeClientId || reviewClientId || !plan) return;
     const dayParam = new URLSearchParams(window.location.search).get("day");
     if (!dayParam) return;
     const dayIndex = Number(dayParam);
@@ -220,14 +222,46 @@ export function WorkoutHub({
     if (!plan.week.some((s) => s.dayIndex === dayIndex)) return;
     autoStarted.current = true;
     void handleStart(dayIndex);
-  }, [plan, handleStart, activeClientId]);
+  }, [plan, handleStart, activeClientId, reviewClientId]);
 
   if (activeClientId) {
     return (
       <ActiveWorkout
         clientId={activeClientId}
-        onBack={closeWorkout}
-        onFinished={refreshWorkoutLists}
+        onBack={closeToHub}
+        onFinished={refreshSessions}
+      />
+    );
+  }
+
+  if (reviewClientId) {
+    if (!reviewSession) {
+      return (
+        <div className="px-6 py-8">
+          <p className="text-forge-muted">
+            {sessionsReady
+              ? "Workout results not found."
+              : "Loading workout results…"}
+          </p>
+          {sessionsReady && (
+            <button
+              type="button"
+              onClick={closeToHub}
+              className="mt-4 text-forge-ember"
+            >
+              Back to plan
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <WorkoutRecap
+        session={reviewSession}
+        dayStatus={reviewDayStatus}
+        onBack={closeToHub}
+        onStartAgain={() => void handleStart(reviewSession.dayIndex)}
       />
     );
   }
@@ -239,37 +273,14 @@ export function WorkoutHub({
       <SyncStatusBanner />
       <h1 className="font-display text-2xl font-bold text-forge-text">Workout</h1>
       <p className="mt-2 text-forge-muted">
-        Log sets offline in the gym — syncs when you&apos;re back online.
+        Your weekly plan — completed days are checked off. Tap results to compare
+        with prior sessions.
       </p>
       {offline && (
         <p className="mt-2 text-sm text-forge-steel">
-          Offline mode — resume in-progress workouts or start from your cached
-          plan.
+          Offline mode — progress is saved on this device and syncs when
+          you&apos;re back online.
         </p>
-      )}
-
-      {inProgress.length > 0 && (
-        <section className="mt-6 space-y-3">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-gold">
-            Resume
-          </h2>
-          {inProgress.map((session) => (
-            <button
-              key={session.clientId}
-              type="button"
-              onClick={() => openWorkout(session.clientId)}
-              className="flex w-full items-center justify-between rounded-2xl border border-forge-ember/30 bg-forge-ember/10 p-4 text-left"
-            >
-              <div>
-                <p className="font-display font-semibold text-forge-text">
-                  {session.sessionName}
-                </p>
-                <p className="text-sm text-forge-muted">Tap to continue</p>
-              </div>
-              <span className="text-sm font-semibold text-forge-ember">→</span>
-            </button>
-          ))}
-        </section>
       )}
 
       {plan ? (
@@ -278,33 +289,15 @@ export function WorkoutHub({
             This week
           </h2>
           {plan.week.map((session) => (
-            <article
+            <WeekPlanCard
               key={`${session.dayIndex}-${session.name}`}
-              className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
-                    {session.dayLabel}
-                  </p>
-                  <h3 className="font-display font-semibold text-forge-text">
-                    {session.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-forge-muted">
-                    {session.exercises.length} exercises · ~
-                    {session.estimatedMinutes} min
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={startingDay === session.dayIndex}
-                  onClick={() => void handleStart(session.dayIndex)}
-                  className="shrink-0 rounded-lg bg-forge-ember px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                >
-                  {startingDay === session.dayIndex ? "Starting…" : "Start"}
-                </button>
-              </div>
-            </article>
+              session={session}
+              dayStatus={dayStatusMap.get(session.dayIndex)}
+              starting={startingDay === session.dayIndex}
+              onStart={() => void handleStart(session.dayIndex)}
+              onContinue={openWorkout}
+              onViewResults={openReview}
+            />
           ))}
         </section>
       ) : (
@@ -316,8 +309,6 @@ export function WorkoutHub({
           </p>
         </div>
       )}
-
-      <WorkoutHistory items={mergeHistory(history, localHistory)} />
     </div>
   );
 }
