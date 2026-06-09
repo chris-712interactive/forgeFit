@@ -16,18 +16,25 @@ import { useWorkoutSyncContext } from "./sync-manager";
 interface ActiveWorkoutProps {
   clientId: string;
   onBack?: () => void;
+  onFinished?: () => void;
 }
 
-export function ActiveWorkout({ clientId, onBack }: ActiveWorkoutProps) {
+export function ActiveWorkout({
+  clientId,
+  onBack,
+  onFinished,
+}: ActiveWorkoutProps) {
   const sync = useWorkoutSyncContext();
-
-  function goBack() {
-    onBack?.();
-  }
   const [session, setSession] = useState<LocalWorkoutSession | null>(null);
   const [sets, setSets] = useState<LocalExerciseSet[]>([]);
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
+
+  const goBack = useCallback(() => {
+    onBack?.();
+  }, [onBack]);
 
   const load = useCallback(async () => {
     const [sessionRow, setRows] = await Promise.all([
@@ -96,10 +103,21 @@ export function ActiveWorkout({ clientId, onBack }: ActiveWorkoutProps) {
   }
 
   async function handleFinish() {
-    await completeWorkoutSession(clientId, "completed");
-    await sync?.refreshPending();
-    await sync?.runSync();
-    goBack();
+    if (finishing) return;
+    setFinishing(true);
+    setFinishError(null);
+    setRestSeconds(null);
+
+    try {
+      await completeWorkoutSession(clientId, "completed");
+      onFinished?.();
+      goBack();
+      void sync?.refreshPending();
+      void sync?.runSync();
+    } catch {
+      setFinishError("Could not save workout on this device. Try again.");
+      setFinishing(false);
+    }
   }
 
   if (loading) {
@@ -122,7 +140,7 @@ export function ActiveWorkout({ clientId, onBack }: ActiveWorkoutProps) {
   }
 
   return (
-    <div className="px-4 py-6 pb-32 sm:px-6 sm:py-8">
+    <div className="px-4 py-6 pb-36 sm:px-6 sm:py-8">
       <button
         type="button"
         onClick={goBack}
@@ -177,12 +195,19 @@ export function ActiveWorkout({ clientId, onBack }: ActiveWorkoutProps) {
         })}
       </div>
 
+      {finishError && (
+        <p className="mt-4 text-sm text-forge-coral" role="alert">
+          {finishError}
+        </p>
+      )}
+
       <button
         type="button"
+        disabled={finishing}
         onClick={() => void handleFinish()}
-        className="mt-8 flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display font-bold text-white"
+        className="mt-8 flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-60"
       >
-        Finish workout
+        {finishing ? "Saving…" : "Finish workout"}
       </button>
 
       {restSeconds !== null && restSeconds > 0 && (

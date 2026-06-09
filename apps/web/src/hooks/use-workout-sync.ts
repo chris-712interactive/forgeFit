@@ -21,7 +21,8 @@ export function useWorkoutSync(userId: string) {
   }, [userId]);
 
   const runSync = useCallback(async (): Promise<SyncOutcome> => {
-    if (syncingRef.current || !navigator.onLine) return null;
+    if (syncingRef.current) return null;
+    if (!navigator.onLine) return null;
     syncingRef.current = true;
     setSyncing(true);
     setLastError(null);

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 3 complete → Phase 4 (Nutrition) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Fix offline workout sync + history UI |
+| **Last session focus** | Fix Finish workout button (offline + sync) |
 
 ---
 
@@ -32,6 +32,19 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Finish workout button fix
+
+**What was done:**
+- Finish navigates back immediately after local save; sync runs in background
+- Fixed router.refresh re-opening active workout from URL during sync
+- Added saving state, error message, fetch timeout for sync
+
+**Files touched:**
+- `apps/web/src/components/workout/active-workout.tsx`, `workout-hub.tsx`
+- `packages/offline-sync/src/sync-client.ts`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-08 — Offline workout sync fix
 

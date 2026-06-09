@@ -54,12 +54,26 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
     })),
   };
 
-  const response = await fetch("/api/sync", {
-    method: "POST",
-    credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  let response: Response;
+  try {
+    response = await fetch("/api/sync", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      return { ok: false, message: "Sync timed out. Try again when connection is stable." };
+    }
+    return { ok: false, message: "Could not reach server. Workout is saved on this device." };
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     let message = `Sync failed (${response.status})`;

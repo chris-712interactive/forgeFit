@@ -44,10 +44,9 @@ export function WorkoutHub({
   const [startingDay, setStartingDay] = useState<number | null>(null);
 
   useEffect(() => {
-    if (sync?.lastSyncedAt) {
-      router.refresh();
-    }
-  }, [sync?.lastSyncedAt, router]);
+    if (activeClientId || !sync?.lastSyncedAt) return;
+    router.refresh();
+  }, [sync?.lastSyncedAt, activeClientId, router]);
 
   // Hydrate active session from URL without triggering a Next.js navigation.
   useEffect(() => {
@@ -87,10 +86,15 @@ export function WorkoutHub({
     replaceWorkoutUrl(clientId);
   }, []);
 
+  const refreshInProgress = useCallback(() => {
+    void getInProgressSessions(userId).then(setInProgress);
+  }, [userId]);
+
   const closeWorkout = useCallback(() => {
     setActiveClientId(null);
     replaceWorkoutUrl(null);
-  }, []);
+    refreshInProgress();
+  }, [refreshInProgress]);
 
   const handleStart = useCallback(
     async (dayIndex: number) => {
@@ -134,7 +138,11 @@ export function WorkoutHub({
 
   if (activeClientId) {
     return (
-      <ActiveWorkout clientId={activeClientId} onBack={closeWorkout} />
+      <ActiveWorkout
+        clientId={activeClientId}
+        onBack={closeWorkout}
+        onFinished={refreshInProgress}
+      />
     );
   }
 
