@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-08 · **Current phase:** Phase 1 complete → Phase 2 next
+**Last updated:** 2026-06-08 · **Current phase:** Phase 2 complete → Phase 3 next
 
 ---
 
@@ -185,7 +185,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 |-------|-------|--------|
 | 0 | Scaffold, design tokens, docs, CI | Complete |
 | 1 | Auth + onboarding | Complete |
-| 2 | Evidence engine + program generation | Pending |
+| 2 | Evidence engine + program generation | Complete |
 | 3 | Workout tracking + offline PWA | Pending |
 | 4 | Nutrition diary | Pending |
 | 5 | Measurements + projections | Pending |

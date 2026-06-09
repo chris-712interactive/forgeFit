@@ -9,8 +9,9 @@ forgeFit is a **mobile-first Next.js PWA** in a **Turborepo monorepo**, backed b
 ```
 apps/web          → Next.js 15 UI + API route handlers
 packages/ui       → Forge Ember design tokens
-packages/evidence-kb → Peer-reviewed rules + citations
-packages/program-engine → (Phase 2) Plan generator
+packages/evidence-kb → 30 peer-reviewed rules + citations
+packages/exercise-db → Seed exercise library + equipment tags
+packages/program-engine → Goal splits, volume, nutrition targets
 packages/offline-sync   → (Phase 3) Dexie + sync
 supabase/         → PostgreSQL migrations + RLS
 ```
@@ -24,7 +25,7 @@ supabase/         → PostgreSQL migrations + RLS
 | `@forgefit/evidence-kb` | Citable fitness/nutrition rules | 0–2 |
 | `@forgefit/program-engine` | Goal templates, volume, scheduling | 2 |
 | `@forgefit/projection-engine` | Weight/strength forecasts | 5 |
-| `@forgefit/exercise-db` | Exercises, GIFs, muscle maps | 6 |
+| `@forgefit/exercise-db` | Seed exercises, equipment tags (500+ GIFs in Phase 6) | 2 |
 | `@forgefit/nutrition-core` | USDA/OFF diary | 4 |
 | `@forgefit/integrations` | OAuth device adapters | 7 |
 | `@forgefit/offline-sync` | IndexedDB + conflict resolution | 3 |
@@ -42,8 +43,17 @@ supabase/         → PostgreSQL migrations + RLS
 1. User signs up via `/signup` (email or Google OAuth)
 2. `handle_new_user` trigger creates `profiles` row
 3. Middleware redirects incomplete profiles to `/onboarding`
-4. `completeOnboarding` server action saves profile + equipment
-5. User lands on `/home` with bottom nav shell
+4. `completeOnboarding` server action saves profile + equipment + generates program
+5. User lands on `/home` with week schedule and macro targets
+
+## Program Generation (Phase 2)
+
+1. `generateProgram()` in `@forgefit/program-engine` reads profile + `evidence-kb` rules
+2. Equipment inventory filters `@forgefit/exercise-db` picks per movement pattern
+3. Goal-based weekly split scaled by sessions/week and minutes/session
+4. Nutrition targets (Mifflin-St Jeor + protein/fat/carbs from matched rules)
+5. `ProgramPlan` JSON stored in `programs.plan` with `appliedRuleIds` for traceability
+6. `ensureActiveProgram()` auto-generates on first `/home` visit if none exists
 
 ## API Surface
 

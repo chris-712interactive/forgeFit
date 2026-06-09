@@ -1,4 +1,4 @@
-# Supabase Setup (Phase 1)
+# Supabase Setup (Phase 1–2)
 
 ## 1. Create project
 
@@ -22,7 +22,10 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
-Or paste the SQL from `supabase/migrations/20260608160000_phase1_profiles_onboarding.sql` into the SQL Editor.
+Or paste SQL from these migrations into the SQL Editor (in order):
+
+1. `supabase/migrations/20260608160000_phase1_profiles_onboarding.sql`
+2. `supabase/migrations/20260608180000_phase2_programs.sql`
 
 ## 4. Auth providers
 
@@ -44,4 +47,4 @@ pnpm dev
 
 1. Visit `/signup` → create account
 2. Complete 7-step onboarding
-3. Land on `/home` with bottom nav
+3. Land on `/home` with bottom nav and generated week schedule + macro targets

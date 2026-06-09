@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 1 complete → Phase 2 (Evidence Engine) next |
+| **Active phase** | Phase 2 complete → Phase 3 (Workout + Offline PWA) next |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Fix imperial weight input round-trip rounding bug |
+| **Last session focus** | Fix auth routes blocked by onboarding redirect |
 
 ---
 
@@ -21,7 +21,7 @@
 |-------|------|--------|-----------|
 | 0 | Scaffold | ✅ Complete | 2026-06-08 |
 | 1 | Auth + Onboarding | ✅ Complete | 2026-06-08 |
-| 2 | Evidence Engine | ⏳ Pending | — |
+| 2 | Evidence Engine | ✅ Complete | 2026-06-08 |
 | 3 | Workout + Offline PWA | ⏳ Pending | — |
 | 4 | Nutrition | ⏳ Pending | — |
 | 5 | Measurements + Projections | ⏳ Pending | — |
@@ -32,6 +32,62 @@
 ---
 
 ## Session Log
+
+### 2026-06-08 — Auth routes no longer blocked by onboarding
+
+**What was done:**
+- `/login` and `/signup` always reachable (even with a partial session)
+- Landing page only auto-redirects when onboarding is already complete
+- Login page shows “already signed in” panel with sign-out option for stuck sessions
+
+**Files touched:**
+- `apps/web/src/lib/supabase/middleware.ts`, `apps/web/src/app/page.tsx`
+- `apps/web/src/app/login/page.tsx`, `apps/web/src/components/auth/already-signed-in.tsx`
+- `apps/web/src/components/auth/sign-out-button.tsx`, `docs/PROGRESS.md`
+
+---
+
+### 2026-06-08 — Sign In / Get Started routing fix
+
+**What was done:**
+- Logged-in users visiting `/`, `/login`, or `/signup` now redirect to `/home` or `/onboarding` (not a shared marketing page)
+- OAuth callback routes by onboarding status instead of always sending users to onboarding
+- Landing page is a server component; Sign In uses distinct styling from Get Started
+
+**Files touched:**
+- `apps/web/src/app/page.tsx`, `apps/web/src/lib/auth/post-auth-path.ts`
+- `apps/web/src/lib/supabase/middleware.ts`, `apps/web/src/app/auth/callback/route.ts`
+- `apps/web/src/components/auth/auth-form.tsx`, `docs/PROGRESS.md`
+
+---
+
+### 2026-06-08 — Phase 2 complete
+
+**What was done:**
+- Expanded `@forgefit/evidence-kb` to 30 rules with `matchRules()` and `getRecommendationValue()`
+- Added `@forgefit/exercise-db` seed library (~28 exercises) with equipment-aware `pickExerciseForPattern()`
+- Built `@forgefit/program-engine` — goal splits, volume scaling, nutrition targets, recovery blocks
+- Migration `20260608180000_phase2_programs.sql` — `programs` table with JSONB plan + RLS
+- `POST /api/programs/generate`, `generateAndSaveProgram` on onboarding + `ensureActiveProgram` on home
+- Home dashboard `WeekSchedule` shows weekly sessions and macro targets
+- Fixed `splits.ts` MovementPattern typing; `pnpm turbo typecheck build` passes
+
+**What's next:**
+- Phase 3: active workout UI, Serwist PWA, Dexie offline sync
+- Apply Phase 2 migration if not yet run: `supabase db push` or SQL editor
+
+**Blockers:**
+- User must apply `20260608180000_phase2_programs.sql` before programs persist
+
+**Files touched:**
+- `packages/evidence-kb/`, `packages/exercise-db/`, `packages/program-engine/`
+- `supabase/migrations/20260608180000_phase2_programs.sql`
+- `apps/web/src/lib/programs/service.ts`, `apps/web/src/app/api/programs/generate/route.ts`
+- `apps/web/src/app/actions/onboarding.ts`, `apps/web/src/app/(app)/home/page.tsx`
+- `apps/web/src/components/program/week-schedule.tsx`, `apps/web/next.config.ts`, `apps/web/package.json`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/phases/02-evidence-engine.md`, `README.md`
+
+---
 
 ### 2026-06-08 — Imperial weight input fix
 

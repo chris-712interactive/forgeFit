@@ -1,15 +1,17 @@
+import { EXTRA_RULES } from "./rules-extra";
 import type { EvidenceRule } from "./types";
 
 export type { EvidenceRule, Citation, Confidence } from "./types";
+export {
+  matchRules,
+  getRecommendationValue,
+  type RuleContext,
+} from "./match";
 
 /** Evidence KB version — bump when rules change materially */
-export const EVIDENCE_KB_VERSION = "0.1.0";
+export const EVIDENCE_KB_VERSION = "0.2.0";
 
-/**
- * Seed rules from peer-reviewed sources.
- * Full YAML corpus lives in rules/ — this is the runtime loader for Phase 0.
- */
-export const SEED_RULES: EvidenceRule[] = [
+const SEED_RULES: EvidenceRule[] = [
   {
     id: "fat_loss_rate",
     domain: "nutrition",
@@ -59,7 +61,7 @@ export const SEED_RULES: EvidenceRule[] = [
   {
     id: "protein_athlete_cut",
     domain: "nutrition",
-    applies_to: ["goal:fat_loss", "experience:advanced", "goal:bodybuilding"],
+    applies_to: ["experience:advanced", "goal:bodybuilding"],
     recommendation: {
       protein_g_per_kg: { min: 2.2, optimal: 2.5, max: 3.0 },
       protein_per_meal_g_per_kg: { min: 0.4, max: 0.55 },
@@ -172,10 +174,12 @@ export const SEED_RULES: EvidenceRule[] = [
   },
 ];
 
+export const ALL_RULES: EvidenceRule[] = [...SEED_RULES, ...EXTRA_RULES];
+
 export function getRules(): EvidenceRule[] {
-  return SEED_RULES;
+  return ALL_RULES;
 }
 
 export function getRuleById(id: string): EvidenceRule | undefined {
-  return SEED_RULES.find((r) => r.id === id);
+  return ALL_RULES.find((r) => r.id === id);
 }

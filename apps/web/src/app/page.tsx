@@ -1,4 +1,21 @@
-export default function Home() {
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getPostAuthPath } from "@/lib/auth/post-auth-path";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    const destination = await getPostAuthPath(supabase, user.id);
+    if (destination === "/home") {
+      redirect("/home");
+    }
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-forge-surface text-forge-text">
       <header className="gradient-forge-ignite px-6 pb-12 pt-10">
@@ -21,11 +38,11 @@ export default function Home() {
       <main className="flex flex-1 flex-col gap-6 px-6 py-8">
         <section className="rounded-2xl bg-forge-surface-raised p-5">
           <h2 className="font-display text-lg font-bold text-forge-gold">
-            Phase 0 complete soon
+            Your plan, built on evidence
           </h2>
           <p className="mt-2 text-sm text-forge-muted">
-            Scaffold is live. Next up: onboarding, your personalized program, and
-            offline workout tracking.
+            Personalized workouts and nutrition targets from peer-reviewed rules —
+            not guesswork.
           </p>
         </section>
 
@@ -48,18 +65,18 @@ export default function Home() {
           ))}
         </section>
 
-        <a
+        <Link
           href="/signup"
           className="mt-auto flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display text-base font-bold text-white transition-colors hover:bg-forge-glow active:scale-[0.98]"
         >
           Get Started
-        </a>
-        <a
+        </Link>
+        <Link
           href="/login"
-          className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-xl border border-white/30 font-medium text-white/90"
+          className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-[var(--border)] font-medium text-forge-text transition-colors hover:border-forge-muted"
         >
           Sign In
-        </a>
+        </Link>
       </main>
     </div>
   );

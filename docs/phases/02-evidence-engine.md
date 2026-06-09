@@ -1,6 +1,6 @@
 # Phase 2 — Evidence Engine + Program Generation
 
-**Status:** Pending  
+**Status:** Complete (2026-06-08)  
 **Depends on:** Phase 1
 
 ## Goal
@@ -16,6 +16,8 @@
 
 ## Done When
 
-- [ ] Program respects equipment + time budget
-- [ ] Every recommendation traces to a cited rule
-- [ ] Dashboard displays generated week plan
+- [x] Program respects equipment + time budget
+- [x] Every recommendation traces to a cited rule (`appliedRuleIds` + per-session `citationRuleIds`)
+- [x] Dashboard displays generated week plan (`WeekSchedule` on `/home`)
+- [x] `pnpm turbo typecheck build` passes
+- [ ] Migration `20260608180000_phase2_programs.sql` applied in Supabase (user action)

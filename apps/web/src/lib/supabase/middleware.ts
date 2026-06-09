@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -50,10 +51,16 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && (path === "/login" || path === "/signup")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/home";
-    return NextResponse.redirect(url);
+  // Only skip the landing page when onboarding is already complete.
+  // /login and /signup stay reachable so users can sign in or switch accounts.
+  if (user && path === "/") {
+    const destination = await getPostAuthPath(supabase, user.id);
+    if (destination === "/home") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/home";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (user && !isPublicRoute && !isAuthRoute) {

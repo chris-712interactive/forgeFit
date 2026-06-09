@@ -4,13 +4,14 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 
 ## Features
 
-**Live now (Phase 1):**
+**Live now (Phase 1–2):**
 - Email + Google sign up / sign in
 - 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
 - Mobile app shell with bottom navigation
+- **Personalized programs** — evidence-based plans for fat loss, bodybuilding, powerlifting, strength, recomposition
+- **Home dashboard** — weekly workout schedule + macro targets with cited evidence rules
 
 **Coming soon:**
-- **Personalized programs** — fat loss, bodybuilding, powerlifting, strength, recomposition
 - **Offline workouts** — log sets and reps with no signal
 - **Nutrition tracking** — USDA + Open Food Facts food diary
 - **Body measurements** — trends and projections
@@ -35,7 +36,9 @@ Open [http://localhost:3000](http://localhost:3000).
 |------|-------------|
 | `apps/web` | Next.js 15 PWA |
 | `packages/ui` | Forge Ember design tokens |
-| `packages/evidence-kb` | Peer-reviewed fitness rules |
+| `packages/evidence-kb` | 30 peer-reviewed fitness rules |
+| `packages/exercise-db` | Seed exercise library |
+| `packages/program-engine` | Program + nutrition generator |
 | `docs/` | Bible, progress log, architecture |
 
 ## Environment

@@ -17,6 +17,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@forgefit/evidence-kb':
+        specifier: workspace:*
+        version: link:../../packages/evidence-kb
+      '@forgefit/exercise-db':
+        specifier: workspace:*
+        version: link:../../packages/exercise-db
+      '@forgefit/program-engine':
+        specifier: workspace:*
+        version: link:../../packages/program-engine
       '@forgefit/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -68,6 +77,25 @@ importers:
         version: 5.9.3
 
   packages/evidence-kb:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/exercise-db:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/program-engine:
+    dependencies:
+      '@forgefit/evidence-kb':
+        specifier: workspace:*
+        version: link:../evidence-kb
+      '@forgefit/exercise-db':
+        specifier: workspace:*
+        version: link:../exercise-db
     devDependencies:
       typescript:
         specifier: ^5.9.3

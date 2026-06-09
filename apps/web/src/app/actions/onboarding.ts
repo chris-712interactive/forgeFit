@@ -1,5 +1,6 @@
 "use server";
 
+import { generateAndSaveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type { OnboardingData } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
@@ -97,6 +98,8 @@ export async function completeOnboarding(data: OnboardingData) {
       return { error: recoveryError.message };
     }
   }
+
+  await generateAndSaveProgram(user.id);
 
   revalidatePath("/home");
   redirect("/home");

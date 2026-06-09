@@ -36,7 +36,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (signUpError) {
@@ -52,7 +52,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (signInError) {
         setError(signInError.message);
       } else {
-        window.location.href = "/home";
+        const redirect = new URLSearchParams(window.location.search).get(
+          "redirect"
+        );
+        window.location.href = redirect ?? "/home";
       }
     }
 
@@ -72,7 +75,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
