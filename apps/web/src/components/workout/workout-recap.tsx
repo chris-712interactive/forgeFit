@@ -1,8 +1,9 @@
 "use client";
 
 import {
-  isTimedCardioExercise,
+  formatTimedDurationFromMs,
   isTimedExercise,
+  timedSetTotalMs,
 } from "@forgefit/exercise-db";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
@@ -40,17 +41,17 @@ export function WorkoutRecap({
   const syncedToAccount = !session.pendingSync;
 
   return (
-    <div className={`${appPagePadding} pb-36`}>
+    <div className={appPagePadding}>
       <button
         type="button"
         onClick={onBack}
         className="mb-4 text-sm font-medium text-forge-steel"
       >
-        ← Back to plan
+        ← Back to workouts
       </button>
 
-      <p className="text-xs font-semibold uppercase tracking-wider text-forge-success">
-        Completed
+      <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
+        Workout recap
       </p>
       <h1 className="font-display text-xl font-bold text-forge-text sm:text-2xl">
         {session.sessionName}
@@ -118,14 +119,17 @@ export function WorkoutRecap({
                 >
                   <span>Set {set.setNumber}</span>
                   <span>
-                    {set.completed && set.reps != null
-                      ? isTimedCardioExercise(exercise.exerciseId)
-                        ? `${set.reps} min`
-                        : isTimedExercise(exercise.exerciseId)
-                          ? `${set.reps} sec`
-                          : set.weightKg != null
-                            ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
-                            : "—"
+                    {set.completed &&
+                    (timedSetTotalMs(set, exercise.exerciseId) != null ||
+                      (set.reps != null && set.weightKg != null))
+                      ? isTimedExercise(exercise.exerciseId)
+                        ? formatTimedDurationFromMs(
+                            exercise.exerciseId,
+                            timedSetTotalMs(set, exercise.exerciseId) ?? 0
+                          )
+                        : set.weightKg != null && set.reps != null
+                          ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
+                          : "—"
                       : "—"}
                   </span>
                 </div>
@@ -135,10 +139,18 @@ export function WorkoutRecap({
             {prior && exercise.priorBest && (
               <p className="mt-3 text-xs text-forge-muted">
                 Last time best:{" "}
-                {isTimedCardioExercise(exercise.exerciseId) ? (
-                  <>{exercise.priorBest.reps} min</>
-                ) : isTimedExercise(exercise.exerciseId) ? (
-                  <>{exercise.priorBest.reps} sec</>
+                {isTimedExercise(exercise.exerciseId) ? (
+                  <>
+                    {formatTimedDurationFromMs(
+                      exercise.exerciseId,
+                      timedSetTotalMs(
+                        {
+                          reps: exercise.priorBest.reps,
+                        },
+                        exercise.exerciseId
+                      ) ?? 0
+                    )}
+                  </>
                 ) : (
                   <>
                     {formatWeight(exercise.priorBest.weightKg, unit)} ×{" "}
@@ -149,10 +161,14 @@ export function WorkoutRecap({
                   <>
                     {" "}
                     → now{" "}
-                    {isTimedCardioExercise(exercise.exerciseId) ? (
-                      <>{exercise.currentBest.reps} min</>
-                    ) : isTimedExercise(exercise.exerciseId) ? (
-                      <>{exercise.currentBest.reps} sec</>
+                    {isTimedExercise(exercise.exerciseId) ? (
+                      formatTimedDurationFromMs(
+                        exercise.exerciseId,
+                        timedSetTotalMs(
+                          { reps: exercise.currentBest.reps },
+                          exercise.exerciseId
+                        ) ?? 0
+                      )
                     ) : (
                       <>
                         {formatWeight(exercise.currentBest.weightKg, unit)} ×{" "}

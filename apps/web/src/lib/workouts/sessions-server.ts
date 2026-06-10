@@ -43,7 +43,7 @@ export async function getServerSessionRecords(
   const { data: sets } = await supabase
     .from("exercise_sets")
     .select(
-      "workout_session_id, exercise_id, exercise_name, set_number, reps, weight_kg, rir, completed"
+      "workout_session_id, exercise_id, exercise_name, set_number, reps, duration_ms, weight_kg, rir, completed"
     )
     .in("workout_session_id", sessionIds);
 
@@ -55,6 +55,7 @@ export async function getServerSessionRecords(
       exerciseName: set.exercise_name,
       setNumber: set.set_number,
       reps: set.reps ?? undefined,
+      durationMs: set.duration_ms ?? undefined,
       weightKg: set.weight_kg != null ? Number(set.weight_kg) : undefined,
       rir: set.rir ?? undefined,
       completed: set.completed,

@@ -12,6 +12,7 @@ export interface ExerciseLoadProgression {
   exerciseId: string;
   suggestedWeightKg?: number;
   suggestedReps?: number;
+  suggestedDurationMs?: number;
   extraSets: number;
   action: LoadProgressionAction;
   reason: string;

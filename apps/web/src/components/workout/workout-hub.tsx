@@ -261,8 +261,14 @@ export function WorkoutHub({
           unit,
         });
 
-        const setPrefills: Record<string, { weightKg?: number; reps?: number }> =
-          {};
+        const setPrefills: Record<
+          string,
+          {
+            weightKg?: number;
+            reps?: number;
+            durationMs?: number;
+          }
+        > = {};
         for (const [exerciseId, progression] of loadProgressions) {
           setPrefills[exerciseId] = progressionToPrefill(progression, unit);
         }

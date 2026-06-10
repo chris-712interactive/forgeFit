@@ -1,8 +1,11 @@
 import {
+  formatTimedDurationFromMs,
   isTimedExercise,
   resolveExerciseDetail,
   resolveTimedPrescription,
+  timedMsFromElapsedSeconds,
   timedPrescriptionUnit,
+  timedSetTotalMs,
 } from "@forgefit/exercise-db";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "@/lib/workouts/sessions";
@@ -102,9 +105,37 @@ function bestReps(sets: WorkoutSetRecord[]): number | undefined {
   return Math.max(...reps);
 }
 
+function bestTimedDurationMs(
+  sets: WorkoutSetRecord[],
+  exerciseId: string
+): number | undefined {
+  const durations = sets
+    .map((set) => timedSetTotalMs(set, exerciseId))
+    .filter((value): value is number => value != null && value > 0);
+  if (durations.length === 0) return undefined;
+  return Math.max(...durations);
+}
+
+function timedProgressionFields(
+  exerciseId: string,
+  totalMs: number
+): Pick<ExerciseLoadProgression, "suggestedReps" | "suggestedDurationMs"> {
+  const unit = timedPrescriptionUnit(exerciseId);
+  const totalSeconds = Math.round(totalMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return {
+    suggestedReps: unit === "minutes" ? minutes : totalSeconds,
+    suggestedDurationMs: totalMs,
+  };
+}
+
 function holdWorkingSets(sets: WorkoutSetRecord[]): WorkoutSetRecord[] {
   return sets.filter(
-    (set) => set.completed && set.reps != null && set.reps > 0
+    (set) =>
+      set.completed &&
+      ((set.reps != null && set.reps > 0) ||
+        (set.durationMs != null && set.durationMs > 0))
   );
 }
 
@@ -134,15 +165,17 @@ function buildTimedExerciseProgression(
   );
   const parsedTarget = parseTargetReps(prescription);
   const unit = timedPrescriptionUnit(exerciseId);
-  const unitLabel = unit === "minutes" ? "min" : "sec";
-  const minimumValue = unit === "minutes" ? 5 : 15;
-  const increaseStep = unit === "minutes" ? 2 : 5;
+  const parsedTargetMs = timedMsFromElapsedSeconds(
+    unit === "minutes" ? parsedTarget * 60 : parsedTarget
+  );
+  const minimumMs = timedMsFromElapsedSeconds(unit === "minutes" ? 5 * 60 : 15);
+  const increaseMs = timedMsFromElapsedSeconds(unit === "minutes" ? 2 * 60 : 5);
   const latest = history[0];
 
   if (!latest) {
     return {
       exerciseId,
-      suggestedReps: parsedTarget,
+      ...timedProgressionFields(exerciseId, parsedTargetMs),
       extraSets: 0,
       action: "hold",
       basedOn: "prescription",
@@ -157,13 +190,14 @@ function buildTimedExerciseProgression(
     latest.sets.filter((set) => set.exerciseId === exerciseId)
   );
   const avgRir = averageRir(sets);
-  const lastValue = bestReps(sets) ?? parsedTarget;
+  const lastTotalMs = bestTimedDurationMs(sets, exerciseId) ?? parsedTargetMs;
   const action = decideAction(avgRir);
 
   if (action === "ease") {
+    const easedMs = Math.max(minimumMs, Math.round(lastTotalMs * 0.9));
     return {
       exerciseId,
-      suggestedReps: Math.max(minimumValue, Math.round(lastValue * 0.9)),
+      ...timedProgressionFields(exerciseId, easedMs),
       extraSets: 0,
       action: "ease",
       basedOn: "same_exercise",
@@ -178,21 +212,21 @@ function buildTimedExerciseProgression(
   if (action === "hold") {
     return {
       exerciseId,
-      suggestedReps: lastValue,
+      ...timedProgressionFields(exerciseId, lastTotalMs),
       extraSets: 0,
       action: "hold",
       basedOn: "same_exercise",
       lastAvgRir: avgRir,
       reason:
         unit === "minutes"
-          ? `Match or beat your last session (~${lastValue} ${unitLabel}).`
-          : `Match or beat your last hold (~${lastValue} ${unitLabel}).`,
+          ? `Match or beat your last session (~${formatTimedDurationFromMs(exerciseId, lastTotalMs)}).`
+          : `Match or beat your last hold (~${formatTimedDurationFromMs(exerciseId, lastTotalMs)}).`,
     };
   }
 
   return {
     exerciseId,
-    suggestedReps: lastValue + increaseStep,
+    ...timedProgressionFields(exerciseId, lastTotalMs + increaseMs),
     extraSets: 0,
     action: "increase_reps",
     basedOn: "same_exercise",
@@ -613,7 +647,11 @@ export function buildSessionLoadProgressions(
 export function progressionToPrefill(
   progression: ExerciseLoadProgression,
   unit: UnitSystem = "imperial"
-): { weightKg?: number; reps?: number } {
+): {
+  weightKg?: number;
+  reps?: number;
+  durationMs?: number;
+} {
   return {
     weightKg:
       progression.suggestedWeightKg != null
@@ -624,5 +662,6 @@ export function progressionToPrefill(
           )
         : undefined,
     reps: progression.suggestedReps,
+    durationMs: progression.suggestedDurationMs,
   };
 }

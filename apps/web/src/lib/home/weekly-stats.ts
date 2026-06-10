@@ -1,3 +1,4 @@
+import { timedSetTotalMs } from "@forgefit/exercise-db";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type { WeeklyWorkStats } from "./types";
@@ -108,7 +109,11 @@ export function computeWeeklyWorkStats(
 
     for (const set of completedSets) {
       if (isCardioExercise(set.exerciseId, set.exerciseName)) {
-        const minutes = Math.max(1, parseReps(set.reps));
+        const totalMs = timedSetTotalMs(set, set.exerciseId);
+        const minutes =
+          totalMs != null
+            ? Math.max(1, Math.round(totalMs / 60_000))
+            : Math.max(1, parseReps(set.reps));
         cardioMinutes += minutes;
         estimatedDistanceMiles +=
           minutes * cardioMilesPerMinute(set.exerciseId, set.exerciseName);

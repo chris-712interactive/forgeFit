@@ -5,7 +5,7 @@ import {
   isTimedCardioExercise,
   isTimedExercise,
   resolveTimedPrescription,
-  timedLogValueFromElapsed,
+  timedSetFieldsFromElapsed,
   timedTargetSeconds,
   type HoldExperience,
 } from "@forgefit/exercise-db";
@@ -92,7 +92,16 @@ export function ActiveWorkout({
 
   async function handleSetUpdate(
     setClientId: string,
-    patch: Partial<Pick<LocalExerciseSet, "reps" | "weightKg" | "rir" | "completed">>
+    patch: Partial<
+      Pick<
+        LocalExerciseSet,
+        | "reps"
+        | "durationMs"
+        | "weightKg"
+        | "rir"
+        | "completed"
+      >
+    >
   ) {
     const wasCompleted = sets.find((s) => s.clientId === setClientId)?.completed;
     const completing = patch.completed === true && !wasCompleted;
@@ -150,7 +159,7 @@ export function ActiveWorkout({
     const { setClientId, exerciseId } = timedTimer;
     setTimedTimer(null);
     void handleSetUpdate(setClientId, {
-      reps: timedLogValueFromElapsed(exerciseId, elapsedSeconds),
+      ...timedSetFieldsFromElapsed(exerciseId, elapsedSeconds),
       completed: true,
     });
   }
@@ -327,7 +336,7 @@ export function ActiveWorkout({
                       exercise.progressionNote &&
                         !set.completed &&
                         (isTimed
-                          ? set.reps != null
+                          ? set.durationMs != null || set.reps != null
                           : set.weightKg != null || set.reps != null)
                     )}
                     onStartTimer={

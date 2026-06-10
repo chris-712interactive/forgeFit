@@ -49,6 +49,7 @@ export async function getSetsForSession(
 export interface SetPrefill {
   weightKg?: number;
   reps?: number;
+  durationMs?: number;
 }
 
 export async function startWorkoutSession(input: {
@@ -92,6 +93,7 @@ export async function startWorkoutSession(input: {
         setNumber,
         weightKg: prefill?.weightKg,
         reps: prefill?.reps,
+        durationMs: prefill?.durationMs,
         completed: false,
         updatedAt: timestamp,
         synced: false,
@@ -110,7 +112,15 @@ export async function startWorkoutSession(input: {
 export async function updateSet(
   clientId: string,
   patch: Partial<
-    Pick<LocalExerciseSet, "reps" | "weightKg" | "rir" | "completed" | "completedAt">
+    Pick<
+      LocalExerciseSet,
+      | "reps"
+      | "durationMs"
+      | "weightKg"
+      | "rir"
+      | "completed"
+      | "completedAt"
+    >
   >
 ): Promise<LocalExerciseSet | undefined> {
   const db = getOfflineDb();

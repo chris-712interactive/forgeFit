@@ -3,6 +3,7 @@ export interface WorkoutSetRecord {
   exerciseName: string;
   setNumber: number;
   reps?: number;
+  durationMs?: number;
   weightKg?: number;
   rir?: number;
   completed: boolean;

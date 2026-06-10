@@ -212,6 +212,8 @@ export async function POST(request: Request) {
       exercise_name: set.exerciseName,
       set_number: set.setNumber,
       reps: set.reps != null ? Math.round(set.reps) : null,
+      duration_ms:
+        set.durationMs != null ? Math.round(set.durationMs) : null,
       weight_kg: set.weightKg ?? null,
       rir: set.rir ?? null,
       completed: set.completed,

@@ -8,6 +8,7 @@ function mapLocalSets(sets: LocalExerciseSet[]): WorkoutSetRecord[] {
     exerciseName: set.exerciseName,
     setNumber: set.setNumber,
     reps: set.reps,
+    durationMs: set.durationMs,
     weightKg: set.weightKg,
     rir: set.rir,
     completed: set.completed,

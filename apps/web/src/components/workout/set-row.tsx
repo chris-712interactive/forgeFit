@@ -14,7 +14,9 @@ import {
   isTimedCardioExercise,
   isTimedExercise,
   parseTimedTargetValue,
-  timedPrescriptionUnit,
+  timedDurationPartsFromMs,
+  timedMsFromParts,
+  timedSetTotalMs,
 } from "@forgefit/exercise-db";
 import type { LocalExerciseSet } from "@forgefit/offline-sync";
 
@@ -28,8 +30,38 @@ interface SetRowProps {
   onStartTimer?: (clientId: string) => void;
   onUpdate: (
     clientId: string,
-    patch: Partial<Pick<LocalExerciseSet, "reps" | "weightKg" | "rir" | "completed">>
+    patch: Partial<
+      Pick<
+        LocalExerciseSet,
+        | "reps"
+        | "durationMs"
+        | "weightKg"
+        | "rir"
+        | "completed"
+      >
+    >
   ) => void;
+}
+
+function clampDurationSeconds(value: number): number {
+  return Math.min(59, Math.max(0, Math.round(value)));
+}
+
+function timedManualLogPatch(
+  set: LocalExerciseSet,
+  exerciseId: string,
+  targetMinutes: number
+): Partial<LocalExerciseSet> {
+  const durationMs =
+    set.durationMs ??
+    timedSetTotalMs(set, exerciseId) ??
+    timedMsFromParts(targetMinutes, 0);
+  const parts = timedDurationPartsFromMs(durationMs);
+  return {
+    durationMs,
+    reps: isTimedCardioExercise(exerciseId) ? parts.minutes : parts.seconds,
+    completed: true,
+  };
 }
 
 const EFFORT_LEVELS = [
@@ -63,12 +95,14 @@ export function SetRow({
 }: SetRowProps) {
   const isTimed = isTimedExercise(exerciseId);
   const isCardio = isTimedCardioExercise(exerciseId);
-  const timedUnit = timedPrescriptionUnit(exerciseId);
   const targetLogValue = parseTimedTargetValue(targetReps);
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
   const weightStep = weightInputStep(exerciseId, unit);
   const effortLevels = isTimed ? TIMED_EFFORT_LEVELS : EFFORT_LEVELS;
+  const durationParts = timedDurationPartsFromMs(
+    timedSetTotalMs(set, exerciseId) ?? 0
+  );
   const selectedEffort = effortFromRir(set.rir);
   const displayWeight =
     set.weightKg != null
@@ -111,10 +145,10 @@ export function SetRow({
               type="button"
               disabled={isTimerActive}
               onClick={() =>
-                onUpdate(set.clientId, {
-                  completed: true,
-                  reps: set.reps ?? targetLogValue,
-                })
+                onUpdate(
+                  set.clientId,
+                  timedManualLogPatch(set, exerciseId, targetLogValue)
+                )
               }
               className="min-h-[44px] rounded-lg border border-[var(--border)] px-3 text-sm font-medium text-forge-muted disabled:opacity-50"
             >
@@ -141,30 +175,105 @@ export function SetRow({
       </div>
 
       {isTimed ? (
-        <label className="min-w-0">
-          <span className="mb-1 block text-xs font-medium text-forge-muted">
-            {timedUnit === "minutes" ? "Duration (minutes)" : "Hold time (seconds)"}
-            {showProgressionHint && set.reps != null && (
-              <span className="ml-1 font-normal text-forge-steel">
-                · suggested
+        isCardio ? (
+          <div className="grid grid-cols-2 gap-3">
+            <label className="min-w-0">
+              <span className="mb-1 block text-xs font-medium text-forge-muted">
+                Minutes
+                {showProgressionHint && set.durationMs != null && (
+                  <span className="ml-1 font-normal text-forge-steel">
+                    · suggested
+                  </span>
+                )}
               </span>
-            )}
-          </span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={timedUnit === "minutes" ? 1 : 5}
-            placeholder={targetReps}
-            value={set.reps ?? ""}
-            onChange={(e) =>
-              onUpdate(set.clientId, {
-                reps: e.target.value === "" ? undefined : Number(e.target.value),
-              })
-            }
-            className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
-          />
-        </label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                placeholder={targetReps}
+                value={set.durationMs != null ? durationParts.minutes : set.reps ?? ""}
+                onChange={(e) => {
+                  if (e.target.value === "") {
+                    onUpdate(set.clientId, { durationMs: undefined, reps: undefined });
+                    return;
+                  }
+                  const minutes = Number(e.target.value);
+                  const durationMs = timedMsFromParts(minutes, durationParts.seconds);
+                  onUpdate(set.clientId, { durationMs, reps: minutes });
+                }}
+                className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+              />
+            </label>
+            <label className="min-w-0">
+              <span className="mb-1 block text-xs font-medium text-forge-muted">
+                Seconds
+                {showProgressionHint && set.durationMs != null && (
+                  <span className="ml-1 font-normal text-forge-steel">
+                    · suggested
+                  </span>
+                )}
+              </span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={59}
+                step={1}
+                placeholder="0"
+                value={set.durationMs != null ? durationParts.seconds : ""}
+                onChange={(e) => {
+                  if (e.target.value === "") {
+                    onUpdate(set.clientId, {
+                      durationMs: timedMsFromParts(durationParts.minutes, 0),
+                    });
+                    return;
+                  }
+                  const seconds = clampDurationSeconds(Number(e.target.value));
+                  const durationMs = timedMsFromParts(durationParts.minutes, seconds);
+                  onUpdate(set.clientId, {
+                    durationMs,
+                    reps: durationParts.minutes,
+                  });
+                }}
+                className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+              />
+            </label>
+          </div>
+        ) : (
+          <label className="min-w-0">
+            <span className="mb-1 block text-xs font-medium text-forge-muted">
+              Hold time (seconds)
+              {showProgressionHint && set.durationMs != null && (
+                <span className="ml-1 font-normal text-forge-steel">
+                  · suggested
+                </span>
+              )}
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={5}
+              placeholder={targetReps}
+              value={
+                set.durationMs != null
+                  ? durationParts.seconds
+                  : set.reps ?? ""
+              }
+              onChange={(e) => {
+                const seconds =
+                  e.target.value === "" ? undefined : Number(e.target.value);
+                onUpdate(set.clientId, {
+                  durationMs:
+                    seconds != null ? timedMsFromParts(0, seconds) : undefined,
+                  reps: seconds,
+                });
+              }}
+              className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+            />
+          </label>
+        )
       ) : (
         <div className="grid grid-cols-2 gap-3">
           <label className="min-w-0">

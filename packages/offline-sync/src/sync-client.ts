@@ -50,6 +50,7 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
       exerciseName: s.exerciseName,
       setNumber: s.setNumber,
       reps: finiteOrUndefined(s.reps),
+      durationMs: finiteOrUndefined(s.durationMs),
       weightKg: finiteOrUndefined(s.weightKg),
       rir: finiteOrUndefined(s.rir),
       completed: s.completed,

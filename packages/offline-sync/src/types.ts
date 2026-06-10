@@ -43,6 +43,8 @@ export interface LocalExerciseSet {
   exerciseName: string;
   setNumber: number;
   reps?: number;
+  /** Elapsed time for timed sets (holds, cardio) in milliseconds */
+  durationMs?: number;
   weightKg?: number;
   rir?: number;
   completed: boolean;
@@ -69,6 +71,7 @@ export interface SyncSetPayload {
   exerciseName: string;
   setNumber: number;
   reps?: number;
+  durationMs?: number;
   weightKg?: number;
   rir?: number;
   completed: boolean;
