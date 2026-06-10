@@ -10,17 +10,22 @@ import {
   kgToDisplayValue,
   weightUnitLabel,
 } from "@/lib/units/measurements";
+import {
+  isTimedCardioExercise,
+  isTimedExercise,
+  parseTimedTargetValue,
+  timedPrescriptionUnit,
+} from "@forgefit/exercise-db";
 import type { LocalExerciseSet } from "@forgefit/offline-sync";
 
 interface SetRowProps {
   set: LocalExerciseSet;
   exerciseId: string;
   targetReps: string;
-  isDurationHold?: boolean;
-  targetHoldSeconds?: number;
-  isHoldActive?: boolean;
+  targetTimerSeconds?: number;
+  isTimerActive?: boolean;
   showProgressionHint?: boolean;
-  onStartHold?: (clientId: string) => void;
+  onStartTimer?: (clientId: string) => void;
   onUpdate: (
     clientId: string,
     patch: Partial<Pick<LocalExerciseSet, "reps" | "weightKg" | "rir" | "completed">>
@@ -40,8 +45,8 @@ function effortFromRir(rir?: number): number | undefined {
   return 0;
 }
 
-const HOLD_EFFORT_LEVELS = [
-  { label: "Easy", rir: 4, description: "Could hold longer" },
+const TIMED_EFFORT_LEVELS = [
+  { label: "Easy", rir: 4, description: "Could go longer" },
   { label: "Good", rir: 2, description: "Solid but challenging" },
   { label: "Hard", rir: 0, description: "Near my limit" },
 ] as const;
@@ -50,17 +55,20 @@ export function SetRow({
   set,
   exerciseId,
   targetReps,
-  isDurationHold = false,
-  targetHoldSeconds,
-  isHoldActive = false,
+  targetTimerSeconds,
+  isTimerActive = false,
   showProgressionHint = false,
-  onStartHold,
+  onStartTimer,
   onUpdate,
 }: SetRowProps) {
+  const isTimed = isTimedExercise(exerciseId);
+  const isCardio = isTimedCardioExercise(exerciseId);
+  const timedUnit = timedPrescriptionUnit(exerciseId);
+  const targetLogValue = parseTimedTargetValue(targetReps);
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
   const weightStep = weightInputStep(exerciseId, unit);
-  const effortLevels = isDurationHold ? HOLD_EFFORT_LEVELS : EFFORT_LEVELS;
+  const effortLevels = isTimed ? TIMED_EFFORT_LEVELS : EFFORT_LEVELS;
   const selectedEffort = effortFromRir(set.rir);
   const displayWeight =
     set.weightKg != null
@@ -75,37 +83,37 @@ export function SetRow({
       className={`rounded-xl border p-3 ${
         set.completed
           ? "border-forge-success/40 bg-forge-success/5"
-          : isHoldActive
+          : isTimerActive
             ? "border-forge-ember/50 bg-forge-ember/5"
             : "border-[var(--border)] bg-forge-surface"
       }`}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="font-display text-sm font-semibold text-forge-text">
-          Set {set.setNumber}
-          {isHoldActive && (
+          {isCardio ? "Session" : `Set ${set.setNumber}`}
+          {isTimerActive && (
             <span className="ml-2 text-xs font-medium text-forge-ember">
-              Holding…
+              {isCardio ? "In progress…" : "Holding…"}
             </span>
           )}
         </span>
-        {isDurationHold && !set.completed ? (
+        {isTimed && !set.completed ? (
           <div className="flex shrink-0 gap-2">
             <button
               type="button"
-              disabled={isHoldActive || !targetHoldSeconds || !onStartHold}
-              onClick={() => onStartHold?.(set.clientId)}
+              disabled={isTimerActive || !targetTimerSeconds || !onStartTimer}
+              onClick={() => onStartTimer?.(set.clientId)}
               className="min-h-[44px] rounded-lg bg-forge-ember px-4 text-sm font-bold text-white disabled:opacity-50"
             >
-              Start hold
+              {isCardio ? "Start timer" : "Start hold"}
             </button>
             <button
               type="button"
-              disabled={isHoldActive}
+              disabled={isTimerActive}
               onClick={() =>
                 onUpdate(set.clientId, {
                   completed: true,
-                  reps: set.reps ?? targetHoldSeconds,
+                  reps: set.reps ?? targetLogValue,
                 })
               }
               className="min-h-[44px] rounded-lg border border-[var(--border)] px-3 text-sm font-medium text-forge-muted disabled:opacity-50"
@@ -132,10 +140,10 @@ export function SetRow({
         )}
       </div>
 
-      {isDurationHold ? (
+      {isTimed ? (
         <label className="min-w-0">
           <span className="mb-1 block text-xs font-medium text-forge-muted">
-            Hold time (seconds)
+            {timedUnit === "minutes" ? "Duration (minutes)" : "Hold time (seconds)"}
             {showProgressionHint && set.reps != null && (
               <span className="ml-1 font-normal text-forge-steel">
                 · suggested
@@ -146,7 +154,7 @@ export function SetRow({
             type="number"
             inputMode="numeric"
             min={0}
-            step={5}
+            step={timedUnit === "minutes" ? 1 : 5}
             placeholder={targetReps}
             value={set.reps ?? ""}
             onChange={(e) =>

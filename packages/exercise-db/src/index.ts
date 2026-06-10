@@ -32,8 +32,16 @@ export { pickCardioExercise, type CardioPrescription } from "./cardio";
 export {
   holdDurationPrescription,
   isDurationHoldExercise,
+  isTimedCardioExercise,
+  isTimedExercise,
+  parseTimedTargetValue,
   resolveHoldPrescription,
+  resolveTimedPrescription,
+  timedLogValueFromTimer,
+  timedPrescriptionUnit,
+  timedTargetSeconds,
   type HoldExperience,
+  type TimedPrescriptionUnit,
 } from "./holds";
 export {
   sanitizeHighlighterMuscles,

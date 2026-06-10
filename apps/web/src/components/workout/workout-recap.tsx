@@ -1,6 +1,9 @@
 "use client";
 
-import { isDurationHoldExercise } from "@forgefit/exercise-db";
+import {
+  isTimedCardioExercise,
+  isTimedExercise,
+} from "@forgefit/exercise-db";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
   formatWeight,
@@ -82,7 +85,7 @@ export function WorkoutRecap({
               <h2 className="font-display text-base font-semibold text-forge-text">
                 {exercise.exerciseName}
               </h2>
-              {!isDurationHoldExercise(exercise.exerciseId) &&
+              {!isTimedExercise(exercise.exerciseId) &&
                 exercise.weightDeltaKg != null &&
                 exercise.weightDeltaKg !== 0 && (
                 <span
@@ -116,11 +119,13 @@ export function WorkoutRecap({
                   <span>Set {set.setNumber}</span>
                   <span>
                     {set.completed && set.reps != null
-                      ? isDurationHoldExercise(exercise.exerciseId)
-                        ? `${set.reps} sec`
-                        : set.weightKg != null
-                          ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
-                          : "—"
+                      ? isTimedCardioExercise(exercise.exerciseId)
+                        ? `${set.reps} min`
+                        : isTimedExercise(exercise.exerciseId)
+                          ? `${set.reps} sec`
+                          : set.weightKg != null
+                            ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
+                            : "—"
                       : "—"}
                   </span>
                 </div>
@@ -130,7 +135,9 @@ export function WorkoutRecap({
             {prior && exercise.priorBest && (
               <p className="mt-3 text-xs text-forge-muted">
                 Last time best:{" "}
-                {isDurationHoldExercise(exercise.exerciseId) ? (
+                {isTimedCardioExercise(exercise.exerciseId) ? (
+                  <>{exercise.priorBest.reps} min</>
+                ) : isTimedExercise(exercise.exerciseId) ? (
                   <>{exercise.priorBest.reps} sec</>
                 ) : (
                   <>
@@ -142,7 +149,9 @@ export function WorkoutRecap({
                   <>
                     {" "}
                     → now{" "}
-                    {isDurationHoldExercise(exercise.exerciseId) ? (
+                    {isTimedCardioExercise(exercise.exerciseId) ? (
+                      <>{exercise.currentBest.reps} min</>
+                    ) : isTimedExercise(exercise.exerciseId) ? (
                       <>{exercise.currentBest.reps} sec</>
                     ) : (
                       <>

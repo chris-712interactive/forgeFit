@@ -6,11 +6,17 @@ import { formatTimerSeconds } from "./timer-utils";
 
 interface HoldTimerProps {
   seconds: number;
+  label?: string;
   onComplete: () => void;
   onSkip: () => void;
 }
 
-export function HoldTimer({ seconds, onComplete, onSkip }: HoldTimerProps) {
+export function HoldTimer({
+  seconds,
+  label = "Hold",
+  onComplete,
+  onSkip,
+}: HoldTimerProps) {
   const [remaining, setRemaining] = useState(seconds);
   const startedSound = useRef(false);
   const completed = useRef(false);
@@ -53,7 +59,7 @@ export function HoldTimer({ seconds, onComplete, onSkip }: HoldTimerProps) {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-forge-ember">
-              Hold
+              {label}
             </p>
             <p className="font-display text-3xl font-bold text-forge-ember">
               {formatTimerSeconds(remaining)}

@@ -1,7 +1,8 @@
 import {
-  isDurationHoldExercise,
+  isTimedExercise,
   resolveExerciseDetail,
-  resolveHoldPrescription,
+  resolveTimedPrescription,
+  timedPrescriptionUnit,
 } from "@forgefit/exercise-db";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "@/lib/workouts/sessions";
@@ -111,9 +112,7 @@ function findExerciseHistory(
   exerciseId: string,
   sessions: WorkoutSessionRecord[]
 ): WorkoutSessionRecord[] {
-  const filterSets = isDurationHoldExercise(exerciseId)
-    ? holdWorkingSets
-    : workingSets;
+  const filterSets = isTimedExercise(exerciseId) ? holdWorkingSets : workingSets;
 
   return sessions.filter((session) =>
     filterSets(
@@ -122,18 +121,22 @@ function findExerciseHistory(
   );
 }
 
-function buildDurationHoldProgression(
+function buildTimedExerciseProgression(
   exerciseId: string,
   targetReps: string,
   history: WorkoutSessionRecord[],
   experienceLevel: ExperienceLevel
 ): ExerciseLoadProgression {
-  const prescription = resolveHoldPrescription(
+  const prescription = resolveTimedPrescription(
     exerciseId,
     targetReps,
     experienceLevel
   );
   const parsedTarget = parseTargetReps(prescription);
+  const unit = timedPrescriptionUnit(exerciseId);
+  const unitLabel = unit === "minutes" ? "min" : "sec";
+  const minimumValue = unit === "minutes" ? 5 : 15;
+  const increaseStep = unit === "minutes" ? 2 : 5;
   const latest = history[0];
 
   if (!latest) {
@@ -143,7 +146,10 @@ function buildDurationHoldProgression(
       extraSets: 0,
       action: "hold",
       basedOn: "prescription",
-      reason: `Aim for ${prescription} per set. Log how long you held.`,
+      reason:
+        unit === "minutes"
+          ? `Aim for ${prescription}. Start the timer or log your duration.`
+          : `Aim for ${prescription} per set. Log how long you held.`,
     };
   }
 
@@ -151,41 +157,50 @@ function buildDurationHoldProgression(
     latest.sets.filter((set) => set.exerciseId === exerciseId)
   );
   const avgRir = averageRir(sets);
-  const lastSeconds = bestReps(sets) ?? parsedTarget;
+  const lastValue = bestReps(sets) ?? parsedTarget;
   const action = decideAction(avgRir);
 
   if (action === "ease") {
     return {
       exerciseId,
-      suggestedReps: Math.max(15, Math.round(lastSeconds * 0.9)),
+      suggestedReps: Math.max(minimumValue, Math.round(lastValue * 0.9)),
       extraSets: 0,
       action: "ease",
       basedOn: "same_exercise",
       lastAvgRir: avgRir,
-      reason: "Last hold felt maxed out — aim for a slightly shorter, cleaner hold.",
+      reason:
+        unit === "minutes"
+          ? "Last session felt maxed out — aim for a slightly shorter cardio block."
+          : "Last hold felt maxed out — aim for a slightly shorter, cleaner hold.",
     };
   }
 
   if (action === "hold") {
     return {
       exerciseId,
-      suggestedReps: lastSeconds,
+      suggestedReps: lastValue,
       extraSets: 0,
       action: "hold",
       basedOn: "same_exercise",
       lastAvgRir: avgRir,
-      reason: `Match or beat your last hold (~${lastSeconds} sec).`,
+      reason:
+        unit === "minutes"
+          ? `Match or beat your last session (~${lastValue} ${unitLabel}).`
+          : `Match or beat your last hold (~${lastValue} ${unitLabel}).`,
     };
   }
 
   return {
     exerciseId,
-    suggestedReps: lastSeconds + 5,
+    suggestedReps: lastValue + increaseStep,
     extraSets: 0,
     action: "increase_reps",
     basedOn: "same_exercise",
     lastAvgRir: avgRir,
-    reason: "Last hold felt easy — add a few seconds if form stays solid.",
+    reason:
+      unit === "minutes"
+        ? "Last session felt easy — add a couple minutes if you have time."
+        : "Last hold felt easy — add a few seconds if form stays solid.",
   };
 }
 
@@ -496,11 +511,11 @@ export function buildSessionLoadProgressions(
   const progressions = new Map<string, ExerciseLoadProgression>();
 
   for (const exercise of exercises) {
-    if (isDurationHoldExercise(exercise.exerciseId)) {
+    if (isTimedExercise(exercise.exerciseId)) {
       const history = findExerciseHistory(exercise.exerciseId, recent);
       progressions.set(
         exercise.exerciseId,
-        buildDurationHoldProgression(
+        buildTimedExerciseProgression(
           exercise.exerciseId,
           exercise.reps,
           history,

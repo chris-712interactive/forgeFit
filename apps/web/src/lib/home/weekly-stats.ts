@@ -108,7 +108,7 @@ export function computeWeeklyWorkStats(
 
     for (const set of completedSets) {
       if (isCardioExercise(set.exerciseId, set.exerciseName)) {
-        const minutes = 5;
+        const minutes = Math.max(1, parseReps(set.reps));
         cardioMinutes += minutes;
         estimatedDistanceMiles +=
           minutes * cardioMilesPerMinute(set.exerciseId, set.exerciseName);

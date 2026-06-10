@@ -1,5 +1,5 @@
 import {
-  isDurationHoldExercise,
+  isTimedExercise,
   resolveExerciseDetail,
 } from "@forgefit/exercise-db";
 import type { FitnessGoal } from "@/lib/types/profile";
@@ -220,7 +220,7 @@ export function starterLoadKg(
   bodyweightKg: number,
   experienceLevel: ExperienceLevel
 ): number | undefined {
-  if (isDurationHoldExercise(exerciseId)) return undefined;
+  if (isTimedExercise(exerciseId)) return undefined;
 
   const detail = resolveExerciseDetail(exerciseId);
   if (!detail || detail.movementPattern === "cardio") {

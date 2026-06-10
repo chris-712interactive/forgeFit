@@ -2,7 +2,11 @@
 
 import {
   isDurationHoldExercise,
-  resolveHoldPrescription,
+  isTimedCardioExercise,
+  isTimedExercise,
+  resolveTimedPrescription,
+  timedLogValueFromTimer,
+  timedTargetSeconds,
   type HoldExperience,
 } from "@forgefit/exercise-db";
 import type { ExperienceLevel } from "@/lib/types/profile";
@@ -24,7 +28,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { HoldTimer } from "./hold-timer";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
-import { parseTargetReps } from "@/lib/progression/rir-progression";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
@@ -44,9 +47,11 @@ export function ActiveWorkout({
   const [session, setSession] = useState<LocalWorkoutSession | null>(null);
   const [sets, setSets] = useState<LocalExerciseSet[]>([]);
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
-  const [holdTimer, setHoldTimer] = useState<{
+  const [timedTimer, setTimedTimer] = useState<{
     setClientId: string;
+    exerciseId: string;
     seconds: number;
+    label: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
@@ -109,7 +114,7 @@ export function ActiveWorkout({
     }
 
     if (patch.completed === true) {
-      setHoldTimer((current) =>
+      setTimedTimer((current) =>
         current?.setClientId === setClientId ? null : current
       );
     }
@@ -130,16 +135,24 @@ export function ActiveWorkout({
     }
   }
 
-  function handleStartHold(setClientId: string, seconds: number) {
+  function handleStartTimer(
+    setClientId: string,
+    exerciseId: string,
+    seconds: number,
+    label: string
+  ) {
     setRestSeconds(null);
-    setHoldTimer({ setClientId, seconds });
+    setTimedTimer({ setClientId, exerciseId, seconds, label });
   }
 
-  function handleHoldComplete() {
-    if (!holdTimer) return;
-    const { setClientId, seconds } = holdTimer;
-    setHoldTimer(null);
-    void handleSetUpdate(setClientId, { reps: seconds, completed: true });
+  function handleTimedComplete() {
+    if (!timedTimer) return;
+    const { setClientId, exerciseId, seconds } = timedTimer;
+    setTimedTimer(null);
+    void handleSetUpdate(setClientId, {
+      reps: timedLogValueFromTimer(exerciseId, seconds),
+      completed: true,
+    });
   }
 
   async function handleFinish() {
@@ -147,7 +160,7 @@ export function ActiveWorkout({
     setFinishing(true);
     setFinishError(null);
     setRestSeconds(null);
-    setHoldTimer(null);
+    setTimedTimer(null);
 
     try {
       await completeWorkoutSession(clientId, "completed");
@@ -173,7 +186,7 @@ export function ActiveWorkout({
     setCancelling(true);
     setFinishError(null);
     setRestSeconds(null);
-    setHoldTimer(null);
+    setTimedTimer(null);
 
     try {
       await completeWorkoutSession(clientId, "cancelled");
@@ -234,17 +247,20 @@ export function ActiveWorkout({
       <div className={`mt-6 sm:mt-8 ${appSectionStackTight}`}>
         {session.exercises.map((exercise) => {
           const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
+          const isTimed = isTimedExercise(exercise.exerciseId);
+          const isCardio = isTimedCardioExercise(exercise.exerciseId);
           const isHold = isDurationHoldExercise(exercise.exerciseId);
-          const holdPrescription = isHold
-            ? resolveHoldPrescription(
+          const timedPrescription = isTimed
+            ? resolveTimedPrescription(
                 exercise.exerciseId,
                 exercise.reps,
                 experienceLevel as HoldExperience
               )
             : exercise.reps;
-          const targetHoldSeconds = isHold
-            ? parseTargetReps(holdPrescription)
+          const targetTimerSeconds = isTimed
+            ? timedTargetSeconds(exercise.exerciseId, timedPrescription)
             : undefined;
+          const timerLabel = isCardio ? "Cardio" : "Hold";
           return (
             <section
               key={exercise.exerciseId}
@@ -260,10 +276,12 @@ export function ActiveWorkout({
                   </Link>
                 </h2>
                 <p className="mt-1 text-sm text-forge-muted">
-                  {isHold ? (
+                  {isCardio ? (
+                    <>Aim for {timedPrescription}</>
+                  ) : isHold ? (
                     <>
                       Aim for {exercise.sets + (exercise.extraSets ?? 0)} holds
-                      of {holdPrescription} · {exercise.restSeconds}s rest
+                      of {timedPrescription} · {exercise.restSeconds}s rest
                       between sets
                     </>
                   ) : (
@@ -293,21 +311,25 @@ export function ActiveWorkout({
                     key={set.clientId}
                     set={set}
                     exerciseId={exercise.exerciseId}
-                    targetReps={holdPrescription}
-                    isDurationHold={isHold}
-                    targetHoldSeconds={targetHoldSeconds}
-                    isHoldActive={holdTimer?.setClientId === set.clientId}
+                    targetReps={timedPrescription}
+                    targetTimerSeconds={targetTimerSeconds}
+                    isTimerActive={timedTimer?.setClientId === set.clientId}
                     showProgressionHint={Boolean(
                       exercise.progressionNote &&
                         !set.completed &&
-                        (isHold
+                        (isTimed
                           ? set.reps != null
                           : set.weightKg != null || set.reps != null)
                     )}
-                    onStartHold={
-                      isHold && targetHoldSeconds
+                    onStartTimer={
+                      isTimed && targetTimerSeconds
                         ? (setClientId) =>
-                            handleStartHold(setClientId, targetHoldSeconds)
+                            handleStartTimer(
+                              setClientId,
+                              exercise.exerciseId,
+                              targetTimerSeconds,
+                              timerLabel
+                            )
                         : undefined
                     }
                     onUpdate={handleSetUpdate}
@@ -344,15 +366,16 @@ export function ActiveWorkout({
         </button>
       </div>
 
-      {holdTimer && holdTimer.seconds > 0 && (
+      {timedTimer && timedTimer.seconds > 0 && (
         <HoldTimer
-          seconds={holdTimer.seconds}
-          onComplete={handleHoldComplete}
-          onSkip={() => setHoldTimer(null)}
+          seconds={timedTimer.seconds}
+          label={timedTimer.label}
+          onComplete={handleTimedComplete}
+          onSkip={() => setTimedTimer(null)}
         />
       )}
 
-      {!holdTimer && restSeconds !== null && restSeconds > 0 && (
+      {!timedTimer && restSeconds !== null && restSeconds > 0 && (
         <RestTimer
           seconds={restSeconds}
           onComplete={() => setRestSeconds(null)}
