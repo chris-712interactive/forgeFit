@@ -6,15 +6,23 @@ import {
 import Link from "next/link";
 import { formatEquipment } from "@/lib/exercises/labels";
 
+import { sanitizeReturnTo } from "@/lib/navigation/return-to";
+
 interface SubstitutionListProps {
   substitutions: CatalogExercise[];
   userEquipment: string[];
+  returnTo?: string | null;
 }
 
 export function SubstitutionList({
   substitutions,
   userEquipment,
+  returnTo,
 }: SubstitutionListProps) {
+  const safeReturn = sanitizeReturnTo(returnTo);
+  const returnQuery = safeReturn
+    ? `?returnTo=${encodeURIComponent(safeReturn)}`
+    : "";
   if (substitutions.length === 0) {
     return (
       <p className="text-sm text-forge-muted">
@@ -32,7 +40,7 @@ export function SubstitutionList({
         return (
           <li key={exercise.id}>
             <Link
-              href={`/exercises/${exercise.id}`}
+              href={`/exercises/${exercise.id}${returnQuery}`}
               className="block rounded-xl border border-[var(--border)] bg-forge-surface px-4 py-3 transition-colors hover:border-forge-ember/50"
             >
               <div className="flex items-start justify-between gap-3">

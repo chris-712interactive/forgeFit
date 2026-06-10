@@ -285,14 +285,17 @@ export function ActiveWorkout({
               className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-3 sm:p-4"
             >
               <div className="mb-4">
-                <h2 className="font-display text-base font-semibold text-forge-text sm:text-lg">
-                  <Link
-                    href={`/exercises/${exercise.exerciseId}`}
-                    className="hover:text-forge-ember"
-                  >
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <h2 className="font-display text-base font-semibold text-forge-text sm:text-lg">
                     {exercise.name}
+                  </h2>
+                  <Link
+                    href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(`/workout?active=${clientId}`)}`}
+                    className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 text-xs font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
+                  >
+                    View form →
                   </Link>
-                </h2>
+                </div>
                 <p className="mt-1 text-sm text-forge-muted">
                   {isCardio ? (
                     <>Aim for {timedPrescription}</>

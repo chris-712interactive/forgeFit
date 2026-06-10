@@ -8,6 +8,7 @@ import { useState } from "react";
 import { FoodSearchPanel } from "./food-search-panel";
 import { LoggedEntries } from "./logged-entries";
 import { MacroPresets } from "./macro-presets";
+import { MealPlateExamples } from "./meal-plate-examples";
 import { MacroSummary } from "./macro-summary";
 import { QuickMacroLog } from "./quick-macro-log";
 
@@ -121,6 +122,8 @@ export function NutritionDiary({
         totals={initialSummary.totals}
         targets={initialSummary.targets}
       />
+
+      <MealPlateExamples targets={initialSummary.targets} />
 
       <QuickMacroLog
         loggedDate={initialSummary.date}

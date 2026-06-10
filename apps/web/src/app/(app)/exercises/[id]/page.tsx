@@ -1,3 +1,4 @@
+import { ExerciseBackLink } from "@/components/exercises/exercise-back-link";
 import { ExerciseDetailMedia } from "@/components/exercises/exercise-detail-media";
 import {
   appHeaderGap,
@@ -8,17 +9,19 @@ import { SubstitutionList } from "@/components/exercises/substitution-list";
 import { getExerciseDetailData } from "@/lib/exercises/service";
 import { formatEquipment, formatPattern } from "@/lib/exercises/labels";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface ExerciseDetailPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string }>;
 }
 
 export default async function ExerciseDetailPage({
   params,
+  searchParams,
 }: ExerciseDetailPageProps) {
   const { id } = await params;
+  const { returnTo } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -39,12 +42,7 @@ export default async function ExerciseDetailPage({
 
   return (
     <div className={appPagePadding}>
-      <Link
-        href="/exercises"
-        className="text-sm font-medium text-forge-steel hover:text-forge-ember"
-      >
-        ← Exercise library
-      </Link>
+      <ExerciseBackLink returnTo={returnTo} />
 
       <h1 className="font-display mt-4 text-2xl font-bold text-forge-text">
         {exercise.name}
@@ -74,6 +72,7 @@ export default async function ExerciseDetailPage({
             <SubstitutionList
               substitutions={substitutions}
               userEquipment={userEquipment}
+              returnTo={returnTo}
             />
           </div>
         </section>
