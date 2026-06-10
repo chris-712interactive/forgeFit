@@ -22,9 +22,9 @@ export function MealPlateExamples({ targets }: MealPlateExamplesProps) {
         Example plates for your day
       </h2>
       <p className="mt-1 text-sm text-forge-muted">
-        Three sample meals that roughly match your targets split across breakfast,
-        lunch, and dinner. Use them as a visual guide — portions can flex day to
-        day.
+        Sample breakfasts, lunches, and dinners scaled to hit your per-meal targets.
+        Portions adjust to your program — swap foods freely as long as the macros
+        stay in the ballpark.
       </p>
 
       <div className="mt-5 space-y-6">
@@ -38,6 +38,8 @@ export function MealPlateExamples({ targets }: MealPlateExamplesProps) {
 
 function MealPlateCard({ plate }: { plate: MealPlateExample }) {
   const exampleTotals = sumPlateMacros(plate.foods);
+  const calorieGap = plate.targets.calories - exampleTotals.calories;
+  const closeMatch = Math.abs(calorieGap) <= Math.max(25, plate.targets.calories * 0.05);
 
   return (
     <article className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
@@ -84,8 +86,19 @@ function MealPlateCard({ plate }: { plate: MealPlateExample }) {
       </div>
 
       <p className="mt-3 text-xs text-forge-muted">
-        Example totals: {exampleTotals.calories} kcal · {exampleTotals.proteinG}g
-        protein · {exampleTotals.carbsG}g carbs · {exampleTotals.fatG}g fat
+        <span className={closeMatch ? "text-forge-success" : "text-forge-text"}>
+          Plate totals: {exampleTotals.calories} kcal · {exampleTotals.proteinG}g
+          protein · {exampleTotals.carbsG}g carbs · {exampleTotals.fatG}g fat
+        </span>
+        {closeMatch ? (
+          <span className="text-forge-success"> · matches meal target</span>
+        ) : (
+          <span>
+            {" "}
+            · target {plate.targets.calories} kcal ({calorieGap > 0 ? "+" : ""}
+            {calorieGap} kcal)
+          </span>
+        )}
       </p>
     </article>
   );
