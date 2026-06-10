@@ -1,10 +1,10 @@
 "use client";
 
+import { cancelWorkoutSessionOnServer } from "@/app/actions/workouts";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import {
   cacheProgramPlan,
   cancelInProgressSessionsForDay,
-  cancelWorkoutSession,
   getCachedProgramPlan,
   getSession,
   startWorkoutSession,
@@ -312,11 +312,20 @@ export function WorkoutHub({
 
       setDiscardingClientId(clientId);
       try {
-        const session = await getSession(clientId);
-        if (session) {
-          await cancelInProgressSessionsForDay(userId, session.dayIndex);
-        } else {
-          await cancelWorkoutSession(clientId);
+        const mergedSession = allSessions.find(
+          (session) => session.clientId === clientId
+        );
+        const localSession = await getSession(clientId);
+        const dayIndex = localSession?.dayIndex ?? mergedSession?.dayIndex;
+
+        if (dayIndex != null) {
+          await cancelInProgressSessionsForDay(userId, dayIndex);
+        }
+
+        const serverResult = await cancelWorkoutSessionOnServer(clientId);
+        if (serverResult.error) {
+          window.alert(serverResult.error);
+          return;
         }
 
         if (activeClientId === clientId) {
@@ -333,7 +342,7 @@ export function WorkoutHub({
         setDiscardingClientId(null);
       }
     },
-    [activeClientId, refreshAllSessions, sync, userId]
+    [activeClientId, allSessions, refreshAllSessions, sync, userId]
   );
 
   useEffect(() => {

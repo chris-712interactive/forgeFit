@@ -147,8 +147,21 @@ export async function updateSet(
   return updated;
 }
 
+export async function cancelWorkoutSessionIfPresent(
+  clientId: string
+): Promise<boolean> {
+  const db = getOfflineDb();
+  const existing = await db.workoutSessions.get(clientId);
+  if (!existing) return false;
+  await completeWorkoutSession(clientId, "cancelled");
+  return true;
+}
+
 export async function cancelWorkoutSession(clientId: string): Promise<void> {
-  return completeWorkoutSession(clientId, "cancelled");
+  const cancelled = await cancelWorkoutSessionIfPresent(clientId);
+  if (!cancelled) {
+    throw new Error("Workout session not found on this device.");
+  }
 }
 
 export async function cancelInProgressSessionsForDay(
@@ -159,7 +172,7 @@ export async function cancelInProgressSessionsForDay(
   await Promise.all(
     inProgress
       .filter((session) => session.dayIndex === dayIndex)
-      .map((session) => completeWorkoutSession(session.clientId, "cancelled"))
+      .map((session) => cancelWorkoutSessionIfPresent(session.clientId))
   );
 }
 
