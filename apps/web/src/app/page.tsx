@@ -6,7 +6,16 @@ import { redirect } from "next/navigation";
 
 export const metadata = buildLandingMetadata();
 
-export default async function Home() {
+interface HomeProps {
+  searchParams: Promise<{ code?: string }>;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  if (params.code) {
+    redirect(`/auth/callback?code=${encodeURIComponent(params.code)}`);
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

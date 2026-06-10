@@ -3,6 +3,17 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const authCode = request.nextUrl.searchParams.get("code");
+
+  // Supabase falls back to Site URL (/) when redirectTo isn't allowlisted — forward
+  // the PKCE code to our callback route so the session can be established.
+  if (authCode && path !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -30,7 +41,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
   const isAuthRoute =
     path.startsWith("/login") ||
     path.startsWith("/signup") ||
