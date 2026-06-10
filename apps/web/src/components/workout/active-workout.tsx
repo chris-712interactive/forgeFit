@@ -5,7 +5,7 @@ import {
   isTimedCardioExercise,
   isTimedExercise,
   resolveTimedPrescription,
-  timedLogValueFromTimer,
+  timedLogValueFromElapsed,
   timedTargetSeconds,
   type HoldExperience,
 } from "@forgefit/exercise-db";
@@ -145,14 +145,23 @@ export function ActiveWorkout({
     setTimedTimer({ setClientId, exerciseId, seconds, label });
   }
 
-  function handleTimedComplete() {
+  function logTimedSet(elapsedSeconds: number) {
     if (!timedTimer) return;
-    const { setClientId, exerciseId, seconds } = timedTimer;
+    const { setClientId, exerciseId } = timedTimer;
     setTimedTimer(null);
     void handleSetUpdate(setClientId, {
-      reps: timedLogValueFromTimer(exerciseId, seconds),
+      reps: timedLogValueFromElapsed(exerciseId, elapsedSeconds),
       completed: true,
     });
+  }
+
+  function handleTimedComplete() {
+    if (!timedTimer) return;
+    logTimedSet(timedTimer.seconds);
+  }
+
+  function handleTimedStop(elapsedSeconds: number) {
+    logTimedSet(elapsedSeconds);
   }
 
   async function handleFinish() {
@@ -371,7 +380,7 @@ export function ActiveWorkout({
           seconds={timedTimer.seconds}
           label={timedTimer.label}
           onComplete={handleTimedComplete}
-          onSkip={() => setTimedTimer(null)}
+          onStop={handleTimedStop}
         />
       )}
 

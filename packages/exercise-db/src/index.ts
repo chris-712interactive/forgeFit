@@ -37,6 +37,7 @@ export {
   parseTimedTargetValue,
   resolveHoldPrescription,
   resolveTimedPrescription,
+  timedLogValueFromElapsed,
   timedLogValueFromTimer,
   timedPrescriptionUnit,
   timedTargetSeconds,

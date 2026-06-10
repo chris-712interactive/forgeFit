@@ -81,11 +81,20 @@ export function timedTargetSeconds(
   return timedPrescriptionUnit(exerciseId) === "minutes" ? value * 60 : value;
 }
 
+export function timedLogValueFromElapsed(
+  exerciseId: string,
+  elapsedSeconds: number
+): number {
+  const elapsed = Math.max(0, Math.round(elapsedSeconds));
+  if (timedPrescriptionUnit(exerciseId) === "minutes") {
+    return Math.round(elapsed / 60);
+  }
+  return elapsed;
+}
+
 export function timedLogValueFromTimer(
   exerciseId: string,
   timerSeconds: number
 ): number {
-  return timedPrescriptionUnit(exerciseId) === "minutes"
-    ? Math.round(timerSeconds / 60)
-    : timerSeconds;
+  return timedLogValueFromElapsed(exerciseId, timerSeconds);
 }
