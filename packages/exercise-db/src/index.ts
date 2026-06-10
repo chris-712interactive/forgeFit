@@ -30,6 +30,12 @@ export {
 } from "./equipment";
 export { pickCardioExercise, type CardioPrescription } from "./cardio";
 export {
+  holdDurationPrescription,
+  isDurationHoldExercise,
+  resolveHoldPrescription,
+  type HoldExperience,
+} from "./holds";
+export {
   sanitizeHighlighterMuscles,
   toHighlighterMuscles,
   VALID_HIGHLIGHTER_MUSCLES,

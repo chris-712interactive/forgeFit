@@ -364,6 +364,7 @@ export function WorkoutHub({
     return (
       <ActiveWorkout
         clientId={activeClientId}
+        experienceLevel={experienceLevel}
         onBack={closeToHub}
         onFinished={refreshAllSessions}
       />

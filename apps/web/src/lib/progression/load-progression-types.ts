@@ -20,7 +20,8 @@ export interface ExerciseLoadProgression {
     | "muscle_group"
     | "estimated_1rm"
     | "user_declared_1rm"
-    | "starter_load";
+    | "starter_load"
+    | "prescription";
   lastAvgRir?: number;
   estimatedE1rmKg?: number;
   loadPercent1rm?: number;

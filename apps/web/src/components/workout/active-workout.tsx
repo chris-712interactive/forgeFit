@@ -1,6 +1,12 @@
 "use client";
 
 import {
+  isDurationHoldExercise,
+  resolveHoldPrescription,
+  type HoldExperience,
+} from "@forgefit/exercise-db";
+import type { ExperienceLevel } from "@/lib/types/profile";
+import {
   completeWorkoutSession,
   getSession,
   getSetsForSession,
@@ -15,18 +21,22 @@ import {
 } from "@/components/layout/page-layout";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { HoldTimer } from "./hold-timer";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
+import { parseTargetReps } from "@/lib/progression/rir-progression";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
   clientId: string;
+  experienceLevel?: ExperienceLevel;
   onBack?: () => void;
   onFinished?: () => void | Promise<void>;
 }
 
 export function ActiveWorkout({
   clientId,
+  experienceLevel = "beginner",
   onBack,
   onFinished,
 }: ActiveWorkoutProps) {
@@ -34,6 +44,10 @@ export function ActiveWorkout({
   const [session, setSession] = useState<LocalWorkoutSession | null>(null);
   const [sets, setSets] = useState<LocalExerciseSet[]>([]);
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
+  const [holdTimer, setHoldTimer] = useState<{
+    setClientId: string;
+    seconds: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -94,6 +108,12 @@ export function ActiveWorkout({
       );
     }
 
+    if (patch.completed === true) {
+      setHoldTimer((current) =>
+        current?.setClientId === setClientId ? null : current
+      );
+    }
+
     if (completing && session) {
       const setRow = sets.find((s) => s.clientId === setClientId);
       const exercise = session.exercises.find(
@@ -110,11 +130,24 @@ export function ActiveWorkout({
     }
   }
 
+  function handleStartHold(setClientId: string, seconds: number) {
+    setRestSeconds(null);
+    setHoldTimer({ setClientId, seconds });
+  }
+
+  function handleHoldComplete() {
+    if (!holdTimer) return;
+    const { setClientId, seconds } = holdTimer;
+    setHoldTimer(null);
+    void handleSetUpdate(setClientId, { reps: seconds, completed: true });
+  }
+
   async function handleFinish() {
     if (finishing || cancelling) return;
     setFinishing(true);
     setFinishError(null);
     setRestSeconds(null);
+    setHoldTimer(null);
 
     try {
       await completeWorkoutSession(clientId, "completed");
@@ -140,6 +173,7 @@ export function ActiveWorkout({
     setCancelling(true);
     setFinishError(null);
     setRestSeconds(null);
+    setHoldTimer(null);
 
     try {
       await completeWorkoutSession(clientId, "cancelled");
@@ -200,6 +234,17 @@ export function ActiveWorkout({
       <div className={`mt-6 sm:mt-8 ${appSectionStackTight}`}>
         {session.exercises.map((exercise) => {
           const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
+          const isHold = isDurationHoldExercise(exercise.exerciseId);
+          const holdPrescription = isHold
+            ? resolveHoldPrescription(
+                exercise.exerciseId,
+                exercise.reps,
+                experienceLevel as HoldExperience
+              )
+            : exercise.reps;
+          const targetHoldSeconds = isHold
+            ? parseTargetReps(holdPrescription)
+            : undefined;
           return (
             <section
               key={exercise.exerciseId}
@@ -215,9 +260,19 @@ export function ActiveWorkout({
                   </Link>
                 </h2>
                 <p className="mt-1 text-sm text-forge-muted">
-                  Aim for {exercise.sets + (exercise.extraSets ?? 0)} sets of{" "}
-                  {exercise.reps} reps · {exercise.restSeconds}s rest between
-                  sets
+                  {isHold ? (
+                    <>
+                      Aim for {exercise.sets + (exercise.extraSets ?? 0)} holds
+                      of {holdPrescription} · {exercise.restSeconds}s rest
+                      between sets
+                    </>
+                  ) : (
+                    <>
+                      Aim for {exercise.sets + (exercise.extraSets ?? 0)} sets
+                      of {exercise.reps} reps · {exercise.restSeconds}s rest
+                      between sets
+                    </>
+                  )}
                   {exercise.extraSets ? (
                     <span className="text-forge-gold">
                       {" "}
@@ -238,12 +293,23 @@ export function ActiveWorkout({
                     key={set.clientId}
                     set={set}
                     exerciseId={exercise.exerciseId}
-                    targetReps={exercise.reps}
+                    targetReps={holdPrescription}
+                    isDurationHold={isHold}
+                    targetHoldSeconds={targetHoldSeconds}
+                    isHoldActive={holdTimer?.setClientId === set.clientId}
                     showProgressionHint={Boolean(
                       exercise.progressionNote &&
                         !set.completed &&
-                        (set.weightKg != null || set.reps != null)
+                        (isHold
+                          ? set.reps != null
+                          : set.weightKg != null || set.reps != null)
                     )}
+                    onStartHold={
+                      isHold && targetHoldSeconds
+                        ? (setClientId) =>
+                            handleStartHold(setClientId, targetHoldSeconds)
+                        : undefined
+                    }
                     onUpdate={handleSetUpdate}
                   />
                 ))}
@@ -278,7 +344,15 @@ export function ActiveWorkout({
         </button>
       </div>
 
-      {restSeconds !== null && restSeconds > 0 && (
+      {holdTimer && holdTimer.seconds > 0 && (
+        <HoldTimer
+          seconds={holdTimer.seconds}
+          onComplete={handleHoldComplete}
+          onSkip={() => setHoldTimer(null)}
+        />
+      )}
+
+      {!holdTimer && restSeconds !== null && restSeconds > 0 && (
         <RestTimer
           seconds={restSeconds}
           onComplete={() => setRestSeconds(null)}

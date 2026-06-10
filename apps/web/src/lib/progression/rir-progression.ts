@@ -1,4 +1,8 @@
-import { resolveExerciseDetail } from "@forgefit/exercise-db";
+import {
+  isDurationHoldExercise,
+  resolveExerciseDetail,
+  resolveHoldPrescription,
+} from "@forgefit/exercise-db";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "@/lib/workouts/sessions";
 import type {
@@ -97,15 +101,92 @@ function bestReps(sets: WorkoutSetRecord[]): number | undefined {
   return Math.max(...reps);
 }
 
+function holdWorkingSets(sets: WorkoutSetRecord[]): WorkoutSetRecord[] {
+  return sets.filter(
+    (set) => set.completed && set.reps != null && set.reps > 0
+  );
+}
+
 function findExerciseHistory(
   exerciseId: string,
   sessions: WorkoutSessionRecord[]
 ): WorkoutSessionRecord[] {
+  const filterSets = isDurationHoldExercise(exerciseId)
+    ? holdWorkingSets
+    : workingSets;
+
   return sessions.filter((session) =>
-    workingSets(
+    filterSets(
       session.sets.filter((set) => set.exerciseId === exerciseId)
     ).length > 0
   );
+}
+
+function buildDurationHoldProgression(
+  exerciseId: string,
+  targetReps: string,
+  history: WorkoutSessionRecord[],
+  experienceLevel: ExperienceLevel
+): ExerciseLoadProgression {
+  const prescription = resolveHoldPrescription(
+    exerciseId,
+    targetReps,
+    experienceLevel
+  );
+  const parsedTarget = parseTargetReps(prescription);
+  const latest = history[0];
+
+  if (!latest) {
+    return {
+      exerciseId,
+      suggestedReps: parsedTarget,
+      extraSets: 0,
+      action: "hold",
+      basedOn: "prescription",
+      reason: `Aim for ${prescription} per set. Log how long you held.`,
+    };
+  }
+
+  const sets = holdWorkingSets(
+    latest.sets.filter((set) => set.exerciseId === exerciseId)
+  );
+  const avgRir = averageRir(sets);
+  const lastSeconds = bestReps(sets) ?? parsedTarget;
+  const action = decideAction(avgRir);
+
+  if (action === "ease") {
+    return {
+      exerciseId,
+      suggestedReps: Math.max(15, Math.round(lastSeconds * 0.9)),
+      extraSets: 0,
+      action: "ease",
+      basedOn: "same_exercise",
+      lastAvgRir: avgRir,
+      reason: "Last hold felt maxed out — aim for a slightly shorter, cleaner hold.",
+    };
+  }
+
+  if (action === "hold") {
+    return {
+      exerciseId,
+      suggestedReps: lastSeconds,
+      extraSets: 0,
+      action: "hold",
+      basedOn: "same_exercise",
+      lastAvgRir: avgRir,
+      reason: `Match or beat your last hold (~${lastSeconds} sec).`,
+    };
+  }
+
+  return {
+    exerciseId,
+    suggestedReps: lastSeconds + 5,
+    extraSets: 0,
+    action: "increase_reps",
+    basedOn: "same_exercise",
+    lastAvgRir: avgRir,
+    reason: "Last hold felt easy — add a few seconds if form stays solid.",
+  };
 }
 
 function countConsecutiveEasySessions(
@@ -415,6 +496,20 @@ export function buildSessionLoadProgressions(
   const progressions = new Map<string, ExerciseLoadProgression>();
 
   for (const exercise of exercises) {
+    if (isDurationHoldExercise(exercise.exerciseId)) {
+      const history = findExerciseHistory(exercise.exerciseId, recent);
+      progressions.set(
+        exercise.exerciseId,
+        buildDurationHoldProgression(
+          exercise.exerciseId,
+          exercise.reps,
+          history,
+          experienceLevel
+        )
+      );
+      continue;
+    }
+
     const e1rmEntry = effectiveE1rm.get(exercise.exerciseId);
     const e1rm = e1rmEntry?.e1rmKg;
     const history = findExerciseHistory(exercise.exerciseId, recent);

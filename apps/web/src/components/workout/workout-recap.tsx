@@ -1,5 +1,6 @@
 "use client";
 
+import { isDurationHoldExercise } from "@forgefit/exercise-db";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
   formatWeight,
@@ -81,7 +82,9 @@ export function WorkoutRecap({
               <h2 className="font-display text-base font-semibold text-forge-text">
                 {exercise.exerciseName}
               </h2>
-              {exercise.weightDeltaKg != null && exercise.weightDeltaKg !== 0 && (
+              {!isDurationHoldExercise(exercise.exerciseId) &&
+                exercise.weightDeltaKg != null &&
+                exercise.weightDeltaKg !== 0 && (
                 <span
                   className={`shrink-0 rounded-lg px-2 py-1 text-xs font-semibold ${
                     exercise.weightDeltaKg > 0
@@ -112,8 +115,12 @@ export function WorkoutRecap({
                 >
                   <span>Set {set.setNumber}</span>
                   <span>
-                    {set.completed && set.weightKg != null && set.reps != null
-                      ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
+                    {set.completed && set.reps != null
+                      ? isDurationHoldExercise(exercise.exerciseId)
+                        ? `${set.reps} sec`
+                        : set.weightKg != null
+                          ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
+                          : "—"
                       : "—"}
                   </span>
                 </div>
@@ -123,13 +130,26 @@ export function WorkoutRecap({
             {prior && exercise.priorBest && (
               <p className="mt-3 text-xs text-forge-muted">
                 Last time best:{" "}
-                {formatWeight(exercise.priorBest.weightKg, unit)} ×{" "}
-                {exercise.priorBest.reps}
+                {isDurationHoldExercise(exercise.exerciseId) ? (
+                  <>{exercise.priorBest.reps} sec</>
+                ) : (
+                  <>
+                    {formatWeight(exercise.priorBest.weightKg, unit)} ×{" "}
+                    {exercise.priorBest.reps}
+                  </>
+                )}
                 {exercise.currentBest && (
                   <>
                     {" "}
-                    → now {formatWeight(exercise.currentBest.weightKg, unit)} ×{" "}
-                    {exercise.currentBest.reps}
+                    → now{" "}
+                    {isDurationHoldExercise(exercise.exerciseId) ? (
+                      <>{exercise.currentBest.reps} sec</>
+                    ) : (
+                      <>
+                        {formatWeight(exercise.currentBest.weightKg, unit)} ×{" "}
+                        {exercise.currentBest.reps}
+                      </>
+                    )}
                   </>
                 )}
               </p>

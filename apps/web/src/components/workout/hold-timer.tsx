@@ -1,24 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { playTimerCompleteSound, playTimerStartSound } from "@/lib/audio/timer-sounds";
+import { useEffect, useRef, useState } from "react";
 import { formatTimerSeconds } from "./timer-utils";
 
-interface RestTimerProps {
+interface HoldTimerProps {
   seconds: number;
   onComplete: () => void;
   onSkip: () => void;
 }
 
-export function RestTimer({ seconds, onComplete, onSkip }: RestTimerProps) {
+export function HoldTimer({ seconds, onComplete, onSkip }: HoldTimerProps) {
   const [remaining, setRemaining] = useState(seconds);
+  const startedSound = useRef(false);
+  const completed = useRef(false);
 
   useEffect(() => {
     setRemaining(seconds);
+    startedSound.current = false;
+    completed.current = false;
   }, [seconds]);
 
   useEffect(() => {
+    if (!startedSound.current) {
+      playTimerStartSound();
+      startedSound.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
     if (remaining <= 0) {
-      onComplete();
+      if (!completed.current) {
+        completed.current = true;
+        playTimerCompleteSound();
+        onComplete();
+      }
       return;
     }
 
@@ -33,13 +49,13 @@ export function RestTimer({ seconds, onComplete, onSkip }: RestTimerProps) {
 
   return (
     <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 px-4">
-      <div className="rest-timer-pulse mx-auto max-w-lg rounded-2xl border border-forge-gold/40 bg-forge-surface-raised p-4 shadow-lg">
+      <div className="hold-timer-pulse mx-auto max-w-lg rounded-2xl border border-forge-ember/40 bg-forge-surface-raised p-4 shadow-lg">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
-              Rest
+            <p className="text-xs font-semibold uppercase tracking-wider text-forge-ember">
+              Hold
             </p>
-            <p className="font-display text-3xl font-bold text-forge-gold">
+            <p className="font-display text-3xl font-bold text-forge-ember">
               {formatTimerSeconds(remaining)}
             </p>
           </div>
@@ -48,12 +64,12 @@ export function RestTimer({ seconds, onComplete, onSkip }: RestTimerProps) {
             onClick={onSkip}
             className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted"
           >
-            Skip
+            Stop
           </button>
         </div>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-forge-surface">
           <div
-            className="h-full rounded-full bg-forge-gold transition-all duration-1000 ease-linear"
+            className="h-full rounded-full bg-forge-ember transition-all duration-1000 ease-linear"
             style={{ width: `${progress}%` }}
           />
         </div>

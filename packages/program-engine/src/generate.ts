@@ -6,6 +6,8 @@ import {
 } from "@forgefit/evidence-kb";
 import {
   expandUserEquipment,
+  holdDurationPrescription,
+  isDurationHoldExercise,
   pickCardioExercise,
   pickExerciseForPattern,
   type ExerciseDifficulty,
@@ -193,17 +195,23 @@ function buildSession(
     );
     if (!picked) continue;
     usedIds.push(picked.id);
+    const exerciseReps = isDurationHoldExercise(picked.id)
+      ? (holdDurationPrescription(picked.id, profile.experience) ?? "30-45 sec")
+      : reps;
+
     exercises.push({
       exerciseId: picked.id,
       name: picked.name,
       primaryMuscles: picked.primaryMuscles,
       sets,
-      reps,
-      restSeconds: rest,
+      reps: exerciseReps,
+      restSeconds: isDurationHoldExercise(picked.id) ? 60 : rest,
       notes:
         profile.goal === "powerlifting" && picked.priority >= 9
           ? "Top set @ RPE 8, back-off sets -10%"
-          : undefined,
+          : isDurationHoldExercise(picked.id)
+            ? "Hold a straight line — stop when form breaks"
+            : undefined,
     });
   }
 

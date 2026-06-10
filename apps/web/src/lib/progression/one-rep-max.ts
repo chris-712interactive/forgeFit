@@ -1,4 +1,7 @@
-import { resolveExerciseDetail } from "@forgefit/exercise-db";
+import {
+  isDurationHoldExercise,
+  resolveExerciseDetail,
+} from "@forgefit/exercise-db";
 import type { FitnessGoal } from "@/lib/types/profile";
 import type { ExperienceLevel } from "@/lib/types/profile";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "@/lib/workouts/sessions";
@@ -217,6 +220,8 @@ export function starterLoadKg(
   bodyweightKg: number,
   experienceLevel: ExperienceLevel
 ): number | undefined {
+  if (isDurationHoldExercise(exerciseId)) return undefined;
+
   const detail = resolveExerciseDetail(exerciseId);
   if (!detail || detail.movementPattern === "cardio") {
     return undefined;
