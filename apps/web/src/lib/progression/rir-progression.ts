@@ -6,6 +6,7 @@ import type {
   ExerciseLoadProgression,
   LoadProgressionAction,
 } from "./load-progression-types";
+import { snapPrescribedWeightKg } from "./load-snapping";
 import {
   buildExerciseE1rmMap,
   clampWeightToE1rmBand,
@@ -16,6 +17,7 @@ import {
   workingWeightFromE1rm,
   type EffectiveE1rmEntry,
 } from "./one-rep-max";
+import type { UnitSystem } from "@/lib/types/profile";
 
 const LOOKBACK_DAYS = 42;
 const EASY_RIR = 3;
@@ -372,6 +374,21 @@ function buildMuscleGroupProgression(
   };
 }
 
+function finalizePrescribedWeight(
+  progression: ExerciseLoadProgression,
+  unit: UnitSystem
+): ExerciseLoadProgression {
+  if (progression.suggestedWeightKg == null) return progression;
+  return {
+    ...progression,
+    suggestedWeightKg: snapPrescribedWeightKg(
+      progression.exerciseId,
+      progression.suggestedWeightKg,
+      unit
+    ),
+  };
+}
+
 export function buildSessionLoadProgressions(
   input: BuildLoadProgressionInput
 ): Map<string, ExerciseLoadProgression> {
@@ -383,6 +400,7 @@ export function buildSessionLoadProgressions(
     bodyweightKg = 0,
     declaredE1rmKg,
     referenceDate = new Date(),
+    unit = "imperial",
   } = input;
 
   const recent = recentCompletedSessions(sessions, referenceDate);
@@ -410,7 +428,10 @@ export function buildSessionLoadProgressions(
     );
 
     if (direct) {
-      progressions.set(exercise.exerciseId, direct);
+      progressions.set(
+        exercise.exerciseId,
+        finalizePrescribedWeight(direct, unit)
+      );
       continue;
     }
 
@@ -420,6 +441,28 @@ export function buildSessionLoadProgressions(
       muscleSignals
     );
     if (muscle) {
+      if (muscle.suggestedWeightKg == null) {
+        const starter = buildStarterProgression(
+          exercise.exerciseId,
+          exercise.reps,
+          bodyweightKg,
+          experienceLevel
+        );
+        if (starter?.suggestedWeightKg != null) {
+          progressions.set(
+            exercise.exerciseId,
+            finalizePrescribedWeight(
+              {
+                ...muscle,
+                suggestedWeightKg: starter.suggestedWeightKg,
+                reason: `${muscle.reason} Use a conservative starting weight on this lift.`,
+              },
+              unit
+            )
+          );
+          continue;
+        }
+      }
       progressions.set(exercise.exerciseId, muscle);
       continue;
     }
@@ -427,11 +470,14 @@ export function buildSessionLoadProgressions(
     if (e1rmEntry != null) {
       progressions.set(
         exercise.exerciseId,
-        buildE1rmBasedProgression(
-          exercise.exerciseId,
-          exercise.reps,
-          e1rmEntry,
-          goal
+        finalizePrescribedWeight(
+          buildE1rmBasedProgression(
+            exercise.exerciseId,
+            exercise.reps,
+            e1rmEntry,
+            goal
+          ),
+          unit
         )
       );
       continue;
@@ -444,7 +490,10 @@ export function buildSessionLoadProgressions(
       experienceLevel
     );
     if (starter) {
-      progressions.set(exercise.exerciseId, starter);
+      progressions.set(
+        exercise.exerciseId,
+        finalizePrescribedWeight(starter, unit)
+      );
     }
   }
 
@@ -452,10 +501,18 @@ export function buildSessionLoadProgressions(
 }
 
 export function progressionToPrefill(
-  progression: ExerciseLoadProgression
+  progression: ExerciseLoadProgression,
+  unit: UnitSystem = "imperial"
 ): { weightKg?: number; reps?: number } {
   return {
-    weightKg: progression.suggestedWeightKg,
+    weightKg:
+      progression.suggestedWeightKg != null
+        ? snapPrescribedWeightKg(
+            progression.exerciseId,
+            progression.suggestedWeightKg,
+            unit
+          )
+        : undefined,
     reps: progression.suggestedReps,
   };
 }

@@ -237,6 +237,7 @@ export function ActiveWorkout({
                   <SetRow
                     key={set.clientId}
                     set={set}
+                    exerciseId={exercise.exerciseId}
                     targetReps={exercise.reps}
                     showProgressionHint={Boolean(
                       exercise.progressionNote &&

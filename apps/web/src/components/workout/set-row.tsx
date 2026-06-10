@@ -2,6 +2,10 @@
 
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
+  snapPrescribedWeightKg,
+  weightInputStep,
+} from "@/lib/progression/load-snapping";
+import {
   kgFromDisplayValue,
   kgToDisplayValue,
   weightUnitLabel,
@@ -10,6 +14,7 @@ import type { LocalExerciseSet } from "@forgefit/offline-sync";
 
 interface SetRowProps {
   set: LocalExerciseSet;
+  exerciseId: string;
   targetReps: string;
   showProgressionHint?: boolean;
   onUpdate: (
@@ -33,15 +38,22 @@ function effortFromRir(rir?: number): number | undefined {
 
 export function SetRow({
   set,
+  exerciseId,
   targetReps,
   showProgressionHint = false,
   onUpdate,
 }: SetRowProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
+  const weightStep = weightInputStep(exerciseId, unit);
   const selectedEffort = effortFromRir(set.rir);
   const displayWeight =
-    set.weightKg != null ? kgToDisplayValue(set.weightKg, unit) : "";
+    set.weightKg != null
+      ? kgToDisplayValue(
+          snapPrescribedWeightKg(exerciseId, set.weightKg, unit),
+          unit
+        )
+      : "";
 
   return (
     <div
@@ -86,17 +98,19 @@ export function SetRow({
             type="number"
             inputMode="decimal"
             min={0}
-            step={unit === "imperial" ? 2.5 : 0.5}
+            step={weightStep}
             placeholder="0"
             value={displayWeight}
-            onChange={(e) =>
+            onChange={(e) => {
+              if (e.target.value === "") {
+                onUpdate(set.clientId, { weightKg: undefined });
+                return;
+              }
+              const rawKg = kgFromDisplayValue(Number(e.target.value), unit);
               onUpdate(set.clientId, {
-                weightKg:
-                  e.target.value === ""
-                    ? undefined
-                    : kgFromDisplayValue(Number(e.target.value), unit),
-              })
-            }
+                weightKg: snapPrescribedWeightKg(exerciseId, rawKg, unit),
+              });
+            }}
             className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
           />
         </label>

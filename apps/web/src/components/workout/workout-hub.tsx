@@ -15,6 +15,7 @@ import {
   mergeSessionRecords,
   type WorkoutSessionRecord,
 } from "@/lib/workouts/sessions";
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import { useRouter } from "next/navigation";
@@ -117,6 +118,7 @@ export function WorkoutHub({
     null
   );
   const offline = useOfflineStatus();
+  const unit = useUnitPreference();
 
   const allSessions = useMemo(
     () => mergeSessionRecords(localSessions, serverSessions),
@@ -256,12 +258,13 @@ export function WorkoutHub({
           declaredE1rmKg: declaredE1rmKg
             ? new Map(Object.entries(declaredE1rmKg))
             : undefined,
+          unit,
         });
 
         const setPrefills: Record<string, { weightKg?: number; reps?: number }> =
           {};
         for (const [exerciseId, progression] of loadProgressions) {
-          setPrefills[exerciseId] = progressionToPrefill(progression);
+          setPrefills[exerciseId] = progressionToPrefill(progression, unit);
         }
 
         const clientId = await startWorkoutSession({
@@ -300,6 +303,7 @@ export function WorkoutHub({
       goal,
       bodyweightKg,
       declaredE1rmKg,
+      unit,
     ]
   );
 

@@ -1,4 +1,4 @@
-import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
+import type { ExperienceLevel, FitnessGoal, UnitSystem } from "@/lib/types/profile";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 
 export type LoadProgressionAction =
@@ -39,4 +39,5 @@ export interface BuildLoadProgressionInput {
   bodyweightKg?: number;
   declaredE1rmKg?: Map<string, number>;
   referenceDate?: Date;
+  unit?: UnitSystem;
 }
