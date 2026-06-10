@@ -4,11 +4,15 @@ export async function getPostAuthPath(
   supabase: SupabaseClient,
   userId: string
 ): Promise<"/home" | "/onboarding"> {
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("onboarding_complete")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
-  return profile?.onboarding_complete ? "/home" : "/onboarding";
+  if (error || !profile) {
+    return "/onboarding";
+  }
+
+  return profile.onboarding_complete ? "/home" : "/onboarding";
 }

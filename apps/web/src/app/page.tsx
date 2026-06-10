@@ -14,9 +14,7 @@ export default async function Home() {
 
   if (user) {
     const destination = await getPostAuthPath(supabase, user.id);
-    if (destination === "/home") {
-      redirect("/home");
-    }
+    redirect(destination);
   }
 
   return <LandingContent />;

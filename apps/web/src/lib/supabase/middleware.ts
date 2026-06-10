@@ -58,12 +58,10 @@ export async function updateSession(request: NextRequest) {
   // /login and /signup stay reachable so users can sign in or switch accounts.
   if (user && path === "/") {
     const destination = await getPostAuthPath(supabase, user.id);
-    if (destination === "/home") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/home";
-      url.search = "";
-      return NextResponse.redirect(url);
-    }
+    const url = request.nextUrl.clone();
+    url.pathname = destination;
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
   if (user && !isPublicRoute && !isAuthRoute) {
