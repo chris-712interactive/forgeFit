@@ -2,6 +2,7 @@
 
 import type { WorkoutSession } from "@forgefit/program-engine";
 import { formatShortDate } from "@/lib/workouts/comparison";
+import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
 import type { DayPlanStatus } from "@/lib/workouts/sessions";
 
 interface WeekPlanCardProps {
@@ -46,6 +47,9 @@ export function WeekPlanCard({
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
             {session.dayLabel}
+          </p>
+          <p className="text-xs text-forge-muted">
+            {formatScheduledSessionDate(session.dayIndex)}
           </p>
           <h3 className="font-display font-semibold text-forge-text">
             {session.name}

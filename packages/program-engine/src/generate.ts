@@ -13,9 +13,11 @@ import {
   type ExerciseDifficulty,
 } from "@forgefit/exercise-db";
 import { computeNutrition, getMatchedRules } from "./nutrition";
+import { assignSessionWeekdays, dayLabelForIndex, isoWeekdayFromDate } from "./schedule";
 import { getWeeklySplit } from "./splits";
 import type {
   ExperienceLevel,
+  GenerateProgramOptions,
   PlannedExercise,
   ProgramPlan,
   ProgramUserProfile,
@@ -24,8 +26,6 @@ import type {
 } from "./types";
 
 const ENGINE_VERSION = "0.1.0";
-
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const EXPERIENCE_MAX_DIFFICULTY: Record<ExperienceLevel, ExerciseDifficulty> = {
   beginner: "beginner",
@@ -248,7 +248,7 @@ function buildSession(
 
   return {
     dayIndex,
-    dayLabel: DAY_LABELS[dayIndex % DAY_LABELS.length],
+    dayLabel: dayLabelForIndex(dayIndex),
     name: template.name,
     estimatedMinutes,
     exercises,
@@ -257,15 +257,29 @@ function buildSession(
   };
 }
 
-export function generateProgram(profile: ProgramUserProfile): ProgramPlan {
+export function generateProgram(
+  profile: ProgramUserProfile,
+  options: GenerateProgramOptions = {}
+): ProgramPlan {
   const allRules = getRules();
   const matchedRules = getMatchedRules(allRules, profile);
   const volumeMult = volumeMultiplier(profile.experience, matchedRules);
   const split = getWeeklySplit(profile.goal, profile.sessionsPerWeek);
+  const startDate = options.startDate ?? new Date();
+  const anchorWeekday = isoWeekdayFromDate(startDate);
+  const sessionWeekdays = assignSessionWeekdays(split.length, anchorWeekday);
 
-  const week = split.map((template, i) =>
-    buildSession(template, i, profile, matchedRules, volumeMult)
-  );
+  const week = split
+    .map((template, i) =>
+      buildSession(
+        template,
+        sessionWeekdays[i] ?? anchorWeekday,
+        profile,
+        matchedRules,
+        volumeMult
+      )
+    )
+    .sort((a, b) => a.dayIndex - b.dayIndex);
 
   const nutrition = computeNutrition(profile, matchedRules);
 
@@ -287,7 +301,8 @@ export function generateProgram(profile: ProgramUserProfile): ProgramPlan {
     appliedRuleIds,
     nutrition,
     week,
-    generatedAt: new Date().toISOString(),
-    summary: `${goalLabel} program · ${profile.sessionsPerWeek}×${profile.minutesPerSession} min · ${week.length} sessions built from ${appliedRuleIds.length} evidence rules`,
+    scheduleAnchorWeekday: anchorWeekday,
+    generatedAt: startDate.toISOString(),
+    summary: `${goalLabel} program · ${profile.sessionsPerWeek}×${profile.minutesPerSession} min · starts ${dayLabelForIndex(anchorWeekday)} · ${week.length} sessions built from ${appliedRuleIds.length} evidence rules`,
   };
 }

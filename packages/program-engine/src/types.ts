@@ -63,6 +63,13 @@ export interface ProgramPlan {
   appliedRuleIds: string[];
   nutrition: NutritionTargets;
   week: WorkoutSession[];
+  /** Weekday (Mon=0) the schedule was anchored to at generation */
+  scheduleAnchorWeekday?: number;
   generatedAt: string;
   summary: string;
+}
+
+export interface GenerateProgramOptions {
+  /** Defaults to now — first session is scheduled from this calendar day */
+  startDate?: Date;
 }

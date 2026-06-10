@@ -139,26 +139,4 @@ export function computeWeeklyWorkStats(
   };
 }
 
-export function findNextPlannedSession(
-  sessions: WorkoutSessionRecord[],
-  plan: ProgramPlan | null
-): { dayIndex: number; name: string } | null {
-  if (!plan) return null;
-
-  const completedDays = new Set(
-    sessions
-      .filter((s) => s.status === "completed")
-      .map((s) => s.dayIndex)
-  );
-  const inProgress = sessions.find((s) => s.status === "in_progress");
-
-  if (inProgress) {
-    return {
-      dayIndex: inProgress.dayIndex,
-      name: inProgress.sessionName,
-    };
-  }
-
-  const next = plan.week.find((session) => !completedDays.has(session.dayIndex));
-  return next ? { dayIndex: next.dayIndex, name: next.name } : null;
-}
+export { findNextPlannedSession } from "@/lib/workouts/next-session";

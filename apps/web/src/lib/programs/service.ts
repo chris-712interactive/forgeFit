@@ -73,7 +73,7 @@ export async function generateAndSaveProgram(
     return { error: "Complete onboarding before generating a program." };
   }
 
-  const plan = generateProgram(ctx.userProfile);
+  const plan = generateProgram(ctx.userProfile, { startDate: new Date() });
   const supabase = await createClient();
 
   await supabase

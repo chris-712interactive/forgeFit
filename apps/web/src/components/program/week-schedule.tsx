@@ -1,5 +1,6 @@
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { buildEvidenceHref } from "@/lib/evidence/present";
+import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import Link from "next/link";
 
@@ -28,6 +29,9 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
                 {session.dayLabel}
+              </p>
+              <p className="text-xs text-forge-muted">
+                {formatScheduledSessionDate(session.dayIndex)}
               </p>
               <h3 className="font-display font-semibold text-forge-text">
                 {session.name}
