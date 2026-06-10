@@ -1,5 +1,7 @@
 import {
+  CARDIO_EQUIPMENT,
   GYM_EQUIPMENT,
+  LEGACY_CARDIO_EQUIPMENT,
   RECOVERY_EQUIPMENT,
 } from "@/lib/constants/onboarding";
 import { createClient } from "@/lib/supabase/server";
@@ -44,8 +46,16 @@ function isTravelModeSchemaError(message: string): boolean {
   );
 }
 
+function expandLegacyCardioEquipment(values: string[]): string[] {
+  if (!values.includes(LEGACY_CARDIO_EQUIPMENT)) return values;
+  return [
+    ...values.filter((value) => value !== LEGACY_CARDIO_EQUIPMENT),
+    ...CARDIO_EQUIPMENT.map((item) => item.value),
+  ];
+}
+
 function normalizeEquipment(values: string[]): string[] {
-  return [...new Set(values)]
+  return [...new Set(expandLegacyCardioEquipment(values))]
     .filter((value) => GYM_EQUIPMENT_VALUES.has(value))
     .sort();
 }

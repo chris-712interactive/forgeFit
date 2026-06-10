@@ -23,6 +23,13 @@ export {
 export { resolveExerciseDetail } from "./resolve";
 export { isExerciseAvailable } from "./availability";
 export {
+  CARDIO_EQUIPMENT_TYPES,
+  expandUserEquipment,
+  hasCardioEquipment,
+  type CardioEquipmentType,
+} from "./equipment";
+export { pickCardioExercise, type CardioPrescription } from "./cardio";
+export {
   sanitizeHighlighterMuscles,
   toHighlighterMuscles,
   VALID_HIGHLIGHTER_MUSCLES,

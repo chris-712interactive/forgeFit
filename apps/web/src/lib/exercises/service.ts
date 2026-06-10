@@ -1,4 +1,5 @@
 import {
+  expandUserEquipment,
   getCatalog,
   getSubstitutions,
   resolveExerciseDetail,
@@ -9,7 +10,9 @@ import { loadUserProgramContext } from "@/lib/programs/service";
 
 export async function getUserEquipment(userId: string): Promise<string[]> {
   const context = await loadUserProgramContext(userId);
-  return context?.userProfile.equipment ?? ["bodyweight_only"];
+  return expandUserEquipment(
+    context?.userProfile.equipment ?? ["bodyweight_only"]
+  );
 }
 
 export async function getExerciseLibraryData(

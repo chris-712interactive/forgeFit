@@ -54,7 +54,15 @@ export const EXPERIENCE_LEVELS: {
   },
 ];
 
-export const GYM_EQUIPMENT = [
+export const CARDIO_EQUIPMENT = [
+  { value: "treadmill", label: "Treadmill" },
+  { value: "rowing_machine", label: "Rowing Machine" },
+  { value: "exercise_bike", label: "Exercise Bike" },
+  { value: "elliptical", label: "Elliptical" },
+  { value: "stair_climber", label: "Stair Climber" },
+] as const;
+
+export const STRENGTH_EQUIPMENT = [
   { value: "barbell", label: "Barbell" },
   { value: "dumbbells", label: "Dumbbells" },
   { value: "cables", label: "Cable Machine" },
@@ -64,9 +72,13 @@ export const GYM_EQUIPMENT = [
   { value: "squat_rack", label: "Squat Rack" },
   { value: "resistance_bands", label: "Resistance Bands" },
   { value: "kettlebells", label: "Kettlebells" },
-  { value: "cardio_machines", label: "Cardio Machines" },
   { value: "bodyweight_only", label: "Bodyweight Only" },
 ] as const;
+
+export const GYM_EQUIPMENT = [...STRENGTH_EQUIPMENT, ...CARDIO_EQUIPMENT] as const;
+
+/** @deprecated Legacy value stored on older profiles — expanded on read. */
+export const LEGACY_CARDIO_EQUIPMENT = "cardio_machines" as const;
 
 export const RECOVERY_EQUIPMENT = [
   { value: "foam_roller", label: "Foam Roller" },

@@ -24,6 +24,8 @@ const CURATED_CATALOG_ALIASES: Record<string, string> = {
   tricep_pushdown: "triceps_pushdown",
   treadmill_incline_walk: "walking_treadmill",
   bike_intervals: "recumbent_bike",
+  elliptical_steady: "elliptical_trainer",
+  stair_climber_steady: "stairmaster",
 };
 
 function curatedToCatalog(exercise: Exercise): CatalogExercise {

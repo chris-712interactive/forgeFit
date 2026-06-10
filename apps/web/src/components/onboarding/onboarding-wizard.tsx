@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { completeOnboarding } from "@/app/actions/onboarding";
 import {
+  CARDIO_EQUIPMENT,
   EXPERIENCE_LEVELS,
   FITNESS_GOALS,
-  GYM_EQUIPMENT,
   MINUTES_PER_SESSION_OPTIONS,
   RECOVERY_EQUIPMENT,
   SESSIONS_PER_WEEK_OPTIONS,
+  STRENGTH_EQUIPMENT,
 } from "@/lib/constants/onboarding";
 import type {
   EquipmentLocation,
@@ -178,8 +179,20 @@ export function OnboardingWizard() {
                 { value: "both", label: "Both" },
               ]}
             />
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {GYM_EQUIPMENT.map((item) => (
+            <p className="mt-4 mb-2 text-sm text-forge-muted">Strength & accessories</p>
+            <div className="grid grid-cols-2 gap-2">
+              {STRENGTH_EQUIPMENT.map((item) => (
+                <Chip
+                  key={item.value}
+                  label={item.label}
+                  selected={data.equipment?.includes(item.value) ?? false}
+                  onClick={() => toggleItem("equipment", item.value)}
+                />
+              ))}
+            </div>
+            <p className="mt-4 mb-2 text-sm text-forge-muted">Cardio machines</p>
+            <div className="grid grid-cols-2 gap-2">
+              {CARDIO_EQUIPMENT.map((item) => (
                 <Chip
                   key={item.value}
                   label={item.label}

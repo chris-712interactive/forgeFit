@@ -5,6 +5,8 @@ import {
   type EvidenceRule,
 } from "@forgefit/evidence-kb";
 import {
+  expandUserEquipment,
+  pickCardioExercise,
   pickExerciseForPattern,
   type ExerciseDifficulty,
 } from "@forgefit/exercise-db";
@@ -168,6 +170,7 @@ function buildSession(
   volumeMult: number
 ): WorkoutSession {
   const maxDiff = EXPERIENCE_MAX_DIFFICULTY[profile.experience];
+  const equipment = expandUserEquipment(profile.equipment);
   const usedIds: string[] = [];
   const maxExercises = exercisesPerSession(profile.minutesPerSession);
   const sets = setsPerExercise(
@@ -184,7 +187,7 @@ function buildSession(
     if (exercises.length >= maxExercises) break;
     const picked = pickExerciseForPattern(
       pattern,
-      profile.equipment,
+      equipment,
       maxDiff,
       usedIds
     );
@@ -204,16 +207,19 @@ function buildSession(
     });
   }
 
-  if (template.includeCardio && profile.equipment.includes("cardio_machines")) {
-    exercises.push({
-      exerciseId: "treadmill_incline_walk",
-      name: "Incline Walk",
-      primaryMuscles: ["cardio"],
-      sets: 1,
-      reps: "15-25 min",
-      restSeconds: 0,
-      notes: "Moderate pace, evidence-backed fat-loss adjunct",
-    });
+  if (template.includeCardio) {
+    const cardio = pickCardioExercise(equipment, profile.goal);
+    if (cardio) {
+      exercises.push({
+        exerciseId: cardio.exerciseId,
+        name: cardio.name,
+        primaryMuscles: ["cardio"],
+        sets: 1,
+        reps: cardio.reps,
+        restSeconds: 0,
+        notes: cardio.notes,
+      });
+    }
   }
 
   const recoveryBlock = buildRecoveryBlock(profile.recoveryEquipment, rules);

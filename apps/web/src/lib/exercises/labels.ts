@@ -8,6 +8,11 @@ const EQUIPMENT_LABELS: Record<string, string> = {
   squat_rack: "Squat rack",
   resistance_bands: "Resistance bands",
   kettlebells: "Kettlebells",
+  treadmill: "Treadmill",
+  rowing_machine: "Rowing machine",
+  exercise_bike: "Exercise bike",
+  elliptical: "Elliptical",
+  stair_climber: "Stair climber",
   cardio_machines: "Cardio machines",
   bodyweight_only: "Bodyweight",
 };

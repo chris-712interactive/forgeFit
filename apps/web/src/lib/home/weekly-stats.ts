@@ -37,8 +37,9 @@ function cardioMilesPerMinute(exerciseId: string, exerciseName: string): number 
   const label = `${exerciseId} ${exerciseName}`.toLowerCase();
   if (/swim/.test(label)) return 1.5 / 60;
   if (/run|jog/.test(label)) return 6 / 60;
+  if (/row|rower|rowing/.test(label)) return 9 / 60;
   if (/bike|cycle|recumbent|air_bike/.test(label)) return 12 / 60;
-  if (/walk|treadmill|incline|stair/.test(label)) return 3.5 / 60;
+  if (/walk|treadmill|incline|stair|elliptical/.test(label)) return 3.5 / 60;
   return 4 / 60;
 }
 

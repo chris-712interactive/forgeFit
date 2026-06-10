@@ -6,8 +6,9 @@ import {
   saveUserEquipment,
 } from "@/app/actions/equipment";
 import {
-  GYM_EQUIPMENT,
+  CARDIO_EQUIPMENT,
   RECOVERY_EQUIPMENT,
+  STRENGTH_EQUIPMENT,
 } from "@/lib/constants/onboarding";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
 import type { EquipmentLocation } from "@/lib/types/profile";
@@ -170,10 +171,26 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
 
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
-          Training equipment
+          Strength & accessories
         </p>
         <div className="grid grid-cols-2 gap-2">
-          {GYM_EQUIPMENT.map((item) => (
+          {STRENGTH_EQUIPMENT.map((item) => (
+            <Chip
+              key={item.value}
+              label={item.label}
+              selected={equipment.includes(item.value)}
+              onClick={() => toggleEquipment(item.value)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
+          Cardio machines
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {CARDIO_EQUIPMENT.map((item) => (
             <Chip
               key={item.value}
               label={item.label}
