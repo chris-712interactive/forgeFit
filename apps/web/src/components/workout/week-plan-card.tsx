@@ -2,10 +2,9 @@
 
 import type { WorkoutSession } from "@forgefit/program-engine";
 import { formatShortDate } from "@/lib/workouts/comparison";
-import { formatRecoveryDuration } from "@/lib/workouts/recovery";
-import { formatWarmupDuration } from "@/lib/workouts/warmup";
 import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
 import type { DayPlanStatus } from "@/lib/workouts/sessions";
+import { WorkoutPhaseCards } from "./workout-phase-cards";
 
 interface WeekPlanCardProps {
   session: WorkoutSession;
@@ -56,37 +55,6 @@ export function WeekPlanCard({
           <h3 className="font-display font-semibold text-forge-text">
             {session.name}
           </h3>
-          <p className="mt-1 text-sm text-forge-muted">
-            {session.exercises.length} exercises · ~{session.estimatedMinutes} min
-          </p>
-          {session.warmupBlock && (
-            <p className="mt-1 text-sm text-forge-gold">
-              {formatWarmupDuration(session.warmupBlock.durationMinutes)}{" "}
-              {session.warmupBlock.name.toLowerCase()}
-            </p>
-          )}
-          {session.recoveryBlock && (
-            <p className="mt-1 text-sm text-forge-steel">
-              + {formatRecoveryDuration(session.recoveryBlock.durationMinutes)}{" "}
-              {session.recoveryBlock.name.toLowerCase()}
-            </p>
-          )}
-          {inProgress && (
-            <p className="mt-1 text-sm font-medium text-forge-ember">
-              In progress — pick up where you left off
-            </p>
-          )}
-          {isDone && completed && (
-            <button
-              type="button"
-              onClick={() => onViewResults(completed.clientId)}
-              className="mt-2 text-left text-sm text-forge-success hover:underline"
-            >
-              Done {formatShortDate(completed.completedAt ?? completed.startedAt)}
-              {completedSets > 0 && ` · ${completedSets}/${totalSets} sets`}
-              <span className="ml-1 text-forge-steel">· View results</span>
-            </button>
-          )}
         </div>
 
         <div className="flex shrink-0 flex-col gap-2">
@@ -128,6 +96,27 @@ export function WeekPlanCard({
           )}
         </div>
       </div>
+
+      <div className="mt-3.5">
+        <WorkoutPhaseCards session={session} />
+      </div>
+
+      {inProgress && (
+        <p className="mt-2.5 text-sm font-medium text-forge-ember">
+          In progress — pick up where you left off
+        </p>
+      )}
+      {isDone && completed && (
+        <button
+          type="button"
+          onClick={() => onViewResults(completed.clientId)}
+          className="mt-2 text-left text-sm text-forge-success hover:underline"
+        >
+          Done {formatShortDate(completed.completedAt ?? completed.startedAt)}
+          {completedSets > 0 && ` · ${completedSets}/${totalSets} sets`}
+          <span className="ml-1 text-forge-steel">· View results</span>
+        </button>
+      )}
     </article>
   );
 }
