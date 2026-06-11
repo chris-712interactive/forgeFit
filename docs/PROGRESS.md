@@ -33,6 +33,23 @@
 
 ## Session Log
 
+### 2026-06-09 — Stripe subscription sync fix
+
+**What was done:**
+- Fixed price ID parsing when Stripe sends `price` as a string (not expanded object)
+- Added `checkout.session.completed` webhook handler + session metadata merge
+- Added `POST /api/stripe/sync` fallback after checkout success (retries on Profile)
+- Skip syncing `incomplete` subscriptions; resolve `user_id` from customer metadata
+- Re-fetch subscription with expanded price on webhook events
+
+**Verify on production:**
+- Vercel env: `STRIPE_WEBHOOK_SECRET` = Dashboard endpoint secret (not CLI)
+- Vercel env: `SUPABASE_SERVICE_ROLE_KEY` set
+- Stripe webhook URL: `https://joinforgefit.com/api/stripe/webhook`
+- Webhook events include `checkout.session.completed`
+
+---
+
 ### 2026-06-09 — Pro tier features complete
 
 **What was done:**

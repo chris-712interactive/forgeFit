@@ -122,6 +122,10 @@ Logging itself is **never** capped — only analytics views and projection horiz
 
 Webhook `syncSubscriptionToProfile` resolves tier from the subscription's active price ID.
 
+Also handles **`checkout.session.completed`** (reliable backup when subscription metadata is on the session).
+
+Checkout success redirect calls **`POST /api/stripe/sync`** to pull the active subscription immediately (covers webhook delays / misconfigured endpoints).
+
 Checkout accepts `{ tier: "pro" | "pro_plus", interval: "monthly" | "annual" }`.
 
 ### Legacy env vars

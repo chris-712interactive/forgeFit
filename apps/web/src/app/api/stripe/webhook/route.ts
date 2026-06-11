@@ -1,5 +1,9 @@
-import { clearSubscriptionForUser, syncSubscriptionToProfile } from "@/lib/billing/sync-subscription";
-import { getStripe } from "@/lib/billing/stripe";
+import {
+  clearSubscriptionForUser,
+  syncCheckoutSessionToProfile,
+  syncSubscriptionToProfile,
+} from "@/lib/billing/sync-subscription";
+import { getStripe, resolveSubscriptionUserId, retrieveSubscriptionForSync } from "@/lib/billing/stripe";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
@@ -31,15 +35,26 @@ export async function POST(request: Request) {
 
   try {
     switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await syncCheckoutSessionToProfile(session, stripe);
+        break;
+      }
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        await syncSubscriptionToProfile(subscription);
+        const expanded = await retrieveSubscriptionForSync(
+          stripe,
+          subscription.id
+        );
+        await syncSubscriptionToProfile(expanded, { stripe });
         break;
       }
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata.user_id;
+        const userId =
+          subscription.metadata.user_id ??
+          (await resolveSubscriptionUserId(subscription, stripe));
         if (userId) {
           await clearSubscriptionForUser(userId);
         }
@@ -51,6 +66,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Webhook handler failed.";
+    console.error("[stripe webhook]", event.type, message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 

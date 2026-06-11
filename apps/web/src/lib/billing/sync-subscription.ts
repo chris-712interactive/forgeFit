@@ -1,6 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type Stripe from "stripe";
-import { tierFromStripePriceId } from "./stripe";
+import {
+  getStripe,
+  mergeSubscriptionMetadata,
+  readSubscriptionItemPriceId,
+  resolveSubscriptionUserId,
+  retrieveSubscriptionForSync,
+  tierFromStripePriceId,
+} from "./stripe";
 import type { SubscriptionStatus, SubscriptionTier } from "./types";
 
 function mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
@@ -26,14 +33,13 @@ function tierFromSubscription(subscription: Stripe.Subscription): SubscriptionTi
     return "free";
   }
 
-  const priceId = subscription.items.data[0]?.price?.id;
+  const priceId = readSubscriptionItemPriceId(subscription);
   const paidTier = tierFromStripePriceId(priceId);
 
   if (paidTier) {
     return paidTier;
   }
 
-  // Metadata fallback when price IDs are not yet wired (e.g. local dev)
   const metadataTier = subscription.metadata.tier;
   if (metadataTier === "pro_plus" || metadataTier === "pro") {
     return metadataTier;
@@ -55,17 +61,37 @@ function readPeriodEnd(subscription: Stripe.Subscription): string | null {
     : null;
 }
 
+export interface SyncSubscriptionOptions {
+  stripe?: Stripe;
+  sessionMetadata?: Record<string, string | undefined>;
+}
+
 export async function syncSubscriptionToProfile(
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  options?: SyncSubscriptionOptions
 ) {
-  const userId = subscription.metadata.user_id;
-  if (!userId) {
-    throw new Error("Stripe subscription missing metadata.user_id");
+  if (
+    subscription.status === "incomplete" ||
+    subscription.status === "incomplete_expired"
+  ) {
+    return;
   }
 
-  const status = mapStripeStatus(subscription.status);
-  const tier = tierFromSubscription(subscription);
-  const currentPeriodEnd = readPeriodEnd(subscription);
+  const stripe = options?.stripe ?? getStripe();
+  const merged = mergeSubscriptionMetadata(subscription, options?.sessionMetadata);
+  const userId =
+    merged.metadata.user_id ??
+    (await resolveSubscriptionUserId(merged, stripe));
+
+  if (!userId) {
+    throw new Error(
+      "Could not resolve user_id from subscription or customer metadata."
+    );
+  }
+
+  const status = mapStripeStatus(merged.status);
+  const tier = tierFromSubscription(merged);
+  const currentPeriodEnd = readPeriodEnd(merged);
 
   const admin = createAdminClient();
   const { error } = await admin
@@ -73,11 +99,11 @@ export async function syncSubscriptionToProfile(
     .update({
       subscription_tier: tier,
       subscription_status: status,
-      stripe_subscription_id: subscription.id,
+      stripe_subscription_id: merged.id,
       stripe_customer_id:
-        typeof subscription.customer === "string"
-          ? subscription.customer
-          : subscription.customer.id,
+        typeof merged.customer === "string"
+          ? merged.customer
+          : merged.customer.id,
       subscription_current_period_end: currentPeriodEnd,
     })
     .eq("id", userId);
@@ -85,6 +111,57 @@ export async function syncSubscriptionToProfile(
   if (error) {
     throw new Error(error.message);
   }
+}
+
+export async function syncCheckoutSessionToProfile(
+  session: Stripe.Checkout.Session,
+  stripe: Stripe
+) {
+  if (session.mode !== "subscription") return;
+
+  const subscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id;
+
+  if (!subscriptionId) return;
+
+  const subscription = await retrieveSubscriptionForSync(stripe, subscriptionId);
+  await syncSubscriptionToProfile(subscription, {
+    stripe,
+    sessionMetadata: {
+      user_id: session.metadata?.user_id,
+      tier: session.metadata?.tier,
+    },
+  });
+}
+
+export async function syncLatestSubscriptionForCustomer(
+  customerId: string,
+  stripe: Stripe
+) {
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 10,
+  });
+
+  const candidate =
+    subscriptions.data.find((sub) => sub.status === "active") ??
+    subscriptions.data.find((sub) => sub.status === "trialing");
+
+  if (!candidate) {
+    return { synced: false as const, reason: "no_active_subscription" };
+  }
+
+  const subscription = await retrieveSubscriptionForSync(stripe, candidate.id);
+  await syncSubscriptionToProfile(subscription, { stripe });
+
+  return {
+    synced: true as const,
+    tier: tierFromSubscription(subscription),
+    status: mapStripeStatus(subscription.status),
+  };
 }
 
 export async function clearSubscriptionForUser(userId: string) {

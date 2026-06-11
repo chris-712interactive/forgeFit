@@ -8,7 +8,8 @@ import {
 } from "@/lib/billing/pricing";
 import { hasProAccess, hasProPlusAccess } from "@/lib/billing/types";
 import type { PaidTier, SubscriptionSnapshot } from "@/lib/billing/types";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface SubscriptionSettingProps {
   subscription: SubscriptionSnapshot;
@@ -36,9 +37,65 @@ export function SubscriptionSetting({
   stripeConfigured,
   checkoutStatus,
 }: SubscriptionSettingProps) {
+  const router = useRouter();
   const [interval, setInterval] = useState<BillingInterval>("annual");
   const [loadingTier, setLoadingTier] = useState<PaidTier | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [syncingCheckout, setSyncingCheckout] = useState(
+    checkoutStatus === "success"
+  );
+
+  useEffect(() => {
+    if (checkoutStatus !== "success") return;
+
+    let cancelled = false;
+
+    async function syncAfterCheckout(attempt: number) {
+      setSyncingCheckout(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/stripe/sync", { method: "POST" });
+        const body = (await response.json()) as {
+          synced?: boolean;
+          error?: string;
+        };
+
+        if (cancelled) return;
+
+        if (response.ok && body.synced) {
+          setSyncingCheckout(false);
+          router.refresh();
+          return;
+        }
+
+        if (attempt < 5) {
+          window.setTimeout(() => void syncAfterCheckout(attempt + 1), 1500);
+          return;
+        }
+
+        setSyncingCheckout(false);
+        setError(
+          body.error ??
+            "Payment succeeded but your plan has not synced yet. Refresh in a moment or contact support."
+        );
+      } catch {
+        if (cancelled) return;
+        if (attempt < 5) {
+          window.setTimeout(() => void syncAfterCheckout(attempt + 1), 1500);
+          return;
+        }
+        setSyncingCheckout(false);
+        setError("Could not confirm your subscription. Try refreshing the page.");
+      }
+    }
+
+    void syncAfterCheckout(0);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkoutStatus, router]);
 
   const isPaid = hasProAccess(subscription);
   const periodEnd = formatPeriodEnd(subscription.currentPeriodEnd);
@@ -86,7 +143,9 @@ export function SubscriptionSetting({
 
       {checkoutStatus === "success" && (
         <p className="mt-3 rounded-xl border border-forge-success/40 bg-forge-success/10 px-3 py-2 text-sm text-forge-success">
-          Payment received — your plan should update in a moment.
+          {syncingCheckout
+            ? "Payment received — activating your plan…"
+            : "Payment received — your plan should update in a moment."}
         </p>
       )}
 
