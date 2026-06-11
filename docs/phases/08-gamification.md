@@ -5,7 +5,9 @@
 
 ## Goal
 
-Coaching triggers, opt-in leaderboards, community win feed.
+Pro+ coaching triggers, opt-in leaderboards, community win feed.
+
+Tier gates: [docs/TIER-GATES.md](../TIER-GATES.md) — AI motivation, gamification, and PR celebration are **Pro+ only**. Pro gets templated PR badges.
 
 ## Done When
 

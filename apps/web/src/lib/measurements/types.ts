@@ -3,6 +3,7 @@ import type {
   WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal } from "@forgefit/program-engine";
+import type { SubscriptionSnapshot } from "@/lib/billing/types";
 
 export interface BodyMeasurementRow {
   id: string;
@@ -26,6 +27,14 @@ export interface CaliperMeasurementRow {
   sumMm: number;
 }
 
+export interface ProgressGateContext {
+  subscription: SubscriptionSnapshot;
+  horizonDays: number;
+  showConfidenceBands: boolean;
+  showGoalDate: boolean;
+  analyticsHistoryDays: number | null;
+}
+
 export interface ProgressDashboardData {
   goal: FitnessGoal | null;
   age: number | null;
@@ -35,4 +44,5 @@ export interface ProgressDashboardData {
   trends: TrendSeries[];
   projection: WeightProjectionResult | null;
   tableReady: boolean;
+  gates: ProgressGateContext;
 }

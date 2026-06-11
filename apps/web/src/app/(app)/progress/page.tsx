@@ -18,7 +18,7 @@ export default async function ProgressPage() {
       </h1>
       <p className="mt-2 text-forge-muted">
         Track measurements, estimate body fat with calipers, and preview your
-        30-day weight trend.
+        weight trajectory.
       </p>
 
       {data ? (

@@ -16,6 +16,10 @@ import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
 import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
 import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
 import { getPromotionEvaluation } from "@/lib/progression/service";
+import { SubscriptionSetting } from "@/components/profile/subscription-setting";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { isStripeProConfigured } from "@/lib/billing/stripe";
+import { hasProAccess } from "@/lib/billing/types";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -25,7 +29,17 @@ import {
   normalizeUnitSystem,
 } from "@/lib/units/measurements";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
+  const params = await searchParams;
+  const checkoutStatus =
+    params.checkout === "success" || params.checkout === "canceled"
+      ? params.checkout
+      : null;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -41,12 +55,13 @@ export default async function ProfilePage() {
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [plan, sessionResult, oneRepMaxes, equipmentSettings] = user
+  const [plan, sessionResult, oneRepMaxes, equipmentSettings, subscription] = user
     ? await Promise.all([
         getActiveProgram(user.id),
         getServerSessionRecords(user.id, 120),
         getUserOneRepMaxes(user.id),
         getUserEquipmentSettings(user.id),
+        getSubscriptionForUser(user.id),
       ])
     : [
         null,
@@ -61,6 +76,11 @@ export default async function ProfilePage() {
           homeRecoveryEquipment: [],
           homeEquipmentLocation: null,
           travelModeReady: false,
+        },
+        {
+          tier: "free" as const,
+          status: "inactive" as const,
+          currentPeriodEnd: null,
         },
       ];
 
@@ -97,6 +117,12 @@ export default async function ProfilePage() {
             Demos, muscle maps, equipment swaps
           </p>
         </Link>
+
+        <SubscriptionSetting
+          subscription={subscription}
+          stripeConfigured={isStripeProConfigured()}
+          checkoutStatus={checkoutStatus}
+        />
 
         <UnitPreferenceSetting initialUnit={unit} />
 
@@ -144,7 +170,11 @@ export default async function ProfilePage() {
         <LegalFooter />
 
         {user?.email && (
-          <PrivacyDataSetting email={user.email} userId={user.id} />
+          <PrivacyDataSetting
+            email={user.email}
+            userId={user.id}
+            canExport={hasProAccess(subscription)}
+          />
         )}
 
         <SignOutButton />

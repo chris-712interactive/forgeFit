@@ -8,9 +8,10 @@ import {
 import type { WeightProjectionResult } from "@forgefit/projection-engine";
 import { useMemo } from "react";
 import {
+  Area,
   CartesianGrid,
+  ComposedChart,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -23,6 +24,8 @@ import { CHART_COLORS } from "./chart-colors";
 
 interface WeightProjectionChartProps {
   projection: WeightProjectionResult | null;
+  showConfidenceBands?: boolean;
+  showGoalDate?: boolean;
 }
 
 function formatTick(date: string): string {
@@ -30,7 +33,11 @@ function formatTick(date: string): string {
   return `${Number(month)}/${Number(day)}`;
 }
 
-export function WeightProjectionChart({ projection }: WeightProjectionChartProps) {
+export function WeightProjectionChart({
+  projection,
+  showConfidenceBands = false,
+  showGoalDate = false,
+}: WeightProjectionChartProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
 
@@ -51,13 +58,22 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
         point.date === pivotDate
           ? kgToDisplayValue(point.weightKg, unit)
           : null,
+      bandRange:
+        showConfidenceBands &&
+        point.bandLowKg != null &&
+        point.bandHighKg != null
+          ? [
+              kgToDisplayValue(point.bandLowKg, unit),
+              kgToDisplayValue(point.bandHighKg, unit),
+            ]
+          : null,
     }));
-  }, [projection, unit]);
+  }, [projection, showConfidenceBands, unit]);
 
   if (!projection) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-forge-muted">
-        Add weight entries to generate a 30-day projection.
+        Add weight entries to generate a projection.
       </div>
     );
   }
@@ -69,6 +85,7 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
     unit
   );
   const weeklySign = projection.weeklyChangeKg > 0 ? "+" : "-";
+  const lastProjected = projection.points.filter((point) => point.projected).at(-1);
 
   return (
     <div className="space-y-3">
@@ -98,10 +115,27 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
         · capped by <EvidenceRuleInline ruleId={projection.ruleId} />
       </p>
 
+      {showGoalDate && lastProjected && (
+        <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-3 py-2 text-sm text-forge-text">
+          At this pace you&apos;ll weigh{" "}
+          <span className="font-semibold text-forge-gold">
+            {kgToDisplayValue(lastProjected.weightKg, unit)} {weightLabel}
+          </span>{" "}
+          by{" "}
+          <span className="font-semibold">
+            {new Date(`${lastProjected.date}T12:00:00`).toLocaleDateString(
+              undefined,
+              { month: "short", day: "numeric", year: "numeric" }
+            )}
+          </span>
+          .
+        </p>
+      )}
+
       <ChartShell>
         {({ width, height }) => (
           <ResponsiveContainer width={width} height={height}>
-            <LineChart
+            <ComposedChart
               data={chartData}
               margin={{ top: 12, right: 12, left: 4, bottom: 4 }}
             >
@@ -138,6 +172,17 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
                   strokeDasharray="4 4"
                 />
               )}
+              {showConfidenceBands && (
+                <Area
+                  type="monotone"
+                  dataKey="bandRange"
+                  stroke="none"
+                  fill={CHART_COLORS.steel}
+                  fillOpacity={0.2}
+                  connectNulls={false}
+                  isAnimationActive={false}
+                />
+              )}
               <Line
                 type="monotone"
                 dataKey="actual"
@@ -168,10 +213,15 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
                 connectNulls={false}
                 isAnimationActive={false}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         )}
       </ChartShell>
+      {showConfidenceBands && (
+        <p className="text-xs text-forge-muted">
+          Shaded band shows evidence min/max weekly change for your goal.
+        </p>
+      )}
     </div>
   );
 }

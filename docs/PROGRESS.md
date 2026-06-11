@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 6 complete → Phase 7 (Pro Integrations) next |
 | **Last updated** | 2026-06-09 |
-| **Last session focus** | Profile one-rep max entry + prescription |
+| **Last session focus** | Phase 7 billing UI + Pro projection gates |
 
 ---
 
@@ -32,6 +32,57 @@
 ---
 
 ## Session Log
+
+### 2026-06-09 — Phase 7 implementation (billing UI + Pro gates)
+
+**What was done:**
+- `docs/ADRs/001-tier-pricing-margins.md` + margin section in `TIER-GATES.md`
+- Profile `SubscriptionSetting` — Pro / Pro+ picker, annual default, Stripe checkout
+- Progress gates: 30d vs 90d horizon, confidence bands, goal date, 90-day chart cap
+- `UpgradePrompt` component on Progress + export gate (API + Profile)
+- Projection engine: `includeConfidenceBand` + `bandLowKg`/`bandHighKg` on points
+
+**What's next:**
+1. Apply migrations + configure Stripe (4 prices, webhook, env vars)
+2. Test checkout end-to-end in Stripe test mode
+3. Pro analytics UI: strength charts, volume trends, nutrition adherence
+4. Progress photos (Pro)
+5. Pro+ integrations (Withings, Fitbit)
+
+**Files touched:**
+- `docs/ADRs/001-tier-pricing-margins.md`, `docs/TIER-GATES.md`, `docs/phases/07-integrations.md`
+- `apps/web/src/components/profile/subscription-setting.tsx`
+- `apps/web/src/components/billing/upgrade-prompt.tsx`
+- `apps/web/src/components/progress/*`, `apps/web/src/lib/measurements/*`
+- `apps/web/src/app/(app)/profile/page.tsx`, `apps/web/src/app/api/account/export/route.ts`
+- `packages/projection-engine/src/*`
+
+---
+
+### 2026-06-09 — Pro / Pro+ tier gates & billing schema
+
+**What was done:**
+- `docs/TIER-GATES.md` — authoritative Free / Pro ($8.99) / Pro+ ($14.99) feature matrix
+- Billing lib: `gates.ts`, updated `types`, `pricing`, `stripe`, `sync-subscription`, `subscription`
+- Checkout accepts `{ tier: "pro" | "pro_plus", interval }`; webhook resolves tier from Stripe price ID
+- Migration `20260609400000_pro_plus_subscription_tier.sql` — adds `pro_plus` enum value
+- Updated BIBLE freemium section, Phase 7 doc, `.env.example`, marketing copy
+
+**What's next:**
+1. Apply migrations `20260609300000` + `20260609400000` if not yet applied
+2. Create four Stripe Prices (Pro + Pro+ × monthly + annual)
+3. Profile upgrade UI (two-tier picker + checkout)
+4. Wire Pro gates in Progress/Home/Nutrition (90d projections, 90-day free history cap)
+5. Phase 7 Pro+ integrations (Withings, Fitbit)
+
+**Files touched:**
+- `docs/TIER-GATES.md`, `docs/BIBLE.md`, `docs/phases/07-integrations.md`, `docs/PROGRESS.md`
+- `apps/web/src/lib/billing/*`, `apps/web/src/app/api/stripe/checkout/route.ts`
+- `apps/web/src/lib/types/profile.ts`, `.env.example`
+- `supabase/migrations/20260609400000_pro_plus_subscription_tier.sql`
+- `apps/web/src/components/marketing/marketing-free-tier.tsx`
+
+---
 
 ### 2026-06-09 — Profile one-rep maxes
 

@@ -182,6 +182,7 @@ export function projectWeight({
   effectiveDeficitKcal,
   effectiveSurplusKcal,
   trainingKcalPerDay,
+  includeConfidenceBand = false,
 }: WeightProjectionInput): WeightProjectionResult {
   const sorted = [...history]
     .filter((point) => point.weightKg > 0)
@@ -222,6 +223,10 @@ export function projectWeight({
   }
 
   const dailyChangeKg = weeklyChangeKg / 7;
+  const rate = goalRate(goal);
+  const bandLowDailyKg = (rate.minWeeklyPct / 100) * latest.weightKg / 7;
+  const bandHighDailyKg = (rate.maxWeeklyPct / 100) * latest.weightKg / 7;
+
   const historical: ProjectionPoint[] = sorted.map((point) => ({
     date: point.date,
     weightKg: point.weightKg,
@@ -231,12 +236,21 @@ export function projectWeight({
   const projected: ProjectionPoint[] = [];
   for (let day = 1; day <= horizonDays; day += 1) {
     const date = addDays(latest.date, day);
-    projected.push({
+    const point: ProjectionPoint = {
       date,
       weightKg:
         Math.round((latest.weightKg + dailyChangeKg * day) * 10) / 10,
       projected: true,
-    });
+    };
+
+    if (includeConfidenceBand) {
+      point.bandLowKg =
+        Math.round((latest.weightKg + bandLowDailyKg * day) * 10) / 10;
+      point.bandHighKg =
+        Math.round((latest.weightKg + bandHighDailyKg * day) * 10) / 10;
+    }
+
+    projected.push(point);
   }
 
   return {

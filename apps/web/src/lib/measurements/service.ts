@@ -4,6 +4,13 @@ import {
   type WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
+import {
+  analyticsHistoryDays,
+  hasFeature,
+  projectionHorizonDays,
+} from "@/lib/billing/gates";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -146,11 +153,27 @@ async function loadCaliperEntries(
   return (data ?? []).map(mapCaliperRow);
 }
 
+function filterMeasurementsForAnalytics(
+  measurements: BodyMeasurementRow[],
+  historyDays: number | null
+): BodyMeasurementRow[] {
+  if (historyDays === null) return measurements;
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - historyDays);
+  cutoff.setHours(0, 0, 0, 0);
+  const iso = cutoff.toISOString().slice(0, 10);
+
+  return measurements.filter((row) => row.measuredDate >= iso);
+}
+
 function buildProjection(
   measurements: BodyMeasurementRow[],
   goal: FitnessGoal,
   age: number,
-  plan: ProgramPlan | null
+  plan: ProgramPlan | null,
+  horizonDays: number,
+  includeConfidenceBand: boolean
 ): WeightProjectionResult | null {
   const weightHistory = measurements
     .filter((row) => row.weightKg != null && row.weightKg > 0)
@@ -167,36 +190,67 @@ function buildProjection(
     history: weightHistory,
     goal,
     age,
-    horizonDays: 30,
+    horizonDays,
     effectiveDeficitKcal: nutrition?.effectiveDeficitKcal,
     effectiveSurplusKcal: nutrition?.effectiveSurplusKcal,
     trainingKcalPerDay: nutrition?.trainingKcalPerDay,
+    includeConfidenceBand,
   });
+}
+
+function buildGateContext(
+  subscription: SubscriptionSnapshot
+): ProgressDashboardData["gates"] {
+  return {
+    subscription,
+    horizonDays: projectionHorizonDays(subscription),
+    showConfidenceBands: hasFeature(
+      subscription,
+      "projection_confidence_bands"
+    ),
+    showGoalDate: hasFeature(subscription, "projection_goal_date"),
+    analyticsHistoryDays: analyticsHistoryDays(subscription),
+  };
 }
 
 export async function getProgressDashboardData(
   userId: string
 ): Promise<ProgressDashboardData> {
-  const [profile, measurementResult, caliperEntries, plan] = await Promise.all([
-    getProfileBasics(userId),
-    loadMeasurements(userId),
-    loadCaliperEntries(userId),
-    getActiveProgram(userId),
-  ]);
+  const [profile, measurementResult, caliperEntries, plan, subscription] =
+    await Promise.all([
+      getProfileBasics(userId),
+      loadMeasurements(userId),
+      loadCaliperEntries(userId),
+      getActiveProgram(userId),
+      getSubscriptionForUser(userId),
+    ]);
+
+  const gates = buildGateContext(subscription);
 
   const baseline = profileBaseline(profile);
   const measurements = mergeMeasurementRows(baseline, measurementResult.rows);
+  const analyticsMeasurements = filterMeasurementsForAnalytics(
+    measurements,
+    gates.analyticsHistoryDays
+  );
 
   const goal = (profile?.primary_goal as FitnessGoal | null) ?? null;
   const age = profile?.age != null ? Number(profile.age) : null;
 
   const projection =
     goal && age && measurements.length > 0
-      ? buildProjection(measurements, goal, age, plan)
+      ? buildProjection(
+          measurements,
+          goal,
+          age,
+          plan,
+          gates.horizonDays,
+          gates.showConfidenceBands
+        )
       : null;
 
   const trends = buildTrendSeries(
-    measurements.map((row) => ({
+    analyticsMeasurements.map((row) => ({
       measuredDate: row.measuredDate,
       weightKg: row.weightKg,
       waistCm: row.waistCm,
@@ -211,7 +265,7 @@ export async function getProgressDashboardData(
   );
 
   if (projection && measurementResult.tableReady) {
-    void cacheProjection(userId, projection);
+    void cacheProjection(userId, projection, gates.horizonDays);
   }
 
   return {
@@ -223,18 +277,21 @@ export async function getProgressDashboardData(
     trends,
     projection,
     tableReady: measurementResult.tableReady,
+    gates,
   };
 }
 
 async function cacheProjection(
   userId: string,
-  projection: WeightProjectionResult
+  projection: WeightProjectionResult,
+  horizonDays: number
 ): Promise<void> {
   const supabase = await createClient();
+  const projectionType = horizonDays > 30 ? "weight_90d" : "weight_30d";
   await supabase.from("projections").upsert(
     {
       user_id: userId,
-      projection_type: "weight_30d",
+      projection_type: projectionType,
       horizon_days: projection.horizonDays,
       payload: projection,
       computed_at: new Date().toISOString(),

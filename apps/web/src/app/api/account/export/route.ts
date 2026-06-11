@@ -1,4 +1,6 @@
 import { buildAccountExport } from "@/lib/account/export";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { hasFeature } from "@/lib/billing/gates";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -10,6 +12,14 @@ export async function GET() {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const subscription = await getSubscriptionForUser(user.id);
+  if (!hasFeature(subscription, "data_export")) {
+    return NextResponse.json(
+      { error: "Data export requires a Pro or Pro+ subscription." },
+      { status: 403 }
+    );
   }
 
   const exportData = await buildAccountExport(

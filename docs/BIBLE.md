@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-08 · **Current phase:** Phase 6 complete → Phase 7 next
+**Last updated:** 2026-06-09 · **Current phase:** Phase 6 complete → Phase 7 next
 
 ---
 
@@ -169,14 +169,21 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 
 ## Freemium Tiers
 
-| Feature | Free | Pro ($12.99/mo) |
-|---------|------|-----------------|
-| Programs, tracking, offline, measurements, nutrition (USDA/OFF), GIFs, equipment plans | ✓ | ✓ |
-| Motivation | Templated | AI-personalized |
-| Projections | 30-day | 90-day + confidence bands |
-| Device integrations | — | Withings, Fitbit, Strava |
-| Restaurant nutrition | — | Nutritionix |
-| Gamification | — | ✓ |
+Three tiers. Full gate matrix: [docs/TIER-GATES.md](./TIER-GATES.md).
+
+| | **Free** | **Pro** ($8.99/mo · $69.99/yr) | **Pro+** ($14.99/mo · $119.99/yr) |
+|---|:---:|:---:|:---:|
+| Programs, tracking, offline, nutrition (USDA/OFF), GIFs, equipment | ✓ | ✓ | ✓ |
+| Projections | 30-day | 90-day + confidence bands + goal date | ✓ |
+| Analytics history | 90 days | Unlimited | ✓ |
+| Strength / volume / nutrition adherence analytics | — | ✓ | ✓ |
+| Export, progress photos, rule-based insights | — | ✓ | ✓ |
+| Device integrations (Withings, Fitbit, Strava) | — | — | ✓ |
+| Restaurant nutrition (Nutritionix) | — | — | ✓ |
+| Motivation | Templated | Templated + insights | AI-personalized |
+| Gamification & PR celebrations | — | PR badges | Full (leaderboards, celebration UX) |
+
+Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 
 ---
 

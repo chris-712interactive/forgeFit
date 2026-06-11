@@ -38,6 +38,16 @@ export interface Profile {
   unit_system: UnitSystem;
   experience_promoted_at: string | null;
   promotion_snoozed_until: string | null;
+  subscription_tier?: "free" | "pro" | "pro_plus";
+  subscription_status?:
+    | "inactive"
+    | "trialing"
+    | "active"
+    | "past_due"
+    | "canceled";
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  subscription_current_period_end?: string | null;
   is_travel_mode?: boolean;
   home_equipment_types?: string[];
   home_recovery_equipment_types?: string[];

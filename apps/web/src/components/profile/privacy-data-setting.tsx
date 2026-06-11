@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteAccount } from "@/app/actions/account";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import type { AccountExportBundle } from "@/lib/account/export";
 import { mergeExportWithLocalWorkouts } from "@/lib/account/export-enrich";
 import { clearOfflineUserData, syncWorkoutData } from "@forgefit/offline-sync";
@@ -10,9 +11,14 @@ import { useState, useTransition } from "react";
 interface PrivacyDataSettingProps {
   email: string;
   userId: string;
+  canExport?: boolean;
 }
 
-export function PrivacyDataSetting({ email, userId }: PrivacyDataSettingProps) {
+export function PrivacyDataSetting({
+  email,
+  userId,
+  canExport = true,
+}: PrivacyDataSettingProps) {
   const [exporting, setExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
@@ -89,14 +95,26 @@ export function PrivacyDataSetting({ email, userId }: PrivacyDataSettingProps) {
       </p>
 
       <div className="mt-4 space-y-3">
-        <button
-          type="button"
-          onClick={() => void handleExport()}
-          disabled={exporting || pending}
-          className="min-h-[48px] w-full rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-60"
-        >
-          {exporting ? "Preparing export…" : "Export my data"}
-        </button>
+        {canExport ? (
+          <button
+            type="button"
+            onClick={() => void handleExport()}
+            disabled={exporting || pending}
+            className="min-h-[48px] w-full rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-60"
+          >
+            {exporting ? "Preparing export…" : "Export my data"}
+          </button>
+        ) : (
+          <div className="rounded-xl border border-dashed border-[var(--border)] px-4 py-3">
+            <p className="text-sm font-medium text-forge-text">Export my data</p>
+            <UpgradePrompt
+              compact
+              title=""
+              description="Full JSON export is included with"
+              suggestedTier="pro"
+            />
+          </div>
+        )}
 
         {exportMessage && (
           <p className="text-sm text-forge-success">{exportMessage}</p>

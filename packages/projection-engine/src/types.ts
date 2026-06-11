@@ -30,6 +30,9 @@ export interface ProjectionPoint {
   date: string;
   weightKg: number;
   projected: boolean;
+  /** Evidence min/max band (Pro) — only on projected points when enabled */
+  bandLowKg?: number;
+  bandHighKg?: number;
 }
 
 export interface WeightProjectionInput {
@@ -40,6 +43,8 @@ export interface WeightProjectionInput {
   effectiveDeficitKcal?: number;
   effectiveSurplusKcal?: number;
   trainingKcalPerDay?: number;
+  /** When true, adds bandLowKg/bandHighKg from evidence min/max weekly rates */
+  includeConfidenceBand?: boolean;
 }
 
 export interface WeightProjectionResult {
