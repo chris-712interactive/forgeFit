@@ -80,7 +80,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
             label="How we cap projections"
           />
         </div>
-        <div className="mt-4">
+        <div className="mt-4 min-w-0">
           <WeightProjectionChart
             projection={data.projection}
             waistProjection={

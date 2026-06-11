@@ -39,6 +39,21 @@ function formatTick(date: string): string {
   return `${Number(month)}/${Number(day)}`;
 }
 
+function paddedDomain(values: number[]): [number, number] {
+  if (values.length === 0) return [0, 100];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if (min === max) {
+    const pad = Math.max(1, min * 0.05);
+    return [Math.round((min - pad) * 10) / 10, Math.round((max + pad) * 10) / 10];
+  }
+  const pad = Math.max((max - min) * 0.12, 0.5);
+  return [
+    Math.round((min - pad) * 10) / 10,
+    Math.round((max + pad) * 10) / 10,
+  ];
+}
+
 export function WeightProjectionChart({
   projection,
   waistProjection = null,
@@ -53,43 +68,30 @@ export function WeightProjectionChart({
   const chartData = useMemo(() => {
     if (!projection) return [];
 
-    const weightByDate = new Map(
-      projection.points.map((point) => [point.date, point])
-    );
     const waistByDate = new Map(
       waistProjection?.points.map((point) => [point.date, point]) ?? []
     );
 
-    const dates = [
-      ...new Set([...weightByDate.keys(), ...waistByDate.keys()]),
-    ].sort();
-
     const weightActual = projection.points.filter((point) => !point.projected);
     const weightPivotDate = weightActual[weightActual.length - 1]?.date;
-    const waistActual = waistProjection?.points.filter((point) => !point.projected) ?? [];
-    const waistPivotDate = waistActual[waistActual.length - 1]?.date;
 
-    return dates.map((date) => {
-      const point = weightByDate.get(date);
-      const waistPoint = waistByDate.get(date);
+    return projection.points.map((point) => {
+      const waistPoint = waistByDate.get(point.date);
 
       return {
-        date,
-        actual:
-          point && !point.projected
-            ? kgToDisplayValue(point.weightKg, unit)
-            : null,
-        projected:
-          point && point.projected
-            ? kgToDisplayValue(point.weightKg, unit)
-            : null,
+        date: point.date,
+        actual: point.projected
+          ? null
+          : kgToDisplayValue(point.weightKg, unit),
+        projected: point.projected
+          ? kgToDisplayValue(point.weightKg, unit)
+          : null,
         bridge:
-          point && date === weightPivotDate
+          point.date === weightPivotDate
             ? kgToDisplayValue(point.weightKg, unit)
             : null,
         bandRange:
           showConfidenceBands &&
-          point &&
           point.bandLowKg != null &&
           point.bandHighKg != null
             ? [
@@ -102,16 +104,26 @@ export function WeightProjectionChart({
             ? cmToDisplayValue(waistPoint.waistCm, unit)
             : null,
         waistProjected:
-          waistPoint && waistPoint.projected
+          waistPoint &&
+          (waistPoint.projected || point.date === weightPivotDate)
             ? cmToDisplayValue(waistPoint.waistCm, unit)
             : null,
         waistBridge:
-          waistPoint && date === waistPivotDate
+          waistPoint && point.date === weightPivotDate
             ? cmToDisplayValue(waistPoint.waistCm, unit)
             : null,
       };
     });
   }, [projection, waistProjection, showConfidenceBands, unit]);
+
+  const waistDomain = useMemo(() => {
+    const values = chartData.flatMap((row) =>
+      [row.waistActual, row.waistProjected, row.waistBridge].filter(
+        (value): value is number => value != null
+      )
+    );
+    return paddedDomain(values);
+  }, [chartData]);
 
   if (!projection) {
     return (
@@ -204,26 +216,25 @@ export function WeightProjectionChart({
           <ResponsiveContainer width={width} height={height}>
             <ComposedChart
               data={chartData}
-              margin={{
-                top: 12,
-                right: showWaistOverlay ? 48 : 12,
-                left: 4,
-                bottom: 4,
-              }}
+              margin={{ top: 12, right: 8, left: 0, bottom: 4 }}
             >
-              <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
+              <CartesianGrid
+                stroke={CHART_COLORS.grid}
+                strokeDasharray="3 3"
+              />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatTick}
                 stroke={CHART_COLORS.muted}
                 fontSize={12}
                 tickMargin={8}
+                minTickGap={24}
               />
               <YAxis
                 yAxisId="weight"
                 stroke={CHART_COLORS.muted}
                 fontSize={12}
-                width={44}
+                width={40}
                 domain={["auto", "auto"]}
                 tickFormatter={(value) => `${value}`}
               />
@@ -233,8 +244,8 @@ export function WeightProjectionChart({
                   orientation="right"
                   stroke={CHART_COLORS.steel}
                   fontSize={12}
-                  width={44}
-                  domain={["auto", "auto"]}
+                  width={40}
+                  domain={waistDomain}
                   tickFormatter={(value) => `${value}`}
                 />
               )}
@@ -247,7 +258,12 @@ export function WeightProjectionChart({
                 }}
                 formatter={(value, name) => {
                   if (value == null) return ["—", ""];
-                  if (name === "waistActual" || name === "waistProjected") {
+                  const label = String(name);
+                  if (
+                    label.includes("waist") ||
+                    label === "Logged waist" ||
+                    label === "Projected waist"
+                  ) {
                     return [`${value} ${lengthLabel}`, "Waist"];
                   }
                   return [`${value} ${weightLabel}`, "Weight"];
@@ -312,11 +328,11 @@ export function WeightProjectionChart({
                     yAxisId="waist"
                     type="monotone"
                     dataKey="waistActual"
-                    name="waistActual"
+                    name="Logged waist"
                     stroke={CHART_COLORS.steel}
                     strokeWidth={2.5}
                     dot={{ r: 3, fill: CHART_COLORS.steel, strokeWidth: 0 }}
-                    connectNulls={false}
+                    connectNulls
                     isAnimationActive={false}
                   />
                   <Line
@@ -333,12 +349,12 @@ export function WeightProjectionChart({
                     yAxisId="waist"
                     type="monotone"
                     dataKey="waistProjected"
-                    name="waistProjected"
+                    name="Projected waist"
                     stroke={CHART_COLORS.steel}
                     strokeWidth={2}
                     strokeDasharray="6 4"
                     dot={false}
-                    connectNulls={false}
+                    connectNulls
                     isAnimationActive={false}
                   />
                 </>

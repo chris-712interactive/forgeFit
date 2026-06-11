@@ -15,6 +15,7 @@ import {
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasProAccess, type SubscriptionSnapshot } from "@/lib/billing/types";
 import { listProgressPhotos } from "@/lib/progress-photos/service";
+import { alignWaistProjectionToWeightTimeline } from "./waist-projection-align";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -291,7 +292,7 @@ export async function getProgressDashboardData(
     (row) => row.waistCm != null && row.waistCm > 0
   ).length;
 
-  const waistProjection =
+  const rawWaistProjection =
     goal && projection
       ? buildWaistProjection(
           measurements,
@@ -299,6 +300,11 @@ export async function getProgressDashboardData(
           goal,
           gates.showWaistProjection
         )
+      : null;
+
+  const waistProjection =
+    rawWaistProjection && projection
+      ? alignWaistProjectionToWeightTimeline(rawWaistProjection, projection)
       : null;
 
   const trends = buildTrendSeries(

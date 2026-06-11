@@ -26,7 +26,7 @@ export function ChartShell({
   }
 
   return (
-    <div className="w-full" style={{ height }}>
+    <div className="min-w-0 w-full" style={{ height }}>
       {children({ width: "100%", height })}
     </div>
   );
