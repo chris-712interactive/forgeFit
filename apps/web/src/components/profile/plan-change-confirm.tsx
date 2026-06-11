@@ -64,21 +64,25 @@ export function PlanChangeConfirm({
               <p className="mt-1 text-base font-semibold text-forge-gold">
                 {formatUsdFromCents(preview.dueTodayCents)}
               </p>
-              {preview.dueTodayCents === 0 && (
-                <p className="mt-1 text-forge-muted">
-                  No immediate charge — any prorated amount may appear on your
-                  next invoice.
-                </p>
-              )}
+              <p className="mt-1 text-forge-muted">
+                This is the price difference for the rest of your current
+                billing period — not your next full renewal (
+                {preview.newRecurringLabel} on{" "}
+                {preview.periodEndLabel ?? "your renewal date"}).
+              </p>
             </div>
           ) : (
             <div className="rounded-lg border border-[var(--border)] bg-forge-surface px-3 py-2.5">
               <p className="text-forge-muted">Billing adjustment</p>
               <p className="mt-1 font-medium">
-                You&apos;ll receive a prorated credit on your next invoice for
-                unused Pro+ time. Your plan renews at{" "}
-                {preview.newRecurringLabel}
-                {preview.periodEndLabel ? ` starting ${preview.periodEndLabel}` : ""}.
+                {preview.creditCents > 0
+                  ? `You'll receive ${formatUsdFromCents(preview.creditCents)} credit on your next invoice for unused Pro+ time.`
+                  : "You'll receive a prorated credit on your next invoice for unused Pro+ time."}{" "}
+                Your plan renews at {preview.newRecurringLabel}
+                {preview.periodEndLabel
+                  ? ` on ${preview.periodEndLabel}`
+                  : ""}
+                .
               </p>
             </div>
           )}
@@ -93,10 +97,15 @@ export function PlanChangeConfirm({
             )}
           </div>
 
-          {preview.lineSummaries.length > 0 && (
+          {preview.prorationLines.length > 0 && (
             <ul className="space-y-1 text-forge-muted">
-              {preview.lineSummaries.map((line) => (
-                <li key={line}>· {line}</li>
+              {preview.prorationLines.map((line) => (
+                <li key={`${line.description}-${line.amountCents}`}>
+                  · {line.description}{" "}
+                  <span className="text-forge-text">
+                    ({formatUsdFromCents(line.amountCents)})
+                  </span>
+                </li>
               ))}
             </ul>
           )}

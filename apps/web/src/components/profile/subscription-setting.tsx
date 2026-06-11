@@ -193,12 +193,23 @@ export function SubscriptionSetting({
 
   async function confirmPlanChange() {
     if (!pendingPlanChange) return;
-    await changePlan(pendingPlanChange);
-    cancelPlanChangePreview();
+
+    const success = await changePlan(
+      pendingPlanChange,
+      undefined,
+      planChangePreview?.prorationDate
+    );
+    if (success) {
+      cancelPlanChangePreview();
+    }
   }
 
-  async function changePlan(tier: PaidTier, billingInterval?: BillingInterval) {
-    if (!stripeConfigured || action) return;
+  async function changePlan(
+    tier: PaidTier,
+    billingInterval?: BillingInterval,
+    prorationDate?: number
+  ): Promise<boolean> {
+    if (!stripeConfigured || action) return false;
 
     setAction("change");
     setError(null);
@@ -211,6 +222,7 @@ export function SubscriptionSetting({
         body: JSON.stringify({
           tier,
           interval: billingInterval ?? interval,
+          prorationDate,
         }),
       });
 
@@ -219,7 +231,7 @@ export function SubscriptionSetting({
       if (!response.ok) {
         setError(body.error ?? "Could not update your plan.");
         setAction(null);
-        return;
+        return false;
       }
 
       setMessage(
@@ -229,9 +241,11 @@ export function SubscriptionSetting({
       );
       setAction(null);
       router.refresh();
+      return true;
     } catch {
       setError("Could not update your plan.");
       setAction(null);
+      return false;
     }
   }
 

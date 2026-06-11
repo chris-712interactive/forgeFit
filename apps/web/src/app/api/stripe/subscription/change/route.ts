@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       tier?: PaidTier;
       interval?: BillingInterval;
+      prorationDate?: number;
     };
 
     const tier: PaidTier = body.tier === "pro_plus" ? "pro_plus" : "pro";
@@ -25,8 +26,12 @@ export async function POST(request: Request) {
       body.interval === "annual" || body.interval === "monthly"
         ? body.interval
         : undefined;
+    const prorationDate =
+      typeof body.prorationDate === "number" ? body.prorationDate : undefined;
 
-    const result = await changeSubscriptionPlan(user.id, tier, interval);
+    const result = await changeSubscriptionPlan(user.id, tier, interval, {
+      prorationDate,
+    });
 
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {

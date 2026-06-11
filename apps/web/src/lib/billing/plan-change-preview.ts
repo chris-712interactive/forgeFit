@@ -7,14 +7,19 @@ export interface PlanChangePreview {
   targetTier: PaidTier;
   interval: BillingInterval;
   currency: string;
-  /** Amount Stripe will attempt to collect now (can be 0 if applied to next invoice). */
+  /** Unix timestamp — pass back when confirming so Stripe matches the preview. */
+  prorationDate: number;
+  /** Immediate charge for upgrades (proration only, not the next renewal). */
   dueTodayCents: number;
+  /** Credit applied on downgrade (unused time on higher tier). */
+  creditCents: number;
   currentRecurringLabel: string;
   newRecurringLabel: string;
   isUpgrade: boolean;
   periodEndLabel: string | null;
-  /** Human-readable invoice line summaries from Stripe preview. */
+  /** Human-readable proration line descriptions from Stripe preview. */
   lineSummaries: string[];
+  prorationLines: { description: string; amountCents: number }[];
 }
 
 export type PlanChangePreviewResponse = PlanChangePreview;

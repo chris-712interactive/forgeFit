@@ -13,6 +13,10 @@ import { syncSubscriptionToProfile } from "./sync-subscription";
 import type { BillingInterval } from "./pricing";
 import type { PlanChangePreview } from "./plan-change-preview";
 import { isPlanUpgrade, recurringLabelFor } from "./plan-change-preview";
+import {
+  summarizeProrationLines,
+  sumProrationCents,
+} from "./invoice-proration";
 import type { PaidTier } from "./types";
 
 export interface UserBillingRecord {
@@ -136,43 +140,49 @@ export async function previewSubscriptionPlanChange(
   interval?: BillingInterval
 ): Promise<PlanChangePreview> {
   const ctx = await resolvePlanChangeContext(userId, tier, interval);
+  const prorationDate = Math.floor(Date.now() / 1000);
 
   const preview = await ctx.stripe.invoices.createPreview({
     customer: ctx.customerId,
     subscription: ctx.subscription.id,
     subscription_details: {
       items: [{ id: ctx.itemId, price: ctx.newPriceId }],
-      proration_behavior: "create_prorations",
+      proration_behavior: "always_invoice",
+      proration_date: prorationDate,
     },
   });
 
-  const lineSummaries =
-    preview.lines?.data
-      .map((line) => line.description)
-      .filter((value): value is string => Boolean(value)) ?? [];
+  const prorationNetCents = sumProrationCents(preview);
+  const prorationLines = summarizeProrationLines(preview);
+  const isUpgrade = isPlanUpgrade(ctx.currentTier, ctx.targetTier);
 
   return {
     currentTier: ctx.currentTier,
     targetTier: ctx.targetTier,
     interval: ctx.targetInterval,
     currency: preview.currency ?? "usd",
-    dueTodayCents: preview.amount_due ?? 0,
+    prorationDate,
+    dueTodayCents: isUpgrade ? Math.max(0, prorationNetCents) : 0,
+    creditCents: !isUpgrade ? Math.max(0, -prorationNetCents) : 0,
     currentRecurringLabel: ctx.currentTier
       ? recurringLabelFor(ctx.currentTier, ctx.targetInterval)
       : "Free",
     newRecurringLabel: recurringLabelFor(ctx.targetTier, ctx.targetInterval),
-    isUpgrade: isPlanUpgrade(ctx.currentTier, ctx.targetTier),
+    isUpgrade,
     periodEndLabel: formatPeriodEndLabel(ctx.subscription),
-    lineSummaries,
+    lineSummaries: prorationLines.map((line) => line.description),
+    prorationLines,
   };
 }
 
 export async function changeSubscriptionPlan(
   userId: string,
   tier: PaidTier,
-  interval?: BillingInterval
+  interval?: BillingInterval,
+  options?: { prorationDate?: number }
 ) {
   const ctx = await resolvePlanChangeContext(userId, tier, interval);
+  const prorationDate = options?.prorationDate ?? Math.floor(Date.now() / 1000);
 
   const updated = await ctx.stripe.subscriptions.update(ctx.subscription.id, {
     items: [{ id: ctx.itemId, price: ctx.newPriceId }],
@@ -182,7 +192,8 @@ export async function changeSubscriptionPlan(
       tier,
     },
     cancel_at_period_end: false,
-    proration_behavior: "create_prorations",
+    proration_behavior: "always_invoice",
+    proration_date: prorationDate,
   });
 
   const expanded = await retrieveSubscriptionForSync(ctx.stripe, updated.id);
