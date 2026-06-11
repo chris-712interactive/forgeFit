@@ -6,8 +6,10 @@ import {
   TIER_MARKETING,
   type BillingInterval,
 } from "@/lib/billing/pricing";
+import type { PlanChangePreview } from "@/lib/billing/plan-change-preview";
 import { hasProAccess, hasProPlusAccess } from "@/lib/billing/types";
 import type { PaidTier, SubscriptionSnapshot } from "@/lib/billing/types";
+import { PlanChangeConfirm } from "@/components/profile/plan-change-confirm";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -55,6 +57,13 @@ export function SubscriptionSetting({
     checkoutStatus === "success"
   );
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [pendingPlanChange, setPendingPlanChange] = useState<PaidTier | null>(
+    null
+  );
+  const [planChangePreview, setPlanChangePreview] =
+    useState<PlanChangePreview | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
     if (checkoutStatus !== "success") return;
@@ -139,6 +148,53 @@ export function SubscriptionSetting({
       setError("Could not start checkout. Try again.");
       setAction(null);
     }
+  }
+
+  async function requestPlanChangePreview(tier: PaidTier) {
+    if (!stripeConfigured || action) return;
+
+    setPendingPlanChange(tier);
+    setPlanChangePreview(null);
+    setPreviewError(null);
+    setPreviewLoading(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/stripe/subscription/preview-change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      });
+
+      const body = (await response.json()) as PlanChangePreview & {
+        error?: string;
+      };
+
+      if (!response.ok) {
+        setPreviewError(body.error ?? "Could not load billing preview.");
+        return;
+      }
+
+      setPlanChangePreview(body);
+    } catch {
+      setPreviewError("Could not load billing preview.");
+    } finally {
+      setPreviewLoading(false);
+    }
+  }
+
+  function cancelPlanChangePreview() {
+    setPendingPlanChange(null);
+    setPlanChangePreview(null);
+    setPreviewError(null);
+    setPreviewLoading(false);
+  }
+
+  async function confirmPlanChange() {
+    if (!pendingPlanChange) return;
+    await changePlan(pendingPlanChange);
+    cancelPlanChangePreview();
   }
 
   async function changePlan(tier: PaidTier, billingInterval?: BillingInterval) {
@@ -271,7 +327,7 @@ export function SubscriptionSetting({
 
   function handleUpgrade(tier: PaidTier) {
     if (isPaid) {
-      void changePlan(tier);
+      void requestPlanChangePreview(tier);
     } else {
       void startCheckout(tier);
     }
@@ -427,42 +483,68 @@ export function SubscriptionSetting({
       {isPaid && !subscription.cancelAtPeriodEnd && (
         <div className="mt-4 space-y-3">
           {!isProPlus && (
-            <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 p-4">
-              <p className="text-sm font-medium text-forge-text">
-                Upgrade to Pro+
-              </p>
-              <p className="mt-1 text-xs text-forge-muted">
-                Device sync, restaurant search, and AI coaching.
-              </p>
-              <button
-                type="button"
-                disabled={!stripeConfigured || action !== null}
-                onClick={() => handleUpgrade("pro_plus")}
-                className="mt-3 rounded-xl border border-forge-gold/50 px-4 py-2 text-sm font-semibold text-forge-gold transition-colors hover:bg-forge-gold/10 disabled:opacity-50"
-              >
-                {action === "change" ? "Updating…" : "Upgrade to Pro+"}
-              </button>
-            </div>
+            pendingPlanChange === "pro_plus" ? (
+              <PlanChangeConfirm
+                targetTier="pro_plus"
+                preview={planChangePreview}
+                loading={previewLoading}
+                previewError={previewError}
+                confirming={action === "change"}
+                onConfirm={() => void confirmPlanChange()}
+                onCancel={cancelPlanChangePreview}
+              />
+            ) : (
+              <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 p-4">
+                <p className="text-sm font-medium text-forge-text">
+                  Upgrade to Pro+
+                </p>
+                <p className="mt-1 text-xs text-forge-muted">
+                  Device sync, restaurant search, and AI coaching. You&apos;ll
+                  see the prorated charge before confirming.
+                </p>
+                <button
+                  type="button"
+                  disabled={!stripeConfigured || action !== null}
+                  onClick={() => void requestPlanChangePreview("pro_plus")}
+                  className="mt-3 rounded-xl border border-forge-gold/50 px-4 py-2 text-sm font-semibold text-forge-gold transition-colors hover:bg-forge-gold/10 disabled:opacity-50"
+                >
+                  Review upgrade pricing
+                </button>
+              </div>
+            )
           )}
 
           {isProPlus && (
-            <div className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
-              <p className="text-sm font-medium text-forge-text">
-                Downgrade to Pro
-              </p>
-              <p className="mt-1 text-xs text-forge-muted">
-                Keep analytics and projections; lose integrations and AI coaching.
-                Billing adjusts with proration on your next invoice.
-              </p>
-              <button
-                type="button"
-                disabled={!stripeConfigured || action !== null}
-                onClick={() => void changePlan("pro")}
-                className="mt-3 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-50"
-              >
-                {action === "change" ? "Updating…" : "Switch to Pro"}
-              </button>
-            </div>
+            pendingPlanChange === "pro" ? (
+              <PlanChangeConfirm
+                targetTier="pro"
+                preview={planChangePreview}
+                loading={previewLoading}
+                previewError={previewError}
+                confirming={action === "change"}
+                onConfirm={() => void confirmPlanChange()}
+                onCancel={cancelPlanChangePreview}
+              />
+            ) : (
+              <div className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
+                <p className="text-sm font-medium text-forge-text">
+                  Downgrade to Pro
+                </p>
+                <p className="mt-1 text-xs text-forge-muted">
+                  Keep analytics and projections; lose integrations and AI
+                  coaching. You&apos;ll see billing adjustments before
+                  confirming.
+                </p>
+                <button
+                  type="button"
+                  disabled={!stripeConfigured || action !== null}
+                  onClick={() => void requestPlanChangePreview("pro")}
+                  className="mt-3 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-50"
+                >
+                  Review downgrade pricing
+                </button>
+              </div>
+            )
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">

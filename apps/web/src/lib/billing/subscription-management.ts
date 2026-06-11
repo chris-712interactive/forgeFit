@@ -11,6 +11,8 @@ import {
 } from "./stripe";
 import { syncSubscriptionToProfile } from "./sync-subscription";
 import type { BillingInterval } from "./pricing";
+import type { PlanChangePreview } from "./plan-change-preview";
+import { isPlanUpgrade, recurringLabelFor } from "./plan-change-preview";
 import type { PaidTier } from "./types";
 
 export interface UserBillingRecord {
@@ -56,13 +58,24 @@ export function detectBillingInterval(
   return null;
 }
 
-export async function changeSubscriptionPlan(
+interface PlanChangeContext {
+  stripe: ReturnType<typeof getStripe>;
+  subscription: Stripe.Subscription;
+  itemId: string;
+  newPriceId: string;
+  targetInterval: BillingInterval;
+  currentTier: PaidTier | null;
+  targetTier: PaidTier;
+  customerId: string;
+}
+
+async function resolvePlanChangeContext(
   userId: string,
   tier: PaidTier,
   interval?: BillingInterval
-) {
+): Promise<PlanChangeContext> {
   const billing = await getUserBillingRecord(userId);
-  if (!billing?.stripeSubscriptionId) {
+  if (!billing?.stripeSubscriptionId || !billing.stripeCustomerId) {
     throw new Error("No active subscription to change.");
   }
 
@@ -89,10 +102,82 @@ export async function changeSubscriptionPlan(
     throw new Error("Subscription has no items.");
   }
 
-  const updated = await stripe.subscriptions.update(subscription.id, {
-    items: [{ id: itemId, price: newPriceId }],
+  return {
+    stripe,
+    subscription,
+    itemId,
+    newPriceId,
+    targetInterval,
+    currentTier: currentTierFromPriceId(currentPriceId),
+    targetTier: tier,
+    customerId: billing.stripeCustomerId,
+  };
+}
+
+function formatPeriodEndLabel(
+  subscription: Stripe.Subscription
+): string | null {
+  const unix = (
+    subscription as Stripe.Subscription & { current_period_end?: number }
+  ).current_period_end;
+
+  if (typeof unix !== "number") return null;
+
+  return new Date(unix * 1000).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export async function previewSubscriptionPlanChange(
+  userId: string,
+  tier: PaidTier,
+  interval?: BillingInterval
+): Promise<PlanChangePreview> {
+  const ctx = await resolvePlanChangeContext(userId, tier, interval);
+
+  const preview = await ctx.stripe.invoices.createPreview({
+    customer: ctx.customerId,
+    subscription: ctx.subscription.id,
+    subscription_details: {
+      items: [{ id: ctx.itemId, price: ctx.newPriceId }],
+      proration_behavior: "create_prorations",
+    },
+  });
+
+  const lineSummaries =
+    preview.lines?.data
+      .map((line) => line.description)
+      .filter((value): value is string => Boolean(value)) ?? [];
+
+  return {
+    currentTier: ctx.currentTier,
+    targetTier: ctx.targetTier,
+    interval: ctx.targetInterval,
+    currency: preview.currency ?? "usd",
+    dueTodayCents: preview.amount_due ?? 0,
+    currentRecurringLabel: ctx.currentTier
+      ? recurringLabelFor(ctx.currentTier, ctx.targetInterval)
+      : "Free",
+    newRecurringLabel: recurringLabelFor(ctx.targetTier, ctx.targetInterval),
+    isUpgrade: isPlanUpgrade(ctx.currentTier, ctx.targetTier),
+    periodEndLabel: formatPeriodEndLabel(ctx.subscription),
+    lineSummaries,
+  };
+}
+
+export async function changeSubscriptionPlan(
+  userId: string,
+  tier: PaidTier,
+  interval?: BillingInterval
+) {
+  const ctx = await resolvePlanChangeContext(userId, tier, interval);
+
+  const updated = await ctx.stripe.subscriptions.update(ctx.subscription.id, {
+    items: [{ id: ctx.itemId, price: ctx.newPriceId }],
     metadata: {
-      ...subscription.metadata,
+      ...ctx.subscription.metadata,
       user_id: userId,
       tier,
     },
@@ -100,12 +185,12 @@ export async function changeSubscriptionPlan(
     proration_behavior: "create_prorations",
   });
 
-  const expanded = await retrieveSubscriptionForSync(stripe, updated.id);
-  await syncSubscriptionToProfile(expanded, { stripe });
+  const expanded = await retrieveSubscriptionForSync(ctx.stripe, updated.id);
+  await syncSubscriptionToProfile(expanded, { stripe: ctx.stripe });
 
   return {
     tier,
-    interval: targetInterval,
+    interval: ctx.targetInterval,
     status: expanded.status,
   };
 }
