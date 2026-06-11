@@ -105,6 +105,7 @@ export async function syncSubscriptionToProfile(
           ? merged.customer
           : merged.customer.id,
       subscription_current_period_end: currentPeriodEnd,
+      subscription_cancel_at_period_end: Boolean(merged.cancel_at_period_end),
     })
     .eq("id", userId);
 
@@ -173,6 +174,7 @@ export async function clearSubscriptionForUser(userId: string) {
       subscription_status: "canceled",
       stripe_subscription_id: null,
       subscription_current_period_end: null,
+      subscription_cancel_at_period_end: false,
     })
     .eq("id", userId);
 

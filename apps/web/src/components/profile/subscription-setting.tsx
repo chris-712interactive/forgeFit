@@ -17,6 +17,15 @@ interface SubscriptionSettingProps {
   checkoutStatus?: "success" | "canceled" | null;
 }
 
+type ManageAction =
+  | "checkout"
+  | "change"
+  | "portal"
+  | "downgrade"
+  | "cancel"
+  | "resume"
+  | null;
+
 function formatPeriodEnd(iso: string | null): string | null {
   if (!iso) return null;
   return new Date(iso).toLocaleDateString(undefined, {
@@ -39,11 +48,13 @@ export function SubscriptionSetting({
 }: SubscriptionSettingProps) {
   const router = useRouter();
   const [interval, setInterval] = useState<BillingInterval>("annual");
-  const [loadingTier, setLoadingTier] = useState<PaidTier | null>(null);
+  const [action, setAction] = useState<ManageAction>(null);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [syncingCheckout, setSyncingCheckout] = useState(
     checkoutStatus === "success"
   );
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   useEffect(() => {
     if (checkoutStatus !== "success") return;
@@ -98,13 +109,15 @@ export function SubscriptionSetting({
   }, [checkoutStatus, router]);
 
   const isPaid = hasProAccess(subscription);
+  const isProPlus = hasProPlusAccess(subscription);
   const periodEnd = formatPeriodEnd(subscription.currentPeriodEnd);
 
   async function startCheckout(tier: PaidTier) {
-    if (!stripeConfigured || loadingTier) return;
+    if (!stripeConfigured || action) return;
 
-    setLoadingTier(tier);
+    setAction("checkout");
     setError(null);
+    setMessage(null);
 
     try {
       const response = await fetch("/api/stripe/checkout", {
@@ -117,14 +130,150 @@ export function SubscriptionSetting({
 
       if (!response.ok || !body.url) {
         setError(body.error ?? "Could not start checkout. Try again.");
-        setLoadingTier(null);
+        setAction(null);
         return;
       }
 
       window.location.href = body.url;
     } catch {
       setError("Could not start checkout. Try again.");
-      setLoadingTier(null);
+      setAction(null);
+    }
+  }
+
+  async function changePlan(tier: PaidTier, billingInterval?: BillingInterval) {
+    if (!stripeConfigured || action) return;
+
+    setAction("change");
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/stripe/subscription/change", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tier,
+          interval: billingInterval ?? interval,
+        }),
+      });
+
+      const body = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setError(body.error ?? "Could not update your plan.");
+        setAction(null);
+        return;
+      }
+
+      setMessage(
+        tier === "pro_plus"
+          ? "Upgraded to Pro+. Changes may take a moment to appear."
+          : "Plan updated to Pro. Changes may take a moment to appear."
+      );
+      setAction(null);
+      router.refresh();
+    } catch {
+      setError("Could not update your plan.");
+      setAction(null);
+    }
+  }
+
+  async function openPortal() {
+    if (!stripeConfigured || action) return;
+
+    setAction("portal");
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stripe/portal", { method: "POST" });
+      const body = (await response.json()) as { url?: string; error?: string };
+
+      if (!response.ok || !body.url) {
+        setError(body.error ?? "Could not open billing portal.");
+        setAction(null);
+        return;
+      }
+
+      window.location.href = body.url;
+    } catch {
+      setError("Could not open billing portal.");
+      setAction(null);
+    }
+  }
+
+  async function cancelPlan(immediate: boolean) {
+    if (!stripeConfigured || action) return;
+
+    setAction("cancel");
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/stripe/subscription/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ immediate }),
+      });
+
+      const body = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setError(body.error ?? "Could not cancel subscription.");
+        setAction(null);
+        return;
+      }
+
+      setShowCancelConfirm(false);
+      setMessage(
+        immediate
+          ? "Subscription canceled. You are back on the free plan."
+          : periodEnd
+            ? `Subscription will end on ${periodEnd}. Pro access continues until then.`
+            : "Subscription set to cancel at the end of your billing period."
+      );
+      setAction(null);
+      router.refresh();
+    } catch {
+      setError("Could not cancel subscription.");
+      setAction(null);
+    }
+  }
+
+  async function resumePlan() {
+    if (!stripeConfigured || action) return;
+
+    setAction("resume");
+    setError(null);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/stripe/subscription/resume", {
+        method: "POST",
+      });
+
+      const body = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setError(body.error ?? "Could not resume subscription.");
+        setAction(null);
+        return;
+      }
+
+      setMessage("Subscription renewed — your plan will continue.");
+      setAction(null);
+      router.refresh();
+    } catch {
+      setError("Could not resume subscription.");
+      setAction(null);
+    }
+  }
+
+  function handleUpgrade(tier: PaidTier) {
+    if (isPaid) {
+      void changePlan(tier);
+    } else {
+      void startCheckout(tier);
     }
   }
 
@@ -155,6 +304,12 @@ export function SubscriptionSetting({
         </p>
       )}
 
+      {message && (
+        <p className="mt-3 rounded-xl border border-forge-success/40 bg-forge-success/10 px-3 py-2 text-sm text-forge-success">
+          {message}
+        </p>
+      )}
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-forge-surface px-4 py-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-forge-muted">
@@ -166,11 +321,31 @@ export function SubscriptionSetting({
         </div>
         {isPaid && periodEnd && (
           <p className="text-xs text-forge-muted">
-            Renews {periodEnd}
+            {subscription.cancelAtPeriodEnd
+              ? `Access until ${periodEnd}`
+              : `Renews ${periodEnd}`}
             {subscription.status === "trialing" ? " (trial)" : ""}
           </p>
         )}
       </div>
+
+      {isPaid && subscription.cancelAtPeriodEnd && (
+        <div className="mt-3 rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-3">
+          <p className="text-sm text-forge-text">
+            Your subscription is scheduled to end
+            {periodEnd ? ` on ${periodEnd}` : " at the end of this period"}.
+            You keep Pro access until then.
+          </p>
+          <button
+            type="button"
+            disabled={!stripeConfigured || action !== null}
+            onClick={() => void resumePlan()}
+            className="mt-3 rounded-xl bg-forge-ember px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-forge-glow disabled:opacity-50"
+          >
+            {action === "resume" ? "Resuming…" : "Keep my subscription"}
+          </button>
+        </div>
+      )}
 
       {!isPaid && (
         <>
@@ -234,11 +409,11 @@ export function SubscriptionSetting({
                   </ul>
                   <button
                     type="button"
-                    disabled={!stripeConfigured || loadingTier !== null}
-                    onClick={() => startCheckout(tier)}
+                    disabled={!stripeConfigured || action !== null}
+                    onClick={() => handleUpgrade(tier)}
                     className="mt-4 w-full rounded-xl bg-forge-ember px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-forge-glow disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {loadingTier === tier
+                    {action === "checkout"
                       ? "Redirecting…"
                       : `Upgrade to ${marketing.name}`}
                   </button>
@@ -249,22 +424,99 @@ export function SubscriptionSetting({
         </>
       )}
 
-      {isPaid && !hasProPlusAccess(subscription) && (
-        <div className="mt-4 rounded-xl border border-forge-gold/30 bg-forge-gold/5 p-4">
-          <p className="text-sm font-medium text-forge-text">
-            Want device sync, restaurant search, or AI coaching?
-          </p>
-          <p className="mt-1 text-xs text-forge-muted">
-            Upgrade to Pro+ for integrations and Phase 8 features.
-          </p>
-          <button
-            type="button"
-            disabled={!stripeConfigured || loadingTier !== null}
-            onClick={() => startCheckout("pro_plus")}
-            className="mt-3 rounded-xl border border-forge-gold/50 px-4 py-2 text-sm font-semibold text-forge-gold transition-colors hover:bg-forge-gold/10 disabled:opacity-50"
-          >
-            {loadingTier === "pro_plus" ? "Redirecting…" : "Upgrade to Pro+"}
-          </button>
+      {isPaid && !subscription.cancelAtPeriodEnd && (
+        <div className="mt-4 space-y-3">
+          {!isProPlus && (
+            <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 p-4">
+              <p className="text-sm font-medium text-forge-text">
+                Upgrade to Pro+
+              </p>
+              <p className="mt-1 text-xs text-forge-muted">
+                Device sync, restaurant search, and AI coaching.
+              </p>
+              <button
+                type="button"
+                disabled={!stripeConfigured || action !== null}
+                onClick={() => handleUpgrade("pro_plus")}
+                className="mt-3 rounded-xl border border-forge-gold/50 px-4 py-2 text-sm font-semibold text-forge-gold transition-colors hover:bg-forge-gold/10 disabled:opacity-50"
+              >
+                {action === "change" ? "Updating…" : "Upgrade to Pro+"}
+              </button>
+            </div>
+          )}
+
+          {isProPlus && (
+            <div className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
+              <p className="text-sm font-medium text-forge-text">
+                Downgrade to Pro
+              </p>
+              <p className="mt-1 text-xs text-forge-muted">
+                Keep analytics and projections; lose integrations and AI coaching.
+                Billing adjusts with proration on your next invoice.
+              </p>
+              <button
+                type="button"
+                disabled={!stripeConfigured || action !== null}
+                onClick={() => void changePlan("pro")}
+                className="mt-3 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-50"
+              >
+                {action === "change" ? "Updating…" : "Switch to Pro"}
+              </button>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              disabled={!stripeConfigured || action !== null}
+              onClick={() => void openPortal()}
+              className="min-h-[44px] flex-1 rounded-xl border border-[var(--border)] px-4 py-2.5 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-50"
+            >
+              {action === "portal" ? "Opening…" : "Manage billing"}
+            </button>
+          </div>
+
+          {!showCancelConfirm ? (
+            <button
+              type="button"
+              disabled={!stripeConfigured || action !== null}
+              onClick={() => setShowCancelConfirm(true)}
+              className="text-sm font-medium text-forge-coral transition-colors hover:underline disabled:opacity-50"
+            >
+              Cancel subscription and return to Free
+            </button>
+          ) : (
+            <div className="rounded-xl border border-forge-coral/30 bg-forge-coral/5 p-4">
+              <p className="text-sm font-medium text-forge-text">
+                Cancel your subscription?
+              </p>
+              <p className="mt-1 text-xs text-forge-muted">
+                By default you keep access until{" "}
+                {periodEnd ?? "the end of your billing period"}, then return to
+                Free. You can resume anytime before then.
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  disabled={action !== null}
+                  onClick={() => void cancelPlan(false)}
+                  className="min-h-[44px] flex-1 rounded-xl bg-forge-coral px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  {action === "cancel"
+                    ? "Canceling…"
+                    : "Cancel at period end"}
+                </button>
+                <button
+                  type="button"
+                  disabled={action !== null}
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="min-h-[44px] rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted"
+                >
+                  Keep subscription
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

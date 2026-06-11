@@ -33,6 +33,23 @@
 
 ## Session Log
 
+### 2026-06-09 — Subscription downgrade & cancel
+
+**What was done:**
+- `POST /api/stripe/subscription/change` — Pro ↔ Pro+ on existing subscription (proration)
+- `POST /api/stripe/subscription/cancel` — cancel at period end (default) or immediate
+- `POST /api/stripe/subscription/resume` — undo pending cancellation
+- `POST /api/stripe/portal` — Stripe Customer Portal (payment method, invoices)
+- Profile UI: downgrade, cancel, resume, manage billing
+- Migration `subscription_cancel_at_period_end` + sync from Stripe webhooks
+- Checkout blocked when user already has active subscription (409)
+
+**Apply migration:** `20260609600000_subscription_cancel_flag.sql`
+
+**Stripe Dashboard:** enable Customer Portal and add all four prices to allowed products.
+
+---
+
 ### 2026-06-09 — Stripe subscription sync fix
 
 **What was done:**

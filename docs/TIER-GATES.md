@@ -137,9 +137,11 @@ Checkout accepts `{ tier: "pro" | "pro_plus", interval: "monthly" | "annual" }`.
 ## Upgrade & downgrade rules
 
 - **Free → Pro / Pro+:** Stripe Checkout; webhook sets tier on `active` or `trialing`.
-- **Pro → Pro+:** New Checkout session or Stripe Customer Portal (future); webhook updates tier.
-- **Pro+ → Pro:** Portal downgrade at period end; webhook sets `pro` when price changes.
-- **Cancel:** `customer.subscription.deleted` → tier `free`, status `canceled`.
+- **Pro ↔ Pro+:** `POST /api/stripe/subscription/change` updates the existing Stripe subscription (no second subscription).
+- **Return to Free:** `POST /api/stripe/subscription/cancel` sets `cancel_at_period_end` (access until period end) or immediate cancel.
+- **Resume cancel:** `POST /api/stripe/subscription/resume` clears `cancel_at_period_end`.
+- **Payment method / invoices:** `POST /api/stripe/portal` → Stripe Customer Portal.
+- **Cancel (webhook):** `customer.subscription.deleted` → tier `free`, status `canceled`.
 - **Pro+ subscriber** always passes Pro gates (`hasProAccess` is true for both `pro` and `pro_plus`).
 
 ---

@@ -13,6 +13,7 @@ export interface SubscriptionSnapshot {
   tier: SubscriptionTier;
   status: SubscriptionStatus;
   currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
 function isActiveSubscription(

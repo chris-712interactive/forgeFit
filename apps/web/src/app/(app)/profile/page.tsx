@@ -81,6 +81,7 @@ export default async function ProfilePage({
           tier: "free" as const,
           status: "inactive" as const,
           currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
         },
       ];
 

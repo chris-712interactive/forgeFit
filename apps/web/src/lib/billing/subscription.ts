@@ -15,7 +15,7 @@ export async function getSubscriptionForUser(
   const { data } = await supabase
     .from("profiles")
     .select(
-      "subscription_tier, subscription_status, subscription_current_period_end"
+      "subscription_tier, subscription_status, subscription_current_period_end, subscription_cancel_at_period_end"
     )
     .eq("id", userId)
     .single();
@@ -26,6 +26,7 @@ export async function getSubscriptionForUser(
       (data?.subscription_status as SubscriptionStatus | undefined) ??
       "inactive",
     currentPeriodEnd: data?.subscription_current_period_end ?? null,
+    cancelAtPeriodEnd: data?.subscription_cancel_at_period_end ?? false,
   };
 }
 

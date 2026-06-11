@@ -21,6 +21,20 @@ export async function POST(request: Request) {
     };
     const interval = body.interval === "annual" ? "annual" : "monthly";
     const tier: BillingTier = body.tier === "pro_plus" ? "pro_plus" : "pro";
+
+    const { userHasActiveStripeSubscription } = await import(
+      "@/lib/billing/subscription-management"
+    );
+    if (await userHasActiveStripeSubscription(user.id)) {
+      return NextResponse.json(
+        {
+          error:
+            "You already have an active subscription. Use plan change or cancel instead.",
+        },
+        { status: 409 }
+      );
+    }
+
     const priceIds = getStripePriceIds(tier);
     const stripe = getStripe();
     const siteUrl = getSiteUrl();
