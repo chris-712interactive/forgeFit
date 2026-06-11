@@ -300,6 +300,7 @@ export function WorkoutHub({
               restSeconds: ex.restSeconds,
               extraSets: progression?.extraSets,
               progressionNote: progression?.reason,
+              notes: ex.notes,
             };
           }),
           setPrefills,

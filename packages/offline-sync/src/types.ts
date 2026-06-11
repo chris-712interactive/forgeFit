@@ -21,6 +21,8 @@ export interface ExerciseSnapshot {
   extraSets?: number;
   /** Human-readable note shown during the workout */
   progressionNote?: string;
+  /** Prescription notes from the program (e.g. ramp-up sets) */
+  notes?: string;
 }
 
 export interface LocalWorkoutSession {

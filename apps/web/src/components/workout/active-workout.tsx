@@ -11,6 +11,13 @@ import {
 } from "@forgefit/exercise-db";
 import type { ExperienceLevel } from "@/lib/types/profile";
 import {
+  buildWorkoutSteps,
+  canAdvanceFromStep,
+  initialStepIndex,
+  stepLabel,
+  type WorkoutStep,
+} from "@/lib/workouts/workout-steps";
+import {
   completeWorkoutSession,
   getSession,
   getSetsForSession,
@@ -21,10 +28,7 @@ import {
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
 import { useOfflineStatus } from "@/hooks/use-online-status";
-import {
-  appPagePadding,
-  appSectionStackTight,
-} from "@/components/layout/page-layout";
+import { appPagePadding } from "@/components/layout/page-layout";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { HoldTimer } from "./hold-timer";
@@ -32,6 +36,7 @@ import { RecoveryBlockCard } from "./recovery-block-card";
 import { WarmupBlockCard } from "./warmup-block-card";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
+import { WorkoutStepHeader } from "./workout-step-header";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
@@ -50,6 +55,7 @@ export function ActiveWorkout({
   const sync = useWorkoutSyncContext();
   const [session, setSession] = useState<LocalWorkoutSession | null>(null);
   const [sets, setSets] = useState<LocalExerciseSet[]>([]);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [restSeconds, setRestSeconds] = useState<number | null>(null);
   const [timedTimer, setTimedTimer] = useState<{
     setClientId: string;
@@ -82,12 +88,23 @@ export function ActiveWorkout({
     ]);
     setSession(sessionRow ?? null);
     setSets(setRows);
+    if (sessionRow) {
+      const steps = buildWorkoutSteps(sessionRow);
+      setCurrentStepIndex(initialStepIndex(steps, sessionRow, setRows));
+    }
     setLoading(false);
   }, [clientId]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const steps = useMemo(
+    () => (session ? buildWorkoutSteps(session) : []),
+    [session]
+  );
+
+  const currentStep = steps[currentStepIndex];
 
   const setsByExercise = useMemo(() => {
     const map = new Map<string, LocalExerciseSet[]>();
@@ -101,10 +118,26 @@ export function ActiveWorkout({
 
   const completedCount = sets.filter((s) => s.completed).length;
   const totalCount = sets.length;
-  const warmupReady =
-    !session?.warmupBlock ||
-    session.warmupStatus === "completed" ||
-    session.warmupStatus === "skipped";
+
+  function clearTimers() {
+    setRestSeconds(null);
+    setTimedTimer(null);
+    setWarmupTimer(null);
+    setRecoveryTimer(null);
+  }
+
+  function goToStep(index: number) {
+    clearTimers();
+    setCurrentStepIndex(Math.max(0, Math.min(index, steps.length - 1)));
+  }
+
+  function goToNextStep() {
+    goToStep(currentStepIndex + 1);
+  }
+
+  function goToPreviousStep() {
+    goToStep(currentStepIndex - 1);
+  }
 
   async function handleSetUpdate(
     setClientId: string,
@@ -125,11 +158,7 @@ export function ActiveWorkout({
     const updated = await updateSet(setClientId, {
       ...patch,
       completedAt:
-        patch.completed === true
-          ? new Date().toISOString()
-          : patch.completed === false
-            ? undefined
-            : undefined,
+        patch.completed === true ? new Date().toISOString() : undefined,
     });
 
     if (updated) {
@@ -202,6 +231,9 @@ export function ActiveWorkout({
     if (navigator.onLine) {
       void sync?.runSync();
     }
+    if (status === "completed" || status === "skipped") {
+      goToNextStep();
+    }
   }
 
   function handleWarmupTimerComplete() {
@@ -229,6 +261,9 @@ export function ActiveWorkout({
     if (navigator.onLine) {
       void sync?.runSync();
     }
+    if (status === "completed" || status === "skipped") {
+      goToNextStep();
+    }
   }
 
   function handleRecoveryTimerComplete() {
@@ -247,10 +282,7 @@ export function ActiveWorkout({
     if (finishing || cancelling) return;
     setFinishing(true);
     setFinishError(null);
-    setRestSeconds(null);
-    setTimedTimer(null);
-    setWarmupTimer(null);
-    setRecoveryTimer(null);
+    clearTimers();
 
     try {
       await completeWorkoutSession(clientId, "completed");
@@ -275,10 +307,7 @@ export function ActiveWorkout({
 
     setCancelling(true);
     setFinishError(null);
-    setRestSeconds(null);
-    setTimedTimer(null);
-    setWarmupTimer(null);
-    setRecoveryTimer(null);
+    clearTimers();
 
     try {
       await completeWorkoutSession(clientId, "cancelled");
@@ -294,11 +323,205 @@ export function ActiveWorkout({
     }
   }
 
+  function renderExerciseStep(step: Extract<WorkoutStep, { kind: "exercise" }>) {
+    if (!session) return null;
+    const exercise = session.exercises[step.exerciseIndex];
+    if (!exercise) return null;
+
+    const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
+    const isTimed = isTimedExercise(exercise.exerciseId);
+    const isCardio = isTimedCardioExercise(exercise.exerciseId);
+    const isHold = isDurationHoldExercise(exercise.exerciseId);
+    const timedPrescription = isTimed
+      ? resolveTimedPrescription(
+          exercise.exerciseId,
+          exercise.reps,
+          experienceLevel as HoldExperience
+        )
+      : exercise.reps;
+    const targetTimerSeconds = isTimed
+      ? timedTargetSeconds(exercise.exerciseId, timedPrescription)
+      : undefined;
+    const timerLabel = isCardio ? "Cardio" : "Hold";
+    const exerciseSetsComplete =
+      exerciseSets.length > 0 && exerciseSets.every((set) => set.completed);
+
+    return (
+      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-3 sm:p-4">
+        <div className="mb-4">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
+              Exercise {step.exerciseIndex + 1} of {session.exercises.length}
+            </p>
+            <Link
+              href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(`/workout?active=${clientId}`)}`}
+              className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 text-xs font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
+            >
+              View form →
+            </Link>
+          </div>
+          <p className="mt-2 text-sm text-forge-muted">
+            {isCardio ? (
+              <>Aim for {timedPrescription}</>
+            ) : isHold ? (
+              <>
+                Aim for {exercise.sets + (exercise.extraSets ?? 0)} holds of{" "}
+                {timedPrescription} · {exercise.restSeconds}s rest between sets
+              </>
+            ) : (
+              <>
+                Aim for {exercise.sets + (exercise.extraSets ?? 0)} sets of{" "}
+                {exercise.reps} reps · {exercise.restSeconds}s rest between sets
+              </>
+            )}
+            {exercise.extraSets ? (
+              <span className="text-forge-gold">
+                {" "}
+                (+{exercise.extraSets} from progression)
+              </span>
+            ) : null}
+          </p>
+          {exercise.notes && (
+            <p className="mt-2 rounded-lg border border-forge-gold/20 bg-forge-gold/5 px-3 py-2 text-xs text-forge-muted">
+              {exercise.notes}
+            </p>
+          )}
+          {exercise.progressionNote && (
+            <p className="mt-2 rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 py-2 text-xs text-forge-steel">
+              {exercise.progressionNote}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          {exerciseSets.map((set) => (
+            <SetRow
+              key={set.clientId}
+              set={set}
+              exerciseId={exercise.exerciseId}
+              targetReps={timedPrescription}
+              targetTimerSeconds={targetTimerSeconds}
+              isTimerActive={timedTimer?.setClientId === set.clientId}
+              showProgressionHint={Boolean(
+                exercise.progressionNote &&
+                  !set.completed &&
+                  (isTimed
+                    ? set.durationMs != null || set.reps != null
+                    : set.weightKg != null || set.reps != null)
+              )}
+              onStartTimer={
+                isTimed && targetTimerSeconds
+                  ? (setClientId) =>
+                      handleStartTimer(
+                        setClientId,
+                        exercise.exerciseId,
+                        targetTimerSeconds,
+                        timerLabel
+                      )
+                  : undefined
+              }
+              onUpdate={handleSetUpdate}
+            />
+          ))}
+        </div>
+
+        {exerciseSetsComplete && (
+          <p className="mt-4 text-sm text-forge-success">
+            All sets logged for this exercise.
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  function renderStepContent() {
+    if (!session || !currentStep) return null;
+
+    switch (currentStep.kind) {
+      case "warmup":
+        return (
+          <WarmupBlockCard
+            block={session.warmupBlock!}
+            status={session.warmupStatus ?? "pending"}
+            durationMs={session.warmupDurationMs}
+            isTimerActive={warmupTimer !== null}
+            onStartTimer={() => {
+              clearTimers();
+              setWarmupTimer({
+                seconds: session.warmupBlock!.durationMinutes * 60,
+                label: "Warm-up",
+              });
+            }}
+            onMarkComplete={() => void handleWarmupUpdate("completed")}
+            onSkip={() => void handleWarmupUpdate("skipped")}
+          />
+        );
+      case "exercise":
+        return renderExerciseStep(currentStep);
+      case "recovery":
+        return (
+          <RecoveryBlockCard
+            block={session.recoveryBlock!}
+            status={session.recoveryStatus ?? "pending"}
+            durationMs={session.recoveryDurationMs}
+            isTimerActive={recoveryTimer !== null}
+            onStartTimer={() => {
+              clearTimers();
+              setRecoveryTimer({
+                seconds: session.recoveryBlock!.durationMinutes * 60,
+                label: "Recovery",
+              });
+            }}
+            onMarkComplete={() => void handleRecoveryUpdate("completed")}
+            onSkip={() => void handleRecoveryUpdate("skipped")}
+          />
+        );
+      case "finish":
+        return (
+          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
+            <h2 className="font-display text-lg font-semibold text-forge-text">
+              Ready to wrap up?
+            </h2>
+            <p className="mt-2 text-sm text-forge-muted">
+              You logged {completedCount} of {totalCount} sets. Save this
+              workout to count it toward your week.
+            </p>
+            <ul className="mt-4 space-y-2 text-sm text-forge-muted">
+              {session.warmupBlock && (
+                <li>
+                  Warm-up:{" "}
+                  <span className="text-forge-text">
+                    {session.warmupStatus === "completed"
+                      ? "Done"
+                      : session.warmupStatus === "skipped"
+                        ? "Skipped"
+                        : "Not logged"}
+                  </span>
+                </li>
+              )}
+              {session.recoveryBlock && (
+                <li>
+                  Recovery:{" "}
+                  <span className="text-forge-text">
+                    {session.recoveryStatus === "completed"
+                      ? "Done"
+                      : session.recoveryStatus === "skipped"
+                        ? "Skipped"
+                        : "Not logged"}
+                  </span>
+                </li>
+              )}
+            </ul>
+          </section>
+        );
+    }
+  }
+
   if (loading) {
     return <p className="px-6 py-8 text-forge-muted">Loading workout…</p>;
   }
 
-  if (!session) {
+  if (!session || !currentStep) {
     return (
       <div className="px-6 py-8">
         <p className="text-forge-muted">Workout not found.</p>
@@ -313,6 +536,27 @@ export function ActiveWorkout({
     );
   }
 
+  const isFirstStep = currentStepIndex === 0;
+  const isFinishStep = currentStep.kind === "finish";
+  const canContinue =
+    !isFinishStep && canAdvanceFromStep(currentStep, session);
+  const continueLabel = (() => {
+    if (currentStep.kind === "warmup") {
+      const first = session.exercises[0]?.name ?? "first exercise";
+      return `Continue to ${first}`;
+    }
+    if (currentStep.kind === "exercise") {
+      if (currentStep.exerciseIndex < session.exercises.length - 1) {
+        const next = session.exercises[currentStep.exerciseIndex + 1]?.name;
+        return `Continue to ${next ?? "next exercise"}`;
+      }
+      if (session.recoveryBlock) return "Continue to recovery";
+      return "Continue to wrap up";
+    }
+    if (currentStep.kind === "recovery") return "Continue to wrap up";
+    return "Continue";
+  })();
+
   return (
     <div className={`${appPagePadding} pb-36`}>
       <button
@@ -323,167 +567,20 @@ export function ActiveWorkout({
         ← Back to workouts
       </button>
 
-      <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
-        {session.status === "in_progress" ? "In progress" : session.status}
-      </p>
-      <h1 className="font-display text-xl font-bold text-forge-text sm:text-2xl">
-        {session.sessionName}
-      </h1>
-      <p className="mt-2 text-sm text-forge-muted">
-        {completedCount}/{totalCount} sets logged
-        {offline && (
-          <span className="ml-2 text-forge-steel">· Offline mode</span>
-        )}
-      </p>
+      <WorkoutStepHeader
+        stepNumber={currentStepIndex + 1}
+        totalSteps={steps.length}
+        stepTitle={stepLabel(currentStep, session)}
+        sessionName={session.sessionName}
+        completedSets={completedCount}
+        totalSets={totalCount}
+      />
 
-      <div className={`mt-6 sm:mt-8 ${appSectionStackTight}`}>
-        {session.warmupBlock && (
-          <WarmupBlockCard
-            block={session.warmupBlock}
-            status={session.warmupStatus ?? "pending"}
-            durationMs={session.warmupDurationMs}
-            isTimerActive={warmupTimer !== null}
-            onStartTimer={() => {
-              setRestSeconds(null);
-              setTimedTimer(null);
-              setRecoveryTimer(null);
-              setWarmupTimer({
-                seconds: session.warmupBlock!.durationMinutes * 60,
-                label: "Warm-up",
-              });
-            }}
-            onMarkComplete={() => void handleWarmupUpdate("completed")}
-            onSkip={() => void handleWarmupUpdate("skipped")}
-          />
-        )}
+      {offline && (
+        <p className="mb-4 text-sm text-forge-steel">Offline mode</p>
+      )}
 
-        {!warmupReady && (
-          <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-3 text-sm text-forge-muted">
-            Finish or skip your warm-up to move into the main workout.
-          </p>
-        )}
-
-        <div
-          className={`space-y-3 ${warmupReady ? "" : "pointer-events-none opacity-50"}`}
-        >
-        {session.exercises.map((exercise) => {
-          const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
-          const isTimed = isTimedExercise(exercise.exerciseId);
-          const isCardio = isTimedCardioExercise(exercise.exerciseId);
-          const isHold = isDurationHoldExercise(exercise.exerciseId);
-          const timedPrescription = isTimed
-            ? resolveTimedPrescription(
-                exercise.exerciseId,
-                exercise.reps,
-                experienceLevel as HoldExperience
-              )
-            : exercise.reps;
-          const targetTimerSeconds = isTimed
-            ? timedTargetSeconds(exercise.exerciseId, timedPrescription)
-            : undefined;
-          const timerLabel = isCardio ? "Cardio" : "Hold";
-          return (
-            <section
-              key={exercise.exerciseId}
-              className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-3 sm:p-4"
-            >
-              <div className="mb-4">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <h2 className="font-display text-base font-semibold text-forge-text sm:text-lg">
-                    {exercise.name}
-                  </h2>
-                  <Link
-                    href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(`/workout?active=${clientId}`)}`}
-                    className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 text-xs font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
-                  >
-                    View form →
-                  </Link>
-                </div>
-                <p className="mt-1 text-sm text-forge-muted">
-                  {isCardio ? (
-                    <>Aim for {timedPrescription}</>
-                  ) : isHold ? (
-                    <>
-                      Aim for {exercise.sets + (exercise.extraSets ?? 0)} holds
-                      of {timedPrescription} · {exercise.restSeconds}s rest
-                      between sets
-                    </>
-                  ) : (
-                    <>
-                      Aim for {exercise.sets + (exercise.extraSets ?? 0)} sets
-                      of {exercise.reps} reps · {exercise.restSeconds}s rest
-                      between sets
-                    </>
-                  )}
-                  {exercise.extraSets ? (
-                    <span className="text-forge-gold">
-                      {" "}
-                      (+{exercise.extraSets} from progression)
-                    </span>
-                  ) : null}
-                </p>
-                {exercise.progressionNote && (
-                  <p className="mt-2 rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 py-2 text-xs text-forge-steel">
-                    {exercise.progressionNote}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                {exerciseSets.map((set) => (
-                  <SetRow
-                    key={set.clientId}
-                    set={set}
-                    exerciseId={exercise.exerciseId}
-                    targetReps={timedPrescription}
-                    targetTimerSeconds={targetTimerSeconds}
-                    isTimerActive={timedTimer?.setClientId === set.clientId}
-                    showProgressionHint={Boolean(
-                      exercise.progressionNote &&
-                        !set.completed &&
-                        (isTimed
-                          ? set.durationMs != null || set.reps != null
-                          : set.weightKg != null || set.reps != null)
-                    )}
-                    onStartTimer={
-                      isTimed && targetTimerSeconds
-                        ? (setClientId) =>
-                            handleStartTimer(
-                              setClientId,
-                              exercise.exerciseId,
-                              targetTimerSeconds,
-                              timerLabel
-                            )
-                        : undefined
-                    }
-                    onUpdate={handleSetUpdate}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
-        </div>
-
-        {session.recoveryBlock && (
-          <RecoveryBlockCard
-            block={session.recoveryBlock}
-            status={session.recoveryStatus ?? "pending"}
-            durationMs={session.recoveryDurationMs}
-            isTimerActive={recoveryTimer !== null}
-            onStartTimer={() => {
-              setRestSeconds(null);
-              setTimedTimer(null);
-              setRecoveryTimer({
-                seconds: session.recoveryBlock!.durationMinutes * 60,
-                label: "Recovery",
-              });
-            }}
-            onMarkComplete={() => void handleRecoveryUpdate("completed")}
-            onSkip={() => void handleRecoveryUpdate("skipped")}
-          />
-        )}
-      </div>
+      {renderStepContent()}
 
       {finishError && (
         <p className="mt-4 text-sm text-forge-coral" role="alert">
@@ -492,22 +589,48 @@ export function ActiveWorkout({
       )}
 
       <div className="mt-8 space-y-3">
-        <button
-          type="button"
-          disabled={finishing || cancelling}
-          onClick={() => void handleFinish()}
-          className="flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-60"
-        >
-          {finishing ? "Saving…" : "Finish workout"}
-        </button>
-        <button
-          type="button"
-          disabled={finishing || cancelling}
-          onClick={() => void handleCancel()}
-          className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-[var(--border)] font-medium text-forge-muted transition-colors hover:border-forge-coral/40 hover:text-forge-coral disabled:opacity-60"
-        >
-          {cancelling ? "Discarding…" : "Discard workout"}
-        </button>
+        <div className="flex gap-3">
+          {!isFirstStep && (
+            <button
+              type="button"
+              disabled={finishing || cancelling}
+              onClick={goToPreviousStep}
+              className="min-h-[52px] flex-1 rounded-xl border border-[var(--border)] font-medium text-forge-muted disabled:opacity-60"
+            >
+              Back
+            </button>
+          )}
+          {isFinishStep ? (
+            <button
+              type="button"
+              disabled={finishing || cancelling}
+              onClick={() => void handleFinish()}
+              className="min-h-[52px] flex-1 rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-60"
+            >
+              {finishing ? "Saving…" : "Finish workout"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={!canContinue || finishing || cancelling}
+              onClick={goToNextStep}
+              className="min-h-[52px] flex-1 rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-60"
+            >
+              {continueLabel}
+            </button>
+          )}
+        </div>
+
+        {isFinishStep && (
+          <button
+            type="button"
+            disabled={finishing || cancelling}
+            onClick={() => void handleCancel()}
+            className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-[var(--border)] font-medium text-forge-muted transition-colors hover:border-forge-coral/40 hover:text-forge-coral disabled:opacity-60"
+          >
+            {cancelling ? "Discarding…" : "Discard workout"}
+          </button>
+        )}
       </div>
 
       {warmupTimer && warmupTimer.seconds > 0 && (
@@ -542,12 +665,12 @@ export function ActiveWorkout({
         !timedTimer &&
         restSeconds !== null &&
         restSeconds > 0 && (
-        <RestTimer
-          seconds={restSeconds}
-          onComplete={() => setRestSeconds(null)}
-          onSkip={() => setRestSeconds(null)}
-        />
-      )}
+          <RestTimer
+            seconds={restSeconds}
+            onComplete={() => setRestSeconds(null)}
+            onSkip={() => setRestSeconds(null)}
+          />
+        )}
     </div>
   );
 }
