@@ -8,7 +8,7 @@ const revision =
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
-    // Don't precache /logo-icon.svg, /favicon.ico, or /manifest.json here —
+    // Don't precache /logo-icon.svg or /favicon.ico here —
     // Turbopack already adds them to __SW_MANIFEST; duplicate URLs with
     // different revisions crash the SW (add-to-cache-list-conflicting-entries).
     additionalPrecacheEntries: [

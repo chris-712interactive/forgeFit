@@ -88,6 +88,24 @@ const serwist = new Serwist({
         sameOrigin && url.pathname.includes("/turbopack"),
       handler: new CacheFirst(staticAssetCache),
     },
+    // Manifest must stay fresh — CacheFirst was serving stale short_name after rebrand.
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin &&
+        (url.pathname === "/manifest.json" ||
+          url.pathname === "/manifest.webmanifest"),
+      handler: new NetworkFirst({
+        cacheName: "forgefit-manifest",
+        networkTimeoutSeconds: 3,
+        plugins: [
+          new CacheableResponsePlugin({ statuses: [0, 200] }),
+          new ExpirationPlugin({
+            maxEntries: 2,
+            maxAgeSeconds: 60 * 60,
+          }),
+        ],
+      }),
+    },
     // Browsers always request /favicon.ico; defaultCache uses StaleWhileRevalidate
     // which throws no-response offline when the icon was never cached.
     {
@@ -98,8 +116,7 @@ const serwist = new Serwist({
           url.pathname === "/favicon-32.png" ||
           url.pathname === "/icon-192.png" ||
           url.pathname === "/icon-512.png" ||
-          url.pathname === "/apple-touch-icon.png" ||
-          url.pathname === "/manifest.json"),
+          url.pathname === "/apple-touch-icon.png"),
       handler: new CacheFirst({
         cacheName: "forgefit-icons",
         plugins: iconCachePlugins,

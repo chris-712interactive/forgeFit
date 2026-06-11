@@ -15,10 +15,13 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ForgeFit — Forge Your Best Self",
+  applicationName: "ForgeFit",
+  title: {
+    default: "ForgeFit",
+    template: "%s · ForgeFit",
+  },
   description:
     "Evidence-based fitness and nutrition. Mobile-first, works offline in the gym.",
-  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },

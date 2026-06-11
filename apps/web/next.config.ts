@@ -24,7 +24,10 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["esbuild"],
   async rewrites() {
-    return [{ source: "/favicon.ico", destination: "/favicon-32.png" }];
+    return [
+      { source: "/favicon.ico", destination: "/favicon-32.png" },
+      { source: "/manifest.json", destination: "/manifest.webmanifest" },
+    ];
   },
 };
 
