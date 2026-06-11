@@ -12,6 +12,7 @@ import { CaliperCalculator } from "./caliper-calculator";
 import { LogMeasurementForm } from "./log-measurement-form";
 import { MeasurementTrendChart } from "./measurement-trend-chart";
 import { WeightProjectionChart } from "./weight-projection-chart";
+import { WaistProjectionChart } from "./waist-projection-chart";
 import { StrengthProgressionChart } from "./strength-progression-chart";
 import { PrHistoryList } from "./pr-history-list";
 import { VolumeTrendChart } from "./volume-trend-chart";
@@ -68,7 +69,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
 
       <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-          {horizonLabel} projection
+          {horizonLabel} weight projection
         </h2>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-forge-muted">
           <span>
@@ -83,30 +84,10 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         <div className="mt-4 min-w-0">
           <WeightProjectionChart
             projection={data.projection}
-            waistProjection={
-              gates.showWaistProjection ? data.waistProjection : null
-            }
             showConfidenceBands={gates.showConfidenceBands}
             showGoalDate={gates.showGoalDate}
           />
         </div>
-        {!gates.showWaistProjection && data.hasWaistHistory && (
-          <div className="mt-4">
-            <UpgradePrompt
-              compact
-              title="Project your waist trend"
-              description="Pro overlays waist trajectory on your weight projection from logged measurements."
-              suggestedTier="pro"
-            />
-          </div>
-        )}
-        {gates.showWaistProjection &&
-          data.hasWaistHistory &&
-          !data.waistProjection && (
-            <p className="mt-3 text-xs text-forge-muted">
-              Log waist on at least two dates to see the waist overlay.
-            </p>
-          )}
         {!isPro && (
           <div className="mt-4">
             <UpgradePrompt
@@ -117,6 +98,24 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
           </div>
         )}
       </section>
+
+      <ProFeatureSection
+        title={`${horizonLabel} waist projection`}
+        description="Linear trend from your logged waist measurements — separate from weight pacing."
+        unlocked={gates.showWaistProjection}
+      >
+        <WaistProjectionChart
+          projection={data.waistProjection}
+          showGoalDate={gates.showGoalDate}
+        />
+        {gates.showWaistProjection && !data.waistProjection && (
+          <p className="mt-3 text-xs text-forge-muted">
+            {data.hasWaistHistory
+              ? "Log waist on at least two dates to see a projection."
+              : "Add waist to your measurement logs to unlock this chart."}
+          </p>
+        )}
+      </ProFeatureSection>
 
       <ProFeatureSection
         title="Strength progression"

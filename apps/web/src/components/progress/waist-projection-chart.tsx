@@ -3,13 +3,11 @@
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
   cmToDisplayValue,
-  kgToDisplayValue,
-  weightUnitLabel,
+  lengthUnitLabel,
 } from "@/lib/units/measurements";
-import type { WeightProjectionResult } from "@forgefit/projection-engine";
+import type { WaistProjectionResult } from "@forgefit/projection-engine";
 import { useMemo } from "react";
 import {
-  Area,
   CartesianGrid,
   ComposedChart,
   Line,
@@ -19,13 +17,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { EvidenceRuleInline } from "@/components/evidence/evidence-rule-inline";
 import { ChartShell } from "./chart-shell";
 import { CHART_COLORS } from "./chart-colors";
 
-interface WeightProjectionChartProps {
-  projection: WeightProjectionResult | null;
-  showConfidenceBands?: boolean;
+interface WaistProjectionChartProps {
+  projection: WaistProjectionResult | null;
   showGoalDate?: boolean;
 }
 
@@ -34,13 +30,27 @@ function formatTick(date: string): string {
   return `${Number(month)}/${Number(day)}`;
 }
 
-export function WeightProjectionChart({
+function paddedDomain(values: number[]): [number, number] {
+  if (values.length === 0) return [0, 100];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if (min === max) {
+    const pad = Math.max(1, min * 0.05);
+    return [Math.round((min - pad) * 10) / 10, Math.round((max + pad) * 10) / 10];
+  }
+  const pad = Math.max((max - min) * 0.15, 0.5);
+  return [
+    Math.round((min - pad) * 10) / 10,
+    Math.round((max + pad) * 10) / 10,
+  ];
+}
+
+export function WaistProjectionChart({
   projection,
-  showConfidenceBands = false,
   showGoalDate = false,
-}: WeightProjectionChartProps) {
+}: WaistProjectionChartProps) {
   const unit = useUnitPreference();
-  const weightLabel = weightUnitLabel(unit);
+  const lengthLabel = lengthUnitLabel(unit);
 
   const chartData = useMemo(() => {
     if (!projection) return [];
@@ -52,76 +62,58 @@ export function WeightProjectionChart({
       date: point.date,
       actual: point.projected
         ? null
-        : kgToDisplayValue(point.weightKg, unit),
+        : cmToDisplayValue(point.waistCm, unit),
       projected: point.projected
-        ? kgToDisplayValue(point.weightKg, unit)
+        ? cmToDisplayValue(point.waistCm, unit)
         : null,
       bridge:
         point.date === pivotDate
-          ? kgToDisplayValue(point.weightKg, unit)
-          : null,
-      bandRange:
-        showConfidenceBands &&
-        point.bandLowKg != null &&
-        point.bandHighKg != null
-          ? [
-              kgToDisplayValue(point.bandLowKg, unit),
-              kgToDisplayValue(point.bandHighKg, unit),
-            ]
+          ? cmToDisplayValue(point.waistCm, unit)
           : null,
     }));
-  }, [projection, showConfidenceBands, unit]);
+  }, [projection, unit]);
+
+  const yDomain = useMemo(
+    () =>
+      paddedDomain(
+        chartData.flatMap((row) =>
+          [row.actual, row.projected, row.bridge].filter(
+            (value): value is number => value != null
+          )
+        )
+      ),
+    [chartData]
+  );
 
   if (!projection) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-forge-muted">
-        Add weight entries to generate a projection.
+        Log waist on at least two dates to generate a projection.
       </div>
     );
   }
 
   const actual = projection.points.filter((point) => !point.projected);
   const pivotDate = actual[actual.length - 1]?.date;
-  const weeklyDisplay = kgToDisplayValue(
-    Math.abs(projection.weeklyChangeKg),
-    unit
-  );
-  const weeklySign = projection.weeklyChangeKg > 0 ? "+" : "-";
   const lastProjected = projection.points.filter((point) => point.projected).at(-1);
+  const weeklySign = projection.weeklyChangeCm > 0 ? "+" : "";
 
   return (
     <div className="space-y-3">
       <p className="text-sm text-forge-muted">
         Trend pace:{" "}
-        <span className="font-medium text-forge-gold">
+        <span className="font-medium text-forge-steel">
           {weeklySign}
-          {weeklyDisplay} {weightLabel}/week
+          {cmToDisplayValue(projection.weeklyChangeCm, unit)} {lengthLabel}/week
         </span>{" "}
-        ({projection.weeklyChangePct > 0 ? "+" : ""}
-        {projection.weeklyChangePct}% BW)
-        {projection.effectiveDeficitKcal != null && (
-          <>
-            {" "}
-            · pace based on ~{projection.effectiveDeficitKcal} kcal/day deficit
-            {projection.trainingKcalPerDay != null && (
-              <> (training ~{projection.trainingKcalPerDay} kcal/day)</>
-            )}
-          </>
-        )}
-        {projection.effectiveSurplusKcal != null && (
-          <>
-            {" "}
-            · pace based on ~{projection.effectiveSurplusKcal} kcal/day surplus
-          </>
-        )}{" "}
-        · capped by <EvidenceRuleInline ruleId={projection.ruleId} />
+        from your logged measurements
       </p>
 
       {showGoalDate && lastProjected && (
-        <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-3 py-2 text-sm text-forge-text">
-          At this pace you&apos;ll weigh{" "}
-          <span className="font-semibold text-forge-gold">
-            {kgToDisplayValue(lastProjected.weightKg, unit)} {weightLabel}
+        <p className="rounded-xl border border-forge-steel/30 bg-forge-steel/5 px-3 py-2 text-sm text-forge-text">
+          At this pace your waist will be around{" "}
+          <span className="font-semibold text-forge-steel">
+            {cmToDisplayValue(lastProjected.waistCm, unit)} {lengthLabel}
           </span>{" "}
           by{" "}
           <span className="font-semibold">
@@ -151,11 +143,18 @@ export function WeightProjectionChart({
                 minTickGap={24}
               />
               <YAxis
-                stroke={CHART_COLORS.muted}
+                stroke={CHART_COLORS.steel}
                 fontSize={12}
                 width={40}
-                domain={["auto", "auto"]}
+                domain={yDomain}
                 tickFormatter={(value) => `${value}`}
+                label={{
+                  value: lengthLabel,
+                  angle: -90,
+                  position: "insideLeft",
+                  fill: CHART_COLORS.steel,
+                  fontSize: 11,
+                }}
               />
               <Tooltip
                 contentStyle={{
@@ -165,7 +164,7 @@ export function WeightProjectionChart({
                   color: CHART_COLORS.text,
                 }}
                 formatter={(value) =>
-                  value != null ? [`${value} ${weightLabel}`, "Weight"] : ["—", ""]
+                  value != null ? [`${value} ${lengthLabel}`, "Waist"] : ["—", ""]
                 }
               />
               {pivotDate && (
@@ -175,31 +174,20 @@ export function WeightProjectionChart({
                   strokeDasharray="4 4"
                 />
               )}
-              {showConfidenceBands && (
-                <Area
-                  type="monotone"
-                  dataKey="bandRange"
-                  stroke="none"
-                  fill={CHART_COLORS.steel}
-                  fillOpacity={0.2}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                />
-              )}
               <Line
                 type="monotone"
                 dataKey="actual"
                 name="Logged"
-                stroke={CHART_COLORS.ember}
+                stroke={CHART_COLORS.steel}
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: CHART_COLORS.ember, strokeWidth: 0 }}
+                dot={{ r: 4, fill: CHART_COLORS.steel, strokeWidth: 0 }}
                 connectNulls={false}
                 isAnimationActive={false}
               />
               <Line
                 type="monotone"
                 dataKey="bridge"
-                stroke={CHART_COLORS.ember}
+                stroke={CHART_COLORS.steel}
                 strokeWidth={2.5}
                 dot={false}
                 connectNulls
@@ -209,7 +197,7 @@ export function WeightProjectionChart({
                 type="monotone"
                 dataKey="projected"
                 name="Projected"
-                stroke={CHART_COLORS.ember}
+                stroke={CHART_COLORS.steel}
                 strokeWidth={2}
                 strokeDasharray="6 4"
                 dot={false}
@@ -221,11 +209,9 @@ export function WeightProjectionChart({
         )}
       </ChartShell>
 
-      {showConfidenceBands && (
-        <p className="text-xs text-forge-muted">
-          Shaded band = evidence min/max weekly weight change
-        </p>
-      )}
+      <p className="text-xs text-forge-muted">
+        Solid line = logged waist · dashed = linear trend projection
+      </p>
     </div>
   );
 }
