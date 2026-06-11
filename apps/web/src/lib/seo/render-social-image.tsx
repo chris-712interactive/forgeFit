@@ -10,7 +10,7 @@ export const socialImageSize = {
 export const socialImageContentType = "image/png";
 
 export const socialImageAlt =
-  "forgeFit — evidence-based fitness that keeps you accountable";
+  "ForgeFit — evidence-based fitness that keeps you accountable";
 
 const pills = ["Works offline", "Evidence-based", "Free to start"] as const;
 
@@ -150,7 +150,7 @@ export async function renderSocialImage() {
                 letterSpacing: "-0.02em",
               }}
             >
-              forgeFit
+              ForgeFit
             </div>
             <div
               style={{

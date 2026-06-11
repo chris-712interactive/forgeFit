@@ -15,7 +15,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "forgeFit — Forge Your Best Self",
+  title: "ForgeFit — Forge Your Best Self",
   description:
     "Evidence-based fitness and nutrition. Mobile-first, works offline in the gym.",
   manifest: "/manifest.json",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "forgeFit",
+    title: "ForgeFit",
   },
 };
 

@@ -84,7 +84,7 @@ export function PrivacyDataSetting({ email, userId }: PrivacyDataSettingProps) {
         Privacy & data
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Download everything forgeFit stores about you, or permanently delete
+        Download everything ForgeFit stores about you, or permanently delete
         your account and all associated data.
       </p>
 
@@ -121,7 +121,7 @@ export function PrivacyDataSetting({ email, userId }: PrivacyDataSettingProps) {
             </p>
             <p className="mt-1 text-xs text-forge-muted">
               Your profile, programs, workouts, nutrition logs, measurements,
-              and equipment settings will be removed from forgeFit. This cannot
+              and equipment settings will be removed from ForgeFit. This cannot
               be undone. Export your data first if you want a copy.
             </p>
 

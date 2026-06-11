@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getSiteUrl } from "./site-url";
 
-const title = "forgeFit — Evidence-Based Fitness That Keeps You Accountable";
+const title = "ForgeFit — Evidence-Based Fitness That Keeps You Accountable";
 const description =
   "Personalized workout programs, macro tracking, and weekly progress at a glance. Mobile-first fitness app built for the gym — works offline when signal doesn't.";
 
@@ -17,7 +17,7 @@ const keywords = [
   "bodybuilding program",
   "strength training app",
   "PWA fitness",
-  "forgeFit",
+  "ForgeFit",
 ];
 
 export function buildLandingMetadata(): Metadata {
@@ -35,7 +35,7 @@ export function buildLandingMetadata(): Metadata {
       type: "website",
       locale: "en_US",
       url: siteUrl,
-      siteName: "forgeFit",
+      siteName: "ForgeFit",
       title,
       description,
     },

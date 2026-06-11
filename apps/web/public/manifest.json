@@ -1,6 +1,6 @@
 {
-  "name": "forgeFit",
-  "short_name": "forgeFit",
+  "name": "ForgeFit",
+  "short_name": "ForgeFit",
   "description": "Evidence-based fitness and nutrition — forge your best self",
   "start_url": "/",
   "display": "standalone",

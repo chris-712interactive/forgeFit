@@ -80,7 +80,7 @@ export function PwaInstallPrompt({
   return (
     <section className="rounded-2xl border border-forge-steel/30 bg-forge-steel/5 p-4">
       <p className="font-display text-sm font-semibold text-forge-text">
-        Install forgeFit
+        Install ForgeFit
       </p>
       {isIos ? (
         <IosInstallGuide />

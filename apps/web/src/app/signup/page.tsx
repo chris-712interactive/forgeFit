@@ -6,7 +6,7 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-forge-surface px-6 py-10">
       <Link href="/" className="mb-8 inline-block">
-        <img src="/logo.svg" alt="forgeFit" className="h-12 w-auto" />
+        <img src="/logo.svg" alt="ForgeFit" className="h-12 w-auto" />
       </Link>
 
       <h1 className="font-display text-2xl font-bold text-forge-text">

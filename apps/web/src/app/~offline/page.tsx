@@ -10,7 +10,7 @@ export default function OfflinePage() {
         You&apos;re off the grid
       </h1>
       <p className="mt-3 max-w-sm text-forge-muted">
-        forgeFit still works — open Workout to log sets. Changes sync when
+        ForgeFit still works — open Workout to log sets. Changes sync when
         signal returns.
       </p>
       <Link
