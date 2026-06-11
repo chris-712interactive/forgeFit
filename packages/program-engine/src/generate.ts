@@ -11,6 +11,7 @@ import {
   pickCardioExercise,
   pickExerciseForPattern,
   type ExerciseDifficulty,
+  type MovementPattern,
 } from "@forgefit/exercise-db";
 import { computeNutrition, getMatchedRules } from "./nutrition";
 import { assignSessionWeekdays, dayLabelForIndex, isoWeekdayFromDate } from "./schedule";
@@ -37,6 +38,27 @@ const EXPERIENCE_MAX_DIFFICULTY: Record<ExperienceLevel, ExerciseDifficulty> = {
   intermediate: "intermediate",
   advanced: "advanced",
 };
+
+const COMPOUND_PATTERNS: MovementPattern[] = [
+  "squat",
+  "hinge",
+  "horizontal_push",
+  "horizontal_pull",
+  "vertical_push",
+  "vertical_pull",
+  "lunge",
+];
+
+function maxDifficultyForPattern(
+  experience: ExperienceLevel,
+  pattern: MovementPattern
+): ExerciseDifficulty {
+  const base = EXPERIENCE_MAX_DIFFICULTY[experience];
+  if (experience === "beginner" && COMPOUND_PATTERNS.includes(pattern)) {
+    return "intermediate";
+  }
+  return base;
+}
 
 function volumeMultiplier(
   experience: ExperienceLevel,
@@ -66,7 +88,226 @@ function setsPerExercise(
   let base = minutes <= 30 ? 2 : minutes <= 45 ? 3 : 4;
   if (goal === "powerlifting") base = Math.max(base, 4);
   if (goal === "fat_loss" && minutes <= 30) base = 2;
-  return Math.max(2, Math.round(base * volumeMult));
+  const scaled = Math.max(2, Math.round(base * volumeMult));
+  if (minutes >= 45 && scaled < 3) return 3;
+  return scaled;
+}
+
+const EXPERIENCE_SET_CEILING: Record<ExperienceLevel, number> = {
+  beginner: 20,
+  intermediate: 24,
+  advanced: 28,
+};
+
+const MAX_SETS_PER_EXERCISE: Record<ExperienceLevel, number> = {
+  beginner: 5,
+  intermediate: 6,
+  advanced: 6,
+};
+
+const FILLER_PATTERNS: MovementPattern[] = [
+  "core",
+  "isolation_arms",
+  "isolation_legs",
+];
+
+function estimateExerciseMinutes(exercises: PlannedExercise[]): number {
+  return exercises.reduce(
+    (acc, ex) => acc + ex.sets * (ex.restSeconds / 60 + 0.5),
+    0
+  );
+}
+
+function estimateMainWorkMinutes(exercises: PlannedExercise[]): number {
+  return estimateExerciseMinutes(exercises) + exercises.length * 0.75;
+}
+
+function totalWorkingSets(exercises: PlannedExercise[]): number {
+  return exercises.reduce((acc, ex) => acc + ex.sets, 0);
+}
+
+function isScalableExercise(exercise: PlannedExercise): boolean {
+  return (
+    exercise.primaryMuscles[0] !== "cardio" &&
+    !isDurationHoldExercise(exercise.exerciseId)
+  );
+}
+
+function maxSetsForSession(
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[],
+  mainBudgetMinutes: number
+): number {
+  const fromRule = getRecommendationValue<number>(
+    rules,
+    "max_sets_per_session",
+    "optimal"
+  );
+  const evidenceCap =
+    fromRule ??
+    ({ beginner: 12, intermediate: 18, advanced: 22 } as const)[
+      profile.experience
+    ];
+  const timeBased = Math.floor(mainBudgetMinutes / 2.25);
+  return Math.min(
+    EXPERIENCE_SET_CEILING[profile.experience],
+    Math.max(evidenceCap, timeBased)
+  );
+}
+
+function scaleRecoveryToSession(
+  durationMinutes: number,
+  profile: ProgramUserProfile
+): number {
+  const sessionCap = Math.max(
+    5,
+    Math.min(12, Math.round(profile.minutesPerSession * 0.1))
+  );
+  return Math.min(durationMinutes, sessionCap);
+}
+
+function appendExerciseFromPattern(
+  pattern: MovementPattern,
+  exercises: PlannedExercise[],
+  usedIds: string[],
+  equipment: string[],
+  experience: ExperienceLevel,
+  sets: number,
+  reps: string,
+  rest: number,
+  profile: ProgramUserProfile,
+  rampSets: number | null
+): boolean {
+  const picked = pickExerciseForPattern(
+    pattern,
+    equipment,
+    maxDifficultyForPattern(experience, pattern),
+    usedIds
+  );
+  if (!picked) return false;
+
+  usedIds.push(picked.id);
+  const exerciseReps = isDurationHoldExercise(picked.id)
+    ? (holdDurationPrescription(picked.id, profile.experience) ?? "30-45 sec")
+    : reps;
+
+  let notes = isDurationHoldExercise(picked.id)
+    ? "Hold a straight line — stop when form breaks"
+    : undefined;
+
+  if (
+    rampSets &&
+    exercises.length === 0 &&
+    !isDurationHoldExercise(picked.id) &&
+    picked.movementPattern !== "cardio"
+  ) {
+    notes = appendRampSetNote(notes, rampSets);
+  }
+
+  exercises.push({
+    exerciseId: picked.id,
+    name: picked.name,
+    primaryMuscles: picked.primaryMuscles,
+    sets,
+    reps: exerciseReps,
+    restSeconds: isDurationHoldExercise(picked.id) ? 60 : rest,
+    notes,
+  });
+  return true;
+}
+
+function fillSessionToTimeBudget(
+  exercises: PlannedExercise[],
+  mainBudgetMinutes: number,
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[],
+  maxExercises: number,
+  usedIds: string[],
+  equipment: string[],
+  sets: number,
+  reps: string,
+  rest: number,
+  rampSets: number | null,
+  templatePatterns: MovementPattern[]
+): void {
+  const maxSets = maxSetsForSession(profile, rules, mainBudgetMinutes);
+  const targetMinutes = mainBudgetMinutes * 0.92;
+  const patternQueue = [
+    ...templatePatterns,
+    ...FILLER_PATTERNS.filter((pattern) => !templatePatterns.includes(pattern)),
+  ];
+
+  while (
+    exercises.length < maxExercises &&
+    estimateMainWorkMinutes(exercises) < targetMinutes
+  ) {
+    let added = false;
+    for (const pattern of patternQueue) {
+      if (exercises.length >= maxExercises) break;
+      if (appendExerciseFromPattern(
+        pattern,
+        exercises,
+        usedIds,
+        equipment,
+        profile.experience,
+        sets,
+        reps,
+        rest,
+        profile,
+        rampSets
+      )) {
+        added = true;
+        break;
+      }
+    }
+    if (!added) break;
+  }
+
+  const maxSetsPerExercise = MAX_SETS_PER_EXERCISE[profile.experience];
+  let guard = 0;
+
+  while (
+    estimateMainWorkMinutes(exercises) < targetMinutes &&
+    totalWorkingSets(exercises) < maxSets &&
+    guard < 80
+  ) {
+    guard += 1;
+    const scalable = exercises.filter(
+      (exercise) =>
+        isScalableExercise(exercise) &&
+        exercise.sets < maxSetsPerExercise
+    );
+
+    if (scalable.length > 0) {
+      const next = [...scalable].sort((a, b) => a.sets - b.sets)[0];
+      next.sets += 1;
+      continue;
+    }
+
+    if (exercises.length >= maxExercises) break;
+
+    let added = false;
+    for (const pattern of patternQueue) {
+      if (
+        appendExerciseFromPattern(
+          pattern,
+          exercises,
+          usedIds,
+          equipment,
+          profile.experience,
+          sets,
+          reps,
+          rest,
+          profile,
+          rampSets
+        )
+      ) {
+        added = true;
+        break;
+      }
+    }
+    if (!added) break;
+  }
 }
 
 function repsForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): string {
@@ -176,7 +417,6 @@ function buildSession(
   rules: EvidenceRule[],
   volumeMult: number
 ): WorkoutSession {
-  const maxDiff = EXPERIENCE_MAX_DIFFICULTY[profile.experience];
   const equipment = expandUserEquipment(profile.equipment);
   const usedIds: string[] = [];
   const maxExercises = exercisesPerSession(profile.minutesPerSession);
@@ -197,7 +437,7 @@ function buildSession(
     const picked = pickExerciseForPattern(
       pattern,
       equipment,
-      maxDiff,
+      maxDifficultyForPattern(profile.experience, pattern),
       usedIds
     );
     if (!picked) continue;
@@ -233,6 +473,36 @@ function buildSession(
     });
   }
 
+  const recoveryBlock = buildRecoveryBlock(profile.recoveryEquipment, rules);
+  const recoveryMins = recoveryBlock
+    ? scaleRecoveryToSession(recoveryBlock.durationMinutes, profile)
+    : 0;
+  const scaledRecoveryBlock = recoveryBlock
+    ? { ...recoveryBlock, durationMinutes: recoveryMins }
+    : undefined;
+
+  const mainBudgetMinutes = Math.max(
+    10,
+    profile.minutesPerSession -
+      warmupBlock.durationMinutes -
+      recoveryMins
+  );
+
+  fillSessionToTimeBudget(
+    exercises,
+    mainBudgetMinutes,
+    profile,
+    rules,
+    maxExercises,
+    usedIds,
+    equipment,
+    sets,
+    reps,
+    rest,
+    rampSets,
+    template.patterns
+  );
+
   if (template.includeCardio) {
     const cardio = pickCardioExercise(equipment, profile.goal);
     if (cardio) {
@@ -248,15 +518,12 @@ function buildSession(
     }
   }
 
-  const recoveryBlock = buildRecoveryBlock(profile.recoveryEquipment, rules);
-  const exerciseMinutes = exercises.reduce(
-    (acc, ex) => acc + ex.sets * (rest / 60 + 0.5),
-    0
-  );
-  const recoveryMins = recoveryBlock?.durationMinutes ?? 0;
+  const exerciseMinutes = estimateMainWorkMinutes(exercises);
   const estimatedMinutes = Math.min(
     profile.minutesPerSession,
-    Math.round(warmupBlock.durationMinutes + exerciseMinutes + recoveryMins)
+    Math.round(
+      warmupBlock.durationMinutes + exerciseMinutes + recoveryMins
+    )
   );
 
   const citationRuleIds = rules
@@ -271,7 +538,7 @@ function buildSession(
     estimatedMinutes,
     warmupBlock,
     exercises,
-    recoveryBlock,
+    recoveryBlock: scaledRecoveryBlock,
     citationRuleIds,
   };
 }

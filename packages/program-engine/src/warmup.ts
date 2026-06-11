@@ -159,8 +159,8 @@ function hasEquipment(
 }
 
 function warmupMinutesBudget(minutesPerSession: number): number {
-  const capped = Math.round(minutesPerSession * 0.15);
-  return Math.min(10, Math.max(3, capped));
+  const capped = Math.round(minutesPerSession * 0.08);
+  return Math.min(8, Math.max(3, capped));
 }
 
 function movementCountForBudget(minutes: number): number {
