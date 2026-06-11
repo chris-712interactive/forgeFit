@@ -20,8 +20,11 @@ export const metadata: Metadata = {
     "Evidence-based fitness and nutrition. Mobile-first, works offline in the gym.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo-icon.svg",
-    apple: "/logo-icon.svg",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo-icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   appleWebApp: {
     capable: true,

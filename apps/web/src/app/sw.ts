@@ -56,7 +56,10 @@ const iconCachePlugins = [
   {
     handlerDidError: async () => {
       const cache = await caches.open("forgefit-icons");
-      return cache.match("/logo-icon.svg");
+      return (
+        (await cache.match("/icon-192.png")) ??
+        (await cache.match("/logo-icon.svg"))
+      );
     },
   },
 ];
@@ -92,6 +95,10 @@ const serwist = new Serwist({
         sameOrigin &&
         (url.pathname === "/favicon.ico" ||
           url.pathname === "/logo-icon.svg" ||
+          url.pathname === "/favicon-32.png" ||
+          url.pathname === "/icon-192.png" ||
+          url.pathname === "/icon-512.png" ||
+          url.pathname === "/apple-touch-icon.png" ||
           url.pathname === "/manifest.json"),
       handler: new CacheFirst({
         cacheName: "forgefit-icons",

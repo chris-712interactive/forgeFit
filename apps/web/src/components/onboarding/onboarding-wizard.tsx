@@ -20,6 +20,7 @@ import type {
 } from "@/lib/types/profile";
 import { HealthDisclaimerStep } from "@/components/onboarding/health-disclaimer-step";
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
+import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 
 const TOTAL_STEPS = 8;
 
@@ -280,13 +281,14 @@ export function OnboardingWizard() {
             title="Why did you start?"
             subtitle="We'll remind you of this when you need it most."
           >
+            <PwaInstallPrompt showAfterOnboarding />
             <textarea
               value={data.why_started ?? ""}
               onChange={(e) => update({ why_started: e.target.value })}
               rows={5}
               maxLength={500}
               placeholder="I want to feel stronger, more confident, and show up for myself every day…"
-              className="w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
+              className="mt-4 w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
             />
             <p className="mt-2 text-right text-xs text-forge-muted">
               {(data.why_started?.length ?? 0)}/500

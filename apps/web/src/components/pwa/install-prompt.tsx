@@ -1,5 +1,6 @@
 "use client";
 
+import { IosInstallGuide } from "@/components/pwa/ios-install-guide";
 import { useEffect, useState } from "react";
 
 const DISMISS_KEY = "forgefit:pwa-install-dismissed";
@@ -10,7 +11,14 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export function PwaInstallPrompt() {
+interface PwaInstallPromptProps {
+  /** Show during onboarding before the first completed workout. */
+  showAfterOnboarding?: boolean;
+}
+
+export function PwaInstallPrompt({
+  showAfterOnboarding = false,
+}: PwaInstallPromptProps) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
@@ -20,7 +28,12 @@ export function PwaInstallPrompt() {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(display-mode: standalone)").matches) return;
     if (localStorage.getItem(DISMISS_KEY) === "1") return;
-    if (localStorage.getItem(FIRST_WORKOUT_KEY) !== "1") return;
+    if (
+      !showAfterOnboarding &&
+      localStorage.getItem(FIRST_WORKOUT_KEY) !== "1"
+    ) {
+      return;
+    }
 
     const ua = window.navigator.userAgent.toLowerCase();
     const ios =
@@ -44,7 +57,7 @@ export function PwaInstallPrompt() {
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
     };
-  }, []);
+  }, [showAfterOnboarding]);
 
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, "1");
@@ -69,12 +82,15 @@ export function PwaInstallPrompt() {
       <p className="font-display text-sm font-semibold text-forge-text">
         Install forgeFit
       </p>
-      <p className="mt-1 text-sm text-forge-muted">
-        {isIos
-          ? "Add forgeFit to your Home Screen for faster access and a better offline workout experience (Share → Add to Home Screen)."
-          : "Install the app on your device for faster access and reliable offline logging."}
-      </p>
-      <div className="mt-3 flex gap-2">
+      {isIos ? (
+        <IosInstallGuide />
+      ) : (
+        <p className="mt-1 text-sm text-forge-muted">
+          Install the app on your device for faster access and reliable offline
+          logging.
+        </p>
+      )}
+      <div className={`flex gap-2 ${isIos ? "mt-4" : "mt-3"}`}>
         {!isIos && deferredPrompt && (
           <button
             type="button"
@@ -87,9 +103,11 @@ export function PwaInstallPrompt() {
         <button
           type="button"
           onClick={dismiss}
-          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted"
+          className={`rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted ${
+            isIos ? "w-full" : ""
+          }`}
         >
-          Not now
+          {isIos ? "Got it — maybe later" : "Not now"}
         </button>
       </div>
     </section>
