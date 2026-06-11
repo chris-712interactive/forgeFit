@@ -5,7 +5,9 @@ import {
   appPagePadding,
   appSectionStack,
 } from "@/components/layout/page-layout";
+import { LegalFooter } from "@/components/legal/legal-document";
 import { EquipmentSetting } from "@/components/profile/equipment-setting";
+import { ProgramPlanSetting } from "@/components/profile/program-plan-setting";
 import { OneRepMaxSetting } from "@/components/profile/one-rep-max-setting";
 import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
 import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
@@ -98,6 +100,12 @@ export default async function ProfilePage() {
 
         <UnitPreferenceSetting initialUnit={unit} />
 
+        <ProgramPlanSetting
+          initialGoal={profile?.primary_goal ?? null}
+          initialSessionsPerWeek={profile?.sessions_per_week ?? null}
+          initialMinutesPerSession={profile?.minutes_per_session ?? null}
+        />
+
         <EquipmentSetting initialSettings={equipmentSettings} />
 
         <OneRepMaxSetting
@@ -114,16 +122,7 @@ export default async function ProfilePage() {
         )}
 
         <section className="space-y-3 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5 text-sm">
-          <Row label="Goal" value={profile?.primary_goal?.replace(/_/g, " ")} />
           <Row label="Experience" value={profile?.experience_level} />
-          <Row
-            label="Schedule"
-            value={
-              profile?.sessions_per_week
-                ? `${profile.sessions_per_week}×${profile.minutes_per_session} min`
-                : undefined
-            }
-          />
           <Row
             label="Weight"
             value={
@@ -141,6 +140,8 @@ export default async function ProfilePage() {
             }
           />
         </section>
+
+        <LegalFooter />
 
         {user?.email && (
           <PrivacyDataSetting email={user.email} userId={user.id} />

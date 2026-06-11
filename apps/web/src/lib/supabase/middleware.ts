@@ -47,7 +47,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/auth") ||
     path.startsWith("/serwist") ||
     path.startsWith("/~offline");
-  const isPublicRoute = path === "/";
+  const isPublicRoute =
+    path === "/" || path.startsWith("/privacy") || path.startsWith("/terms");
   const isAppRoute =
     path.startsWith("/home") ||
     path.startsWith("/workout") ||
@@ -55,7 +56,9 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/progress") ||
     path.startsWith("/profile") ||
     path.startsWith("/exercises") ||
-    path.startsWith("/onboarding");
+    path.startsWith("/onboarding") ||
+    path.startsWith("/disclaimer") ||
+    path.startsWith("/evidence");
 
   if (!user && (isAppRoute || path.startsWith("/onboarding"))) {
     const url = request.nextUrl.clone();
@@ -77,11 +80,12 @@ export async function updateSession(request: NextRequest) {
   if (user && !isPublicRoute && !isAuthRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("onboarding_complete")
+      .select("onboarding_complete, health_disclaimer_accepted_at")
       .eq("id", user.id)
       .single();
 
     const onboardingComplete = profile?.onboarding_complete ?? false;
+    const disclaimerAccepted = Boolean(profile?.health_disclaimer_accepted_at);
 
     if (!onboardingComplete && !path.startsWith("/onboarding")) {
       const url = request.nextUrl.clone();
@@ -89,7 +93,25 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (onboardingComplete && path.startsWith("/onboarding")) {
+    if (
+      onboardingComplete &&
+      !disclaimerAccepted &&
+      !path.startsWith("/disclaimer") &&
+      !path.startsWith("/privacy") &&
+      !path.startsWith("/terms")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/disclaimer";
+      return NextResponse.redirect(url);
+    }
+
+    if (onboardingComplete && disclaimerAccepted && path.startsWith("/onboarding")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/home";
+      return NextResponse.redirect(url);
+    }
+
+    if (onboardingComplete && disclaimerAccepted && path.startsWith("/disclaimer")) {
       const url = request.nextUrl.clone();
       url.pathname = "/home";
       return NextResponse.redirect(url);

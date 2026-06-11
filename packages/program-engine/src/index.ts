@@ -1,6 +1,7 @@
 export { generateProgram } from "./generate";
 export { buildWarmupBlock } from "./warmup";
 export { computeNutrition, getMatchedRules } from "./nutrition";
+export { applyDeloadWeek, isDeloadTrainingWeek } from "./deload";
 export { computeTrainingLoad } from "./training-load";
 export { estimateTrainingExpenditure } from "./training-expenditure";
 export {

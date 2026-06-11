@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlreadySignedIn } from "@/components/auth/already-signed-in";
+import { LegalFooter } from "@/components/legal/legal-document";
 import { AuthForm } from "@/components/auth/auth-form";
 import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 import { createClient } from "@/lib/supabase/server";
@@ -45,7 +46,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             continueLabel={
               continueHref === "/home"
                 ? "Go to dashboard"
-                : "Continue onboarding"
+                : continueHref === "/disclaimer"
+                  ? "Review health disclaimer"
+                  : "Continue onboarding"
             }
           />
         ) : (
@@ -61,6 +64,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </Link>
         </p>
       )}
+
+      <LegalFooter className="mt-8 text-center" />
     </div>
   );
 }

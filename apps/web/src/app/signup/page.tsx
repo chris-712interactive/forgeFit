@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/auth/auth-form";
+import { LegalFooter } from "@/components/legal/legal-document";
 
 export default function SignupPage() {
   return (
@@ -25,6 +26,8 @@ export default function SignupPage() {
           Sign in
         </Link>
       </p>
+
+      <LegalFooter className="mt-6 text-center" />
     </div>
   );
 }

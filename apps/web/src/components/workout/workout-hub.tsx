@@ -38,7 +38,9 @@ import { buildEvidenceHref } from "@/lib/evidence/present";
 import { ActiveWorkout } from "./active-workout";
 import { SyncStatusBanner } from "./sync-status-banner";
 import { useWorkoutSyncContext } from "./sync-manager";
+import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import { WeekPlanCard } from "./week-plan-card";
+import { WorkoutHistoryList } from "./workout-history-list";
 import { WorkoutRecap } from "./workout-recap";
 import { WorkoutSyncNotice } from "./workout-sync-notice";
 
@@ -457,9 +459,17 @@ export function WorkoutHub({
           <TrainingConsistencyCard evaluation={promotion} />
         )}
 
+        <PwaInstallPrompt />
+
         {plan ? (
           <section className={appSectionStackTight}>
             <div className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised px-4 py-3 sm:px-5">
+              {plan.isDeloadWeek && (
+                <p className="mb-2 text-sm font-medium text-forge-steel">
+                  Deload week — reduced volume and lighter effort across
+                  sessions.
+                </p>
+              )}
               <p className="text-sm text-forge-muted">
                 Built from{" "}
                 <span className="font-medium text-forge-text">
@@ -495,6 +505,22 @@ export function WorkoutHub({
                 onViewResults={openReview}
               />
             ))}
+
+            <div className="pt-2">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+                History
+              </h2>
+              <p className="mt-1 text-sm text-forge-muted">
+                Past completed workouts — open any session to review sets and
+                compare progress.
+              </p>
+              <div className="mt-3">
+                <WorkoutHistoryList
+                  sessions={allSessions}
+                  onViewResults={openReview}
+                />
+              </div>
+            </div>
           </section>
         ) : (
           <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">

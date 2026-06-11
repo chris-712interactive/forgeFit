@@ -103,9 +103,12 @@ export interface ProgramPlan {
   scheduleAnchorWeekday?: number;
   generatedAt: string;
   summary: string;
+  isDeloadWeek?: boolean;
 }
 
 export interface GenerateProgramOptions {
   /** Defaults to now — first session is scheduled from this calendar day */
   startDate?: Date;
+  isDeloadWeek?: boolean;
+  deloadVolumeReductionPct?: number;
 }

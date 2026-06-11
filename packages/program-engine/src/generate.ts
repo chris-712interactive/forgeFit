@@ -13,6 +13,7 @@ import {
   type ExerciseDifficulty,
   type MovementPattern,
 } from "@forgefit/exercise-db";
+import { applyDeloadWeek } from "./deload";
 import { computeNutrition, getMatchedRules } from "./nutrition";
 import {
   estimateExerciseMinutes,
@@ -584,7 +585,7 @@ export function generateProgram(
 
   const goalLabel = profile.goal.replace(/_/g, " ");
 
-  return {
+  let plan: ProgramPlan = {
     version: ENGINE_VERSION,
     evidenceKbVersion: EVIDENCE_KB_VERSION,
     goal: profile.goal,
@@ -596,4 +597,11 @@ export function generateProgram(
     generatedAt: startDate.toISOString(),
     summary: `${goalLabel} program · ${profile.sessionsPerWeek}×${profile.minutesPerSession} min · starts ${dayLabelForIndex(anchorWeekday)} · ${week.length} sessions built from ${appliedRuleIds.length} evidence rules`,
   };
+
+  if (options.isDeloadWeek) {
+    plan = applyDeloadWeek(plan, options.deloadVolumeReductionPct ?? 40);
+    plan.appliedRuleIds = [...new Set([...plan.appliedRuleIds, "deload_intermediate"])];
+  }
+
+  return plan;
 }

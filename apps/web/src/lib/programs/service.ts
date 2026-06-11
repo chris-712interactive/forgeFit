@@ -1,5 +1,6 @@
 import {
   generateProgram,
+  isDeloadTrainingWeek,
   type ProgramPlan,
   type ProgramUserProfile,
 } from "@forgefit/program-engine";
@@ -65,15 +66,40 @@ export async function getActiveProgramRow(userId: string) {
     : null;
 }
 
+async function countCompletedSessions(userId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("workout_sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("status", "completed");
+
+  if (error) return 0;
+  return count ?? 0;
+}
+
 export async function generateAndSaveProgram(
-  userId: string
-): Promise<{ plan: ProgramPlan } | { error: string }> {
+  userId: string,
+  previousPlan: ProgramPlan | null = null
+): Promise<{ plan: ProgramPlan; previousPlan: ProgramPlan | null } | { error: string }> {
   const ctx = await loadUserProgramContext(userId);
   if (!ctx) {
     return { error: "Complete onboarding before generating a program." };
   }
 
-  const plan = generateProgram(ctx.userProfile, { startDate: new Date() });
+  const priorPlan = previousPlan ?? (await getActiveProgram(userId));
+  const completedSessions = await countCompletedSessions(userId);
+  const isDeloadWeek = isDeloadTrainingWeek(
+    completedSessions,
+    ctx.userProfile.sessionsPerWeek
+  );
+
+  const plan = generateProgram(ctx.userProfile, {
+    startDate: new Date(),
+    isDeloadWeek,
+    deloadVolumeReductionPct: 40,
+  });
+
   const supabase = await createClient();
 
   await supabase
@@ -95,7 +121,7 @@ export async function generateAndSaveProgram(
     return { error: error.message };
   }
 
-  return { plan };
+  return { plan, previousPlan: priorPlan };
 }
 
 export async function ensureActiveProgram(

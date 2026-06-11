@@ -28,6 +28,7 @@ import {
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
 import { useOfflineStatus } from "@/hooks/use-online-status";
+import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -286,6 +287,7 @@ export function ActiveWorkout({
 
     try {
       await completeWorkoutSession(clientId, "completed");
+      markFirstWorkoutComplete();
       void sync?.refreshPending();
       if (navigator.onLine) {
         await sync?.runSync();

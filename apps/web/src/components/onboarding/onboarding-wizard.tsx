@@ -18,6 +18,7 @@ import type {
   FitnessGoal,
   OnboardingData,
 } from "@/lib/types/profile";
+import { HealthDisclaimerStep } from "@/components/onboarding/health-disclaimer-step";
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
 
 const TOTAL_STEPS = 8;
@@ -118,28 +119,12 @@ export function OnboardingWizard() {
             title={HEALTH_DISCLAIMER.title}
             subtitle="Please read and acknowledge before continuing."
           >
-            <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 p-4">
-              <div className="max-h-64 space-y-3 overflow-y-auto pr-1 text-sm leading-relaxed text-forge-text">
-                {HEALTH_DISCLAIMER.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            </div>
-            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4">
-              <input
-                type="checkbox"
-                checked={data.health_disclaimer_accepted === true}
-                onChange={(event) =>
-                  update({
-                    health_disclaimer_accepted: event.target.checked,
-                  })
-                }
-                className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--border)] accent-forge-ember"
-              />
-              <span className="text-sm leading-relaxed text-forge-text">
-                {HEALTH_DISCLAIMER.checkboxLabel}
-              </span>
-            </label>
+            <HealthDisclaimerStep
+              accepted={data.health_disclaimer_accepted === true}
+              onAcceptedChange={(accepted) =>
+                update({ health_disclaimer_accepted: accepted })
+              }
+            />
           </StepShell>
         )}
 

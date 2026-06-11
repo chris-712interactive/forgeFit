@@ -1,4 +1,5 @@
 import { EncouragementBanner } from "@/components/home/encouragement-banner";
+import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import { HomeMacroTracker } from "@/components/home/home-macro-tracker";
 import { WeekAccountability } from "@/components/home/week-accountability";
 import { WeeklyWorkStatsGrid } from "@/components/home/weekly-work-stats";
@@ -43,6 +44,8 @@ export default async function HomePage() {
 
       <div className={`${appHeaderGap} ${appSectionStack}`}>
         <EncouragementBanner message={data.encouragement} />
+
+        <PwaInstallPrompt />
 
         {data.promotion?.showNudge && (
           <ExperiencePromotionBanner evaluation={data.promotion} />

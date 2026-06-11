@@ -3,7 +3,7 @@ import { SignOutButton } from "./sign-out-button";
 
 interface AlreadySignedInProps {
   email?: string | null;
-  continueHref: "/home" | "/onboarding";
+  continueHref: "/home" | "/onboarding" | "/disclaimer";
   continueLabel: string;
 }
 

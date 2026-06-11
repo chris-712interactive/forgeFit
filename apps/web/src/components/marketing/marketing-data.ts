@@ -67,7 +67,7 @@ export const howItWorksSteps = [
 export const evidencePoints = [
   "Protein, deficit rate, and volume rules sourced from sports science",
   "Program generation is deterministic — never LLM-written workout logic",
-  "Recovery blocks and deload timing baked into your schedule",
+  "Recovery blocks in every session and automatic deload weeks every ~6 training weeks",
 ] as const;
 
 export const freeTierIncludes = [
