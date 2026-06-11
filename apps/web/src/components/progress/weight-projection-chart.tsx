@@ -77,6 +77,10 @@ export function WeightProjectionChart({
 
     return projection.points.map((point) => {
       const waistPoint = waistByDate.get(point.date);
+      const waistValue =
+        waistPoint != null
+          ? cmToDisplayValue(waistPoint.waistCm, unit)
+          : null;
 
       return {
         date: point.date,
@@ -99,18 +103,12 @@ export function WeightProjectionChart({
                 kgToDisplayValue(point.bandHighKg, unit),
               ]
             : null,
-        waistActual:
-          waistPoint && !waistPoint.projected
-            ? cmToDisplayValue(waistPoint.waistCm, unit)
-            : null,
+        waist:
+          waistValue != null && !waistPoint?.projected ? waistValue : null,
         waistProjected:
-          waistPoint &&
-          (waistPoint.projected || point.date === weightPivotDate)
-            ? cmToDisplayValue(waistPoint.waistCm, unit)
-            : null,
-        waistBridge:
-          waistPoint && point.date === weightPivotDate
-            ? cmToDisplayValue(waistPoint.waistCm, unit)
+          waistValue != null &&
+          (waistPoint?.projected || point.date === weightPivotDate)
+            ? waistValue
             : null,
       };
     });
@@ -118,7 +116,7 @@ export function WeightProjectionChart({
 
   const waistDomain = useMemo(() => {
     const values = chartData.flatMap((row) =>
-      [row.waistActual, row.waistProjected, row.waistBridge].filter(
+      [row.waist, row.waistProjected].filter(
         (value): value is number => value != null
       )
     );
@@ -326,19 +324,9 @@ export function WeightProjectionChart({
                 <>
                   <Line
                     yAxisId="waist"
-                    type="monotone"
-                    dataKey="waistActual"
-                    name="Logged waist"
-                    stroke={CHART_COLORS.steel}
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: CHART_COLORS.steel, strokeWidth: 0 }}
-                    connectNulls
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    yAxisId="waist"
-                    type="monotone"
-                    dataKey="waistBridge"
+                    type="linear"
+                    dataKey="waist"
+                    name="Waist"
                     stroke={CHART_COLORS.steel}
                     strokeWidth={2.5}
                     dot={false}
@@ -347,7 +335,7 @@ export function WeightProjectionChart({
                   />
                   <Line
                     yAxisId="waist"
-                    type="monotone"
+                    type="linear"
                     dataKey="waistProjected"
                     name="Projected waist"
                     stroke={CHART_COLORS.steel}
