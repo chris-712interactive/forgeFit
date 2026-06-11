@@ -7,6 +7,7 @@ import {
 } from "@/components/layout/page-layout";
 import { EquipmentSetting } from "@/components/profile/equipment-setting";
 import { OneRepMaxSetting } from "@/components/profile/one-rep-max-setting";
+import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
 import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
 import { getUserEquipmentSettings } from "@/lib/equipment/service";
 import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
@@ -140,6 +141,10 @@ export default async function ProfilePage() {
             }
           />
         </section>
+
+        {user?.email && (
+          <PrivacyDataSetting email={user.email} userId={user.id} />
+        )}
 
         <SignOutButton />
       </div>

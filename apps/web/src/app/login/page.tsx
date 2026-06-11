@@ -4,12 +4,18 @@ import { AuthForm } from "@/components/auth/auth-form";
 import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ deleted?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const params = await searchParams;
+  const accountDeleted = params.deleted === "1";
   const continueHref = user ? await getPostAuthPath(supabase, user.id) : null;
 
   return (
@@ -24,6 +30,12 @@ export default async function LoginPage() {
       <p className="mt-2 text-forge-muted">
         Sign in to continue forging your best self.
       </p>
+
+      {accountDeleted && (
+        <p className="mt-4 rounded-xl border border-forge-success/30 bg-forge-success/10 px-4 py-3 text-sm text-forge-success">
+          Your account and data have been permanently deleted.
+        </p>
+      )}
 
       <div className="mt-8">
         {user && continueHref ? (
