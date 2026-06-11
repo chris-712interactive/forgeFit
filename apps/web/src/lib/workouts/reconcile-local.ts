@@ -13,27 +13,26 @@ export async function reconcileLocalWorkoutsWithServer(
 
   const serverIdSet = new Set(serverClientIds);
   const sessions = await listSessionsForUser(userId);
-  const staleSessions = sessions.filter(
-    (s) => serverIdSet.has(s.clientId) && !s.synced
-  );
-
-  if (staleSessions.length === 0) return;
-
   const db = getOfflineDb();
-  const sessionIds = staleSessions.map((s) => s.clientId);
-  const setIds: string[] = [];
+  const sessionIdsToMark: string[] = [];
 
-  for (const sessionId of sessionIds) {
+  for (const session of sessions) {
+    if (!serverIdSet.has(session.clientId) || session.synced) continue;
+
     const sets = await db.exerciseSets
       .where("sessionClientId")
-      .equals(sessionId)
+      .equals(session.clientId)
       .toArray();
-    for (const set of sets) {
-      if (!set.synced) {
-        setIds.push(set.clientId);
-      }
+    const hasUnsyncedSets = sets.some((set) => !set.synced);
+
+    // Only clear the session flag when every set has synced — otherwise we can
+    // drop pending RIR / set edits before they reach Supabase.
+    if (!hasUnsyncedSets) {
+      sessionIdsToMark.push(session.clientId);
     }
   }
 
-  await markSynced(sessionIds, setIds);
+  if (sessionIdsToMark.length === 0) return;
+
+  await markSynced(sessionIdsToMark, []);
 }

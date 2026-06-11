@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { enrichSetWithEffort } from "./effort";
 
 export const ACCOUNT_EXPORT_VERSION = "1.0";
+
+const EXPORT_NOTES = [
+  "Set rir is null when you logged a set without tapping Easy / Good / Hard (effort is optional in the workout UI).",
+  "effort mirrors the workout UI label derived from rir when present.",
+] as const;
 
 export interface AccountExportBundle {
   formatVersion: typeof ACCOUNT_EXPORT_VERSION;
@@ -13,7 +19,12 @@ export interface AccountExportBundle {
   equipment: Record<string, unknown>[];
   recoveryEquipment: Record<string, unknown>[];
   programs: Record<string, unknown>[];
-  workoutSessions: Array<Record<string, unknown> & { sets: Record<string, unknown>[] }>;
+  notes: readonly string[];
+  workoutSessions: Array<
+    Record<string, unknown> & {
+      sets: Array<Record<string, unknown> & { effort: "easy" | "good" | "hard" | null }>;
+    }
+  >;
   nutritionLogs: Record<string, unknown>[];
   bodyMeasurements: Record<string, unknown>[];
   caliperMeasurements: Record<string, unknown>[];
@@ -83,12 +94,15 @@ export async function buildAccountExport(
   const sessionsWithSets: AccountExportBundle["workoutSessions"] =
     sortedSessions.map((session) => ({
       ...session,
-      sets: setsBySession.get(String(session.id ?? "")) ?? [],
+      sets: (setsBySession.get(String(session.id ?? "")) ?? []).map((set) =>
+        enrichSetWithEffort(set)
+      ),
     }));
 
   return {
     formatVersion: ACCOUNT_EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
+    notes: EXPORT_NOTES,
     account: { id: userId, email },
     profile: (profileResult.data as Record<string, unknown> | null) ?? null,
     equipment,

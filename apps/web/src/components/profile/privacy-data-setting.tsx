@@ -1,7 +1,9 @@
 "use client";
 
 import { deleteAccount } from "@/app/actions/account";
-import { clearOfflineUserData } from "@forgefit/offline-sync";
+import type { AccountExportBundle } from "@/lib/account/export";
+import { mergeExportWithLocalWorkouts } from "@/lib/account/export-enrich";
+import { clearOfflineUserData, syncWorkoutData } from "@forgefit/offline-sync";
 import { createClient } from "@/lib/supabase/client";
 import { useState, useTransition } from "react";
 
@@ -24,6 +26,8 @@ export function PrivacyDataSetting({ email, userId }: PrivacyDataSettingProps) {
     setError(null);
 
     try {
+      await syncWorkoutData(userId);
+
       const response = await fetch("/api/account/export");
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as {
@@ -33,11 +37,12 @@ export function PrivacyDataSetting({ email, userId }: PrivacyDataSettingProps) {
         return;
       }
 
-      const blob = await response.blob();
-      const disposition = response.headers.get("Content-Disposition");
-      const filename =
-        disposition?.match(/filename="([^"]+)"/)?.[1] ??
-        `forgefit-export-${new Date().toISOString().slice(0, 10)}.json`;
+      const bundle = (await response.json()) as AccountExportBundle;
+      const enriched = await mergeExportWithLocalWorkouts(bundle, userId);
+      const filename = `forgefit-export-${enriched.exportedAt.slice(0, 10)}.json`;
+      const blob = new Blob([JSON.stringify(enriched, null, 2)], {
+        type: "application/json",
+      });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
