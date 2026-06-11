@@ -256,6 +256,7 @@ export function WeightProjectionChart({
               {pivotDate && (
                 <ReferenceLine
                   x={pivotDate}
+                  yAxisId="weight"
                   stroke={CHART_COLORS.muted}
                   strokeDasharray="4 4"
                 />
