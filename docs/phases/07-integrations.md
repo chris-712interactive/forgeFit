@@ -18,8 +18,9 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [x] Data export gated to Pro
 - [ ] Withings weight syncs to `body_measurements` (Pro+)
 - [ ] Fitbit activity syncs successfully (Pro+)
-- [ ] Strength/volume/adherence analytics UI (Pro)
-- [ ] Progress photos timeline (Pro)
+- [x] Strength/volume/adherence analytics UI (Pro)
+- [x] Progress photos timeline (Pro)
+- [x] CSV export (Pro) + rule-based insights (Home + Progress)
 
 ## Pricing (Stripe Dashboard)
 

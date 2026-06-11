@@ -4,13 +4,15 @@ import {
   type WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
+import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import {
   analyticsHistoryDays,
   hasFeature,
   projectionHorizonDays,
 } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
-import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { hasProAccess, type SubscriptionSnapshot } from "@/lib/billing/types";
+import { listProgressPhotos } from "@/lib/progress-photos/service";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -225,6 +227,14 @@ export async function getProgressDashboardData(
       getSubscriptionForUser(userId),
     ]);
 
+  const isPro = hasProAccess(subscription);
+  const [proAnalytics, photoResult] = await Promise.all([
+    isPro ? buildProAnalyticsBundle(userId, subscription) : Promise.resolve(null),
+    hasFeature(subscription, "progress_photos")
+      ? listProgressPhotos(userId)
+      : Promise.resolve({ photos: [], tableReady: true }),
+  ]);
+
   const gates = buildGateContext(subscription);
 
   const baseline = profileBaseline(profile);
@@ -278,6 +288,9 @@ export async function getProgressDashboardData(
     projection,
     tableReady: measurementResult.tableReady,
     gates,
+    proAnalytics,
+    progressPhotos: photoResult.photos,
+    photosTableReady: photoResult.tableReady,
   };
 }
 

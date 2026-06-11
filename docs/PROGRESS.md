@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 6 complete → Phase 7 (Pro Integrations) next |
 | **Last updated** | 2026-06-09 |
-| **Last session focus** | Phase 7 billing UI + Pro projection gates |
+| **Last session focus** | Pro tier features complete (analytics, photos, CSV) |
 
 ---
 
@@ -32,6 +32,29 @@
 ---
 
 ## Session Log
+
+### 2026-06-09 — Pro tier features complete
+
+**What was done:**
+- Analytics lib: strength e1RM series, PR history, weekly volume, muscle breakdown, nutrition adherence, rule-based insights
+- Progress tab: Pro-gated sections for insights, strength, PRs, volume, progress photos
+- Nutrition tab: adherence dashboard (7/30/90d + 14-day heatmap)
+- Home: Pro insights strip (top 2 insights)
+- Progress photos: migration `20260609500000`, upload API, private timeline UI
+- Export: CSV format (`/api/account/export?format=csv`) + Profile buttons
+
+**What's next:**
+1. Apply `20260609500000_progress_photos.sql` migration
+2. End-to-end Stripe checkout test (user has keys configured)
+3. Phase 7 Pro+ only: Withings, Fitbit OAuth
+
+**Files touched:**
+- `apps/web/src/lib/analytics/*`, `apps/web/src/lib/progress-photos/*`
+- `apps/web/src/components/progress/*`, `nutrition/*`, `home/pro-insights-strip.tsx`
+- `apps/web/src/app/api/progress-photos/*`, `apps/web/src/app/api/account/export/route.ts`
+- `supabase/migrations/20260609500000_progress_photos.sql`
+
+---
 
 ### 2026-06-09 — Phase 7 implementation (billing UI + Pro gates)
 

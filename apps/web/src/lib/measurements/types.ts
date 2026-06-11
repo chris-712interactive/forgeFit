@@ -3,7 +3,9 @@ import type {
   WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal } from "@forgefit/program-engine";
+import type { ProAnalyticsBundle } from "@/lib/analytics/types";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import type { ProgressPhotoRow } from "@/lib/progress-photos/types";
 
 export interface BodyMeasurementRow {
   id: string;
@@ -45,4 +47,7 @@ export interface ProgressDashboardData {
   projection: WeightProjectionResult | null;
   tableReady: boolean;
   gates: ProgressGateContext;
+  proAnalytics: ProAnalyticsBundle | null;
+  progressPhotos: ProgressPhotoRow[];
+  photosTableReady: boolean;
 }

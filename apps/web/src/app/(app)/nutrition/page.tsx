@@ -1,5 +1,10 @@
+import { ProFeatureSection } from "@/components/billing/pro-feature-section";
 import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
+import { NutritionAdherenceCard } from "@/components/nutrition/nutrition-adherence-card";
 import { NutritionDiary } from "@/components/nutrition/nutrition-diary";
+import { getNutritionAdherenceForUser } from "@/lib/analytics/service";
+import { hasFeature } from "@/lib/billing/gates";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import {
   getDailyNutritionSummary,
   getDayLogCount,
@@ -21,6 +26,13 @@ export default async function NutritionPage() {
   const yesterdayEntryCount = user
     ? await getDayLogCount(user.id, yesterday)
     : 0;
+  const subscription = user ? await getSubscriptionForUser(user.id) : null;
+  const adherence =
+    user && subscription
+      ? await getNutritionAdherenceForUser(user.id, subscription)
+      : null;
+  const adherenceUnlocked =
+    subscription != null && hasFeature(subscription, "nutrition_adherence");
 
   return (
     <div className={appPagePadding}>
@@ -33,7 +45,15 @@ export default async function NutritionPage() {
       </p>
 
       {summary ? (
-        <div className={appHeaderGap}>
+        <div className={`${appHeaderGap} space-y-6`}>
+          <ProFeatureSection
+            title="Nutrition adherence"
+            description="How often you hit protein and calorie targets over 7, 30, and 90 days."
+            unlocked={adherenceUnlocked}
+          >
+            <NutritionAdherenceCard adherence={adherence} />
+          </ProFeatureSection>
+
           <NutritionDiary
             initialSummary={summary}
             recentEntries={recentEntries}

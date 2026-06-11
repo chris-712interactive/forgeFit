@@ -26,7 +26,7 @@ export function PrivacyDataSetting({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  async function handleExport() {
+  async function downloadExport(format: "json" | "csv") {
     setExporting(true);
     setExportMessage(null);
     setError(null);
@@ -34,7 +34,8 @@ export function PrivacyDataSetting({
     try {
       await syncWorkoutData(userId);
 
-      const response = await fetch("/api/account/export");
+      const query = format === "csv" ? "?format=csv" : "";
+      const response = await fetch(`/api/account/export${query}`);
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as {
           error?: string;
@@ -43,19 +44,34 @@ export function PrivacyDataSetting({
         return;
       }
 
-      const bundle = (await response.json()) as AccountExportBundle;
-      const enriched = await mergeExportWithLocalWorkouts(bundle, userId);
-      const filename = `forgefit-export-${enriched.exportedAt.slice(0, 10)}.json`;
-      const blob = new Blob([JSON.stringify(enriched, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(url);
-      setExportMessage("Download started. Keep this file if you plan to delete your account.");
+      const dateStamp = new Date().toISOString().slice(0, 10);
+
+      if (format === "csv") {
+        const csv = await response.text();
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `forgefit-export-${dateStamp}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const bundle = (await response.json()) as AccountExportBundle;
+        const enriched = await mergeExportWithLocalWorkouts(bundle, userId);
+        const blob = new Blob([JSON.stringify(enriched, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `forgefit-export-${dateStamp}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      setExportMessage(
+        "Download started. Keep this file if you plan to delete your account."
+      );
     } catch {
       setError("Could not export your data. Check your connection and try again.");
     } finally {
@@ -96,14 +112,24 @@ export function PrivacyDataSetting({
 
       <div className="mt-4 space-y-3">
         {canExport ? (
-          <button
-            type="button"
-            onClick={() => void handleExport()}
-            disabled={exporting || pending}
-            className="min-h-[48px] w-full rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-60"
-          >
-            {exporting ? "Preparing export…" : "Export my data"}
-          </button>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => void downloadExport("json")}
+              disabled={exporting || pending}
+              className="min-h-[48px] rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-60"
+            >
+              {exporting ? "Preparing…" : "Export JSON"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadExport("csv")}
+              disabled={exporting || pending}
+              className="min-h-[48px] rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-60"
+            >
+              {exporting ? "Preparing…" : "Export CSV"}
+            </button>
+          </div>
         ) : (
           <div className="rounded-xl border border-dashed border-[var(--border)] px-4 py-3">
             <p className="text-sm font-medium text-forge-text">Export my data</p>

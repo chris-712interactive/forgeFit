@@ -1,7 +1,9 @@
 "use client";
 
 import type { ProgressDashboardData } from "@/lib/measurements/types";
+import { hasFeature } from "@/lib/billing/gates";
 import { hasProAccess } from "@/lib/billing/types";
+import { ProFeatureSection } from "@/components/billing/pro-feature-section";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { appHeaderGap, appSectionStack } from "@/components/layout/page-layout";
@@ -10,6 +12,11 @@ import { CaliperCalculator } from "./caliper-calculator";
 import { LogMeasurementForm } from "./log-measurement-form";
 import { MeasurementTrendChart } from "./measurement-trend-chart";
 import { WeightProjectionChart } from "./weight-projection-chart";
+import { StrengthProgressionChart } from "./strength-progression-chart";
+import { PrHistoryList } from "./pr-history-list";
+import { VolumeTrendChart } from "./volume-trend-chart";
+import { RuleInsightsCard } from "./rule-insights-card";
+import { ProgressPhotoTimeline } from "./progress-photo-timeline";
 
 interface ProgressDashboardProps {
   data: ProgressDashboardData;
@@ -17,8 +24,10 @@ interface ProgressDashboardProps {
 
 export function ProgressDashboard({ data }: ProgressDashboardProps) {
   const { gates } = data;
-  const isPro = hasProAccess(gates.subscription);
+  const subscription = gates.subscription;
+  const isPro = hasProAccess(subscription);
   const horizonLabel = `${gates.horizonDays}-day`;
+  const analytics = data.proAnalytics;
 
   return (
     <div className={`${appHeaderGap} ${appSectionStack}`}>
@@ -28,6 +37,14 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
           entries. Charts still use your onboarding baseline.
         </div>
       )}
+
+      <ProFeatureSection
+        title="Trend insights"
+        description="Rule-based signals from your logs — not AI guesswork."
+        unlocked={hasFeature(subscription, "rule_based_insights")}
+      >
+        <RuleInsightsCard insights={analytics?.insights ?? []} />
+      </ProFeatureSection>
 
       <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
@@ -74,12 +91,50 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
           <div className="mt-4">
             <UpgradePrompt
               title="See 90 days ahead"
-              description="Pro unlocks 90-day projections, confidence bands, and goal-date forecasts — plus strength analytics and unlimited history."
+              description="Pro unlocks 90-day projections, confidence bands, and goal-date forecasts."
               suggestedTier="pro"
             />
           </div>
         )}
       </section>
+
+      <ProFeatureSection
+        title="Strength progression"
+        description="Estimated 1RM trends for compound lifts from logged work."
+        unlocked={hasFeature(subscription, "strength_analytics")}
+      >
+        <StrengthProgressionChart series={analytics?.strengthSeries ?? []} />
+      </ProFeatureSection>
+
+      <ProFeatureSection
+        title="PR history"
+        description="Templated PR badges when sets beat your previous best."
+        unlocked={hasFeature(subscription, "pr_history")}
+      >
+        <PrHistoryList records={analytics?.prHistory ?? []} />
+      </ProFeatureSection>
+
+      <ProFeatureSection
+        title="Training volume"
+        description="Weekly load and top muscle groups from completed sessions."
+        unlocked={hasFeature(subscription, "volume_analytics")}
+      >
+        <VolumeTrendChart
+          weeklyVolume={analytics?.weeklyVolume ?? []}
+          muscleVolume={analytics?.muscleVolume ?? []}
+        />
+      </ProFeatureSection>
+
+      <ProFeatureSection
+        title="Progress photos"
+        description="Private photo timeline tied to your check-in dates."
+        unlocked={hasFeature(subscription, "progress_photos")}
+      >
+        <ProgressPhotoTimeline
+          initialPhotos={data.progressPhotos}
+          tableReady={data.photosTableReady}
+        />
+      </ProFeatureSection>
 
       <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">

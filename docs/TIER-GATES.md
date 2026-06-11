@@ -175,7 +175,7 @@ The 35% Pro annual discount is a **retention trade**, not a margin problem — a
 | 4. Profile upgrade UI | ✅ Done | `subscription-setting.tsx` |
 | 5. Progress projection gates | ✅ Done | 30d/90d horizon, confidence bands, 90d history cap |
 | 6. Export gate (Pro) | ✅ Done | `/api/account/export` + Profile |
-| 7. Strength/volume/adherence analytics UI | ⏳ Pending | Pro analytics surfaces |
-| 8. Progress photos UI | ⏳ Pending | Supabase Storage + Pro gate |
+| 7. Strength/volume/adherence analytics UI | ✅ Done | Progress, Nutrition, Home insights |
+| 8. Progress photos UI | ✅ Done | `progress_photos` migration + timeline |
 | 9. Pro+ integrations | ⏳ Pending | Withings, Fitbit OAuth |
 | 10. Phase 8 Pro+ features | ⏳ Pending | AI coaching, gamification |

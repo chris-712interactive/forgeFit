@@ -10,6 +10,7 @@ import {
   appPagePadding,
   appSectionStack,
 } from "@/components/layout/page-layout";
+import { ProInsightsStrip } from "@/components/home/pro-insights-strip";
 import { getHomeDashboardData } from "@/lib/home/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -44,6 +45,8 @@ export default async function HomePage() {
 
       <div className={`${appHeaderGap} ${appSectionStack}`}>
         <EncouragementBanner message={data.encouragement} />
+
+        <ProInsightsStrip insights={data.proInsights} />
 
         <PwaInstallPrompt />
 

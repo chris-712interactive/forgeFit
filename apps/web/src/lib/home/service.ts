@@ -1,3 +1,7 @@
+import { buildProAnalyticsBundle } from "@/lib/analytics/service";
+import { hasFeature } from "@/lib/billing/gates";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { hasProAccess } from "@/lib/billing/types";
 import { getDailyNutritionSummary } from "@/lib/nutrition/service";
 import { getPromotionEvaluation } from "@/lib/progression/service";
 import { ensureActiveProgram } from "@/lib/programs/service";
@@ -16,18 +20,20 @@ export async function getHomeDashboardData(
 ): Promise<HomeDashboardData> {
   const supabase = await createClient();
 
-  const [profileResult, plan, nutrition, sessionResult] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "display_name, primary_goal, why_started, sessions_per_week, minutes_per_session"
-      )
-      .eq("id", userId)
-      .single(),
-    ensureActiveProgram(userId),
-    getDailyNutritionSummary(userId),
-    getServerSessionRecords(userId, 120),
-  ]);
+  const [profileResult, plan, nutrition, sessionResult, subscription] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select(
+          "display_name, primary_goal, why_started, sessions_per_week, minutes_per_session"
+        )
+        .eq("id", userId)
+        .single(),
+      ensureActiveProgram(userId),
+      getDailyNutritionSummary(userId),
+      getServerSessionRecords(userId, 120),
+      getSubscriptionForUser(userId),
+    ]);
 
   const profile = profileResult.data;
   const weeklyStats = computeWeeklyWorkStats(
@@ -40,6 +46,15 @@ export async function getHomeDashboardData(
     sessionResult.records,
     plan
   );
+
+  let proInsights: HomeDashboardData["proInsights"] = [];
+  if (
+    hasProAccess(subscription) &&
+    hasFeature(subscription, "rule_based_insights")
+  ) {
+    const bundle = await buildProAnalyticsBundle(userId, subscription);
+    proInsights = bundle.insights;
+  }
 
   return {
     displayName: profile?.display_name ?? null,
@@ -60,5 +75,6 @@ export async function getHomeDashboardData(
     nextSessionName: next?.name ?? null,
     workoutsTableReady: sessionResult.tableReady,
     promotion,
+    proInsights,
   };
 }
