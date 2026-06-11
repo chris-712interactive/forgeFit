@@ -4,7 +4,7 @@
   "description": "Evidence-based fitness and nutrition — forge your best self",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1C1917",
+  "background_color": "#000000",
   "theme_color": "#FF6B35",
   "orientation": "portrait-primary",
   "icons": [
