@@ -42,6 +42,14 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
       startedAt: s.startedAt,
       completedAt: s.completedAt,
       updatedAt: s.updatedAt,
+      warmupName: s.warmupBlock?.name,
+      warmupPlannedMinutes: s.warmupBlock?.durationMinutes,
+      warmupStatus:
+        s.warmupStatus === "completed" || s.warmupStatus === "skipped"
+          ? s.warmupStatus
+          : undefined,
+      warmupDurationMs: finiteOrUndefined(s.warmupDurationMs),
+      warmupCompletedAt: s.warmupCompletedAt,
       recoveryName: s.recoveryBlock?.name,
       recoveryEquipment: s.recoveryBlock?.equipment,
       recoveryPlannedMinutes: s.recoveryBlock?.durationMinutes,

@@ -15,6 +15,11 @@ import {
 import { computeNutrition, getMatchedRules } from "./nutrition";
 import { assignSessionWeekdays, dayLabelForIndex, isoWeekdayFromDate } from "./schedule";
 import { getWeeklySplit } from "./splits";
+import {
+  appendRampSetNote,
+  buildWarmupBlock,
+  warmUpRampSetCount,
+} from "./warmup";
 import type {
   ExperienceLevel,
   GenerateProgramOptions,
@@ -182,6 +187,8 @@ function buildSession(
   );
   const reps = repsForGoal(profile.goal, rules);
   const rest = restForGoal(profile.goal, rules);
+  const warmupBlock = buildWarmupBlock(template, profile);
+  const rampSets = warmUpRampSetCount(profile.experience, rules);
 
   const exercises: PlannedExercise[] = [];
 
@@ -199,6 +206,22 @@ function buildSession(
       ? (holdDurationPrescription(picked.id, profile.experience) ?? "30-45 sec")
       : reps;
 
+    let notes =
+      profile.goal === "powerlifting" && picked.priority >= 9
+        ? "Top set @ RPE 8, back-off sets -10%"
+        : isDurationHoldExercise(picked.id)
+          ? "Hold a straight line — stop when form breaks"
+          : undefined;
+
+    if (
+      rampSets &&
+      exercises.length === 0 &&
+      !isDurationHoldExercise(picked.id) &&
+      picked.movementPattern !== "cardio"
+    ) {
+      notes = appendRampSetNote(notes, rampSets);
+    }
+
     exercises.push({
       exerciseId: picked.id,
       name: picked.name,
@@ -206,12 +229,7 @@ function buildSession(
       sets,
       reps: exerciseReps,
       restSeconds: isDurationHoldExercise(picked.id) ? 60 : rest,
-      notes:
-        profile.goal === "powerlifting" && picked.priority >= 9
-          ? "Top set @ RPE 8, back-off sets -10%"
-          : isDurationHoldExercise(picked.id)
-            ? "Hold a straight line — stop when form breaks"
-            : undefined,
+      notes,
     });
   }
 
@@ -238,7 +256,7 @@ function buildSession(
   const recoveryMins = recoveryBlock?.durationMinutes ?? 0;
   const estimatedMinutes = Math.min(
     profile.minutesPerSession,
-    Math.round(exerciseMinutes + recoveryMins)
+    Math.round(warmupBlock.durationMinutes + exerciseMinutes + recoveryMins)
   );
 
   const citationRuleIds = rules
@@ -251,6 +269,7 @@ function buildSession(
     dayLabel: dayLabelForIndex(dayIndex),
     name: template.name,
     estimatedMinutes,
+    warmupBlock,
     exercises,
     recoveryBlock,
     citationRuleIds,

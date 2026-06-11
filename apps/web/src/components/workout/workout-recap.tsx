@@ -16,6 +16,7 @@ import {
   formatRecoveryDuration,
   recoveryEquipmentLabel,
 } from "@/lib/workouts/recovery";
+import { formatWarmupDuration } from "@/lib/workouts/warmup";
 import type { DayPlanStatus, WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { getPriorSessionForComparison } from "@/lib/workouts/sessions";
 import {
@@ -78,6 +79,28 @@ export function WorkoutRecap({
           Comparing to your last {session.sessionName} on{" "}
           {formatShortDate(prior.completedAt ?? prior.startedAt)}
         </p>
+      )}
+
+      {session.warmupBlock && (
+        <section className="mt-6 rounded-2xl border border-forge-gold/30 bg-forge-gold/5 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
+            Warm-up
+          </p>
+          <p className="mt-1 font-display font-semibold text-forge-text">
+            {session.warmupBlock.name}
+          </p>
+          <p className="mt-1 text-sm text-forge-muted">
+            {formatWarmupDuration(session.warmupBlock.durationMinutes)} ·{" "}
+            {session.warmupBlock.movements.length} movements
+          </p>
+          <p className="mt-2 text-sm text-forge-text">
+            {session.warmupStatus === "completed"
+              ? "Completed"
+              : session.warmupStatus === "skipped"
+                ? "Skipped"
+                : "Not logged"}
+          </p>
+        </section>
       )}
 
       {session.recoveryBlock && (

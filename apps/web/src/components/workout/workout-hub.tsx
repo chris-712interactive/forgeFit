@@ -130,12 +130,16 @@ export function WorkoutHub({
   const reviewSession = useMemo(() => {
     const session =
       allSessions.find((s) => s.clientId === reviewClientId) ?? null;
-    if (!session || session.recoveryBlock || !plan) return session;
+    if (!session || !plan) return session;
 
     const planSession = plan.week.find((s) => s.dayIndex === session.dayIndex);
-    return planSession?.recoveryBlock
-      ? { ...session, recoveryBlock: planSession.recoveryBlock }
-      : session;
+    if (!planSession) return session;
+
+    return {
+      ...session,
+      warmupBlock: session.warmupBlock ?? planSession.warmupBlock,
+      recoveryBlock: session.recoveryBlock ?? planSession.recoveryBlock,
+    };
   }, [allSessions, reviewClientId, plan]);
 
   const reviewDayStatus = useMemo(() => {
@@ -284,6 +288,7 @@ export function WorkoutHub({
           programId: cachedProgramId,
           sessionName: session.name,
           dayIndex: session.dayIndex,
+          warmupBlock: session.warmupBlock,
           recoveryBlock: session.recoveryBlock,
           exercises: session.exercises.map((ex) => {
             const progression = loadProgressions.get(ex.exerciseId);

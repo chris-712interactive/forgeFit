@@ -1,6 +1,7 @@
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { buildEvidenceHref } from "@/lib/evidence/present";
 import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
+import { formatWarmupDuration } from "@/lib/workouts/warmup";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import Link from "next/link";
 
@@ -68,6 +69,12 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
             )}
           </ul>
 
+          {session.warmupBlock && (
+            <p className="mt-2 text-xs text-forge-gold">
+              {formatWarmupDuration(session.warmupBlock.durationMinutes)}{" "}
+              {session.warmupBlock.name.toLowerCase()}
+            </p>
+          )}
           {session.recoveryBlock && (
             <p className="mt-2 text-xs text-forge-steel">
               + {session.recoveryBlock.durationMinutes} min{" "}

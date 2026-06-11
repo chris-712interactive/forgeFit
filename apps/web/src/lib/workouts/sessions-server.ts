@@ -16,9 +16,9 @@ function isWorkoutTableMissing(error: { message?: string; code?: string }): bool
   );
 }
 
-function isRecoveryColumnMissing(error: { message?: string }): boolean {
+function isOptionalColumnMissing(error: { message?: string }): boolean {
   const message = error.message?.toLowerCase() ?? "";
-  return message.includes("recovery_");
+  return message.includes("recovery_") || message.includes("warmup_");
 }
 
 export async function getServerSessionRecords(
@@ -29,25 +29,25 @@ export async function getServerSessionRecords(
 
   const baseSelect =
     "id, client_id, day_index, session_name, status, started_at, completed_at";
-  const recoverySelect =
-    ", recovery_name, recovery_equipment, recovery_planned_minutes, recovery_status, recovery_duration_ms, recovery_completed_at";
+  const optionalSelect =
+    ", warmup_name, warmup_planned_minutes, warmup_status, warmup_duration_ms, warmup_completed_at, recovery_name, recovery_equipment, recovery_planned_minutes, recovery_status, recovery_duration_ms, recovery_completed_at";
 
   let sessions:
     | Array<Record<string, unknown>>
     | null = null;
   let error: { message?: string; code?: string } | null = null;
 
-  const withRecovery = await supabase
+  const withOptional = await supabase
     .from("workout_sessions")
-    .select(`${baseSelect}${recoverySelect}`)
+    .select(`${baseSelect}${optionalSelect}`)
     .eq("user_id", userId)
     .order("started_at", { ascending: false })
     .limit(limit);
 
-  sessions = withRecovery.data;
-  error = withRecovery.error;
+  sessions = withOptional.data;
+  error = withOptional.error;
 
-  if (error && isRecoveryColumnMissing(error)) {
+  if (error && isOptionalColumnMissing(error)) {
     const fallback = await supabase
       .from("workout_sessions")
       .select(baseSelect)
@@ -100,6 +100,22 @@ export async function getServerSessionRecords(
       status: String(session.status),
       startedAt: String(session.started_at),
       completedAt: (session.completed_at as string | null) ?? null,
+      warmupBlock: session.warmup_name
+        ? {
+            name: String(session.warmup_name),
+            durationMinutes: Number(session.warmup_planned_minutes ?? 5),
+            focus: "general" as const,
+            movements: [],
+          }
+        : undefined,
+      warmupStatus:
+        (session.warmup_status as "completed" | "skipped" | null) ?? undefined,
+      warmupDurationMs:
+        session.warmup_duration_ms != null
+          ? Number(session.warmup_duration_ms)
+          : undefined,
+      warmupCompletedAt:
+        (session.warmup_completed_at as string | null) ?? null,
       recoveryBlock:
         session.recovery_name && session.recovery_equipment
           ? {

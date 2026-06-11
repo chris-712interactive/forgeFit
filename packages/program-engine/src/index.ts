@@ -1,4 +1,5 @@
 export { generateProgram } from "./generate";
+export { buildWarmupBlock } from "./warmup";
 export { getMatchedRules } from "./nutrition";
 export {
   assignSessionWeekdays,
@@ -12,6 +13,8 @@ export type {
   WorkoutSession,
   PlannedExercise,
   RecoveryBlock,
+  WarmupBlock,
+  WarmupMovement,
   NutritionTargets,
   FitnessGoal,
   ExperienceLevel,

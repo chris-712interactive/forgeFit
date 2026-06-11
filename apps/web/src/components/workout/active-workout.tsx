@@ -16,6 +16,7 @@ import {
   getSetsForSession,
   updateSet,
   updateWorkoutRecovery,
+  updateWorkoutWarmup,
   type LocalExerciseSet,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
@@ -28,6 +29,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { HoldTimer } from "./hold-timer";
 import { RecoveryBlockCard } from "./recovery-block-card";
+import { WarmupBlockCard } from "./warmup-block-card";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
 import { useWorkoutSyncContext } from "./sync-manager";
@@ -52,6 +54,10 @@ export function ActiveWorkout({
   const [timedTimer, setTimedTimer] = useState<{
     setClientId: string;
     exerciseId: string;
+    seconds: number;
+    label: string;
+  } | null>(null);
+  const [warmupTimer, setWarmupTimer] = useState<{
     seconds: number;
     label: string;
   } | null>(null);
@@ -95,6 +101,10 @@ export function ActiveWorkout({
 
   const completedCount = sets.filter((s) => s.completed).length;
   const totalCount = sets.length;
+  const warmupReady =
+    !session?.warmupBlock ||
+    session.warmupStatus === "completed" ||
+    session.warmupStatus === "skipped";
 
   async function handleSetUpdate(
     setClientId: string,
@@ -179,6 +189,33 @@ export function ActiveWorkout({
     logTimedSet(elapsedSeconds);
   }
 
+  async function handleWarmupUpdate(
+    status: "completed" | "skipped",
+    durationMs?: number
+  ) {
+    const updated = await updateWorkoutWarmup(clientId, { status, durationMs });
+    if (updated) {
+      setSession(updated);
+    }
+    setWarmupTimer(null);
+    void sync?.refreshPending();
+    if (navigator.onLine) {
+      void sync?.runSync();
+    }
+  }
+
+  function handleWarmupTimerComplete() {
+    if (!warmupTimer || !session?.warmupBlock) return;
+    void handleWarmupUpdate(
+      "completed",
+      session.warmupBlock.durationMinutes * 60_000
+    );
+  }
+
+  function handleWarmupTimerStop(elapsedSeconds: number) {
+    void handleWarmupUpdate("completed", elapsedSeconds * 1000);
+  }
+
   async function handleRecoveryUpdate(
     status: "completed" | "skipped",
     durationMs?: number
@@ -212,6 +249,7 @@ export function ActiveWorkout({
     setFinishError(null);
     setRestSeconds(null);
     setTimedTimer(null);
+    setWarmupTimer(null);
     setRecoveryTimer(null);
 
     try {
@@ -239,6 +277,7 @@ export function ActiveWorkout({
     setFinishError(null);
     setRestSeconds(null);
     setTimedTimer(null);
+    setWarmupTimer(null);
     setRecoveryTimer(null);
 
     try {
@@ -298,6 +337,35 @@ export function ActiveWorkout({
       </p>
 
       <div className={`mt-6 sm:mt-8 ${appSectionStackTight}`}>
+        {session.warmupBlock && (
+          <WarmupBlockCard
+            block={session.warmupBlock}
+            status={session.warmupStatus ?? "pending"}
+            durationMs={session.warmupDurationMs}
+            isTimerActive={warmupTimer !== null}
+            onStartTimer={() => {
+              setRestSeconds(null);
+              setTimedTimer(null);
+              setRecoveryTimer(null);
+              setWarmupTimer({
+                seconds: session.warmupBlock!.durationMinutes * 60,
+                label: "Warm-up",
+              });
+            }}
+            onMarkComplete={() => void handleWarmupUpdate("completed")}
+            onSkip={() => void handleWarmupUpdate("skipped")}
+          />
+        )}
+
+        {!warmupReady && (
+          <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-3 text-sm text-forge-muted">
+            Finish or skip your warm-up to move into the main workout.
+          </p>
+        )}
+
+        <div
+          className={`space-y-3 ${warmupReady ? "" : "pointer-events-none opacity-50"}`}
+        >
         {session.exercises.map((exercise) => {
           const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
           const isTimed = isTimedExercise(exercise.exerciseId);
@@ -395,6 +463,7 @@ export function ActiveWorkout({
             </section>
           );
         })}
+        </div>
 
         {session.recoveryBlock && (
           <RecoveryBlockCard
@@ -441,7 +510,16 @@ export function ActiveWorkout({
         </button>
       </div>
 
-      {recoveryTimer && recoveryTimer.seconds > 0 && (
+      {warmupTimer && warmupTimer.seconds > 0 && (
+        <HoldTimer
+          seconds={warmupTimer.seconds}
+          label={warmupTimer.label}
+          onComplete={handleWarmupTimerComplete}
+          onStop={handleWarmupTimerStop}
+        />
+      )}
+
+      {!warmupTimer && recoveryTimer && recoveryTimer.seconds > 0 && (
         <HoldTimer
           seconds={recoveryTimer.seconds}
           label={recoveryTimer.label}
@@ -450,7 +528,7 @@ export function ActiveWorkout({
         />
       )}
 
-      {!recoveryTimer && timedTimer && timedTimer.seconds > 0 && (
+      {!warmupTimer && !recoveryTimer && timedTimer && timedTimer.seconds > 0 && (
         <HoldTimer
           seconds={timedTimer.seconds}
           label={timedTimer.label}
@@ -459,7 +537,11 @@ export function ActiveWorkout({
         />
       )}
 
-      {!recoveryTimer && !timedTimer && restSeconds !== null && restSeconds > 0 && (
+      {!warmupTimer &&
+        !recoveryTimer &&
+        !timedTimer &&
+        restSeconds !== null &&
+        restSeconds > 0 && (
         <RestTimer
           seconds={restSeconds}
           onComplete={() => setRestSeconds(null)}

@@ -3,6 +3,7 @@
 import type { WorkoutSession } from "@forgefit/program-engine";
 import { formatShortDate } from "@/lib/workouts/comparison";
 import { formatRecoveryDuration } from "@/lib/workouts/recovery";
+import { formatWarmupDuration } from "@/lib/workouts/warmup";
 import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
 import type { DayPlanStatus } from "@/lib/workouts/sessions";
 
@@ -58,6 +59,12 @@ export function WeekPlanCard({
           <p className="mt-1 text-sm text-forge-muted">
             {session.exercises.length} exercises · ~{session.estimatedMinutes} min
           </p>
+          {session.warmupBlock && (
+            <p className="mt-1 text-sm text-forge-gold">
+              {formatWarmupDuration(session.warmupBlock.durationMinutes)}{" "}
+              {session.warmupBlock.name.toLowerCase()}
+            </p>
+          )}
           {session.recoveryBlock && (
             <p className="mt-1 text-sm text-forge-steel">
               + {formatRecoveryDuration(session.recoveryBlock.durationMinutes)}{" "}

@@ -36,11 +36,25 @@ export interface RecoveryBlock {
   equipment: string;
 }
 
+export interface WarmupMovement {
+  id: string;
+  name: string;
+  prescription: string;
+}
+
+export interface WarmupBlock {
+  name: string;
+  durationMinutes: number;
+  focus: "push" | "pull" | "legs" | "full_body" | "general";
+  movements: WarmupMovement[];
+}
+
 export interface WorkoutSession {
   dayIndex: number;
   dayLabel: string;
   name: string;
   estimatedMinutes: number;
+  warmupBlock?: WarmupBlock;
   exercises: PlannedExercise[];
   recoveryBlock?: RecoveryBlock;
   citationRuleIds: string[];
