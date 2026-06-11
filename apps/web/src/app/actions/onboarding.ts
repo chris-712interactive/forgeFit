@@ -33,6 +33,7 @@ const onboardingSchema = z.object({
   sessions_per_week: z.number().min(1).max(7),
   minutes_per_session: z.number().min(15).max(120),
   why_started: z.string().min(10).max(500),
+  health_disclaimer_accepted: z.literal(true),
 });
 
 export async function completeOnboarding(data: OnboardingData) {
@@ -54,6 +55,7 @@ export async function completeOnboarding(data: OnboardingData) {
     equipment,
     equipment_location,
     recovery_equipment,
+    health_disclaimer_accepted: _disclaimerAccepted,
     ...profileFields
   } = parsed.data;
 
@@ -62,6 +64,7 @@ export async function completeOnboarding(data: OnboardingData) {
     .update({
       ...profileFields,
       onboarding_complete: true,
+      health_disclaimer_accepted_at: new Date().toISOString(),
     })
     .eq("id", user.id);
 

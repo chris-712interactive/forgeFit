@@ -33,6 +33,7 @@ export interface Profile {
   neck_cm: number | null;
   hips_cm: number | null;
   onboarding_complete: boolean;
+  health_disclaimer_accepted_at: string | null;
   gamification_opt_in: boolean;
   unit_system: UnitSystem;
   experience_promoted_at: string | null;
@@ -64,4 +65,5 @@ export interface OnboardingData {
   sessions_per_week: number;
   minutes_per_session: number;
   why_started: string;
+  health_disclaimer_accepted: boolean;
 }

@@ -6,6 +6,7 @@ import {
   CARDIO_EQUIPMENT,
   EXPERIENCE_LEVELS,
   FITNESS_GOALS,
+  HEALTH_DISCLAIMER,
   MINUTES_PER_SESSION_OPTIONS,
   RECOVERY_EQUIPMENT,
   SESSIONS_PER_WEEK_OPTIONS,
@@ -19,7 +20,7 @@ import type {
 } from "@/lib/types/profile";
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const initialData: Partial<OnboardingData> = {
   equipment: [],
@@ -27,6 +28,7 @@ const initialData: Partial<OnboardingData> = {
   equipment_location: "gym",
   sessions_per_week: 3,
   minutes_per_session: 45,
+  health_disclaimer_accepted: false,
 };
 
 export function OnboardingWizard() {
@@ -54,23 +56,25 @@ export function OnboardingWizard() {
   function canProceed(): boolean {
     switch (step) {
       case 1:
-        return !!data.primary_goal;
+        return data.health_disclaimer_accepted === true;
       case 2:
-        return !!data.experience_level;
+        return !!data.primary_goal;
       case 3:
+        return !!data.experience_level;
+      case 4:
         return (
           !!data.sex &&
           !!data.age &&
           !!data.height_cm &&
           !!data.weight_kg
         );
-      case 4:
-        return (data.equipment?.length ?? 0) > 0;
       case 5:
-        return true;
+        return (data.equipment?.length ?? 0) > 0;
       case 6:
-        return !!data.sessions_per_week && !!data.minutes_per_session;
+        return true;
       case 7:
+        return !!data.sessions_per_week && !!data.minutes_per_session;
+      case 8:
         return (data.why_started?.trim().length ?? 0) >= 10;
       default:
         return false;
@@ -111,6 +115,36 @@ export function OnboardingWizard() {
       <main className="flex flex-1 flex-col px-6 py-6">
         {step === 1 && (
           <StepShell
+            title={HEALTH_DISCLAIMER.title}
+            subtitle="Please read and acknowledge before continuing."
+          >
+            <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 p-4">
+              <div className="max-h-64 space-y-3 overflow-y-auto pr-1 text-sm leading-relaxed text-forge-text">
+                {HEALTH_DISCLAIMER.paragraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+            <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4">
+              <input
+                type="checkbox"
+                checked={data.health_disclaimer_accepted === true}
+                onChange={(event) =>
+                  update({
+                    health_disclaimer_accepted: event.target.checked,
+                  })
+                }
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--border)] accent-forge-ember"
+              />
+              <span className="text-sm leading-relaxed text-forge-text">
+                {HEALTH_DISCLAIMER.checkboxLabel}
+              </span>
+            </label>
+          </StepShell>
+        )}
+
+        {step === 2 && (
+          <StepShell
             title="What's your main goal?"
             subtitle="We'll build your program around this."
           >
@@ -130,7 +164,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <StepShell
             title="How experienced are you?"
             subtitle="No wrong answer — we'll meet you where you are."
@@ -153,7 +187,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <StepShell
             title="Your measurements"
             subtitle="Choose your units once — we handle conversions behind the scenes."
@@ -162,7 +196,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <StepShell
             title="What equipment do you have?"
             subtitle="Select everything available to you."
@@ -204,7 +238,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <StepShell
             title="Recovery tools"
             subtitle="Optional — we'll weave these into your plan."
@@ -226,7 +260,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 6 && (
+        {step === 7 && (
           <StepShell
             title="How much time do you have?"
             subtitle="Any amount works — we'll make it count."
@@ -256,7 +290,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 7 && (
+        {step === 8 && (
           <StepShell
             title="Why did you start?"
             subtitle="We'll remind you of this when you need it most."
@@ -299,7 +333,7 @@ export function OnboardingWizard() {
             onClick={() => setStep((s) => s + 1)}
             className="min-h-[52px] flex-[2] rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-40"
           >
-            Continue
+            {step === 1 ? "I agree — continue" : "Continue"}
           </button>
         ) : (
           <button
