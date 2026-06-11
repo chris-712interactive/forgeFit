@@ -37,6 +37,9 @@ export interface WeightProjectionInput {
   goal: FitnessGoal;
   age: number;
   horizonDays?: number;
+  effectiveDeficitKcal?: number;
+  effectiveSurplusKcal?: number;
+  trainingKcalPerDay?: number;
 }
 
 export interface WeightProjectionResult {
@@ -45,6 +48,9 @@ export interface WeightProjectionResult {
   weeklyChangeKg: number;
   points: ProjectionPoint[];
   ruleId: string;
+  effectiveDeficitKcal?: number;
+  effectiveSurplusKcal?: number;
+  trainingKcalPerDay?: number;
 }
 
 export type MeasurementMetric =

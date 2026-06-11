@@ -3,7 +3,8 @@ import {
   projectWeight,
   type WeightProjectionResult,
 } from "@forgefit/projection-engine";
-import type { FitnessGoal } from "@forgefit/program-engine";
+import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
+import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type {
   BodyMeasurementRow,
@@ -148,7 +149,8 @@ async function loadCaliperEntries(
 function buildProjection(
   measurements: BodyMeasurementRow[],
   goal: FitnessGoal,
-  age: number
+  age: number,
+  plan: ProgramPlan | null
 ): WeightProjectionResult | null {
   const weightHistory = measurements
     .filter((row) => row.weightKg != null && row.weightKg > 0)
@@ -159,21 +161,27 @@ function buildProjection(
 
   if (weightHistory.length === 0) return null;
 
+  const nutrition = plan?.nutrition;
+
   return projectWeight({
     history: weightHistory,
     goal,
     age,
     horizonDays: 30,
+    effectiveDeficitKcal: nutrition?.effectiveDeficitKcal,
+    effectiveSurplusKcal: nutrition?.effectiveSurplusKcal,
+    trainingKcalPerDay: nutrition?.trainingKcalPerDay,
   });
 }
 
 export async function getProgressDashboardData(
   userId: string
 ): Promise<ProgressDashboardData> {
-  const [profile, measurementResult, caliperEntries] = await Promise.all([
+  const [profile, measurementResult, caliperEntries, plan] = await Promise.all([
     getProfileBasics(userId),
     loadMeasurements(userId),
     loadCaliperEntries(userId),
+    getActiveProgram(userId),
   ]);
 
   const baseline = profileBaseline(profile);
@@ -184,7 +192,7 @@ export async function getProgressDashboardData(
 
   const projection =
     goal && age && measurements.length > 0
-      ? buildProjection(measurements, goal, age)
+      ? buildProjection(measurements, goal, age, plan)
       : null;
 
   const trends = buildTrendSeries(

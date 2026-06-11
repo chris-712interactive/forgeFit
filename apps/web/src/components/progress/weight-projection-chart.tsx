@@ -79,8 +79,23 @@ export function WeightProjectionChart({ projection }: WeightProjectionChartProps
           {weeklyDisplay} {weightLabel}/week
         </span>{" "}
         ({projection.weeklyChangePct > 0 ? "+" : ""}
-        {projection.weeklyChangePct}% BW) · capped by{" "}
-        <EvidenceRuleInline ruleId={projection.ruleId} />
+        {projection.weeklyChangePct}% BW)
+        {projection.effectiveDeficitKcal != null && (
+          <>
+            {" "}
+            · pace based on ~{projection.effectiveDeficitKcal} kcal/day deficit
+            {projection.trainingKcalPerDay != null && (
+              <> (training ~{projection.trainingKcalPerDay} kcal/day)</>
+            )}
+          </>
+        )}
+        {projection.effectiveSurplusKcal != null && (
+          <>
+            {" "}
+            · pace based on ~{projection.effectiveSurplusKcal} kcal/day surplus
+          </>
+        )}{" "}
+        · capped by <EvidenceRuleInline ruleId={projection.ruleId} />
       </p>
 
       <ChartShell>

@@ -161,6 +161,25 @@ const RULE_COPY: Record<string, { title: string; summary: string }> = {
     title: "Calorie estimation",
     summary: "Estimates maintenance calories from your profile data.",
   },
+  training_eee_resistance: {
+    title: "Training energy expenditure",
+    summary:
+      "Estimates calories burned from your planned resistance sessions using duration and intensity.",
+  },
+  training_eee_intensity: {
+    title: "Session intensity factor",
+    summary: "Adjusts training burn estimates based on sets per active minute.",
+  },
+  training_eat_back_fat_loss: {
+    title: "Exercise calorie credit",
+    summary:
+      "Credits part of training burn into daily targets while preserving a net deficit.",
+  },
+  energy_balance_projection: {
+    title: "Energy balance projection",
+    summary:
+      "Links your training-adjusted deficit to an expected weekly weight change pace.",
+  },
   experience_promotion_beginner: {
     title: "Beginner → intermediate promotion",
     summary:
@@ -197,6 +216,15 @@ const RECOMMENDATION_LABELS: Record<string, string> = {
   duration_minutes: "Duration",
   warm_up_sets: "Warm-up sets",
   formula: "Formula",
+  lifestyle_factor: "Lifestyle activity factor",
+  activity_factor: "Activity factor",
+  eat_back_pct: "Exercise calorie credit",
+  recomp_eat_back_pct: "Recomp exercise credit",
+  gain_eat_back_pct: "Training fuel credit",
+  kcal_per_kg_fat: "Kcal per kg fat",
+  met_resistance_training: "Resistance training MET",
+  gross_kcal_per_min: "Gross kcal / min",
+  intensity_multiplier: "Intensity multiplier",
   timing: "Timing",
   note: "Note",
   priority: "Priority",

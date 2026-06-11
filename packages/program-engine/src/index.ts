@@ -1,6 +1,8 @@
 export { generateProgram } from "./generate";
 export { buildWarmupBlock } from "./warmup";
-export { getMatchedRules } from "./nutrition";
+export { computeNutrition, getMatchedRules } from "./nutrition";
+export { computeTrainingLoad } from "./training-load";
+export { estimateTrainingExpenditure } from "./training-expenditure";
 export {
   assignSessionWeekdays,
   dayLabelForIndex,
@@ -16,6 +18,8 @@ export type {
   WarmupBlock,
   WarmupMovement,
   NutritionTargets,
+  TrainingLoadSummary,
+  TrainingExpenditure,
   FitnessGoal,
   ExperienceLevel,
   GenerateProgramOptions,

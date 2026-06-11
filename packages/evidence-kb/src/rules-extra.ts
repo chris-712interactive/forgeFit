@@ -8,6 +8,7 @@ export const EXTRA_RULES: EvidenceRule[] = [
     applies_to: ["goal:bodybuilding", "goal:recomposition", "goal:general_strength"],
     recommendation: {
       weekly_weight_gain_pct: { min: 0.25, optimal: 0.5, max: 0.5 },
+      gain_eat_back_pct: { min: 0.25, optimal: 0.5, max: 0.75 },
     },
     citations: [
       {
@@ -430,6 +431,7 @@ export const EXTRA_RULES: EvidenceRule[] = [
     applies_to: ["goal:recomposition"],
     recommendation: {
       resistance_sessions_per_week: { min: 3, optimal: 4, max: 5 },
+      recomp_eat_back_pct: { min: 0.5, optimal: 0.65, max: 0.75 },
       priority: "hypertrophy_with_moderate_deficit",
     },
     citations: [
@@ -446,12 +448,81 @@ export const EXTRA_RULES: EvidenceRule[] = [
     applies_to: ["*"],
     recommendation: {
       formula: "mifflin_st_jeor",
+      lifestyle_factor: { min: 1.2, optimal: 1.35, max: 1.55 },
       activity_factor: { sedentary: 1.2, moderate: 1.55, active: 1.725 },
     },
     citations: [
       {
         url: "https://examine.com/guides/protein-intake/",
         summary: "Standard TDEE estimation for setting calorie targets",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "training_eee_resistance",
+    domain: "nutrition",
+    applies_to: ["*"],
+    recommendation: {
+      met_resistance_training: { min: 3, optimal: 5, max: 6 },
+      gross_kcal_per_min: { min: 4, optimal: 6, max: 8 },
+    },
+    citations: [
+      {
+        url: "https://www.strongerbyscience.com/research-spotlight-expenditure-resistance/",
+        summary: "Resistance training averages ~6 kcal/min gross expenditure",
+      },
+      {
+        url: "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0181311",
+        summary: "Energy cost of resistance exercises scales with intensity and duration",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "training_eee_intensity",
+    domain: "training",
+    applies_to: ["*"],
+    recommendation: {
+      intensity_multiplier: { low: 0.85, moderate: 1.0, high: 1.15 },
+      sets_per_active_minute_threshold: { low: 0.15, high: 0.25 },
+    },
+    citations: [
+      {
+        url: "https://www.strongerbyscience.com/research-spotlight-expenditure-resistance/",
+        summary: "Session energy cost rises with total work performed",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "training_eat_back_fat_loss",
+    domain: "nutrition",
+    applies_to: ["goal:fat_loss"],
+    recommendation: {
+      eat_back_pct: { min: 0.25, optimal: 0.5, max: 0.75 },
+      note: "Partial exercise calorie credit preserves deficit while supporting recovery",
+    },
+    citations: [
+      {
+        url: "https://www.ucdenver.edu/docs/librariesprovider65/clinical-services/sports-medicine/estimating-energy-expenditure.pdf",
+        summary: "Net exercise expenditure contributes to energy deficit for fat loss",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "energy_balance_projection",
+    domain: "nutrition",
+    applies_to: ["goal:fat_loss", "goal:recomposition"],
+    recommendation: {
+      kcal_per_kg_fat: 7700,
+      note: "Weekly weight change estimated from average daily energy deficit",
+    },
+    citations: [
+      {
+        url: "https://www.mdpi.com/2072-6643/13/9/3255",
+        summary: "Controlled deficit rates preserve lean mass during fat loss phases",
       },
     ],
     confidence: "moderate",

@@ -60,6 +60,21 @@ export interface WorkoutSession {
   citationRuleIds: string[];
 }
 
+export interface TrainingLoadSummary {
+  sessionsPerWeek: number;
+  weeklyEstimatedMinutes: number;
+  weeklyMainWorkMinutes: number;
+  weeklyWorkingSets: number;
+  weeklyActiveMinutes: number;
+  intensityScore: number;
+}
+
+export interface TrainingExpenditure {
+  weeklyTrainingKcal: number;
+  dailyTrainingKcal: number;
+  ruleId: string;
+}
+
 export interface NutritionTargets {
   calories: number;
   proteinG: number;
@@ -67,6 +82,13 @@ export interface NutritionTargets {
   carbsG: number;
   proteinRuleId: string;
   calorieRuleId?: string;
+  bmrKcal?: number;
+  lifestyleKcal?: number;
+  trainingKcalPerDay?: number;
+  tdeeKcal?: number;
+  effectiveDeficitKcal?: number;
+  effectiveSurplusKcal?: number;
+  trainingLoad?: TrainingLoadSummary;
 }
 
 export interface ProgramPlan {

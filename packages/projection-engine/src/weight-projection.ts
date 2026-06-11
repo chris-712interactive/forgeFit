@@ -7,6 +7,7 @@ import type {
 } from "./types";
 
 const MS_PER_DAY = 86_400_000;
+const KCAL_PER_KG_FAT = 7700;
 
 function parseDate(date: string): number {
   return new Date(`${date}T12:00:00Z`).getTime();
@@ -27,20 +28,94 @@ function addDays(date: string, days: number): string {
 interface GoalRate {
   weeklyPct: number;
   ruleId: string;
+  minWeeklyPct: number;
+  maxWeeklyPct: number;
 }
 
 function goalRate(goal: FitnessGoal): GoalRate {
   switch (goal) {
     case "fat_loss":
-      return { weeklyPct: -0.75, ruleId: "fat_loss_rate" };
+      return {
+        weeklyPct: -0.75,
+        minWeeklyPct: -1.0,
+        maxWeeklyPct: -0.5,
+        ruleId: "fat_loss_rate",
+      };
     case "recomposition":
-      return { weeklyPct: -0.35, ruleId: "fat_loss_rate" };
+      return {
+        weeklyPct: -0.35,
+        minWeeklyPct: -1.0,
+        maxWeeklyPct: -0.25,
+        ruleId: "fat_loss_rate",
+      };
     case "bodybuilding":
-      return { weeklyPct: 0.35, ruleId: "hypertrophy_rate" };
+      return {
+        weeklyPct: 0.35,
+        minWeeklyPct: 0.15,
+        maxWeeklyPct: 0.5,
+        ruleId: "lean_gain_rate",
+      };
     case "powerlifting":
     case "general_strength":
-      return { weeklyPct: 0.15, ruleId: "hypertrophy_rate" };
+      return {
+        weeklyPct: 0.15,
+        minWeeklyPct: 0.1,
+        maxWeeklyPct: 0.5,
+        ruleId: "lean_gain_rate",
+      };
   }
+}
+
+function energyBalanceWeeklyKg(
+  goal: FitnessGoal,
+  currentWeightKg: number,
+  effectiveDeficitKcal?: number,
+  effectiveSurplusKcal?: number
+): number | null {
+  const isLossGoal = goal === "fat_loss" || goal === "recomposition";
+
+  if (isLossGoal && effectiveDeficitKcal != null && effectiveDeficitKcal > 0) {
+    return -((effectiveDeficitKcal * 7) / KCAL_PER_KG_FAT);
+  }
+
+  if (!isLossGoal && effectiveSurplusKcal != null && effectiveSurplusKcal > 0) {
+    return (effectiveSurplusKcal * 7) / KCAL_PER_KG_FAT;
+  }
+
+  return null;
+}
+
+function deficitBasedPrior(
+  goal: FitnessGoal,
+  currentWeightKg: number,
+  effectiveDeficitKcal?: number,
+  effectiveSurplusKcal?: number
+): { weeklyKg: number; weeklyPct: number; ruleId: string } {
+  const rate = goalRate(goal);
+  const energyBased = energyBalanceWeeklyKg(
+    goal,
+    currentWeightKg,
+    effectiveDeficitKcal,
+    effectiveSurplusKcal
+  );
+
+  let weeklyKg =
+    energyBased ?? (rate.weeklyPct / 100) * currentWeightKg;
+
+  const minKg = (rate.minWeeklyPct / 100) * currentWeightKg;
+  const maxKg = (rate.maxWeeklyPct / 100) * currentWeightKg;
+
+  if (weeklyKg < 0) {
+    weeklyKg = Math.min(maxKg, Math.max(minKg, weeklyKg));
+  } else {
+    weeklyKg = Math.max(minKg, Math.min(maxKg, weeklyKg));
+  }
+
+  return {
+    weeklyKg,
+    weeklyPct: (weeklyKg / currentWeightKg) * 100,
+    ruleId: energyBased != null ? "energy_balance_projection" : rate.ruleId,
+  };
 }
 
 function linearSlopeKgPerDay(points: WeightDataPoint[]): number | null {
@@ -74,28 +149,28 @@ function clampWeeklyChange(
   currentWeightKg: number,
   goal: FitnessGoal
 ): { weeklyKg: number; weeklyPct: number; ruleId: string } {
-  const { weeklyPct: targetPct, ruleId } = goalRate(goal);
+  const rate = goalRate(goal);
   const observedPct = (weeklyKg / currentWeightKg) * 100;
 
-  const maxLoss = -1.0;
-  const maxGain = 0.5;
+  const maxLoss = rate.minWeeklyPct;
+  const maxGain = rate.maxWeeklyPct;
   const clampedPct = Math.max(maxLoss, Math.min(maxGain, observedPct));
 
-  const isLossGoal = targetPct < 0;
-  const isGainGoal = targetPct > 0;
+  const isLossGoal = rate.weeklyPct < 0;
+  const isGainGoal = rate.weeklyPct > 0;
 
   let adjustedPct = clampedPct;
-  if (isLossGoal && adjustedPct > 0) adjustedPct = targetPct;
-  if (isGainGoal && adjustedPct < 0) adjustedPct = targetPct;
+  if (isLossGoal && adjustedPct > 0) adjustedPct = rate.weeklyPct;
+  if (isGainGoal && adjustedPct < 0) adjustedPct = rate.weeklyPct;
 
-  if (Math.abs(adjustedPct) < Math.abs(targetPct) * 0.25) {
-    adjustedPct = targetPct;
+  if (Math.abs(adjustedPct) < Math.abs(rate.weeklyPct) * 0.25) {
+    adjustedPct = rate.weeklyPct;
   }
 
   return {
     weeklyKg: (adjustedPct / 100) * currentWeightKg,
     weeklyPct: adjustedPct,
-    ruleId,
+    ruleId: rate.ruleId,
   };
 }
 
@@ -104,6 +179,9 @@ export function projectWeight({
   goal,
   age: _age,
   horizonDays = 30,
+  effectiveDeficitKcal,
+  effectiveSurplusKcal,
+  trainingKcalPerDay,
 }: WeightProjectionInput): WeightProjectionResult {
   const sorted = [...history]
     .filter((point) => point.weightKg > 0)
@@ -115,21 +193,32 @@ export function projectWeight({
 
   const latest = sorted[sorted.length - 1]!;
   const slope = linearSlopeKgPerDay(sorted);
-  const { weeklyPct, ruleId } = goalRate(goal);
+  const prior = deficitBasedPrior(
+    goal,
+    latest.weightKg,
+    effectiveDeficitKcal,
+    effectiveSurplusKcal
+  );
 
   let weeklyChangeKg: number;
+  let ruleId = prior.ruleId;
+
   if (slope == null || sorted.length < 2) {
-    weeklyChangeKg = (weeklyPct / 100) * latest.weightKg;
+    weeklyChangeKg = prior.weeklyKg;
   } else {
-    const spanDays = Math.max(1, daysBetween(sorted[0]!.date, latest.date));
     const observedWeeklyKg = slope * 7;
     const blended =
       sorted.length >= 4
-        ? observedWeeklyKg * 0.7 + ((weeklyPct / 100) * latest.weightKg) * 0.3
-        : observedWeeklyKg * 0.4 + ((weeklyPct / 100) * latest.weightKg) * 0.6;
+        ? observedWeeklyKg * 0.7 + prior.weeklyKg * 0.3
+        : observedWeeklyKg * 0.4 + prior.weeklyKg * 0.6;
 
     const clamped = clampWeeklyChange(blended, latest.weightKg, goal);
     weeklyChangeKg = clamped.weeklyKg;
+    if (prior.ruleId === "energy_balance_projection") {
+      ruleId = prior.ruleId;
+    } else {
+      ruleId = clamped.ruleId;
+    }
   }
 
   const dailyChangeKg = weeklyChangeKg / 7;
@@ -157,5 +246,8 @@ export function projectWeight({
     weeklyChangeKg: Math.round(weeklyChangeKg * 100) / 100,
     points: [...historical, ...projected],
     ruleId,
+    effectiveDeficitKcal,
+    effectiveSurplusKcal,
+    trainingKcalPerDay,
   };
 }

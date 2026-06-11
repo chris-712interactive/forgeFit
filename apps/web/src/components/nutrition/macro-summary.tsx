@@ -103,6 +103,30 @@ export function MacroSummary({
         })}
       </div>
 
+      {targets?.trainingKcalPerDay != null && targets.trainingLoad && (
+        <p className="mt-4 text-sm text-forge-muted">
+          Includes ~{targets.trainingKcalPerDay} kcal/day from your{" "}
+          {targets.trainingLoad.sessionsPerWeek}×
+          {Math.round(
+            targets.trainingLoad.weeklyEstimatedMinutes /
+              Math.max(1, targets.trainingLoad.sessionsPerWeek)
+          )}{" "}
+          min training plan.
+          {targets.effectiveDeficitKcal != null && (
+            <>
+              {" "}
+              Effective deficit ~{targets.effectiveDeficitKcal} kcal/day.
+            </>
+          )}
+          {targets.effectiveSurplusKcal != null && (
+            <>
+              {" "}
+              Effective surplus ~{targets.effectiveSurplusKcal} kcal/day.
+            </>
+          )}
+        </p>
+      )}
+
       {!targets && (
         <p className="mt-4 text-sm text-forge-muted">
           Generate your program to see personalized calorie and macro targets.

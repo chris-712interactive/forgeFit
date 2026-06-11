@@ -94,6 +94,20 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
           <MacroPill label="Carbs" value={`${plan.nutrition.carbsG}g`} accent="gold" />
           <MacroPill label="Fat" value={`${plan.nutrition.fatG}g`} accent="steel" />
         </div>
+        {plan.nutrition.tdeeKcal != null && (
+          <p className="mt-3 text-xs text-forge-muted">
+            TDEE ~{plan.nutrition.tdeeKcal} kcal
+            {plan.nutrition.trainingKcalPerDay != null && (
+              <> · training ~{plan.nutrition.trainingKcalPerDay} kcal/day</>
+            )}
+            {plan.nutrition.effectiveDeficitKcal != null && (
+              <> · deficit ~{plan.nutrition.effectiveDeficitKcal} kcal/day</>
+            )}
+            {plan.nutrition.effectiveSurplusKcal != null && (
+              <> · surplus ~{plan.nutrition.effectiveSurplusKcal} kcal/day</>
+            )}
+          </p>
+        )}
         <div className="mt-3">
           <EvidenceExplainerLink
             href={buildEvidenceHref()}

@@ -14,7 +14,13 @@ import {
   type MovementPattern,
 } from "@forgefit/exercise-db";
 import { computeNutrition, getMatchedRules } from "./nutrition";
+import {
+  estimateExerciseMinutes,
+  estimateMainWorkMinutes,
+} from "./session-time";
 import { assignSessionWeekdays, dayLabelForIndex, isoWeekdayFromDate } from "./schedule";
+import { computeTrainingLoad } from "./training-load";
+import { estimateTrainingExpenditure } from "./training-expenditure";
 import { getWeeklySplit } from "./splits";
 import {
   appendRampSetNote,
@@ -110,17 +116,6 @@ const FILLER_PATTERNS: MovementPattern[] = [
   "isolation_arms",
   "isolation_legs",
 ];
-
-function estimateExerciseMinutes(exercises: PlannedExercise[]): number {
-  return exercises.reduce(
-    (acc, ex) => acc + ex.sets * (ex.restSeconds / 60 + 0.5),
-    0
-  );
-}
-
-function estimateMainWorkMinutes(exercises: PlannedExercise[]): number {
-  return estimateExerciseMinutes(exercises) + exercises.length * 0.75;
-}
 
 function totalWorkingSets(exercises: PlannedExercise[]): number {
   return exercises.reduce((acc, ex) => acc + ex.sets, 0);
@@ -567,13 +562,23 @@ export function generateProgram(
     )
     .sort((a, b) => a.dayIndex - b.dayIndex);
 
-  const nutrition = computeNutrition(profile, matchedRules);
+  const trainingLoad = computeTrainingLoad(week);
+  const trainingExpenditure = estimateTrainingExpenditure(
+    week,
+    trainingLoad,
+    profile
+  );
+  const nutrition = computeNutrition(profile, matchedRules, {
+    trainingLoad,
+    expenditure: trainingExpenditure,
+  });
 
   const appliedRuleIds = [
     ...new Set([
       ...matchedRules.map((r) => r.id),
       nutrition.proteinRuleId,
       ...(nutrition.calorieRuleId ? [nutrition.calorieRuleId] : []),
+      trainingExpenditure.ruleId,
     ]),
   ];
 
