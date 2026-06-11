@@ -28,6 +28,12 @@ const syncSchema = z.object({
       startedAt: z.string().min(1),
       completedAt: z.string().optional(),
       updatedAt: z.string().min(1),
+      recoveryName: z.string().optional(),
+      recoveryEquipment: z.string().optional(),
+      recoveryPlannedMinutes: z.number().int().positive().optional(),
+      recoveryStatus: z.enum(["completed", "skipped"]).optional(),
+      recoveryDurationMs: z.number().int().min(0).optional(),
+      recoveryCompletedAt: z.string().optional(),
     })
   ),
   sets: z.array(
@@ -107,6 +113,12 @@ export async function POST(request: Request) {
             started_at: session.startedAt,
             completed_at: session.completedAt ?? null,
             updated_at: session.updatedAt,
+            recovery_name: session.recoveryName ?? null,
+            recovery_equipment: session.recoveryEquipment ?? null,
+            recovery_planned_minutes: session.recoveryPlannedMinutes ?? null,
+            recovery_status: session.recoveryStatus ?? null,
+            recovery_duration_ms: session.recoveryDurationMs ?? null,
+            recovery_completed_at: session.recoveryCompletedAt ?? null,
           })
           .eq("id", existing.id);
         if (error) {
@@ -131,6 +143,12 @@ export async function POST(request: Request) {
       started_at: session.startedAt,
       completed_at: session.completedAt ?? null,
       updated_at: session.updatedAt,
+      recovery_name: session.recoveryName ?? null,
+      recovery_equipment: session.recoveryEquipment ?? null,
+      recovery_planned_minutes: session.recoveryPlannedMinutes ?? null,
+      recovery_status: session.recoveryStatus ?? null,
+      recovery_duration_ms: session.recoveryDurationMs ?? null,
+      recovery_completed_at: session.recoveryCompletedAt ?? null,
     };
 
     let { data: inserted, error } = await supabase

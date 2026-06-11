@@ -1,3 +1,6 @@
+import type { RecoveryBlock } from "@forgefit/program-engine";
+import type { RecoveryStatus } from "./recovery";
+
 export interface WorkoutSetRecord {
   exerciseId: string;
   exerciseName: string;
@@ -19,6 +22,10 @@ export interface WorkoutSessionRecord {
   completedAt: string | null;
   sets: WorkoutSetRecord[];
   pendingSync?: boolean;
+  recoveryBlock?: RecoveryBlock;
+  recoveryStatus?: RecoveryStatus | "completed" | "skipped";
+  recoveryDurationMs?: number;
+  recoveryCompletedAt?: string | null;
 }
 
 export interface DayPlanStatus {

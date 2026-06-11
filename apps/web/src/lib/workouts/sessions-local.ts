@@ -29,6 +29,10 @@ function mapLocalSession(
     completedAt: session.completedAt ?? null,
     sets: mapLocalSets(sets),
     pendingSync: !session.synced,
+    recoveryBlock: session.recoveryBlock,
+    recoveryStatus: session.recoveryStatus,
+    recoveryDurationMs: session.recoveryDurationMs,
+    recoveryCompletedAt: session.recoveryCompletedAt ?? null,
   };
 }
 

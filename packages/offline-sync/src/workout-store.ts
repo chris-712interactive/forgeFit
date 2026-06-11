@@ -1,8 +1,10 @@
 import { getOfflineDb } from "./db";
+import type { RecoveryBlock } from "@forgefit/program-engine";
 import type {
   ExerciseSnapshot,
   LocalExerciseSet,
   LocalWorkoutSession,
+  RecoveryStatus,
   WorkoutStatus,
 } from "./types";
 
@@ -58,6 +60,7 @@ export async function startWorkoutSession(input: {
   sessionName: string;
   dayIndex: number;
   exercises: ExerciseSnapshot[];
+  recoveryBlock?: RecoveryBlock;
   /** Prefill logged targets for the first working set per exercise */
   setPrefills?: Record<string, SetPrefill>;
 }): Promise<string> {
@@ -76,6 +79,8 @@ export async function startWorkoutSession(input: {
     updatedAt: timestamp,
     synced: false,
     exercises: input.exercises,
+    recoveryBlock: input.recoveryBlock,
+    recoveryStatus: input.recoveryBlock ? "pending" : undefined,
   };
 
   const sets: LocalExerciseSet[] = [];
@@ -154,6 +159,32 @@ export async function updateSet(
     synced: false,
   });
 
+  return updated;
+}
+
+export async function updateWorkoutRecovery(
+  clientId: string,
+  input: {
+    status: Extract<RecoveryStatus, "completed" | "skipped">;
+    durationMs?: number;
+  }
+): Promise<LocalWorkoutSession | undefined> {
+  const db = getOfflineDb();
+  const existing = await db.workoutSessions.get(clientId);
+  if (!existing) return undefined;
+
+  const timestamp = nowIso();
+  const updated: LocalWorkoutSession = {
+    ...existing,
+    recoveryStatus: input.status,
+    recoveryDurationMs:
+      input.status === "completed" ? input.durationMs : undefined,
+    recoveryCompletedAt: timestamp,
+    updatedAt: timestamp,
+    synced: false,
+  };
+
+  await db.workoutSessions.put(updated);
   return updated;
 }
 

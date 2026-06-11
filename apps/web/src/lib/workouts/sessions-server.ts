@@ -16,20 +16,47 @@ function isWorkoutTableMissing(error: { message?: string; code?: string }): bool
   );
 }
 
+function isRecoveryColumnMissing(error: { message?: string }): boolean {
+  const message = error.message?.toLowerCase() ?? "";
+  return message.includes("recovery_");
+}
+
 export async function getServerSessionRecords(
   userId: string,
   limit = 50
 ): Promise<ServerSessionsResult> {
   const supabase = await createClient();
 
-  const { data: sessions, error } = await supabase
+  const baseSelect =
+    "id, client_id, day_index, session_name, status, started_at, completed_at";
+  const recoverySelect =
+    ", recovery_name, recovery_equipment, recovery_planned_minutes, recovery_status, recovery_duration_ms, recovery_completed_at";
+
+  let sessions:
+    | Array<Record<string, unknown>>
+    | null = null;
+  let error: { message?: string; code?: string } | null = null;
+
+  const withRecovery = await supabase
     .from("workout_sessions")
-    .select(
-      "id, client_id, day_index, session_name, status, started_at, completed_at"
-    )
+    .select(`${baseSelect}${recoverySelect}`)
     .eq("user_id", userId)
     .order("started_at", { ascending: false })
     .limit(limit);
+
+  sessions = withRecovery.data;
+  error = withRecovery.error;
+
+  if (error && isRecoveryColumnMissing(error)) {
+    const fallback = await supabase
+      .from("workout_sessions")
+      .select(baseSelect)
+      .eq("user_id", userId)
+      .order("started_at", { ascending: false })
+      .limit(limit);
+    sessions = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     return { records: [], tableReady: !isWorkoutTableMissing(error) };
@@ -66,14 +93,31 @@ export async function getServerSessionRecords(
   return {
     tableReady: true,
     records: sessions.map((session) => ({
-      id: session.id,
-      clientId: session.client_id,
-      dayIndex: session.day_index,
-      sessionName: session.session_name,
-      status: session.status,
-      startedAt: session.started_at,
-      completedAt: session.completed_at,
-      sets: (setsBySession.get(session.id) ?? []).sort(
+      id: String(session.id),
+      clientId: String(session.client_id),
+      dayIndex: Number(session.day_index),
+      sessionName: String(session.session_name),
+      status: String(session.status),
+      startedAt: String(session.started_at),
+      completedAt: (session.completed_at as string | null) ?? null,
+      recoveryBlock:
+        session.recovery_name && session.recovery_equipment
+          ? {
+              name: String(session.recovery_name),
+              equipment: String(session.recovery_equipment),
+              durationMinutes: Number(session.recovery_planned_minutes ?? 5),
+            }
+          : undefined,
+      recoveryStatus:
+        (session.recovery_status as "completed" | "skipped" | null) ??
+        undefined,
+      recoveryDurationMs:
+        session.recovery_duration_ms != null
+          ? Number(session.recovery_duration_ms)
+          : undefined,
+      recoveryCompletedAt:
+        (session.recovery_completed_at as string | null) ?? null,
+      sets: (setsBySession.get(String(session.id)) ?? []).sort(
         (a, b) =>
           a.exerciseId.localeCompare(b.exerciseId) || a.setNumber - b.setNumber
       ),

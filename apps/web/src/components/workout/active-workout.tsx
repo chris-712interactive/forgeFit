@@ -15,6 +15,7 @@ import {
   getSession,
   getSetsForSession,
   updateSet,
+  updateWorkoutRecovery,
   type LocalExerciseSet,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
@@ -26,6 +27,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { HoldTimer } from "./hold-timer";
+import { RecoveryBlockCard } from "./recovery-block-card";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
 import { useWorkoutSyncContext } from "./sync-manager";
@@ -50,6 +52,10 @@ export function ActiveWorkout({
   const [timedTimer, setTimedTimer] = useState<{
     setClientId: string;
     exerciseId: string;
+    seconds: number;
+    label: string;
+  } | null>(null);
+  const [recoveryTimer, setRecoveryTimer] = useState<{
     seconds: number;
     label: string;
   } | null>(null);
@@ -173,12 +179,40 @@ export function ActiveWorkout({
     logTimedSet(elapsedSeconds);
   }
 
+  async function handleRecoveryUpdate(
+    status: "completed" | "skipped",
+    durationMs?: number
+  ) {
+    const updated = await updateWorkoutRecovery(clientId, { status, durationMs });
+    if (updated) {
+      setSession(updated);
+    }
+    setRecoveryTimer(null);
+    void sync?.refreshPending();
+    if (navigator.onLine) {
+      void sync?.runSync();
+    }
+  }
+
+  function handleRecoveryTimerComplete() {
+    if (!recoveryTimer || !session?.recoveryBlock) return;
+    void handleRecoveryUpdate(
+      "completed",
+      session.recoveryBlock.durationMinutes * 60_000
+    );
+  }
+
+  function handleRecoveryTimerStop(elapsedSeconds: number) {
+    void handleRecoveryUpdate("completed", elapsedSeconds * 1000);
+  }
+
   async function handleFinish() {
     if (finishing || cancelling) return;
     setFinishing(true);
     setFinishError(null);
     setRestSeconds(null);
     setTimedTimer(null);
+    setRecoveryTimer(null);
 
     try {
       await completeWorkoutSession(clientId, "completed");
@@ -205,6 +239,7 @@ export function ActiveWorkout({
     setFinishError(null);
     setRestSeconds(null);
     setTimedTimer(null);
+    setRecoveryTimer(null);
 
     try {
       await completeWorkoutSession(clientId, "cancelled");
@@ -360,6 +395,25 @@ export function ActiveWorkout({
             </section>
           );
         })}
+
+        {session.recoveryBlock && (
+          <RecoveryBlockCard
+            block={session.recoveryBlock}
+            status={session.recoveryStatus ?? "pending"}
+            durationMs={session.recoveryDurationMs}
+            isTimerActive={recoveryTimer !== null}
+            onStartTimer={() => {
+              setRestSeconds(null);
+              setTimedTimer(null);
+              setRecoveryTimer({
+                seconds: session.recoveryBlock!.durationMinutes * 60,
+                label: "Recovery",
+              });
+            }}
+            onMarkComplete={() => void handleRecoveryUpdate("completed")}
+            onSkip={() => void handleRecoveryUpdate("skipped")}
+          />
+        )}
       </div>
 
       {finishError && (
@@ -387,7 +441,16 @@ export function ActiveWorkout({
         </button>
       </div>
 
-      {timedTimer && timedTimer.seconds > 0 && (
+      {recoveryTimer && recoveryTimer.seconds > 0 && (
+        <HoldTimer
+          seconds={recoveryTimer.seconds}
+          label={recoveryTimer.label}
+          onComplete={handleRecoveryTimerComplete}
+          onStop={handleRecoveryTimerStop}
+        />
+      )}
+
+      {!recoveryTimer && timedTimer && timedTimer.seconds > 0 && (
         <HoldTimer
           seconds={timedTimer.seconds}
           label={timedTimer.label}
@@ -396,7 +459,7 @@ export function ActiveWorkout({
         />
       )}
 
-      {!timedTimer && restSeconds !== null && restSeconds > 0 && (
+      {!recoveryTimer && !timedTimer && restSeconds !== null && restSeconds > 0 && (
         <RestTimer
           seconds={restSeconds}
           onComplete={() => setRestSeconds(null)}

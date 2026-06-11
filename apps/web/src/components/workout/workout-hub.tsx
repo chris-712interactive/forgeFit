@@ -127,10 +127,16 @@ export function WorkoutHub({
 
   const dayStatusMap = useMemo(() => buildDayStatusMap(allSessions), [allSessions]);
 
-  const reviewSession = useMemo(
-    () => allSessions.find((s) => s.clientId === reviewClientId) ?? null,
-    [allSessions, reviewClientId]
-  );
+  const reviewSession = useMemo(() => {
+    const session =
+      allSessions.find((s) => s.clientId === reviewClientId) ?? null;
+    if (!session || session.recoveryBlock || !plan) return session;
+
+    const planSession = plan.week.find((s) => s.dayIndex === session.dayIndex);
+    return planSession?.recoveryBlock
+      ? { ...session, recoveryBlock: planSession.recoveryBlock }
+      : session;
+  }, [allSessions, reviewClientId, plan]);
 
   const reviewDayStatus = useMemo(() => {
     if (!reviewSession) return undefined;
@@ -278,6 +284,7 @@ export function WorkoutHub({
           programId: cachedProgramId,
           sessionName: session.name,
           dayIndex: session.dayIndex,
+          recoveryBlock: session.recoveryBlock,
           exercises: session.exercises.map((ex) => {
             const progression = loadProgressions.get(ex.exerciseId);
             return {

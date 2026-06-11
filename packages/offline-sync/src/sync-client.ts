@@ -42,6 +42,15 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
       startedAt: s.startedAt,
       completedAt: s.completedAt,
       updatedAt: s.updatedAt,
+      recoveryName: s.recoveryBlock?.name,
+      recoveryEquipment: s.recoveryBlock?.equipment,
+      recoveryPlannedMinutes: s.recoveryBlock?.durationMinutes,
+      recoveryStatus:
+        s.recoveryStatus === "completed" || s.recoveryStatus === "skipped"
+          ? s.recoveryStatus
+          : undefined,
+      recoveryDurationMs: finiteOrUndefined(s.recoveryDurationMs),
+      recoveryCompletedAt: s.recoveryCompletedAt,
     })),
     sets: sets.map((s) => ({
       clientId: s.clientId,

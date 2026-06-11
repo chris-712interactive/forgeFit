@@ -1,6 +1,7 @@
-import type { ProgramPlan } from "@forgefit/program-engine";
+import type { ProgramPlan, RecoveryBlock } from "@forgefit/program-engine";
 
 export type WorkoutStatus = "in_progress" | "completed" | "cancelled";
+export type RecoveryStatus = "pending" | "completed" | "skipped";
 
 export interface CachedProgram {
   userId: string;
@@ -33,6 +34,10 @@ export interface LocalWorkoutSession {
   updatedAt: string;
   synced: boolean;
   exercises: ExerciseSnapshot[];
+  recoveryBlock?: RecoveryBlock;
+  recoveryStatus?: RecoveryStatus;
+  recoveryDurationMs?: number;
+  recoveryCompletedAt?: string;
 }
 
 export interface LocalExerciseSet {
@@ -62,6 +67,12 @@ export interface SyncSessionPayload {
   startedAt: string;
   completedAt?: string;
   updatedAt: string;
+  recoveryName?: string;
+  recoveryEquipment?: string;
+  recoveryPlannedMinutes?: number;
+  recoveryStatus?: Extract<RecoveryStatus, "completed" | "skipped">;
+  recoveryDurationMs?: number;
+  recoveryCompletedAt?: string;
 }
 
 export interface SyncSetPayload {

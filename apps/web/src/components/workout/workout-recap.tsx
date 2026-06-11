@@ -12,6 +12,10 @@ import {
   weightUnitLabel,
 } from "@/lib/units/measurements";
 import { compareSessions, formatShortDate } from "@/lib/workouts/comparison";
+import {
+  formatRecoveryDuration,
+  recoveryEquipmentLabel,
+} from "@/lib/workouts/recovery";
 import type { DayPlanStatus, WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { getPriorSessionForComparison } from "@/lib/workouts/sessions";
 import {
@@ -74,6 +78,29 @@ export function WorkoutRecap({
           Comparing to your last {session.sessionName} on{" "}
           {formatShortDate(prior.completedAt ?? prior.startedAt)}
         </p>
+      )}
+
+      {session.recoveryBlock && (
+        <section className="mt-6 rounded-2xl border border-forge-steel/30 bg-forge-steel/5 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-steel">
+            Recovery
+          </p>
+          <p className="mt-1 font-display font-semibold text-forge-text">
+            {session.recoveryBlock.name}
+          </p>
+          <p className="mt-1 text-sm text-forge-muted">
+            {recoveryEquipmentLabel(session.recoveryBlock.equipment)} ·{" "}
+            {formatRecoveryDuration(session.recoveryBlock.durationMinutes)}{" "}
+            planned
+          </p>
+          <p className="mt-2 text-sm text-forge-text">
+            {session.recoveryStatus === "completed"
+              ? "Completed"
+              : session.recoveryStatus === "skipped"
+                ? "Skipped"
+                : "Not logged"}
+          </p>
+        </section>
       )}
 
       <div className={`mt-6 sm:mt-8 ${appSectionStackTight}`}>

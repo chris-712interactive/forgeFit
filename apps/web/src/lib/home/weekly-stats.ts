@@ -1,5 +1,6 @@
 import { timedSetTotalMs } from "@forgefit/exercise-db";
 import type { ProgramPlan } from "@forgefit/program-engine";
+import { recoveryMinutesLogged } from "@/lib/workouts/recovery";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type { WeeklyWorkStats } from "./types";
 
@@ -100,9 +101,12 @@ export function computeWeeklyWorkStats(
     trainingMinutes += sessionMinutes(session);
 
     const planSession = plan?.week.find((s) => s.dayIndex === session.dayIndex);
-    if (planSession?.recoveryBlock) {
-      recoveryMinutes += planSession.recoveryBlock.durationMinutes;
-    }
+    recoveryMinutes += recoveryMinutesLogged({
+      recoveryStatus: session.recoveryStatus,
+      recoveryDurationMs: session.recoveryDurationMs,
+      recoveryBlock: session.recoveryBlock ?? planSession?.recoveryBlock,
+      plannedRecoveryMinutes: planSession?.recoveryBlock?.durationMinutes,
+    });
 
     const completedSets = session.sets.filter((set) => set.completed);
     totalSets += completedSets.length;

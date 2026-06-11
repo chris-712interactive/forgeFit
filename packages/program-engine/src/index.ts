@@ -11,6 +11,7 @@ export type {
   ProgramUserProfile,
   WorkoutSession,
   PlannedExercise,
+  RecoveryBlock,
   NutritionTargets,
   FitnessGoal,
   ExperienceLevel,
