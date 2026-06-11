@@ -1,4 +1,4 @@
-function SafariShareIcon({ className = "" }: { className?: string }) {
+function ShareIcon({ className = "" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -50,7 +50,7 @@ export function IosInstallGuide() {
         workouts in the gym.
       </p>
 
-      {/* Mini Safari chrome */}
+      {/* Mini browser chrome */}
       <div
         className="overflow-hidden rounded-xl border border-[var(--border)] bg-forge-surface"
         aria-hidden
@@ -67,12 +67,12 @@ export function IosInstallGuide() {
           <div className="relative flex shrink-0 items-center">
             <span className="absolute -inset-1.5 animate-pulse rounded-lg bg-forge-ember/25 ring-2 ring-forge-ember/60" />
             <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-forge-ember/15 text-forge-ember">
-              <SafariShareIcon className="h-4 w-4" />
+              <ShareIcon className="h-4 w-4" />
             </span>
           </div>
         </div>
         <div className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-forge-muted">
-          Tap Share in Safari&apos;s toolbar
+          Tap Share in your browser (top or bottom toolbar)
         </div>
       </div>
 
@@ -101,8 +101,10 @@ export function IosInstallGuide() {
         <li className="flex items-start gap-3">
           <StepBadge number={1} />
           <p className="pt-0.5 text-sm text-forge-muted">
-            Open forgeFit in <span className="font-medium text-forge-text">Safari</span>{" "}
-            (Chrome and other browsers on iPhone can&apos;t install PWAs).
+            Stay on this page in{" "}
+            <span className="font-medium text-forge-text">Safari</span> or{" "}
+            <span className="font-medium text-forge-text">Chrome</span> — both
+            support Add to Home Screen on iPhone.
           </p>
         </li>
         <li className="flex items-start gap-3">
@@ -110,10 +112,12 @@ export function IosInstallGuide() {
           <p className="pt-0.5 text-sm text-forge-muted">
             Tap the{" "}
             <span className="inline-flex translate-y-0.5 items-center gap-1 font-medium text-forge-ember">
-              <SafariShareIcon className="h-3.5 w-3.5" />
+              <ShareIcon className="h-3.5 w-3.5" />
               Share
             </span>{" "}
-            button at the bottom of the screen (or top on iPad).
+            button — usually at the <span className="font-medium text-forge-text">top</span> in
+            Chrome or the <span className="font-medium text-forge-text">bottom</span> in Safari
+            (top on iPad).
           </p>
         </li>
         <li className="flex items-start gap-3">
