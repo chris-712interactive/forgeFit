@@ -58,6 +58,29 @@ export interface WeightProjectionResult {
   trainingKcalPerDay?: number;
 }
 
+export interface WaistDataPoint {
+  date: string;
+  waistCm: number;
+}
+
+export interface WaistProjectionPoint {
+  date: string;
+  waistCm: number;
+  projected: boolean;
+}
+
+export interface WaistProjectionInput {
+  history: WaistDataPoint[];
+  horizonDays?: number;
+  goal?: FitnessGoal;
+}
+
+export interface WaistProjectionResult {
+  horizonDays: number;
+  weeklyChangeCm: number;
+  points: WaistProjectionPoint[];
+}
+
 export type MeasurementMetric =
   | "weightKg"
   | "waistCm"

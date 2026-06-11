@@ -1,5 +1,6 @@
 import type {
   TrendSeries,
+  WaistProjectionResult,
   WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal } from "@forgefit/program-engine";
@@ -34,6 +35,7 @@ export interface ProgressGateContext {
   horizonDays: number;
   showConfidenceBands: boolean;
   showGoalDate: boolean;
+  showWaistProjection: boolean;
   analyticsHistoryDays: number | null;
 }
 
@@ -45,6 +47,8 @@ export interface ProgressDashboardData {
   caliperEntries: CaliperMeasurementRow[];
   trends: TrendSeries[];
   projection: WeightProjectionResult | null;
+  waistProjection: WaistProjectionResult | null;
+  hasWaistHistory: boolean;
   tableReady: boolean;
   gates: ProgressGateContext;
   proAnalytics: ProAnalyticsBundle | null;

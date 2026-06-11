@@ -1,6 +1,8 @@
 import {
   buildTrendSeries,
+  projectWaist,
   projectWeight,
+  type WaistProjectionResult,
   type WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
@@ -200,6 +202,28 @@ function buildProjection(
   });
 }
 
+function buildWaistProjection(
+  measurements: BodyMeasurementRow[],
+  horizonDays: number,
+  goal: FitnessGoal | null,
+  enabled: boolean
+): WaistProjectionResult | null {
+  if (!enabled || !goal) return null;
+
+  const waistHistory = measurements
+    .filter((row) => row.waistCm != null && row.waistCm > 0)
+    .map((row) => ({
+      date: row.measuredDate,
+      waistCm: row.waistCm as number,
+    }));
+
+  return projectWaist({
+    history: waistHistory,
+    horizonDays,
+    goal,
+  });
+}
+
 function buildGateContext(
   subscription: SubscriptionSnapshot
 ): ProgressDashboardData["gates"] {
@@ -211,6 +235,10 @@ function buildGateContext(
       "projection_confidence_bands"
     ),
     showGoalDate: hasFeature(subscription, "projection_goal_date"),
+    showWaistProjection: hasFeature(
+      subscription,
+      "projection_secondary_metrics"
+    ),
     analyticsHistoryDays: analyticsHistoryDays(subscription),
   };
 }
@@ -259,6 +287,20 @@ export async function getProgressDashboardData(
         )
       : null;
 
+  const waistHistoryCount = measurements.filter(
+    (row) => row.waistCm != null && row.waistCm > 0
+  ).length;
+
+  const waistProjection =
+    goal && projection
+      ? buildWaistProjection(
+          measurements,
+          gates.horizonDays,
+          goal,
+          gates.showWaistProjection
+        )
+      : null;
+
   const trends = buildTrendSeries(
     analyticsMeasurements.map((row) => ({
       measuredDate: row.measuredDate,
@@ -286,6 +328,8 @@ export async function getProgressDashboardData(
     caliperEntries,
     trends,
     projection,
+    waistProjection,
+    hasWaistHistory: waistHistoryCount >= 2,
     tableReady: measurementResult.tableReady,
     gates,
     proAnalytics,

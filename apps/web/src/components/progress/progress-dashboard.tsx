@@ -83,10 +83,30 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         <div className="mt-4">
           <WeightProjectionChart
             projection={data.projection}
+            waistProjection={
+              gates.showWaistProjection ? data.waistProjection : null
+            }
             showConfidenceBands={gates.showConfidenceBands}
             showGoalDate={gates.showGoalDate}
           />
         </div>
+        {!gates.showWaistProjection && data.hasWaistHistory && (
+          <div className="mt-4">
+            <UpgradePrompt
+              compact
+              title="Project your waist trend"
+              description="Pro overlays waist trajectory on your weight projection from logged measurements."
+              suggestedTier="pro"
+            />
+          </div>
+        )}
+        {gates.showWaistProjection &&
+          data.hasWaistHistory &&
+          !data.waistProjection && (
+            <p className="mt-3 text-xs text-forge-muted">
+              Log waist on at least two dates to see the waist overlay.
+            </p>
+          )}
         {!isPro && (
           <div className="mt-4">
             <UpgradePrompt
