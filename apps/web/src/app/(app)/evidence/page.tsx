@@ -43,7 +43,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
         Evidence behind your plan
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-forge-muted">
-        ForgeFit never guesses your programming in a chatbot. Every target and
+        ForgeRep never guesses your programming in a chatbot. Every target and
         training decision traces to a versioned rule in our evidence knowledge
         base — each with cited sources you can read for yourself.
       </p>

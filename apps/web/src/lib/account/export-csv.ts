@@ -19,7 +19,7 @@ function rowsToCsv(headers: string[], rows: Record<string, unknown>[]): string {
 export function buildAccountExportCsv(bundle: AccountExportBundle): string {
   const sections: string[] = [];
 
-  sections.push("# ForgeFit account export (CSV)");
+  sections.push("# ForgeRep account export (CSV)");
   sections.push(`# Exported at: ${bundle.exportedAt}`);
   sections.push("");
 

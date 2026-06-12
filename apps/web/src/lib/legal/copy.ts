@@ -1,10 +1,10 @@
 export const PRIVACY_POLICY = {
   title: "Privacy Policy",
-  updated: "June 9, 2026",
+  updated: "June 8, 2026",
   sections: [
     {
       heading: "Overview",
-      body: "ForgeFit helps you track workouts, nutrition, and body measurements. This policy describes what we collect, why we use it, and the choices you have.",
+      body: "ForgeRep helps you track workouts, nutrition, and body measurements. This policy describes what we collect, why we use it, and the choices you have.",
     },
     {
       heading: "Information we collect",
@@ -24,26 +24,26 @@ export const PRIVACY_POLICY = {
     },
     {
       heading: "Contact",
-      body: "Questions about privacy? Contact the ForgeFit team through the support channel listed in the app or on the marketing site.",
+      body: "Questions about privacy? Contact the ForgeRep team through the support channel listed in the app or on the marketing site.",
     },
   ],
 } as const;
 
 export const TERMS_OF_USE = {
   title: "Terms of Use",
-  updated: "June 9, 2026",
+  updated: "June 8, 2026",
   sections: [
     {
       heading: "Agreement",
-      body: "By creating an account or using ForgeFit, you agree to these Terms of Use and our Privacy Policy.",
+      body: "By creating an account or using ForgeRep, you agree to these Terms of Use and our Privacy Policy.",
     },
     {
       heading: "Informational purpose only",
-      body: "ForgeFit provides educational fitness and nutrition information. It is not medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional before starting or changing an exercise or nutrition program, especially if you have a health condition, injury, or take prescription medications.",
+      body: "ForgeRep provides educational fitness and nutrition information. It is not medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional before starting or changing an exercise or nutrition program, especially if you have a health condition, injury, or take prescription medications.",
     },
     {
       heading: "Your responsibility",
-      body: "You are responsible for using ForgeFit safely. Stop any activity that causes pain, dizziness, or other concerning symptoms. You use the service at your own risk.",
+      body: "You are responsible for using ForgeRep safely. Stop any activity that causes pain, dizziness, or other concerning symptoms. You use the service at your own risk.",
     },
     {
       heading: "Accounts",

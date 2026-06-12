@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const dateStamp = exportData.exportedAt.slice(0, 10);
 
   if (format === "csv") {
-    const filename = `forgefit-export-${dateStamp}.csv`;
+    const filename = `forgerep-export-${dateStamp}.csv`;
     return new NextResponse(buildAccountExportCsv(exportData), {
       status: 200,
       headers: {
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     });
   }
 
-  const filename = `forgefit-export-${dateStamp}.json`;
+  const filename = `forgerep-export-${dateStamp}.json`;
 
   return new NextResponse(JSON.stringify(exportData, null, 2), {
     status: 200,

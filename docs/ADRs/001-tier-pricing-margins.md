@@ -6,7 +6,7 @@
 
 ## Context
 
-ForgeFit splits paid features into **Pro** ($8.99/mo · $69.99/yr) and **Pro+** ($14.99/mo · $119.99/yr). Pro annual offers a **35% discount** vs monthly. We need confidence that annual pricing preserves healthy margins.
+ForgeRep splits paid features into **Pro** ($8.99/mo · $69.99/yr) and **Pro+** ($14.99/mo · $119.99/yr). Pro annual offers a **35% discount** vs monthly. We need confidence that annual pricing preserves healthy margins.
 
 ## Decision
 

@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "ForgeFit",
-    short_name: "ForgeFit",
+    name: "ForgeRep",
+    short_name: "ForgeRep",
     description:
       "Evidence-based fitness and nutrition — forge your best self",
     start_url: "/",

@@ -49,7 +49,7 @@ export async function searchOpenFoodFacts(
   try {
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "ForgeFit/1.0 (nutrition diary)" },
+      headers: { "User-Agent": "ForgeRep/1.0 (nutrition diary)" },
     });
     if (!response.ok) return [];
 

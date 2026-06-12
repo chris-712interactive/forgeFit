@@ -17,8 +17,15 @@ import { ExperiencePromotionBanner } from "@/components/progression/experience-p
 import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
 import { getPromotionEvaluation } from "@/lib/progression/service";
 import { SubscriptionSetting } from "@/components/profile/subscription-setting";
+import { IntegrationsSetting } from "@/components/profile/integrations-setting";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { hasFeature } from "@/lib/billing/gates";
 import { isStripeProConfigured } from "@/lib/billing/stripe";
+import {
+  buildIntegrationsHubView,
+  listIntegrationStatuses,
+} from "@/lib/integrations/service";
+import { isDeviceIntegrationsConfigured } from "@/lib/integrations/config";
 import { hasProAccess } from "@/lib/billing/types";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
@@ -32,13 +39,19 @@ import {
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string }>;
+  searchParams: Promise<{
+    checkout?: string;
+    integration?: string;
+    integration_error?: string;
+  }>;
 }) {
   const params = await searchParams;
   const checkoutStatus =
     params.checkout === "success" || params.checkout === "canceled"
       ? params.checkout
       : null;
+  const integrationStatus = params.integration ?? null;
+  const integrationError = params.integration_error ?? null;
 
   const supabase = await createClient();
   const {
@@ -89,6 +102,17 @@ export default async function ProfilePage({
     ? await getPromotionEvaluation(user.id, sessionResult.records, plan)
     : null;
 
+  const integrationsUnlocked = hasFeature(subscription, "device_integrations");
+  let initialIntegrations = buildIntegrationsHubView([]);
+  if (user && integrationsUnlocked) {
+    try {
+      const statuses = await listIntegrationStatuses(user.id);
+      initialIntegrations = buildIntegrationsHubView(statuses);
+    } catch {
+      initialIntegrations = buildIntegrationsHubView([]);
+    }
+  }
+
   return (
     <div className={appPagePadding}>
       <h1 className="font-display text-2xl font-bold text-forge-text">Profile</h1>
@@ -123,6 +147,14 @@ export default async function ProfilePage({
           subscription={subscription}
           stripeConfigured={isStripeProConfigured()}
           checkoutStatus={checkoutStatus}
+        />
+
+        <IntegrationsSetting
+          unlocked={integrationsUnlocked}
+          configured={isDeviceIntegrationsConfigured()}
+          initialIntegrations={initialIntegrations}
+          integrationStatus={integrationStatus}
+          integrationError={integrationError}
         />
 
         <UnitPreferenceSetting initialUnit={unit} />

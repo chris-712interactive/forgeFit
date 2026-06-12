@@ -16,8 +16,10 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [x] Profile upgrade UI (`subscription-setting.tsx`)
 - [x] Pro gates: 90-day projections, confidence bands, goal date, 90-day history cap
 - [x] Data export gated to Pro
-- [ ] Withings weight syncs to `body_measurements` (Pro+)
-- [ ] Fitbit activity syncs successfully (Pro+)
+- [x] Withings OAuth + weight sync to `body_measurements` (Pro+)
+- [ ] Fitbit activity sync (Pro+)
+- [ ] Strava workout sync (Pro+)
+- [ ] Nutritionix restaurant search (Pro+)
 - [x] Strength/volume/adherence analytics UI (Pro)
 - [x] Progress photos timeline (Pro)
 - [x] CSV export (Pro) + rule-based insights (Home + Progress)
@@ -26,5 +28,5 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 
 | Product | Monthly | Annual |
 |---------|---------|--------|
-| ForgeFit Pro | $8.99 | $69.99 |
-| ForgeFit Pro+ | $14.99 | $119.99 |
+| ForgeRep Pro | $8.99 | $69.99 |
+| ForgeRep Pro+ | $14.99 | $119.99 |

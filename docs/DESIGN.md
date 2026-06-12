@@ -48,7 +48,7 @@ gradient-forge-ignite  gradient-forge-celebrate
 | App icon | `apps/web/public/logo-icon.svg` | PWA manifest, favicon |
 | Concept reference | `docs/assets/logo-concept-reference.png` | Design source (not for production) |
 
-The SVG logo recreates the forged metallic **F** with ember glow, weight plates, dumbbell, rivets, and **ForgeFit** wordmark. Vector format scales to any resolution.
+The SVG logo recreates the forged metallic **F** with ember glow, weight plates, dumbbell, rivets, and **ForgeRep** wordmark. Vector format scales to any resolution.
 
 ## PWA
 

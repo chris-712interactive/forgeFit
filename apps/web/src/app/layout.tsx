@@ -15,10 +15,10 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  applicationName: "ForgeFit",
+  applicationName: "ForgeRep",
   title: {
-    default: "ForgeFit",
-    template: "%s · ForgeFit",
+    default: "ForgeRep",
+    template: "%s · ForgeRep",
   },
   description:
     "Evidence-based fitness and nutrition. Mobile-first, works offline in the gym.",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "ForgeFit",
+    title: "ForgeRep",
   },
 };
 

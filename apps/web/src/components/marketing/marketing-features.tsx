@@ -6,7 +6,7 @@ export function MarketingFeatures() {
     <MarketingSection>
       <MarketingSectionIntro
         title="Everything you need to train with intention"
-        description="ForgeFit connects your program, logging, nutrition, and progress into one mobile-first experience — so you always know where you stand."
+        description="ForgeRep connects your program, logging, nutrition, and progress into one mobile-first experience — so you always know where you stand."
       />
 
       <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 md:gap-6">

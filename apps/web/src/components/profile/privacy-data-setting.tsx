@@ -52,7 +52,7 @@ export function PrivacyDataSetting({
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `forgefit-export-${dateStamp}.csv`;
+        link.download = `forgerep-export-${dateStamp}.csv`;
         link.click();
         URL.revokeObjectURL(url);
       } else {
@@ -64,7 +64,7 @@ export function PrivacyDataSetting({
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `forgefit-export-${dateStamp}.json`;
+        link.download = `forgerep-export-${dateStamp}.json`;
         link.click();
         URL.revokeObjectURL(url);
       }
@@ -106,7 +106,7 @@ export function PrivacyDataSetting({
         Privacy & data
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Download everything ForgeFit stores about you, or permanently delete
+        Download everything ForgeRep stores about you, or permanently delete
         your account and all associated data.
       </p>
 
@@ -165,7 +165,7 @@ export function PrivacyDataSetting({
             </p>
             <p className="mt-1 text-xs text-forge-muted">
               Your profile, programs, workouts, nutrition logs, measurements,
-              and equipment settings will be removed from ForgeFit. This cannot
+              and equipment settings will be removed from ForgeRep. This cannot
               be undone. Export your data first if you want a copy.
             </p>
 

@@ -29,7 +29,7 @@ export default function DisclaimerPage() {
           {HEALTH_DISCLAIMER.title}
         </h1>
         <p className="mt-2 text-forge-muted">
-          Please review and accept before continuing to ForgeFit.
+          Please review and accept before continuing to ForgeRep.
         </p>
 
         <div className="mt-6">
@@ -53,7 +53,7 @@ export default function DisclaimerPage() {
           onClick={handleSubmit}
           className="min-h-[52px] w-full rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-40"
         >
-          {pending ? "Saving…" : "I agree — continue to ForgeFit"}
+          {pending ? "Saving…" : "I agree — continue to ForgeRep"}
         </button>
       </footer>
     </div>

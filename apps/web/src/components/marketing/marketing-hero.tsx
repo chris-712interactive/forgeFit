@@ -10,7 +10,7 @@ export function MarketingHero() {
       >
         <img
           src="/logo.svg"
-          alt="ForgeFit — evidence-based fitness and nutrition app"
+          alt="ForgeRep — evidence-based fitness and nutrition app"
           className="h-auto w-full max-w-[280px] sm:max-w-[300px]"
           width={280}
           height={109}

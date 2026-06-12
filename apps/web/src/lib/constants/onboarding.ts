@@ -105,9 +105,9 @@ export const MINUTES_PER_SESSION_OPTIONS = [20, 30, 45, 60, 75, 90];
 export const HEALTH_DISCLAIMER = {
   title: "Before we begin",
   paragraphs: [
-    "ForgeFit provides workout plans, nutrition targets, and progress estimates for informational and educational purposes only. Nothing in this app is medical advice, diagnosis, or treatment.",
+    "ForgeRep provides workout plans, nutrition targets, and progress estimates for informational and educational purposes only. Nothing in this app is medical advice, diagnosis, or treatment.",
     "Exercise and nutrition programs affect everyone differently. If you have any health condition, injury, are pregnant, take prescription medications, or have questions about whether this program is appropriate for you, consult a qualified physician or healthcare provider before starting.",
-    "By continuing, you agree that you use ForgeFit at your own risk and that you are responsible for stopping any activity that causes pain, dizziness, or other concerning symptoms.",
+    "By continuing, you agree that you use ForgeRep at your own risk and that you are responsible for stopping any activity that causes pain, dizziness, or other concerning symptoms.",
   ],
   checkboxLabel:
     "I understand this is informational only and I have consulted a physician where appropriate.",

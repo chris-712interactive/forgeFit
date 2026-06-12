@@ -1,4 +1,4 @@
-# ForgeFit Tier Gates
+# ForgeRep Tier Gates
 
 > **Authoritative feature matrix** for Free, Pro, and Pro+.
 > Code gates live in `apps/web/src/lib/billing/gates.ts` — keep in sync with this doc.
@@ -117,8 +117,8 @@ Logging itself is **never** capped — only analytics views and projection horiz
 
 | Product | Monthly price ID env | Annual price ID env | `subscription_tier` |
 |---------|---------------------|---------------------|---------------------|
-| ForgeFit Pro | `STRIPE_PRO_PRICE_ID_MONTHLY` | `STRIPE_PRO_PRICE_ID_ANNUAL` | `pro` |
-| ForgeFit Pro+ | `STRIPE_PRO_PLUS_PRICE_ID_MONTHLY` | `STRIPE_PRO_PLUS_PRICE_ID_ANNUAL` | `pro_plus` |
+| ForgeRep Pro | `STRIPE_PRO_PRICE_ID_MONTHLY` | `STRIPE_PRO_PRICE_ID_ANNUAL` | `pro` |
+| ForgeRep Pro+ | `STRIPE_PRO_PLUS_PRICE_ID_MONTHLY` | `STRIPE_PRO_PLUS_PRICE_ID_ANNUAL` | `pro_plus` |
 
 Webhook `syncSubscriptionToProfile` resolves tier from the subscription's active price ID.
 

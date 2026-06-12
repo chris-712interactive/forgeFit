@@ -46,7 +46,7 @@ export function IosInstallGuide() {
   return (
     <div className="mt-3 space-y-3">
       <p className="text-sm text-forge-muted">
-        Add ForgeFit to your Home Screen for faster access and reliable offline
+        Add ForgeRep to your Home Screen for faster access and reliable offline
         workouts in the gym.
       </p>
 
@@ -61,7 +61,7 @@ export function IosInstallGuide() {
               ‹
             </span>
             <div className="min-w-0 flex-1 truncate rounded-md bg-forge-surface px-2 py-1 text-center text-[10px] text-forge-muted">
-              forgefit.app
+              joinforgefit.com
             </div>
           </div>
           <div className="relative flex shrink-0 items-center">
