@@ -6,7 +6,6 @@ import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasProAccess } from "@/lib/billing/types";
 import { getDailyNutritionSummary } from "@/lib/nutrition/service";
-import { getPromotionEvaluation } from "@/lib/progression/service";
 import { ensureActiveProgram } from "@/lib/programs/service";
 import type { FitnessGoal } from "@/lib/types/profile";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -58,11 +57,6 @@ export async function getHomeDashboardData(
     plan
   );
   const next = findNextPlannedSession(sessionResult.records, plan);
-  const promotion = await getPromotionEvaluation(
-    userId,
-    sessionResult.records,
-    plan
-  );
 
   let proInsights: HomeDashboardData["proInsights"] = [];
   if (
@@ -104,7 +98,6 @@ export async function getHomeDashboardData(
     nextSessionDayIndex: next?.dayIndex ?? null,
     nextSessionName: next?.name ?? null,
     workoutsTableReady: sessionResult.tableReady,
-    promotion,
     proInsights,
     activity,
     gamification,

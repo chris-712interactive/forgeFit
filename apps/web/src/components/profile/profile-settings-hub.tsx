@@ -9,13 +9,10 @@ import { OneRepMaxSetting } from "@/components/profile/one-rep-max-setting";
 import { ProgramPlanSetting } from "@/components/profile/program-plan-setting";
 import { SubscriptionSetting } from "@/components/profile/subscription-setting";
 import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
-import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
-import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
 import type { UserOneRepMaxRow } from "@/lib/progression/user-maxes";
-import type { PromotionEvaluation } from "@/lib/progression/types";
 import type {
   ExperienceLevel,
   FitnessGoal,
@@ -48,7 +45,6 @@ interface ProfileSettingsHubProps {
   equipmentSettings: UserEquipmentSettings;
   oneRepMaxes: UserOneRepMaxRow[];
   oneRepMaxesTableReady: boolean;
-  promotion: PromotionEvaluation | null;
   experienceLevel?: ExperienceLevel | null;
   weightLabel?: string;
   heightLabel?: string;
@@ -73,7 +69,6 @@ export function ProfileSettingsHub({
   equipmentSettings,
   oneRepMaxes,
   oneRepMaxesTableReady,
-  promotion,
   experienceLevel,
   weightLabel,
   heightLabel,
@@ -100,14 +95,6 @@ export function ProfileSettingsHub({
         stripeConfigured={stripeConfigured}
         checkoutStatus={checkoutStatus}
       />
-
-      {promotion?.showNudge && (
-        <ExperiencePromotionBanner evaluation={promotion} />
-      )}
-
-      {promotion && !promotion.showNudge && promotion.nextLevel && (
-        <TrainingConsistencyCard evaluation={promotion} />
-      )}
 
       <CollapsibleSection
         title="Integrations & gamification"

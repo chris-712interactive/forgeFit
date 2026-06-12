@@ -22,14 +22,11 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
-import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
-import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
 import {
   buildSessionLoadProgressions,
   progressionToPrefill,
 } from "@/lib/progression/rir-progression";
 import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
-import type { PromotionEvaluation } from "@/lib/progression/types";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import {
   appPagePadding,
@@ -52,7 +49,6 @@ interface WorkoutHubProps {
   plan: ProgramPlan | null;
   serverSessions?: WorkoutSessionRecord[];
   workoutsTableReady?: boolean;
-  promotion?: PromotionEvaluation | null;
   experienceLevel?: ExperienceLevel;
   goal?: FitnessGoal;
   bodyweightKg?: number;
@@ -103,7 +99,6 @@ export function WorkoutHub({
   plan: serverPlan,
   serverSessions = [],
   workoutsTableReady = true,
-  promotion = null,
   experienceLevel = "beginner",
   goal = "general_strength",
   bodyweightKg,
@@ -454,14 +449,6 @@ export function WorkoutHub({
             </p>
           )}
         </header>
-
-        {promotion?.showNudge && (
-          <ExperiencePromotionBanner evaluation={promotion} />
-        )}
-
-        {promotion && !promotion.showNudge && promotion.nextLevel && (
-          <TrainingConsistencyCard evaluation={promotion} />
-        )}
 
         <PwaInstallPrompt />
 

@@ -1,8 +1,25 @@
 import type { ProgramPlan } from "@forgefit/program-engine";
+import { getActiveProgramRow } from "@/lib/programs/service";
+import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import { evaluatePromotion } from "./evaluate";
 import type { PromotionEvaluation } from "./types";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { createClient } from "@/lib/supabase/server";
+
+export async function getPromotionEvaluationForUser(
+  userId: string
+): Promise<PromotionEvaluation | null> {
+  const [sessionResult, programRow] = await Promise.all([
+    getServerSessionRecords(userId, 120),
+    getActiveProgramRow(userId),
+  ]);
+
+  return getPromotionEvaluation(
+    userId,
+    sessionResult.records,
+    programRow?.plan ?? null
+  );
+}
 
 export async function getPromotionEvaluation(
   userId: string,

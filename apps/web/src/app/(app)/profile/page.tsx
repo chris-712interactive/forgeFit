@@ -5,7 +5,6 @@ import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
 import { ProfileSettingsHub } from "@/components/profile/profile-settings-hub";
 import { getUserEquipmentSettings } from "@/lib/equipment/service";
 import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
-import { getPromotionEvaluation } from "@/lib/progression/service";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasFeature } from "@/lib/billing/gates";
 import { isStripeProConfigured } from "@/lib/billing/stripe";
@@ -20,9 +19,7 @@ import {
   isWithingsConfigured,
 } from "@/lib/integrations/config";
 import { hasProAccess } from "@/lib/billing/types";
-import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
-import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import {
   formatHeight,
   formatWeight,
@@ -61,17 +58,13 @@ export default async function ProfilePage({
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [plan, sessionResult, oneRepMaxes, equipmentSettings, subscription] = user
+  const [oneRepMaxes, equipmentSettings, subscription] = user
     ? await Promise.all([
-        getActiveProgram(user.id),
-        getServerSessionRecords(user.id, 120),
         getUserOneRepMaxes(user.id),
         getUserEquipmentSettings(user.id),
         getSubscriptionForUser(user.id),
       ])
     : [
-        null,
-        { records: [], tableReady: true },
         { rows: [], tableReady: true },
         {
           equipment: [],
@@ -90,10 +83,6 @@ export default async function ProfilePage({
           cancelAtPeriodEnd: false,
         },
       ];
-
-  const promotion = user
-    ? await getPromotionEvaluation(user.id, sessionResult.records, plan)
-    : null;
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
   let initialIntegrations = buildIntegrationsHubView([]);
@@ -140,7 +129,6 @@ export default async function ProfilePage({
           equipmentSettings={equipmentSettings}
           oneRepMaxes={oneRepMaxes.rows}
           oneRepMaxesTableReady={oneRepMaxes.tableReady}
-          promotion={promotion}
           experienceLevel={profile?.experience_level}
           weightLabel={
             profile?.weight_kg

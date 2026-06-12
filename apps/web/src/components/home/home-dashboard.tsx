@@ -8,8 +8,6 @@ import { HomeTodaySnapshot } from "@/components/home/home-today-snapshot";
 import { ProInsightsStrip } from "@/components/home/pro-insights-strip";
 import { WeekAccountability } from "@/components/home/week-accountability";
 import { WeeklyWorkStatsGrid } from "@/components/home/weekly-work-stats";
-import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
-import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import type { HomeDashboardData } from "@/lib/home/types";
 
@@ -52,14 +50,6 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
 
       {data.proInsights.length > 0 && (
         <ProInsightsStrip insights={data.proInsights} />
-      )}
-
-      {data.promotion?.showNudge && (
-        <ExperiencePromotionBanner evaluation={data.promotion} />
-      )}
-
-      {data.promotion && !data.promotion.showNudge && data.promotion.nextLevel && (
-        <TrainingConsistencyCard evaluation={data.promotion} />
       )}
 
       <PwaInstallPrompt />

@@ -1,7 +1,6 @@
 import { WorkoutHub } from "@/components/workout/workout-hub";
 import { getWorkoutCoachingFeatures } from "@/lib/coaching/workout-features";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
-import { getPromotionEvaluation } from "@/lib/progression/service";
 import {
   getUserOneRepMaxes,
   userOneRepMaxMap,
@@ -37,9 +36,8 @@ export default async function WorkoutPage() {
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
       };
-  const [promotion, oneRepMaxes, coachingFeatures] = user
+  const [oneRepMaxes, coachingFeatures] = user
     ? await Promise.all([
-        getPromotionEvaluation(user.id, serverSessionsResult.records, plan),
         getUserOneRepMaxes(user.id),
         getWorkoutCoachingFeatures(
           user.id,
@@ -47,7 +45,7 @@ export default async function WorkoutPage() {
           serverSessionsResult.records
         ),
       ])
-    : [null, { rows: [], tableReady: true }, null];
+    : [{ rows: [], tableReady: true }, null];
 
   const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
 
@@ -58,7 +56,6 @@ export default async function WorkoutPage() {
       plan={plan}
       serverSessions={serverSessionsResult.records}
       workoutsTableReady={serverSessionsResult.tableReady}
-      promotion={promotion}
       experienceLevel={profile?.experience_level ?? "beginner"}
       goal={profile?.primary_goal ?? "general_strength"}
       bodyweightKg={

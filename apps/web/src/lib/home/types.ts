@@ -3,7 +3,6 @@ import type { ActivityContext } from "@/lib/activity/types";
 import type { GamificationContext } from "@/lib/coaching/types";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import type { ProgramPlan } from "@forgefit/program-engine";
-import type { PromotionEvaluation } from "@/lib/progression/types";
 import type { FitnessGoal } from "@/lib/types/profile";
 
 export interface WeeklyWorkStats {
@@ -28,7 +27,6 @@ export interface HomeDashboardData {
   nextSessionDayIndex: number | null;
   nextSessionName: string | null;
   workoutsTableReady: boolean;
-  promotion: PromotionEvaluation | null;
   proInsights: RuleInsight[];
   birthdayMessage: string | null;
   activity: ActivityContext;
