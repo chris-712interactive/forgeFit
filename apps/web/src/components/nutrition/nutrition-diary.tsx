@@ -2,6 +2,7 @@
 
 import type { FoodSearchResult } from "@forgefit/nutrition-core";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
+import { SectionTabs } from "@/components/layout/section-tabs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FoodSearchPanel } from "./food-search-panel";
@@ -132,25 +133,16 @@ export function NutritionDiary({
         />
       </div>
 
-      <div
-        className="grid grid-cols-3 gap-1 border-b border-[var(--border)] p-1"
-        role="tablist"
-        aria-label="Nutrition diary sections"
-      >
-        <DiaryTabButton
-          active={tab === "log"}
-          label="Log"
-          onClick={() => setTab("log")}
-        />
-        <DiaryTabButton
-          active={tab === "browse"}
-          label="Browse"
-          onClick={() => setTab("browse")}
-        />
-        <DiaryTabButton
-          active={tab === "meals"}
-          label="Meal ideas"
-          onClick={() => setTab("meals")}
+      <div className="border-b border-[var(--border)] px-4 py-3 sm:px-5 sm:py-4">
+        <SectionTabs
+          ariaLabel="Nutrition diary sections"
+          activeId={tab}
+          onChange={(id) => setTab(id as DiaryTab)}
+          tabs={[
+            { id: "log", label: "Log" },
+            { id: "browse", label: "Browse" },
+            { id: "meals", label: "Meals" },
+          ]}
         />
       </div>
 
@@ -225,31 +217,5 @@ export function NutritionDiary({
         )}
       </div>
     </section>
-  );
-}
-
-function DiaryTabButton({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={`min-h-[44px] rounded-xl px-2 text-sm font-semibold transition-colors sm:px-3 ${
-        active
-          ? "bg-forge-ember text-white"
-          : "bg-forge-surface text-forge-muted hover:text-forge-text"
-      }`}
-    >
-      {label}
-    </button>
   );
 }
