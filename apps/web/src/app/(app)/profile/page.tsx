@@ -25,7 +25,11 @@ import {
   buildIntegrationsHubView,
   listIntegrationStatuses,
 } from "@/lib/integrations/service";
-import { isDeviceIntegrationsConfigured } from "@/lib/integrations/config";
+import {
+  isDeviceIntegrationsConfigured,
+  isFitbitIntegrationConfigured,
+  isWithingsConfigured,
+} from "@/lib/integrations/config";
 import { hasProAccess } from "@/lib/billing/types";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
@@ -152,6 +156,10 @@ export default async function ProfilePage({
         <IntegrationsSetting
           unlocked={integrationsUnlocked}
           configured={isDeviceIntegrationsConfigured()}
+          providerConfigured={{
+            withings: isWithingsConfigured(),
+            fitbit: isFitbitIntegrationConfigured(),
+          }}
           initialIntegrations={initialIntegrations}
           integrationStatus={integrationStatus}
           integrationError={integrationError}

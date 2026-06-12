@@ -42,3 +42,44 @@ export async function clearWithingsOAuthCookies(): Promise<void> {
   cookieStore.delete(STATE_COOKIE);
   cookieStore.delete(USER_COOKIE);
 }
+
+const FITBIT_STATE_COOKIE = "fitbit_oauth_state";
+const FITBIT_USER_COOKIE = "fitbit_oauth_uid";
+
+export function createFitbitOAuthState(): string {
+  return randomBytes(24).toString("base64url");
+}
+
+export async function setFitbitOAuthCookies(
+  state: string,
+  userId: string
+): Promise<void> {
+  const cookieStore = await cookies();
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    maxAge: MAX_AGE_SECONDS,
+    path: "/",
+  };
+
+  cookieStore.set(FITBIT_STATE_COOKIE, state, options);
+  cookieStore.set(FITBIT_USER_COOKIE, userId, options);
+}
+
+export async function readFitbitOAuthCookies(): Promise<{
+  state: string | null;
+  userId: string | null;
+}> {
+  const cookieStore = await cookies();
+  return {
+    state: cookieStore.get(FITBIT_STATE_COOKIE)?.value ?? null,
+    userId: cookieStore.get(FITBIT_USER_COOKIE)?.value ?? null,
+  };
+}
+
+export async function clearFitbitOAuthCookies(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(FITBIT_STATE_COOKIE);
+  cookieStore.delete(FITBIT_USER_COOKIE);
+}

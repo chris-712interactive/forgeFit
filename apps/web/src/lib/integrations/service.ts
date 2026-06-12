@@ -1,10 +1,15 @@
 import type { IntegrationProvider } from "@forgefit/integrations";
 import {
+  exchangeGoogleHealthAuthorizationCode,
   exchangeWithingsAuthorizationCode,
   extractWeightKgFromGroup,
+  fetchDailyActivitySummaries,
+  fetchGoogleHealthIdentity,
   fetchWithingsMeasures,
   measureGroupToDate,
+  refreshGoogleHealthAccessToken,
   refreshWithingsAccessToken,
+  todayIsoDate,
   WITHINGS_MEASURE_TYPE_WEIGHT,
 } from "@forgefit/integrations";
 import { hasFeature } from "@/lib/billing/gates";
@@ -16,6 +21,8 @@ import {
   encryptIntegrationSecret,
 } from "./crypto";
 import {
+  fitbitRedirectUri,
+  getGoogleHealthClientConfig,
   getWithingsClientConfig,
   withingsRedirectUri,
 } from "./config";
@@ -374,6 +381,241 @@ export async function syncWithingsForUser(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Withings sync failed.";
+    await admin
+      .from("user_integrations")
+      .update({
+        status: "error",
+        last_sync_error: message,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", row.id);
+    throw error;
+  }
+}
+
+export async function saveFitbitConnection(params: {
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  scope: string;
+  externalUserId: string;
+}): Promise<void> {
+  const admin = createAdminClient();
+  const expiresAt = new Date(Date.now() + params.expiresIn * 1000).toISOString();
+
+  const { error } = await admin.from("user_integrations").upsert(
+    {
+      user_id: params.userId,
+      provider: "fitbit",
+      external_user_id: params.externalUserId,
+      access_token_encrypted: encryptIntegrationSecret(params.accessToken),
+      refresh_token_encrypted: encryptIntegrationSecret(params.refreshToken),
+      token_expires_at: expiresAt,
+      scopes: params.scope,
+      status: "active",
+      last_sync_error: null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,provider" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function completeFitbitOAuth(params: {
+  userId: string;
+  code: string;
+  redirectUri: string;
+}): Promise<void> {
+  const { clientId, clientSecret } = getGoogleHealthClientConfig();
+  const token = await exchangeGoogleHealthAuthorizationCode({
+    clientId,
+    clientSecret,
+    code: params.code,
+    redirectUri: params.redirectUri,
+  });
+
+  if (!token.refresh_token) {
+    throw new Error(
+      "Google did not return a refresh token. Disconnect in your Google account and try again."
+    );
+  }
+
+  const identity = await fetchGoogleHealthIdentity(token.access_token);
+  const externalUserId =
+    identity.healthUserId ?? identity.legacyUserId ?? params.userId;
+
+  await saveFitbitConnection({
+    userId: params.userId,
+    accessToken: token.access_token,
+    refreshToken: token.refresh_token,
+    expiresIn: token.expires_in,
+    scope: token.scope,
+    externalUserId,
+  });
+
+  await syncFitbitForUser(params.userId);
+}
+
+async function getValidFitbitAccessToken(
+  row: UserIntegrationRow
+): Promise<string> {
+  const expiresAt = row.token_expires_at
+    ? new Date(row.token_expires_at).getTime()
+    : 0;
+
+  if (expiresAt - Date.now() > TOKEN_REFRESH_BUFFER_MS) {
+    return decryptIntegrationSecret(row.access_token_encrypted);
+  }
+
+  if (!row.refresh_token_encrypted) {
+    throw new Error("Fitbit refresh token is missing.");
+  }
+
+  const { clientId, clientSecret } = getGoogleHealthClientConfig();
+  const refreshed = await refreshGoogleHealthAccessToken({
+    clientId,
+    clientSecret,
+    refreshToken: decryptIntegrationSecret(row.refresh_token_encrypted),
+  });
+
+  const admin = createAdminClient();
+  const newExpiresAt = new Date(
+    Date.now() + refreshed.expires_in * 1000
+  ).toISOString();
+
+  const { error } = await admin
+    .from("user_integrations")
+    .update({
+      access_token_encrypted: encryptIntegrationSecret(refreshed.access_token),
+      refresh_token_encrypted: refreshed.refresh_token
+        ? encryptIntegrationSecret(refreshed.refresh_token)
+        : row.refresh_token_encrypted,
+      token_expires_at: newExpiresAt,
+      status: "active",
+      last_sync_error: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", row.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return refreshed.access_token;
+}
+
+function syncFromIsoDate(lastSyncAt: string | null): string {
+  if (lastSyncAt) {
+    return lastSyncAt.slice(0, 10);
+  }
+
+  const lookbackMs = INITIAL_SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000;
+  return new Date(Date.now() - lookbackMs).toISOString().slice(0, 10);
+}
+
+export interface FitbitSyncResult {
+  imported: number;
+  skipped: number;
+  latestDate: string | null;
+}
+
+export async function syncFitbitForUser(
+  userId: string
+): Promise<FitbitSyncResult> {
+  const row = await getIntegrationRow(userId, "fitbit");
+  if (!row || row.status === "revoked") {
+    throw new IntegrationNotConnectedError("fitbit");
+  }
+
+  const admin = createAdminClient();
+
+  try {
+    const accessToken = await getValidFitbitAccessToken(row);
+    const startDate = syncFromIsoDate(row.last_sync_at);
+    const endDate = todayIsoDate();
+
+    const summaries = await fetchDailyActivitySummaries({
+      accessToken,
+      startDate,
+      endDate,
+    });
+
+    let imported = 0;
+    let skipped = 0;
+    let latestDate: string | null = null;
+
+    for (const summary of summaries) {
+      if (
+        summary.steps == null &&
+        summary.activeCalories == null &&
+        summary.activeMinutes == null
+      ) {
+        continue;
+      }
+
+      const { data: existing } = await admin
+        .from("daily_activity_logs")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("activity_date", summary.date)
+        .maybeSingle();
+
+      const unchanged =
+        existing &&
+        (existing.steps ?? null) === summary.steps &&
+        Number(existing.active_calories ?? null) === summary.activeCalories &&
+        (existing.active_minutes ?? null) === summary.activeMinutes;
+
+      if (unchanged) {
+        skipped += 1;
+        if (latestDate == null || summary.date > latestDate) {
+          latestDate = summary.date;
+        }
+        continue;
+      }
+
+      const { error: upsertError } = await admin.from("daily_activity_logs").upsert(
+        {
+          user_id: userId,
+          activity_date: summary.date,
+          steps: summary.steps,
+          active_calories: summary.activeCalories,
+          active_minutes: summary.activeMinutes,
+          source: "fitbit",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,activity_date" }
+      );
+
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
+
+      imported += 1;
+      if (latestDate == null || summary.date > latestDate) {
+        latestDate = summary.date;
+      }
+    }
+
+    const now = new Date().toISOString();
+    await admin
+      .from("user_integrations")
+      .update({
+        status: "active",
+        last_sync_at: now,
+        last_sync_error: null,
+        updated_at: now,
+      })
+      .eq("id", row.id);
+
+    return { imported, skipped, latestDate };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Fitbit sync failed.";
     await admin
       .from("user_integrations")
       .update({

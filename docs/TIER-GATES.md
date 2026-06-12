@@ -184,5 +184,5 @@ The 35% Pro annual discount is a **retention trade**, not a margin problem — a
 | 6. Export gate (Pro) | ✅ Done | `/api/account/export` + Profile |
 | 7. Strength/volume/adherence analytics UI | ✅ Done | Progress, Nutrition, Home insights |
 | 8. Progress photos UI | ✅ Done | `progress_photos` migration + timeline |
-| 9. Pro+ integrations | ⏳ Pending | Withings, Fitbit OAuth |
+| 9. Pro+ integrations | ⏳ In progress | Withings ✅, Fitbit (Google Health) ✅, Strava pending |
 | 10. Phase 8 Pro+ features | ⏳ Pending | AI coaching, gamification |

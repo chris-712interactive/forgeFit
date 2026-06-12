@@ -33,7 +33,8 @@ export const PRIVACY_POLICY = {
       paragraphs: [
         "Connecting a device or app is optional. When you choose to connect, you are redirected to that provider to sign in and approve access. We only receive the data needed for the integration you enable.",
         "Withings (available when enabled): we store encrypted OAuth tokens and import weight readings into your ForgeRep Progress log. We do not receive your Withings password. Disconnecting removes our stored tokens; previously imported measurements remain until you delete them or delete your account.",
-        "Fitbit and Strava are planned integrations. When available, they will follow the same pattern: you authorize access, we import agreed data types, and you can disconnect at any time from Profile → Integrations.",
+        "Fitbit (available when enabled): you sign in with Google and authorize the Google Health API. We store encrypted OAuth tokens and import daily activity summaries (steps, active calories, and active minutes) into your account. We do not receive your Google or Fitbit password. Disconnecting removes our stored tokens; previously imported activity remains until you delete it or delete your account.",
+        "Strava is a planned integration. When available, it will follow the same pattern: you authorize access, we import agreed data types, and you can disconnect at any time from Profile → Integrations.",
         "Third-party providers process data under their own privacy policies and terms. ForgeRep is not responsible for how those services handle your data outside the connection you approve.",
       ],
       links: [
@@ -44,6 +45,10 @@ export const PRIVACY_POLICY = {
         {
           label: "Fitbit Privacy Policy",
           href: "https://www.fitbit.com/global/us/legal/privacy-policy",
+        },
+        {
+          label: "Google Privacy Policy",
+          href: "https://policies.google.com/privacy",
         },
         {
           label: "Strava Privacy Policy",

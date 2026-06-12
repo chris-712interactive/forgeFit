@@ -17,7 +17,7 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [x] Pro gates: 90-day projections, confidence bands, goal date, 90-day history cap
 - [x] Data export gated to Pro
 - [x] Withings OAuth + weight sync to `body_measurements` (Pro+)
-- [ ] Fitbit activity sync (Pro+)
+- [x] Fitbit activity sync via Google Health API — steps + active calories (Pro+)
 - [ ] Strava workout sync (Pro+)
 - [x] Restaurant quick-log — curated US chains + saved meals (Pro+, $0 API)
 - [ ] Full restaurant menu API (deferred — evaluate when Pro+ MAU supports ~$6k/yr vendor)

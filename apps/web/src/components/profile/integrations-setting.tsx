@@ -1,6 +1,7 @@
 "use client";
 
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
+import type { IntegrationProvider } from "@forgefit/integrations";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ type HubIntegration = IntegrationPublicStatus & {
 interface IntegrationsSettingProps {
   unlocked: boolean;
   configured: boolean;
+  providerConfigured: Partial<Record<IntegrationProvider, boolean>>;
   initialIntegrations: HubIntegration[];
   integrationStatus?: string | null;
   integrationError?: string | null;
@@ -30,9 +32,40 @@ function formatSyncTime(iso: string | null): string | null {
   });
 }
 
+function syncSuccessMessage(
+  provider: IntegrationProvider,
+  imported: number,
+  skipped: number
+): string {
+  if (provider === "withings") {
+    return `Imported ${imported} weigh-in${imported === 1 ? "" : "s"}${
+      skipped ? ` (${skipped} unchanged)` : ""
+    }.`;
+  }
+
+  if (provider === "fitbit") {
+    return `Imported ${imported} day${imported === 1 ? "" : "s"} of activity${
+      skipped ? ` (${skipped} unchanged)` : ""
+    }.`;
+  }
+
+  return `Imported ${imported} record${imported === 1 ? "" : "s"}.`;
+}
+
+function connectDisclosure(provider: IntegrationProvider): string | null {
+  if (provider === "withings") {
+    return "By connecting, you authorize ForgeRep to access weight readings from your Withings account.";
+  }
+  if (provider === "fitbit") {
+    return "By connecting, you sign in with Google and authorize ForgeRep to read Fitbit activity data (steps and active calories) through the Google Health API.";
+  }
+  return null;
+}
+
 export function IntegrationsSetting({
   unlocked,
   configured,
+  providerConfigured,
   initialIntegrations,
   integrationStatus,
   integrationError,
@@ -49,6 +82,12 @@ export function IntegrationsSetting({
       setMessage("Withings connected. Your latest weigh-ins were imported.");
       router.replace("/profile#integrations", { scroll: false });
     }
+    if (integrationStatus === "fitbit_connected") {
+      setMessage(
+        "Fitbit connected via Google. Your recent daily activity was imported."
+      );
+      router.replace("/profile#integrations", { scroll: false });
+    }
   }, [integrationStatus, router]);
 
   async function refreshStatuses() {
@@ -62,7 +101,7 @@ export function IntegrationsSetting({
     }
   }
 
-  async function handleSync(provider: string) {
+  async function handleSync(provider: IntegrationProvider) {
     setBusyProvider(`${provider}-sync`);
     setError(null);
     setMessage(null);
@@ -83,9 +122,7 @@ export function IntegrationsSetting({
       }
 
       setMessage(
-        `Imported ${body.imported ?? 0} weigh-in${body.imported === 1 ? "" : "s"}${
-          body.skipped ? ` (${body.skipped} unchanged)` : ""
-        }.`
+        syncSuccessMessage(provider, body.imported ?? 0, body.skipped ?? 0)
       );
       await refreshStatuses();
       router.refresh();
@@ -96,7 +133,7 @@ export function IntegrationsSetting({
     }
   }
 
-  async function handleDisconnect(provider: string) {
+  async function handleDisconnect(provider: IntegrationProvider) {
     setBusyProvider(`${provider}-disconnect`);
     setError(null);
     setMessage(null);
@@ -141,7 +178,7 @@ export function IntegrationsSetting({
 
       {!configured && unlocked && (
         <p className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
-          Withings OAuth is not configured in this environment yet.
+          Device integrations are not fully configured in this environment yet.
         </p>
       )}
 
@@ -149,7 +186,7 @@ export function IntegrationsSetting({
         <div className="mt-4">
           <UpgradePrompt
             title="Pro+ integrations"
-            description="Sync weight from Withings and import activity from Fitbit or Strava when those connectors ship."
+            description="Sync weight from Withings and import Fitbit activity via Google Health."
             suggestedTier="pro_plus"
             href="/profile#subscription"
           />
@@ -160,11 +197,13 @@ export function IntegrationsSetting({
         <ul className="mt-4 space-y-3">
           {integrations.map((integration) => {
             const lastSync = formatSyncTime(integration.lastSyncAt);
-            const isWithings = integration.provider === "withings";
+            const isConfigured =
+              providerConfigured[integration.provider] ?? false;
             const connectHref =
-              isWithings && integration.available && configured
-                ? "/api/integrations/withings/connect"
+              integration.available && isConfigured
+                ? `/api/integrations/${integration.provider}/connect`
                 : null;
+            const disclosure = connectDisclosure(integration.provider);
 
             return (
               <li
@@ -213,18 +252,16 @@ export function IntegrationsSetting({
                   <div className="mt-3 flex flex-wrap gap-2">
                     {integration.connected ? (
                       <>
-                        {isWithings && (
-                          <button
-                            type="button"
-                            onClick={() => void handleSync(integration.provider)}
-                            disabled={busyProvider != null}
-                            className="min-h-[40px] rounded-lg bg-forge-ember px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-forge-glow disabled:opacity-60"
-                          >
-                            {busyProvider === `${integration.provider}-sync`
-                              ? "Syncing…"
-                              : "Sync now"}
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => void handleSync(integration.provider)}
+                          disabled={busyProvider != null}
+                          className="min-h-[40px] rounded-lg bg-forge-ember px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-forge-glow disabled:opacity-60"
+                        >
+                          {busyProvider === `${integration.provider}-sync`
+                            ? "Syncing…"
+                            : "Sync now"}
+                        </button>
                         <button
                           type="button"
                           onClick={() =>
@@ -240,11 +277,9 @@ export function IntegrationsSetting({
                       </>
                     ) : connectHref ? (
                       <div className="w-full space-y-2">
-                        {isWithings && (
+                        {disclosure && (
                           <p className="text-[11px] leading-relaxed text-forge-muted">
-                            By connecting, you authorize ForgeRep to access weight
-                            readings from your Withings account. You can disconnect
-                            anytime.{" "}
+                            {disclosure} You can disconnect anytime.{" "}
                             <Link
                               href="/privacy#integrations"
                               className="font-medium text-forge-steel hover:underline"
@@ -260,7 +295,12 @@ export function IntegrationsSetting({
                           Connect
                         </a>
                       </div>
-                    ) : null}
+                    ) : (
+                      <p className="text-[11px] text-forge-muted">
+                        OAuth credentials for this provider are not configured
+                        yet.
+                      </p>
+                    )}
                   </div>
                 )}
               </li>

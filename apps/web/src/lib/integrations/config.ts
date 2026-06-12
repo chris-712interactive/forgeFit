@@ -21,6 +21,51 @@ export function withingsRedirectUri(siteUrl: string): string {
   return `${siteUrl.replace(/\/$/, "")}/api/integrations/withings/callback`;
 }
 
+/** Google Health API OAuth — current Fitbit data path (not legacy fitbit.com OAuth). */
+export function isGoogleHealthConfigured(): boolean {
+  return Boolean(
+    getGoogleHealthClientId() &&
+      getGoogleHealthClientSecret() &&
+      process.env.INTEGRATIONS_TOKEN_ENCRYPTION_KEY?.trim()
+  );
+}
+
+function getGoogleHealthClientId(): string | undefined {
+  return (
+    process.env.GOOGLE_HEALTH_CLIENT_ID?.trim() ||
+    process.env.FITBIT_CLIENT_ID?.trim()
+  );
+}
+
+function getGoogleHealthClientSecret(): string | undefined {
+  return (
+    process.env.GOOGLE_HEALTH_CLIENT_SECRET?.trim() ||
+    process.env.FITBIT_CLIENT_SECRET?.trim()
+  );
+}
+
+export function getGoogleHealthClientConfig() {
+  const clientId = getGoogleHealthClientId();
+  const clientSecret = getGoogleHealthClientSecret();
+
+  if (!clientId || !clientSecret) {
+    throw new Error(
+      "Google Health (Fitbit) OAuth is not configured. Set GOOGLE_HEALTH_CLIENT_ID and GOOGLE_HEALTH_CLIENT_SECRET."
+    );
+  }
+
+  return { clientId, clientSecret };
+}
+
+export function fitbitRedirectUri(siteUrl: string): string {
+  return `${siteUrl.replace(/\/$/, "")}/api/integrations/fitbit/callback`;
+}
+
 export function isDeviceIntegrationsConfigured(): boolean {
-  return isWithingsConfigured();
+  return isWithingsConfigured() || isGoogleHealthConfigured();
+}
+
+/** True when Fitbit / Google Health connect flow can run in this environment. */
+export function isFitbitIntegrationConfigured(): boolean {
+  return isGoogleHealthConfigured();
 }
