@@ -1,20 +1,19 @@
 import { buildGoogleHealthAuthorizeUrl } from "@forgefit/integrations";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import {
+  fitbitRedirectUriFromRequest,
   getGoogleHealthClientConfig,
   isGoogleHealthConfigured,
-  fitbitRedirectUri,
 } from "@/lib/integrations/config";
 import { assertDeviceIntegrationsAccess } from "@/lib/integrations/service";
 import {
   createFitbitOAuthState,
   setFitbitOAuthCookies,
 } from "@/lib/integrations/oauth-state";
-import { getSiteUrl } from "@/lib/seo/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!isGoogleHealthConfigured()) {
     return NextResponse.json(
       { error: "Fitbit (Google Health) integration is not configured." },
@@ -43,8 +42,7 @@ export async function GET() {
   }
 
   const { clientId } = getGoogleHealthClientConfig();
-  const siteUrl = getSiteUrl();
-  const redirectUri = fitbitRedirectUri(siteUrl);
+  const redirectUri = fitbitRedirectUriFromRequest(request);
   const state = createFitbitOAuthState();
 
   await setFitbitOAuthCookies(state, user.id);
@@ -53,6 +51,7 @@ export async function GET() {
     clientId,
     redirectUri,
     state,
+    prompt: "consent",
   });
 
   return NextResponse.redirect(authorizeUrl);

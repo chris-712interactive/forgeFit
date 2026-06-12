@@ -78,15 +78,22 @@ export function IntegrationsSetting({
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
 
   useEffect(() => {
+    if (integrationError) {
+      setError(integrationError);
+    }
+  }, [integrationError]);
+
+  useEffect(() => {
     if (integrationStatus === "withings_connected") {
       setMessage("Withings connected. Your latest weigh-ins were imported.");
       router.replace("/profile#integrations", { scroll: false });
     }
     if (integrationStatus === "fitbit_connected") {
       setMessage(
-        "Fitbit connected via Google. Your recent daily activity was imported."
+        "Fitbit connected via Google. Tap Sync now if your activity has not imported yet."
       );
       router.replace("/profile#integrations", { scroll: false });
+      void refreshStatuses();
     }
   }, [integrationStatus, router]);
 
@@ -221,18 +228,22 @@ export function IntegrationsSetting({
                   </div>
                   <span
                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                      integration.connected
-                        ? "bg-emerald-500/15 text-emerald-300"
-                        : integration.available
-                          ? "bg-forge-surface-raised text-forge-muted"
-                          : "bg-forge-surface-raised text-forge-muted"
+                      integration.connected && integration.status === "error"
+                        ? "bg-amber-500/15 text-amber-200"
+                        : integration.connected
+                          ? "bg-emerald-500/15 text-emerald-300"
+                          : integration.available
+                            ? "bg-forge-surface-raised text-forge-muted"
+                            : "bg-forge-surface-raised text-forge-muted"
                     }`}
                   >
-                    {integration.connected
-                      ? "Connected"
-                      : integration.available
-                        ? "Available"
-                        : "Coming soon"}
+                    {integration.connected && integration.status === "error"
+                      ? "Sync issue"
+                      : integration.connected
+                        ? "Connected"
+                        : integration.available
+                          ? "Available"
+                          : "Coming soon"}
                   </span>
                 </div>
 
@@ -313,7 +324,12 @@ export function IntegrationsSetting({
         <p className="mt-3 text-xs font-medium text-emerald-300">{message}</p>
       )}
       {error && (
-        <p className="mt-3 text-xs font-medium text-red-300">{error}</p>
+        <p
+          className="mt-3 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-200"
+          role="alert"
+        >
+          {error}
+        </p>
       )}
     </section>
   );

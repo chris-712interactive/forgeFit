@@ -101,6 +101,8 @@ export function buildGoogleHealthAuthorizeUrl(params: {
   redirectUri: string;
   state: string;
   scope?: string;
+  /** Force refresh token when reusing an OAuth client already used for sign-in. */
+  prompt?: "consent" | "select_account";
 }): string {
   const url = new URL(GOOGLE_OAUTH_AUTHORIZE_URL);
   url.searchParams.set("client_id", params.clientId);
@@ -112,6 +114,9 @@ export function buildGoogleHealthAuthorizeUrl(params: {
   );
   url.searchParams.set("access_type", "offline");
   url.searchParams.set("state", params.state);
+  if (params.prompt) {
+    url.searchParams.set("prompt", params.prompt);
+  }
   // Do NOT set include_granted_scopes — mixed legacy fitness.* scopes break data reads.
   return url.toString();
 }

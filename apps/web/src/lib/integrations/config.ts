@@ -61,6 +61,19 @@ export function fitbitRedirectUri(siteUrl: string): string {
   return `${siteUrl.replace(/\/$/, "")}/api/integrations/fitbit/callback`;
 }
 
+/** Match redirect_uri to the host that started OAuth (avoids www vs apex cookie loss). */
+export function getRequestOrigin(request: Request): string {
+  return new URL(request.url).origin;
+}
+
+export function fitbitRedirectUriFromRequest(request: Request): string {
+  return fitbitRedirectUri(getRequestOrigin(request));
+}
+
+export function withingsRedirectUriFromRequest(request: Request): string {
+  return withingsRedirectUri(getRequestOrigin(request));
+}
+
 export function isDeviceIntegrationsConfigured(): boolean {
   return isWithingsConfigured() || isGoogleHealthConfigured();
 }

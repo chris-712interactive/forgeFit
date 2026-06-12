@@ -68,7 +68,9 @@ function rowToPublicStatus(
 ): IntegrationPublicStatus {
   return {
     provider,
-    connected: row != null && row.status === "active",
+    connected:
+      row != null &&
+      (row.status === "active" || row.status === "error"),
     status: row?.status ?? null,
     externalUserId: row?.external_user_id ?? null,
     lastSyncAt: row?.last_sync_at ?? null,
@@ -457,7 +459,11 @@ export async function completeFitbitOAuth(params: {
     externalUserId,
   });
 
-  await syncFitbitForUser(params.userId);
+  try {
+    await syncFitbitForUser(params.userId);
+  } catch {
+    // Connection is saved; sync errors are stored on the integration row.
+  }
 }
 
 async function getValidFitbitAccessToken(
