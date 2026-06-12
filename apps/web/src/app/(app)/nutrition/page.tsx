@@ -33,6 +33,8 @@ export default async function NutritionPage() {
       : null;
   const adherenceUnlocked =
     subscription != null && hasFeature(subscription, "nutrition_adherence");
+  const restaurantSearchUnlocked =
+    subscription != null && hasFeature(subscription, "restaurant_search");
 
   return (
     <div className={appPagePadding}>
@@ -59,6 +61,7 @@ export default async function NutritionPage() {
             recentEntries={recentEntries}
             yesterdayEntryCount={yesterdayEntryCount}
             yesterdayDate={yesterday}
+            restaurantSearchUnlocked={restaurantSearchUnlocked}
           />
         </div>
       ) : (

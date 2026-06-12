@@ -12,7 +12,7 @@ ForgeRep splits paid features into **Pro** ($8.99/mo · $69.99/yr) and **Pro+** 
 
 1. **Lead with annual** in upgrade UI (better retention, lower Stripe fees).
 2. **Pro** carries API-free features only (projections, analytics, export, photos).
-3. **Pro+** carries all paid APIs (Nutritionix, AI, device sync).
+3. **Pro+** carries device sync, restaurant quick-log (curated, $0), and future paid APIs (full menu search, AI).
 4. Annual discount is a **retention investment**, not a margin risk, for Pro.
 
 ## Per-user economics (Pro)
@@ -60,4 +60,4 @@ Pro annual remains viable above **~$48/yr (~$4/mo effective)** before margin pre
 
 - Upgrade UI defaults to **annual** for both tiers.
 - Pro features must avoid paid API calls.
-- Monitor Pro+ Nutritionix/AI cost per active user; adjust Pro+ price before discounting Pro+ annual below ~$99/yr.
+- Monitor Pro+ AI/device API cost per active user; defer paid restaurant menu API until MAU × margin supports vendor minimum (~$6k/yr for Nutritionix-class providers).

@@ -85,7 +85,7 @@ export function MacroPresets({ loggedDate, recentEntries }: MacroPresetsProps) {
 
       {saved.length > 0 && (
         <PresetGroup
-          title="My presets"
+          title="My meals"
           presets={saved}
           loggingId={loggingId}
           onLog={logPreset}

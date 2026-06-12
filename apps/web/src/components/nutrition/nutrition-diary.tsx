@@ -11,12 +11,14 @@ import { MacroPresets } from "./macro-presets";
 import { MealPlateExamples } from "./meal-plate-examples";
 import { MacroSummary } from "./macro-summary";
 import { QuickMacroLog } from "./quick-macro-log";
+import { RestaurantSearchPanel } from "./restaurant-search-panel";
 
 interface NutritionDiaryProps {
   initialSummary: DailyNutritionSummary;
   recentEntries: MacroQuickEntry[];
   yesterdayEntryCount: number;
   yesterdayDate: string;
+  restaurantSearchUnlocked: boolean;
 }
 
 export function NutritionDiary({
@@ -24,6 +26,7 @@ export function NutritionDiary({
   recentEntries,
   yesterdayEntryCount,
   yesterdayDate,
+  restaurantSearchUnlocked,
 }: NutritionDiaryProps) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
@@ -134,6 +137,12 @@ export function NutritionDiary({
         key={presetVersion}
         loggedDate={initialSummary.date}
         recentEntries={recentEntries}
+      />
+
+      <RestaurantSearchPanel
+        loggedDate={initialSummary.date}
+        unlocked={restaurantSearchUnlocked}
+        onSavedMeal={() => setPresetVersion((v) => v + 1)}
       />
 
       {yesterdayEntryCount > 0 && (

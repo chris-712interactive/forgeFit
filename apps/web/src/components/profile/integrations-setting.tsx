@@ -2,6 +2,7 @@
 
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -129,7 +130,13 @@ export function IntegrationsSetting({
         Integrations
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Connect devices and apps to keep Progress up to date automatically.
+        Connect devices and apps to keep Progress up to date automatically.{" "}
+        <Link
+          href="/privacy#integrations"
+          className="font-medium text-forge-steel hover:underline"
+        >
+          How integrations use your data
+        </Link>
       </p>
 
       {!configured && unlocked && (
@@ -232,12 +239,27 @@ export function IntegrationsSetting({
                         </button>
                       </>
                     ) : connectHref ? (
-                      <a
-                        href={connectHref}
-                        className="inline-flex min-h-[40px] items-center rounded-lg bg-forge-ember px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-forge-glow"
-                      >
-                        Connect
-                      </a>
+                      <div className="w-full space-y-2">
+                        {isWithings && (
+                          <p className="text-[11px] leading-relaxed text-forge-muted">
+                            By connecting, you authorize ForgeRep to access weight
+                            readings from your Withings account. You can disconnect
+                            anytime.{" "}
+                            <Link
+                              href="/privacy#integrations"
+                              className="font-medium text-forge-steel hover:underline"
+                            >
+                              Privacy details
+                            </Link>
+                          </p>
+                        )}
+                        <a
+                          href={connectHref}
+                          className="inline-flex min-h-[40px] items-center rounded-lg bg-forge-ember px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-forge-glow"
+                        >
+                          Connect
+                        </a>
+                      </div>
                     ) : null}
                   </div>
                 )}

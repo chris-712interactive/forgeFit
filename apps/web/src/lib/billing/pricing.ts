@@ -54,7 +54,7 @@ export const TIER_MARKETING: Record<
     highlights: [
       "Everything in Pro",
       "Withings, Fitbit & Strava sync",
-      "Nutritionix restaurant search",
+      "Restaurant quick-log & saved meals",
       "AI coaching & gamification",
     ],
   },

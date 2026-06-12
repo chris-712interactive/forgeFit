@@ -356,7 +356,7 @@ export function SubscriptionSetting({
         Subscription
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Long-horizon analytics with Pro. Device sync, restaurant search, and AI
+        Long-horizon analytics with Pro. Device sync, eating-out quick-log, and AI
         coaching with Pro+.
       </p>
 
@@ -513,7 +513,7 @@ export function SubscriptionSetting({
                   Upgrade to Pro+
                 </p>
                 <p className="mt-1 text-xs text-forge-muted">
-                  Device sync, restaurant search, and AI coaching. You&apos;ll
+                  Device sync, eating-out quick-log, and AI coaching. You&apos;ll
                   see the prorated charge before confirming.
                 </p>
                 <button

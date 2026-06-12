@@ -27,7 +27,7 @@
 | **Charts** | Recharts or Tremor | Projections, measurement trends |
 | **Muscle Maps** | body-highlighter or body-muscles | Free, 70+ muscles, intensity heatmaps |
 | **Exercise GIFs** | Self-hosted open GIF dataset + optional WorkoutX API ($0–25/mo) at scale | Avoid $499 RapidAPI lock-in at launch |
-| **Nutrition DB** | USDA FoodData Central + Open Food Facts (free, self-hosted cache) | $0 operating cost; restaurant menus deferred to Pro tier via Nutritionix |
+| **Nutrition DB** | USDA FoodData Central + Open Food Facts (free, self-hosted cache) | $0 operating cost; Pro+ restaurant quick-log uses curated chain data (no paid API at launch) |
 | **Wearable Integrations** | Direct OAuth for Withings, Fitbit, Strava → Terra API at ~1,000+ paying users | Keeps MVP infra under ~$50/mo |
 | **AI Coaching Copy** | Claude Haiku / GPT-4o-mini via structured prompts | ~$0.01–0.05/user/month for hype messages only; **never** for program logic |
 | **Hosting** | Vercel (Hobby → Pro $20/mo) | Zero-config Next.js deploy |
@@ -86,7 +86,7 @@ Core Packages (evidence-kb, program-engine, projection-engine)
     ↓
 Supabase (PostgreSQL, Auth, Storage, Realtime)
     ↓
-External APIs (Withings, Fitbit, Terra, Nutritionix — Pro tier)
+External APIs (Withings, Fitbit, Strava — Pro+; paid restaurant API deferred)
 ```
 
 ---
@@ -153,7 +153,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 3. **Beginner → advanced** — experience multipliers + adherence-based promotion (regenerates program on level-up)
 4. **All goal types** — fat_loss, bodybuilding, powerlifting, general_strength, recomposition
 5. **Body measurements + calipers** — onboarding + Jackson-Pollock
-6. **Calorie tracking** — USDA/OFF free; Nutritionix Pro
+6. **Calorie tracking** — USDA/OFF free; Pro+ restaurant quick-log + saved meals
 7. **Sets/reps tracking** — active workout UI, offline-first, RIR autoregulated load progression
 8. **Measurement trends + integrations** — charts; Withings/Fitbit/Strava Pro
 9. **Exercise animations + muscle maps** — GIFs + body-highlighter
@@ -179,7 +179,8 @@ Three tiers. Full gate matrix: [docs/TIER-GATES.md](./TIER-GATES.md).
 | Strength / volume / nutrition adherence analytics | — | ✓ | ✓ |
 | Export, progress photos, rule-based insights | — | ✓ | ✓ |
 | Device integrations (Withings, Fitbit, Strava) | — | — | ✓ |
-| Restaurant nutrition (Nutritionix) | — | — | ✓ |
+| Restaurant quick-log & saved meals | — | — | ✓ |
+| Full restaurant menu search (paid API) | — | — | Planned |
 | Motivation | Templated | Templated + insights | AI-personalized |
 | Gamification & PR celebrations | — | PR badges | Full (leaderboards, celebration UX) |
 

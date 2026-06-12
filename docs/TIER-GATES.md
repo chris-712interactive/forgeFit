@@ -66,7 +66,8 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | Withings weight sync | — | — | ✓ |
 | Fitbit activity sync | — | — | ✓ |
 | Strava activity sync | — | — | ✓ |
-| Nutritionix restaurant / chain search | — | — | ✓ |
+| Restaurant quick-log & saved meals (curated chains) | — | — | ✓ |
+| Full restaurant menu API search | — | — | Planned |
 
 ### Coaching & community (Pro+)
 
@@ -97,7 +98,7 @@ Use `hasTierFeature(tier, feature)` from `@/lib/billing/gates`.
 | `progress_photos` | Pro | Progress tab — photo timeline |
 | `rule_based_insights` | Pro | Home / Progress — insight cards |
 | `device_integrations` | Pro+ | Profile — Integrations hub |
-| `nutritionix` | Pro+ | Nutrition — restaurant search |
+| `restaurant_search` | Pro+ | Nutrition — eating out quick-log |
 | `ai_motivation` | Pro+ | Home / pre-workout — AI copy |
 | `gamification` | Pro+ | Profile opt-in + leaderboard |
 | `pr_celebration` | Pro+ | Workout — celebration modal |
@@ -165,7 +166,7 @@ See [ADR 001 — Two-Tier Pricing & Operational Margins](./ADRs/001-tier-pricing
 |-------------|---------------------|-------|
 | Pro annual | **~94%** | No paid APIs; single Stripe charge |
 | Pro monthly | **~92%** | Higher Stripe fee (12 charges/yr) |
-| Pro+ annual | **~82–87%** | Nutritionix + AI variable cost |
+| Pro+ annual | **~82–87%** | Device sync + AI variable cost (restaurant MVP is $0) |
 
 The 35% Pro annual discount is a **retention trade**, not a margin problem — annual billing saves ~$4.40/user/yr in Stripe fees vs monthly.
 
