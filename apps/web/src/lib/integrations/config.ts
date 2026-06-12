@@ -1,3 +1,5 @@
+import { getSiteUrl } from "@/lib/seo/site-url";
+
 export function isWithingsConfigured(): boolean {
   return Boolean(
     process.env.WITHINGS_CLIENT_ID?.trim() &&
@@ -61,15 +63,30 @@ export function fitbitRedirectUri(siteUrl: string): string {
   return `${siteUrl.replace(/\/$/, "")}/api/integrations/fitbit/callback`;
 }
 
-/** Match redirect_uri to the host that started OAuth (avoids www vs apex cookie loss). */
+/** Canonical OAuth redirect — must match Google Cloud authorized redirect URIs exactly. */
+export function fitbitOAuthRedirectUri(): string {
+  const override = process.env.INTEGRATION_OAUTH_REDIRECT_URI?.trim();
+  if (override) {
+    return override.replace(/\/$/, "");
+  }
+  return fitbitRedirectUri(getSiteUrl());
+}
+
+export function withingsOAuthRedirectUri(): string {
+  return withingsRedirectUri(getSiteUrl());
+}
+
+/** @deprecated Prefer fitbitOAuthRedirectUri — request origin breaks Google redirect_uri matching. */
 export function getRequestOrigin(request: Request): string {
   return new URL(request.url).origin;
 }
 
+/** @deprecated Use fitbitOAuthRedirectUri instead. */
 export function fitbitRedirectUriFromRequest(request: Request): string {
   return fitbitRedirectUri(getRequestOrigin(request));
 }
 
+/** @deprecated Use withingsOAuthRedirectUri instead. */
 export function withingsRedirectUriFromRequest(request: Request): string {
   return withingsRedirectUri(getRequestOrigin(request));
 }

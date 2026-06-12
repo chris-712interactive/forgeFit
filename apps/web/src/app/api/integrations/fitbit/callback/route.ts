@@ -1,6 +1,5 @@
 import {
-  fitbitRedirectUriFromRequest,
-  getRequestOrigin,
+  fitbitOAuthRedirectUri,
   isGoogleHealthConfigured,
 } from "@/lib/integrations/config";
 import { completeFitbitOAuth } from "@/lib/integrations/service";
@@ -8,12 +7,13 @@ import {
   clearFitbitOAuthCookies,
   readFitbitOAuthCookies,
 } from "@/lib/integrations/oauth-state";
+import { getSiteUrl } from "@/lib/seo/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const origin = getRequestOrigin(request);
-  const profileUrl = `${origin}/profile#integrations`;
+  const siteUrl = getSiteUrl();
+  const profileUrl = `${siteUrl}/profile#integrations`;
 
   if (!isGoogleHealthConfigured()) {
     return NextResponse.redirect(
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
   await clearFitbitOAuthCookies();
 
   if (!user) {
-    return NextResponse.redirect(`${origin}/login`);
+    return NextResponse.redirect(`${siteUrl}/login`);
   }
 
   if (
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
     await completeFitbitOAuth({
       userId: user.id,
       code,
-      redirectUri: fitbitRedirectUriFromRequest(request),
+      redirectUri: fitbitOAuthRedirectUri(),
     });
   } catch (error) {
     const message =

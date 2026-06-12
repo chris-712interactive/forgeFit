@@ -1,9 +1,53 @@
 import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 
+const MAX_AGE_SECONDS = 600;
+
+function integrationCookieDomain(): string | undefined {
+  if (process.env.NODE_ENV !== "production") return undefined;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!siteUrl) return undefined;
+
+  try {
+    const hostname = new URL(siteUrl).hostname;
+    if (hostname === "localhost" || hostname.endsWith(".localhost")) {
+      return undefined;
+    }
+    const parts = hostname.split(".");
+    if (parts.length >= 2) {
+      return `.${parts.slice(-2).join(".")}`;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+function integrationCookieOptions() {
+  const domain = integrationCookieDomain();
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    maxAge: MAX_AGE_SECONDS,
+    path: "/",
+    ...(domain ? { domain } : {}),
+  };
+}
+
+async function deleteIntegrationCookie(name: string): Promise<void> {
+  const cookieStore = await cookies();
+  const domain = integrationCookieDomain();
+  if (domain) {
+    cookieStore.delete({ name, path: "/", domain });
+  }
+  cookieStore.delete(name);
+}
+
 const STATE_COOKIE = "withings_oauth_state";
 const USER_COOKIE = "withings_oauth_uid";
-const MAX_AGE_SECONDS = 600;
 
 export function createWithingsOAuthState(): string {
   return randomBytes(24).toString("base64url");
@@ -14,13 +58,7 @@ export async function setWithingsOAuthCookies(
   userId: string
 ): Promise<void> {
   const cookieStore = await cookies();
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    maxAge: MAX_AGE_SECONDS,
-    path: "/",
-  };
+  const options = integrationCookieOptions();
 
   cookieStore.set(STATE_COOKIE, state, options);
   cookieStore.set(USER_COOKIE, userId, options);
@@ -38,9 +76,8 @@ export async function readWithingsOAuthCookies(): Promise<{
 }
 
 export async function clearWithingsOAuthCookies(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(STATE_COOKIE);
-  cookieStore.delete(USER_COOKIE);
+  await deleteIntegrationCookie(STATE_COOKIE);
+  await deleteIntegrationCookie(USER_COOKIE);
 }
 
 const FITBIT_STATE_COOKIE = "fitbit_oauth_state";
@@ -55,13 +92,7 @@ export async function setFitbitOAuthCookies(
   userId: string
 ): Promise<void> {
   const cookieStore = await cookies();
-  const options = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    maxAge: MAX_AGE_SECONDS,
-    path: "/",
-  };
+  const options = integrationCookieOptions();
 
   cookieStore.set(FITBIT_STATE_COOKIE, state, options);
   cookieStore.set(FITBIT_USER_COOKIE, userId, options);
@@ -79,7 +110,6 @@ export async function readFitbitOAuthCookies(): Promise<{
 }
 
 export async function clearFitbitOAuthCookies(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(FITBIT_STATE_COOKIE);
-  cookieStore.delete(FITBIT_USER_COOKIE);
+  await deleteIntegrationCookie(FITBIT_STATE_COOKIE);
+  await deleteIntegrationCookie(FITBIT_USER_COOKIE);
 }
