@@ -17,6 +17,7 @@ import { ExperiencePromotionBanner } from "@/components/progression/experience-p
 import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
 import { getPromotionEvaluation } from "@/lib/progression/service";
 import { SubscriptionSetting } from "@/components/profile/subscription-setting";
+import { GamificationSetting } from "@/components/profile/gamification-setting";
 import { IntegrationsSetting } from "@/components/profile/integrations-setting";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasFeature } from "@/lib/billing/gates";
@@ -170,6 +171,11 @@ export default async function ProfilePage({
           initialIntegrations={initialIntegrations}
           integrationStatus={integrationStatus}
           integrationError={integrationError ?? integrationsLoadError}
+        />
+
+        <GamificationSetting
+          unlocked={hasFeature(subscription, "gamification")}
+          optedIn={profile?.gamification_opt_in ?? false}
         />
 
         <UnitPreferenceSetting initialUnit={unit} />

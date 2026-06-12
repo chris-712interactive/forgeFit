@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-09 · **Current phase:** Phase 6 complete → Phase 7 next
+**Last updated:** 2026-06-12 · **Current phase:** Phase 8 complete
 
 ---
 
@@ -199,8 +199,8 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 4 | Nutrition diary | Complete |
 | 5 | Measurements + projections | Complete |
 | 6 | Exercise library UI | Complete |
-| 7 | Pro integrations (Stripe, OAuth) | Pending |
-| 8 | Motivation + gamification | Pending |
+| 7 | Pro integrations (Stripe, OAuth) | Partial — Fitbit live; vendors pending |
+| 8 | Motivation + gamification | Complete |
 
 See `docs/phases/` for per-phase acceptance criteria.
 

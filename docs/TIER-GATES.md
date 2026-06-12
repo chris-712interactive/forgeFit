@@ -185,4 +185,4 @@ The 35% Pro annual discount is a **retention trade**, not a margin problem — a
 | 7. Strength/volume/adherence analytics UI | ✅ Done | Progress, Nutrition, Home insights |
 | 8. Progress photos UI | ✅ Done | `progress_photos` migration + timeline |
 | 9. Pro+ integrations | ⏳ Partial | Fitbit live; Withings + Strava coming soon |
-| 10. Phase 8 Pro+ features | ⏳ Pending | AI coaching, gamification |
+| 10. Phase 8 Pro+ features | ✅ Done | Coaching hype, PR celebration, leaderboards |

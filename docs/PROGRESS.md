@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 6 complete → Phase 7 (Pro Integrations) next |
-| **Last updated** | 2026-06-09 |
-| **Last session focus** | Pro tier features complete (analytics, photos, CSV) |
+| **Active phase** | Phase 8 complete |
+| **Last updated** | 2026-06-12 |
+| **Last session focus** | Phase 8 — coaching, PR celebration, gamification |
 
 ---
 
@@ -26,12 +26,39 @@
 | 4 | Nutrition | ✅ Complete | 2026-06-08 |
 | 5 | Measurements + Projections | ✅ Complete | 2026-06-08 |
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
-| 7 | Pro Integrations | ⏳ Pending | — |
-| 8 | Motivation + Gamification | ⏳ Pending | — |
+| 7 | Pro Integrations | ⏳ Partial | — |
+| 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
 
 ---
 
 ## Session Log
+
+### 2026-06-12 — Phase 8 (motivation + gamification)
+
+**What was done:**
+- `@forgefit/coaching` — pre-workout hype, PR celebration copy, weekly habit score
+- Migration `20260610000000_phase8_gamification.sql` — `leaderboard_entries`, `community_wins`
+- Pro+ pre-workout hype banner on active workout (first step)
+- Pro+ PR celebration modal (`gradient-forge-celebrate`) on set completion
+- Profile gamification opt-in toggle (default off)
+- Home leaderboard + community wins feed (opt-in, bucketed by goal + experience)
+- Fitbit activity UI on Home + Progress (prior session)
+
+**Apply migration:** `20260610000000_phase8_gamification.sql`
+
+**What's next:**
+1. Apply Phase 8 migration on production
+2. Phase 7 vendor unblock: Withings, Garmin, Strava when ready
+3. Optional: LLM-backed coaching copy behind `ai_motivation` gate
+
+**Files touched:**
+- `packages/coaching/`, `apps/web/src/lib/coaching/`, `apps/web/src/lib/activity/`
+- `apps/web/src/components/coaching/`, `profile/gamification-setting.tsx`
+- `apps/web/src/components/workout/active-workout.tsx`
+- `supabase/migrations/20260610000000_phase8_gamification.sql`
+- `docs/phases/08-gamification.md`, `docs/PROGRESS.md`, `docs/BIBLE.md`
+
+---
 
 ### 2026-06-09 — Subscription downgrade & cancel
 

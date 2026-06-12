@@ -1,5 +1,6 @@
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
+import { getGamificationContext } from "@/lib/coaching/service";
 import type { ActivityContext } from "@/lib/activity/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
@@ -39,6 +40,12 @@ export async function getHomeDashboardData(
       subscriptionPromise,
       subscriptionPromise.then((sub) => getActivityContext(userId, sub)),
     ]);
+
+  const gamification = await getGamificationContext(
+    userId,
+    subscription,
+    sessionResult.records
+  );
 
   const profile = profileResult.data;
   const weeklyStats = computeWeeklyWorkStats(
@@ -82,5 +89,6 @@ export async function getHomeDashboardData(
     promotion,
     proInsights,
     activity,
+    gamification,
   };
 }

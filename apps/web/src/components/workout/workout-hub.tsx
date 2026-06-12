@@ -27,6 +27,7 @@ import {
   buildSessionLoadProgressions,
   progressionToPrefill,
 } from "@/lib/progression/rir-progression";
+import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
 import type { PromotionEvaluation } from "@/lib/progression/types";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import {
@@ -55,6 +56,7 @@ interface WorkoutHubProps {
   goal?: FitnessGoal;
   bodyweightKg?: number;
   declaredE1rmKg?: Record<string, number>;
+  coachingFeatures?: WorkoutCoachingFeatures | null;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -105,6 +107,7 @@ export function WorkoutHub({
   goal = "general_strength",
   bodyweightKg,
   declaredE1rmKg,
+  coachingFeatures = null,
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -386,6 +389,7 @@ export function WorkoutHub({
       <ActiveWorkout
         clientId={activeClientId}
         experienceLevel={experienceLevel}
+        coaching={coachingFeatures}
         onBack={closeToHub}
         onFinished={refreshAllSessions}
       />

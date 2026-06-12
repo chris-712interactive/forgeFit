@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@forgefit/coaching": "workspace:*",
     "@forgefit/evidence-kb": "workspace:*",
     "@forgefit/exercise-db": "workspace:*",
     "@forgefit/integrations": "workspace:*",

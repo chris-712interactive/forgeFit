@@ -1,4 +1,6 @@
 import { WorkoutHub } from "@/components/workout/workout-hub";
+import { getWorkoutCoachingFeatures } from "@/lib/coaching/workout-features";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { getPromotionEvaluation } from "@/lib/progression/service";
 import {
   getUserOneRepMaxes,
@@ -27,12 +29,25 @@ export default async function WorkoutPage() {
   const serverSessionsResult = user
     ? await getServerSessionRecords(user.id, 120)
     : { records: [], tableReady: true };
-  const [promotion, oneRepMaxes] = user
+  const subscription = user
+    ? await getSubscriptionForUser(user.id)
+    : {
+        tier: "free" as const,
+        status: "inactive" as const,
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
+      };
+  const [promotion, oneRepMaxes, coachingFeatures] = user
     ? await Promise.all([
         getPromotionEvaluation(user.id, serverSessionsResult.records, plan),
         getUserOneRepMaxes(user.id),
+        getWorkoutCoachingFeatures(
+          user.id,
+          subscription,
+          serverSessionsResult.records
+        ),
       ])
-    : [null, { rows: [], tableReady: true }];
+    : [null, { rows: [], tableReady: true }, null];
 
   const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
 
@@ -50,6 +65,7 @@ export default async function WorkoutPage() {
         profile?.weight_kg ? Number(profile.weight_kg) : undefined
       }
       declaredE1rmKg={Object.fromEntries(declaredE1rmKg)}
+      coachingFeatures={coachingFeatures}
     />
   );
 }

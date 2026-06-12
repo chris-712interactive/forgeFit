@@ -9,7 +9,21 @@ import {
   timedTargetSeconds,
   type HoldExperience,
 } from "@forgefit/exercise-db";
+import {
+  pickPrCelebrationBody,
+  pickPrCelebrationHeadline,
+  pickPreWorkoutHype,
+  type CoachingGoal,
+} from "@forgefit/coaching";
 import type { ExperienceLevel } from "@/lib/types/profile";
+import { publishWorkoutPrWin } from "@/app/actions/gamification";
+import { PreWorkoutHypeBanner } from "@/components/coaching/pre-workout-hype-banner";
+import { PrCelebrationModal } from "@/components/coaching/pr-celebration-modal";
+import {
+  detectSetPr,
+  type DetectedWorkoutPr,
+} from "@/lib/coaching/detect-pr";
+import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
 import {
   buildWorkoutSteps,
   canAdvanceFromStep,
@@ -31,7 +45,7 @@ import { useOfflineStatus } from "@/hooks/use-online-status";
 import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HoldTimer } from "./hold-timer";
 import { RecoveryBlockCard } from "./recovery-block-card";
 import { WarmupBlockCard } from "./warmup-block-card";
@@ -43,6 +57,7 @@ import { useWorkoutSyncContext } from "./sync-manager";
 interface ActiveWorkoutProps {
   clientId: string;
   experienceLevel?: ExperienceLevel;
+  coaching?: WorkoutCoachingFeatures | null;
   onBack?: () => void;
   onFinished?: () => void | Promise<void>;
 }
@@ -50,6 +65,7 @@ interface ActiveWorkoutProps {
 export function ActiveWorkout({
   clientId,
   experienceLevel = "beginner",
+  coaching = null,
   onBack,
   onFinished,
 }: ActiveWorkoutProps) {
@@ -76,6 +92,10 @@ export function ActiveWorkout({
   const [finishing, setFinishing] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [finishError, setFinishError] = useState<string | null>(null);
+  const [celebrationPr, setCelebrationPr] = useState<DetectedWorkoutPr | null>(
+    null
+  );
+  const sessionBestE1rmRef = useRef<Map<string, number>>(new Map());
   const offline = useOfflineStatus();
 
   const goBack = useCallback(() => {
@@ -106,6 +126,23 @@ export function ActiveWorkout({
   );
 
   const currentStep = steps[currentStepIndex];
+
+  const preWorkoutHype = useMemo(() => {
+    if (!coaching?.aiMotivationEnabled || !session?.sessionName) {
+      return null;
+    }
+
+    return pickPreWorkoutHype({
+      goal: coaching.goal as CoachingGoal,
+      experience: coaching.experienceLevel,
+      sessionName: session.sessionName,
+      displayName: coaching.displayName,
+      whyStarted: coaching.whyStarted,
+      isDeloadWeek: coaching.isDeloadWeek,
+      workoutsCompletedThisWeek: coaching.workoutsCompletedThisWeek,
+      workoutsPlannedThisWeek: coaching.workoutsPlannedThisWeek,
+    });
+  }, [coaching, session?.sessionName]);
 
   const setsByExercise = useMemo(() => {
     const map = new Map<string, LocalExerciseSet[]>();
@@ -181,6 +218,53 @@ export function ActiveWorkout({
       );
       if (exercise?.restSeconds) {
         setRestSeconds(exercise.restSeconds);
+      }
+
+      if (
+        coaching?.prCelebrationEnabled &&
+        setRow &&
+        updated?.weightKg != null &&
+        updated.reps != null &&
+        updated.weightKg > 0 &&
+        updated.reps > 0
+      ) {
+        const historicalBest =
+          coaching.priorBestE1rmKg[setRow.exerciseId] ?? 0;
+        const sessionBest =
+          sessionBestE1rmRef.current.get(setRow.exerciseId) ?? historicalBest;
+        const detected = detectSetPr(
+          setRow.exerciseId,
+          setRow.exerciseName,
+          updated.weightKg,
+          updated.reps,
+          updated.rir,
+          sessionBest
+        );
+
+        if (detected) {
+          sessionBestE1rmRef.current.set(setRow.exerciseId, detected.e1rmKg);
+          setCelebrationPr(detected);
+
+          if (coaching.gamificationOptIn) {
+            const headline = pickPrCelebrationHeadline({
+              exerciseLabel: detected.label,
+              weightKg: detected.weightKg,
+              reps: detected.reps,
+              e1rmKg: detected.e1rmKg,
+              goal: coaching.goal as CoachingGoal,
+              displayName: coaching.displayName,
+            });
+            const detail = pickPrCelebrationBody({
+              exerciseLabel: detected.label,
+              weightKg: detected.weightKg,
+              reps: detected.reps,
+              e1rmKg: detected.e1rmKg,
+              goal: coaching.goal as CoachingGoal,
+              displayName: coaching.displayName,
+            });
+            void publishWorkoutPrWin({ headline, detail });
+          }
+        }
       }
     }
 
@@ -578,6 +662,12 @@ export function ActiveWorkout({
         totalSets={totalCount}
       />
 
+      {preWorkoutHype && currentStepIndex === 0 && (
+        <div className="mb-4">
+          <PreWorkoutHypeBanner message={preWorkoutHype} />
+        </div>
+      )}
+
       {offline && (
         <p className="mb-4 text-sm text-forge-steel">Offline mode</p>
       )}
@@ -673,6 +763,29 @@ export function ActiveWorkout({
             onSkip={() => setRestSeconds(null)}
           />
         )}
+
+      {celebrationPr && coaching && (
+        <PrCelebrationModal
+          pr={celebrationPr}
+          headline={pickPrCelebrationHeadline({
+            exerciseLabel: celebrationPr.label,
+            weightKg: celebrationPr.weightKg,
+            reps: celebrationPr.reps,
+            e1rmKg: celebrationPr.e1rmKg,
+            goal: coaching.goal as CoachingGoal,
+            displayName: coaching.displayName,
+          })}
+          body={pickPrCelebrationBody({
+            exerciseLabel: celebrationPr.label,
+            weightKg: celebrationPr.weightKg,
+            reps: celebrationPr.reps,
+            e1rmKg: celebrationPr.e1rmKg,
+            goal: coaching.goal as CoachingGoal,
+            displayName: coaching.displayName,
+          })}
+          onClose={() => setCelebrationPr(null)}
+        />
+      )}
     </div>
   );
 }

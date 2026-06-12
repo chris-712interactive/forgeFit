@@ -31,6 +31,7 @@ supabase/         → PostgreSQL migrations + RLS
 | `@forgefit/nutrition-core` | USDA/OFF diary | 4 |
 | `@forgefit/projection-engine` | Caliper BF%, weight trends, 30-day forecasts | 5 |
 | `@forgefit/integrations` | OAuth device adapters | 7 |
+| `@forgefit/coaching` | Pre-workout hype, PR copy, habit scoring | 8 |
 | `@forgefit/offline-sync` | Dexie sessions/sets + `/api/sync` client | 3 |
 
 ## Data Flow

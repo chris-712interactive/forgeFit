@@ -1,3 +1,5 @@
+import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
+import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
 import { HomeDailyActivity } from "@/components/activity/home-daily-activity";
 import { EncouragementBanner } from "@/components/home/encouragement-banner";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
@@ -62,6 +64,9 @@ export default async function HomePage() {
         <HomeMacroTracker summary={data.nutrition} />
 
         <HomeDailyActivity activity={data.activity} />
+
+        <LeaderboardCard gamification={data.gamification} />
+        <CommunityWinsFeed gamification={data.gamification} />
 
         {data.plan ? (
           <>
