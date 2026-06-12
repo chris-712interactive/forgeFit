@@ -1,6 +1,10 @@
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
-import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
+import {
+  appHeaderGap,
+  appPagePadding,
+  appSectionStack,
+} from "@/components/layout/page-layout";
 import { NutritionAdherenceCard } from "@/components/nutrition/nutrition-adherence-card";
 import { NutritionDiary } from "@/components/nutrition/nutrition-diary";
 import { getNutritionAdherenceForUser } from "@/lib/analytics/service";
@@ -47,7 +51,7 @@ export default async function NutritionPage() {
       </p>
 
       {summary ? (
-        <div className={`${appHeaderGap} space-y-6`}>
+        <div className={`${appHeaderGap} ${appSectionStack}`}>
           <NutritionDiary
             initialSummary={summary}
             recentEntries={recentEntries}
