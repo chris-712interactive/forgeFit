@@ -3,9 +3,10 @@
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import type { IntegrationProvider } from "@forgefit/integrations";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
+import { formatIntegrationErrorForUser } from "@/lib/integrations/user-errors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type HubIntegration = IntegrationPublicStatus & {
   label: string;
@@ -57,7 +58,7 @@ function connectDisclosure(provider: IntegrationProvider): string | null {
     return "By connecting, you authorize ForgeRep to access weight readings from your Withings account.";
   }
   if (provider === "fitbit") {
-    return "By connecting, you sign in with Google and authorize ForgeRep to read Fitbit activity data (steps and active calories) through the Google Health API.";
+    return "By connecting, you sign in with Google and authorize ForgeRep to read Fitbit activity (steps and active calories) through the Google Health API. Your Fitbit account must be linked to the same Google account in the Fitbit app first.";
   }
   return null;
 }
@@ -71,17 +72,37 @@ export function IntegrationsSetting({
   integrationError,
 }: IntegrationsSettingProps) {
   const router = useRouter();
+  const sectionRef = useRef<HTMLElement>(null);
   const [integrations, setIntegrations] =
     useState<HubIntegration[]>(initialIntegrations);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(integrationError ?? null);
+  const [error, setError] = useState<string | null>(
+    integrationError
+      ? formatIntegrationErrorForUser(integrationError)
+      : null
+  );
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
 
   useEffect(() => {
     if (integrationError) {
-      setError(integrationError);
+      setError(formatIntegrationErrorForUser(integrationError));
     }
   }, [integrationError]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get("integration_error");
+    if (urlError) {
+      setError(formatIntegrationErrorForUser(urlError));
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
+  function dismissIntegrationFeedback() {
+    setError(null);
+    setMessage(null);
+    router.replace("/profile#integrations", { scroll: false });
+  }
 
   useEffect(() => {
     if (integrationStatus === "withings_connected") {
@@ -124,7 +145,7 @@ export function IntegrationsSetting({
       };
 
       if (!response.ok) {
-        setError(body.error ?? "Sync failed. Try again.");
+        setError(formatIntegrationErrorForUser(body.error ?? "Sync failed. Try again."));
         return;
       }
 
@@ -167,6 +188,7 @@ export function IntegrationsSetting({
 
   return (
     <section
+      ref={sectionRef}
       id="integrations"
       className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5"
     >
@@ -182,6 +204,40 @@ export function IntegrationsSetting({
           How integrations use your data
         </Link>
       </p>
+
+      {error && (
+        <div
+          className="mt-4 rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3"
+          role="alert"
+        >
+          <p className="font-display text-sm font-semibold text-red-100">
+            Could not connect
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-red-100/90">
+            {error}
+          </p>
+          <button
+            type="button"
+            onClick={dismissIntegrationFeedback}
+            className="mt-3 text-xs font-semibold text-red-200 underline hover:text-white"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {message && !error && (
+        <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3">
+          <p className="text-sm font-medium text-emerald-100">{message}</p>
+          <button
+            type="button"
+            onClick={dismissIntegrationFeedback}
+            className="mt-2 text-xs font-semibold text-emerald-200 underline hover:text-white"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {!configured && unlocked && (
         <p className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
@@ -318,18 +374,6 @@ export function IntegrationsSetting({
             );
           })}
         </ul>
-      )}
-
-      {message && (
-        <p className="mt-3 text-xs font-medium text-emerald-300">{message}</p>
-      )}
-      {error && (
-        <p
-          className="mt-3 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-200"
-          role="alert"
-        >
-          {error}
-        </p>
       )}
     </section>
   );

@@ -1,5 +1,6 @@
 import { isWithingsConfigured, withingsOAuthRedirectUri } from "@/lib/integrations/config";
 import { completeWithingsOAuth } from "@/lib/integrations/service";
+import { formatIntegrationErrorForUser } from "@/lib/integrations/user-errors";
 import { clearWithingsOAuthCookies } from "@/lib/integrations/oauth-state";
 import {
   profileIntegrationsRedirectUrl,
@@ -58,7 +59,9 @@ export async function GET(request: Request) {
       error instanceof Error
         ? error.message
         : "Could not connect Withings.";
-    return redirectToProfile({ integration_error: message });
+    return redirectToProfile({
+      integration_error: formatIntegrationErrorForUser(message),
+    });
   }
 
   return redirectToProfile({ integration: "withings_connected" });
