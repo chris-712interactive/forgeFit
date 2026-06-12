@@ -1,4 +1,4 @@
-import { isWithingsConfigured, withingsRedirectUri } from "@/lib/integrations/config";
+import { isWithingsConfigured, withingsOAuthRedirectUri } from "@/lib/integrations/config";
 import { completeWithingsOAuth } from "@/lib/integrations/service";
 import {
   clearWithingsOAuthCookies,
@@ -7,6 +7,20 @@ import {
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+
+function isValidOAuthSession(params: {
+  state: string;
+  storedState: string | null;
+  storedUserId: string | null;
+  userId: string;
+}): boolean {
+  return (
+    Boolean(params.storedState) &&
+    Boolean(params.storedUserId) &&
+    params.storedState === params.state &&
+    params.storedUserId === params.userId
+  );
+}
 
 export async function GET(request: Request) {
   const siteUrl = getSiteUrl();
@@ -37,34 +51,37 @@ export async function GET(request: Request) {
     );
   }
 
+  const stored = await readWithingsOAuthCookies();
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const stored = await readWithingsOAuthCookies();
-  await clearWithingsOAuthCookies();
-
-  if (!user) {
-    return NextResponse.redirect(`${siteUrl}/login`);
-  }
+  const userId = user?.id ?? stored.userId;
 
   if (
-    !stored.state ||
-    !stored.userId ||
-    stored.state !== state ||
-    stored.userId !== user.id
+    !userId ||
+    !isValidOAuthSession({
+      state,
+      storedState: stored.state,
+      storedUserId: stored.userId,
+      userId,
+    })
   ) {
+    await clearWithingsOAuthCookies();
     return NextResponse.redirect(
       `${profileUrl}?integration_error=${encodeURIComponent("Invalid OAuth session. Try connecting again.")}`
     );
   }
 
+  await clearWithingsOAuthCookies();
+
   try {
     await completeWithingsOAuth({
-      userId: user.id,
+      userId,
       code,
-      redirectUri: withingsRedirectUri(siteUrl),
+      redirectUri: withingsOAuthRedirectUri(),
     });
   } catch (error) {
     const message =

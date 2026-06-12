@@ -3,14 +3,13 @@ import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import {
   getWithingsClientConfig,
   isWithingsConfigured,
-  withingsRedirectUri,
+  withingsOAuthRedirectUri,
 } from "@/lib/integrations/config";
 import { assertDeviceIntegrationsAccess } from "@/lib/integrations/service";
 import {
   createWithingsOAuthState,
   setWithingsOAuthCookies,
 } from "@/lib/integrations/oauth-state";
-import { getSiteUrl } from "@/lib/seo/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -43,8 +42,7 @@ export async function GET() {
   }
 
   const { clientId } = getWithingsClientConfig();
-  const siteUrl = getSiteUrl();
-  const redirectUri = withingsRedirectUri(siteUrl);
+  const redirectUri = withingsOAuthRedirectUri();
   const state = createWithingsOAuthState();
 
   await setWithingsOAuthCookies(state, user.id);

@@ -8,7 +8,11 @@ export async function updateSession(request: NextRequest) {
 
   // Supabase falls back to Site URL (/) when redirectTo isn't allowlisted — forward
   // the PKCE code to our callback route so the session can be established.
-  if (authCode && path !== "/auth/callback") {
+  // Skip device integration OAuth callbacks — they also use ?code= from Google/Withings.
+  const isIntegrationOAuthCallback = /^\/api\/integrations\/[^/]+\/callback\/?$/.test(
+    path
+  );
+  if (authCode && path !== "/auth/callback" && !isIntegrationOAuthCallback) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/callback";
     return NextResponse.redirect(url);
