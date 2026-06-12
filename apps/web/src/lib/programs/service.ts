@@ -4,6 +4,7 @@ import {
   type ProgramPlan,
   type ProgramUserProfile,
 } from "@forgefit/program-engine";
+import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 
 export async function loadUserProgramContext(userId: string) {
@@ -34,7 +35,7 @@ export async function loadUserProgramContext(userId: string) {
     minutesPerSession: profile.minutes_per_session!,
     weightKg: Number(profile.weight_kg),
     heightCm: Number(profile.height_cm),
-    age: profile.age!,
+    age: resolveProfileAge(profile) ?? profile.age!,
     sex: profile.sex ?? "other",
     equipment: equipmentRows?.map((r) => r.equipment_type) ?? [],
     recoveryEquipment: recoveryRows?.map((r) => r.equipment_type) ?? [],

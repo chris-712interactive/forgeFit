@@ -10,13 +10,18 @@ import { getPromotionEvaluation } from "@/lib/progression/service";
 import { ensureActiveProgram } from "@/lib/programs/service";
 import type { FitnessGoal } from "@/lib/types/profile";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
-import { pickEncouragement } from "./encouragement";
+import {
+  birthdayGreeting,
+  isBirthdayToday,
+  profileFirstName,
+} from "@/lib/profile/identity";
 import type { HomeDashboardData } from "./types";
 import {
   computeWeeklyWorkStats,
   findNextPlannedSession,
 } from "./weekly-stats";
 import { createClient } from "@/lib/supabase/server";
+import { pickEncouragement } from "./encouragement";
 
 export async function getHomeDashboardData(
   userId: string
@@ -30,7 +35,7 @@ export async function getHomeDashboardData(
       supabase
         .from("profiles")
         .select(
-          "display_name, primary_goal, why_started, sessions_per_week, minutes_per_session"
+          "display_name, first_name, last_name, date_of_birth, primary_goal, why_started, sessions_per_week, minutes_per_session"
         )
         .eq("id", userId)
         .single(),
@@ -68,8 +73,20 @@ export async function getHomeDashboardData(
     proInsights = bundle.insights;
   }
 
+  const firstName = profile
+    ? profileFirstName({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        display_name: profile.display_name,
+      })
+    : null;
+  const birthdayMessage =
+    profile?.date_of_birth && isBirthdayToday(profile.date_of_birth)
+      ? birthdayGreeting(firstName)
+      : null;
+
   return {
-    displayName: profile?.display_name ?? null,
+    displayName: firstName ?? profile?.display_name ?? null,
     goal: (profile?.primary_goal as FitnessGoal | null) ?? null,
     whyStarted: profile?.why_started ?? null,
     plan,
@@ -77,12 +94,13 @@ export async function getHomeDashboardData(
     weeklyStats,
     encouragement: pickEncouragement({
       goal: (profile?.primary_goal as FitnessGoal | null) ?? null,
-      displayName: profile?.display_name ?? null,
+      displayName: firstName ?? profile?.display_name ?? null,
       weekly: weeklyStats,
       proteinLoggedG: nutrition.totals.proteinG,
       proteinTargetG: nutrition.targets?.proteinG ?? null,
       whyStarted: profile?.why_started ?? null,
     }),
+    birthdayMessage,
     nextSessionDayIndex: next?.dayIndex ?? null,
     nextSessionName: next?.name ?? null,
     workoutsTableReady: sessionResult.tableReady,

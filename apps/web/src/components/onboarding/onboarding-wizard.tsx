@@ -18,11 +18,12 @@ import type {
   FitnessGoal,
   OnboardingData,
 } from "@/lib/types/profile";
+import { AboutYouStep } from "@/components/onboarding/about-you-step";
 import { HealthDisclaimerStep } from "@/components/onboarding/health-disclaimer-step";
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 const initialData: Partial<OnboardingData> = {
   equipment: [],
@@ -65,18 +66,23 @@ export function OnboardingWizard() {
         return !!data.experience_level;
       case 4:
         return (
+          !!data.first_name?.trim() &&
+          !!data.last_name?.trim() &&
+          !!data.date_of_birth
+        );
+      case 5:
+        return (
           !!data.sex &&
-          !!data.age &&
           !!data.height_cm &&
           !!data.weight_kg
         );
-      case 5:
-        return (data.equipment?.length ?? 0) > 0;
       case 6:
-        return true;
+        return (data.equipment?.length ?? 0) > 0;
       case 7:
-        return !!data.sessions_per_week && !!data.minutes_per_session;
+        return true;
       case 8:
+        return !!data.sessions_per_week && !!data.minutes_per_session;
+      case 9:
         return (data.why_started?.trim().length ?? 0) >= 10;
       default:
         return false;
@@ -175,6 +181,15 @@ export function OnboardingWizard() {
 
         {step === 4 && (
           <StepShell
+            title="About you"
+            subtitle="We'll personalize your plan and milestones."
+          >
+            <AboutYouStep data={data} onChange={update} />
+          </StepShell>
+        )}
+
+        {step === 5 && (
+          <StepShell
             title="Your measurements"
             subtitle="Choose your units once — we handle conversions behind the scenes."
           >
@@ -182,7 +197,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 5 && (
+        {step === 6 && (
           <StepShell
             title="What equipment do you have?"
             subtitle="Select everything available to you."
@@ -224,7 +239,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 6 && (
+        {step === 7 && (
           <StepShell
             title="Recovery tools"
             subtitle="Optional — we'll weave these into your plan."
@@ -246,7 +261,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 7 && (
+        {step === 8 && (
           <StepShell
             title="How much time do you have?"
             subtitle="Any amount works — we'll make it count."
@@ -276,7 +291,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 8 && (
+        {step === 9 && (
           <StepShell
             title="Why did you start?"
             subtitle="We'll remind you of this when you need it most."

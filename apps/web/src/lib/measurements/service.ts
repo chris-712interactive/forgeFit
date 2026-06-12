@@ -17,6 +17,7 @@ import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasProAccess, type SubscriptionSnapshot } from "@/lib/billing/types";
 import { listProgressPhotos } from "@/lib/progress-photos/service";
 import { getActiveProgram } from "@/lib/programs/service";
+import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import type {
   BodyMeasurementRow,
@@ -59,7 +60,7 @@ async function getProfileBasics(userId: string) {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "primary_goal, age, sex, weight_kg, waist_cm, chest_cm, arms_cm, legs_cm, neck_cm, hips_cm, created_at"
+      "primary_goal, age, date_of_birth, sex, weight_kg, waist_cm, chest_cm, arms_cm, legs_cm, neck_cm, hips_cm, created_at"
     )
     .eq("id", userId)
     .single();
@@ -275,7 +276,7 @@ export async function getProgressDashboardData(
   );
 
   const goal = (profile?.primary_goal as FitnessGoal | null) ?? null;
-  const age = profile?.age != null ? Number(profile.age) : null;
+  const age = profile ? resolveProfileAge(profile) : null;
 
   const projection =
     goal && age && measurements.length > 0

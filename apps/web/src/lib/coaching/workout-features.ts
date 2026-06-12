@@ -2,6 +2,7 @@ import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { computeWeeklyWorkStats } from "@/lib/home/weekly-stats";
 import { buildExerciseE1rmMap } from "@/lib/progression/one-rep-max";
+import { profileFirstName } from "@/lib/profile/identity";
 import { getActiveProgram } from "@/lib/programs/service";
 import type {
   ExperienceLevel,
@@ -20,7 +21,7 @@ export async function getWorkoutCoachingFeatures(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, primary_goal, experience_level, why_started, gamification_opt_in"
+      "first_name, last_name, display_name, primary_goal, experience_level, why_started, gamification_opt_in"
     )
     .eq("id", userId)
     .single();
@@ -37,7 +38,13 @@ export async function getWorkoutCoachingFeatures(
     gamificationOptIn: profile?.gamification_opt_in ?? false,
     priorBestE1rmKg: Object.fromEntries(priorMap.entries()),
     goal: (profile?.primary_goal as FitnessGoal | null) ?? "general_strength",
-    displayName: profile?.display_name ?? null,
+    displayName: profile
+      ? profileFirstName({
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          display_name: profile.display_name,
+        })
+      : null,
     experienceLevel:
       (profile?.experience_level as ExperienceLevel | null) ?? "beginner",
     whyStarted: profile?.why_started ?? null,

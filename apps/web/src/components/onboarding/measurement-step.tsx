@@ -65,16 +65,6 @@ export function MeasurementStep({ data, onChange }: MeasurementStepProps) {
         ]}
       />
 
-      <NumberField
-        label="Age"
-        required
-        value={data.age}
-        onChange={(v) => onChange({ age: v })}
-        min={13}
-        max={120}
-        suffix="years"
-      />
-
       <div>
         <p className="mb-2 text-sm font-medium text-forge-text">Unit system</p>
         <div className="grid grid-cols-2 gap-3">

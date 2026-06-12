@@ -43,8 +43,8 @@ function hashPick<T>(items: T[], seed: number): T {
 }
 
 export function pickEncouragement(input: EncouragementInput): string {
-  const name = input.displayName?.split(" ")[0];
-  const prefix = name ? `${name}, ` : "";
+  const name = input.displayName?.trim();
+  const prefix = name ? `${name.split(/\s+/)[0]}, ` : "";
 
   if (input.weekly.workoutsCompleted >= input.weekly.workoutsPlanned && input.weekly.workoutsPlanned > 0) {
     return `${prefix}you hit every planned session this week. That's forge-level consistency.`;

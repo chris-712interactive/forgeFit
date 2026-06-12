@@ -17,6 +17,9 @@ export interface Profile {
   id: string;
   email: string | null;
   display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
   sex: SexType | null;
   age: number | null;
   experience_level: ExperienceLevel | null;
@@ -59,8 +62,10 @@ export interface Profile {
 export interface OnboardingData {
   primary_goal: FitnessGoal;
   experience_level: ExperienceLevel;
+  first_name: string;
+  last_name: string;
+  date_of_birth: string;
   sex: SexType;
-  age: number;
   height_cm: number;
   weight_kg: number;
   waist_cm?: number;

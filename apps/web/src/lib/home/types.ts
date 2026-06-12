@@ -30,6 +30,7 @@ export interface HomeDashboardData {
   workoutsTableReady: boolean;
   promotion: PromotionEvaluation | null;
   proInsights: RuleInsight[];
+  birthdayMessage: string | null;
   activity: ActivityContext;
   gamification: GamificationContext;
 }

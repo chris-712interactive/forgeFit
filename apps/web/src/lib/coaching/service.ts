@@ -5,6 +5,7 @@ import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { getWeekBounds, computeWeeklyWorkStats } from "@/lib/home/weekly-stats";
 import { countQualitySessionsInLookback } from "@/lib/progression/adherence";
 import { getActiveProgram } from "@/lib/programs/service";
+import { profileFirstName } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type {
@@ -76,13 +77,16 @@ async function proteinHitDaysLast7(userId: string): Promise<number> {
   return adherence.windows.find((window) => window.days === 7)?.proteinHitDays ?? 0;
 }
 
-function leaderboardDisplayLabel(
-  displayName: string | null | undefined,
-  email: string | null | undefined
-): string {
-  const first = displayName?.trim().split(/\s+/)[0];
+function leaderboardDisplayLabel(profile: {
+  first_name?: string | null;
+  last_name?: string | null;
+  display_name?: string | null;
+  email?: string | null;
+}): string {
+  const first = profileFirstName(profile);
   if (first) return first;
-  const local = email?.split("@")[0]?.trim();
+
+  const local = profile.email?.split("@")[0]?.trim();
   if (local) return local.slice(0, 16);
   return "Forge athlete";
 }
@@ -100,7 +104,7 @@ export async function upsertWeeklyLeaderboardScore(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "display_name, email, primary_goal, experience_level, gamification_opt_in"
+      "first_name, last_name, display_name, email, primary_goal, experience_level, gamification_opt_in"
     )
     .eq("id", userId)
     .single();
@@ -139,7 +143,7 @@ export async function upsertWeeklyLeaderboardScore(
       bucket_experience: experience,
       week_start: weekStart,
       habit_score: habit.score,
-      display_label: leaderboardDisplayLabel(profile.display_name, profile.email),
+      display_label: leaderboardDisplayLabel(profile),
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id,week_start" }
@@ -252,15 +256,17 @@ export async function getGamificationContext(
     if (missingIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, display_name, email")
+        .select("id, first_name, last_name, display_name, email")
         .in("id", missingIds);
       for (const row of profiles ?? []) {
         labelByUserId.set(
           row.id as string,
-          leaderboardDisplayLabel(
-            row.display_name as string | null,
-            row.email as string | null
-          )
+          leaderboardDisplayLabel({
+            first_name: row.first_name as string | null,
+            last_name: row.last_name as string | null,
+            display_name: row.display_name as string | null,
+            email: row.email as string | null,
+          })
         );
       }
     }

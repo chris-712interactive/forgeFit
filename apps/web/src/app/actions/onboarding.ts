@@ -1,6 +1,11 @@
 "use server";
 
 import { replaceUserEquipment } from "@/lib/equipment/service";
+import {
+  computeAgeFromDateOfBirth,
+  isValidDateOfBirth,
+  profileFullName,
+} from "@/lib/profile/identity";
 import { generateAndSaveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import type { OnboardingData } from "@/lib/types/profile";
@@ -17,8 +22,12 @@ const onboardingSchema = z.object({
     "recomposition",
   ]),
   experience_level: z.enum(["beginner", "intermediate", "advanced"]),
+  first_name: z.string().trim().min(1).max(80),
+  last_name: z.string().trim().min(1).max(80),
+  date_of_birth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date of birth."),
   sex: z.enum(["male", "female", "other", "prefer_not_to_say"]),
-  age: z.number().min(13).max(120),
   height_cm: z.number().min(100).max(250),
   weight_kg: z.number().min(30).max(300),
   waist_cm: z.number().optional(),
@@ -42,6 +51,10 @@ export async function completeOnboarding(data: OnboardingData) {
     return { error: "Please check your answers and try again." };
   }
 
+  if (!isValidDateOfBirth(parsed.data.date_of_birth)) {
+    return { error: "You must be at least 13 years old to use ForgeRep." };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -56,13 +69,25 @@ export async function completeOnboarding(data: OnboardingData) {
     equipment_location,
     recovery_equipment,
     health_disclaimer_accepted: _disclaimerAccepted,
+    first_name,
+    last_name,
+    date_of_birth,
     ...profileFields
   } = parsed.data;
+
+  const age = computeAgeFromDateOfBirth(date_of_birth);
+  const display_name =
+    profileFullName({ first_name, last_name }) ?? `${first_name} ${last_name}`;
 
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
       ...profileFields,
+      first_name,
+      last_name,
+      date_of_birth,
+      display_name,
+      age,
       onboarding_complete: true,
       health_disclaimer_accepted_at: new Date().toISOString(),
     })

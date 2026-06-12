@@ -1,6 +1,7 @@
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
 import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
 import { HomeDailyActivity } from "@/components/activity/home-daily-activity";
+import { BirthdayBanner } from "@/components/home/birthday-banner";
 import { EncouragementBanner } from "@/components/home/encouragement-banner";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import { HomeMacroTracker } from "@/components/home/home-macro-tracker";
@@ -34,7 +35,7 @@ export default async function HomePage() {
   const data = await getHomeDashboardData(user.id);
 
   const greeting = data.displayName
-    ? `Hey, ${data.displayName.split(" ")[0]}`
+    ? `Hey, ${data.displayName}`
     : "Let's forge it";
 
   return (
@@ -47,6 +48,10 @@ export default async function HomePage() {
       </h1>
 
       <div className={`${appHeaderGap} ${appSectionStack}`}>
+        {data.birthdayMessage && (
+          <BirthdayBanner message={data.birthdayMessage} />
+        )}
+
         <EncouragementBanner message={data.encouragement} />
 
         <ProInsightsStrip insights={data.proInsights} />
