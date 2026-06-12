@@ -7,6 +7,7 @@ import {
 } from "@forgefit/projection-engine";
 import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
+import { getActivityContext } from "@/lib/activity/service";
 import {
   analyticsHistoryDays,
   hasFeature,
@@ -256,11 +257,12 @@ export async function getProgressDashboardData(
     ]);
 
   const isPro = hasProAccess(subscription);
-  const [proAnalytics, photoResult] = await Promise.all([
+  const [proAnalytics, photoResult, activity] = await Promise.all([
     isPro ? buildProAnalyticsBundle(userId, subscription) : Promise.resolve(null),
     hasFeature(subscription, "progress_photos")
       ? listProgressPhotos(userId)
       : Promise.resolve({ photos: [], tableReady: true }),
+    getActivityContext(userId, subscription),
   ]);
 
   const gates = buildGateContext(subscription);
@@ -334,6 +336,7 @@ export async function getProgressDashboardData(
     proAnalytics,
     progressPhotos: photoResult.photos,
     photosTableReady: photoResult.tableReady,
+    activity,
   };
 }
 

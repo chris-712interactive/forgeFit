@@ -1,4 +1,5 @@
 import type { RuleInsight } from "@/lib/analytics/types";
+import type { ActivityContext } from "@/lib/activity/types";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import type { PromotionEvaluation } from "@/lib/progression/types";
@@ -28,4 +29,5 @@ export interface HomeDashboardData {
   workoutsTableReady: boolean;
   promotion: PromotionEvaluation | null;
   proInsights: RuleInsight[];
+  activity: ActivityContext;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { DailyActivityPanel } from "@/components/activity/daily-activity-panel";
 import type { ProgressDashboardData } from "@/lib/measurements/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { hasProAccess } from "@/lib/billing/types";
@@ -142,6 +143,15 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
           weeklyVolume={analytics?.weeklyVolume ?? []}
           muscleVolume={analytics?.muscleVolume ?? []}
         />
+      </ProFeatureSection>
+
+      <ProFeatureSection
+        title="Daily activity"
+        description="Steps and active calories imported from Fitbit via Google Health."
+        unlocked={hasFeature(subscription, "device_integrations")}
+        suggestedTier="pro_plus"
+      >
+        <DailyActivityPanel activity={data.activity} />
       </ProFeatureSection>
 
       <ProFeatureSection

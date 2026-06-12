@@ -76,6 +76,33 @@ export function withingsOAuthRedirectUri(): string {
   return withingsRedirectUri(getSiteUrl());
 }
 
+export function stravaRedirectUri(siteUrl: string): string {
+  return `${siteUrl.replace(/\/$/, "")}/api/integrations/strava/callback`;
+}
+
+export function stravaOAuthRedirectUri(): string {
+  return stravaRedirectUri(getSiteUrl());
+}
+
+export function isStravaConfigured(): boolean {
+  return Boolean(
+    process.env.STRAVA_CLIENT_ID?.trim() &&
+      process.env.STRAVA_CLIENT_SECRET?.trim() &&
+      process.env.INTEGRATIONS_TOKEN_ENCRYPTION_KEY?.trim()
+  );
+}
+
+export function getStravaClientConfig() {
+  const clientId = process.env.STRAVA_CLIENT_ID?.trim();
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET?.trim();
+
+  if (!clientId || !clientSecret) {
+    throw new Error("Strava OAuth is not configured.");
+  }
+
+  return { clientId, clientSecret };
+}
+
 /** @deprecated Prefer fitbitOAuthRedirectUri — request origin breaks Google redirect_uri matching. */
 export function getRequestOrigin(request: Request): string {
   return new URL(request.url).origin;
@@ -92,10 +119,16 @@ export function withingsRedirectUriFromRequest(request: Request): string {
 }
 
 export function isDeviceIntegrationsConfigured(): boolean {
-  return isWithingsConfigured() || isGoogleHealthConfigured();
+  return (
+    isWithingsConfigured() || isGoogleHealthConfigured() || isStravaConfigured()
+  );
 }
 
 /** True when Fitbit / Google Health connect flow can run in this environment. */
 export function isFitbitIntegrationConfigured(): boolean {
   return isGoogleHealthConfigured();
+}
+
+export function isStravaIntegrationConfigured(): boolean {
+  return isStravaConfigured();
 }

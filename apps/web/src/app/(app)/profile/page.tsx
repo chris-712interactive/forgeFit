@@ -28,6 +28,7 @@ import {
 import {
   isDeviceIntegrationsConfigured,
   isFitbitIntegrationConfigured,
+  isStravaConfigured,
   isWithingsConfigured,
 } from "@/lib/integrations/config";
 import { hasProAccess } from "@/lib/billing/types";
@@ -164,6 +165,7 @@ export default async function ProfilePage({
           providerConfigured={{
             withings: isWithingsConfigured(),
             fitbit: isFitbitIntegrationConfigured(),
+            strava: isStravaConfigured(),
           }}
           initialIntegrations={initialIntegrations}
           integrationStatus={integrationStatus}

@@ -1,3 +1,4 @@
+import { HomeDailyActivity } from "@/components/activity/home-daily-activity";
 import { EncouragementBanner } from "@/components/home/encouragement-banner";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import { HomeMacroTracker } from "@/components/home/home-macro-tracker";
@@ -59,6 +60,8 @@ export default async function HomePage() {
         )}
 
         <HomeMacroTracker summary={data.nutrition} />
+
+        <HomeDailyActivity activity={data.activity} />
 
         {data.plan ? (
           <>

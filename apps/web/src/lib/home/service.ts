@@ -1,4 +1,6 @@
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
+import { getActivityContext } from "@/lib/activity/service";
+import type { ActivityContext } from "@/lib/activity/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasProAccess } from "@/lib/billing/types";
@@ -20,7 +22,9 @@ export async function getHomeDashboardData(
 ): Promise<HomeDashboardData> {
   const supabase = await createClient();
 
-  const [profileResult, plan, nutrition, sessionResult, subscription] =
+  const subscriptionPromise = getSubscriptionForUser(userId);
+
+  const [profileResult, plan, nutrition, sessionResult, subscription, activity] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -32,7 +36,8 @@ export async function getHomeDashboardData(
       ensureActiveProgram(userId),
       getDailyNutritionSummary(userId),
       getServerSessionRecords(userId, 120),
-      getSubscriptionForUser(userId),
+      subscriptionPromise,
+      subscriptionPromise.then((sub) => getActivityContext(userId, sub)),
     ]);
 
   const profile = profileResult.data;
@@ -76,5 +81,6 @@ export async function getHomeDashboardData(
     workoutsTableReady: sessionResult.tableReady,
     promotion,
     proInsights,
+    activity,
   };
 }

@@ -38,14 +38,14 @@ export const INTEGRATION_LABELS: Record<IntegrationProvider, string> = {
 };
 
 export const INTEGRATION_DESCRIPTIONS: Record<IntegrationProvider, string> = {
-  withings: "Sync weight from your Withings scale to Progress.",
+  withings: "Sync weight from your Withings scale to Progress. Coming soon.",
   fitbit: "Import daily steps and active calories via Google Health (Fitbit).",
-  strava: "Sync cardio workouts and training load.",
+  strava: "Sync cardio workouts and training load. Coming soon.",
 };
 
-/** Providers with a working OAuth + sync implementation. */
+/** Providers with a live Connect flow in Profile → Integrations. */
 export const INTEGRATION_AVAILABLE: Record<IntegrationProvider, boolean> = {
-  withings: true,
+  withings: false,
   fitbit: true,
   strava: false,
 };

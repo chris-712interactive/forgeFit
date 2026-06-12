@@ -1,14 +1,18 @@
 import type { IntegrationProvider } from "@forgefit/integrations";
 import {
   exchangeGoogleHealthAuthorizationCode,
+  exchangeStravaAuthorizationCode,
   exchangeWithingsAuthorizationCode,
   extractWeightKgFromGroup,
   fetchDailyActivitySummaries,
   fetchGoogleHealthIdentity,
+  fetchStravaActivities,
   fetchWithingsMeasures,
   measureGroupToDate,
   refreshGoogleHealthAccessToken,
+  refreshStravaAccessToken,
   refreshWithingsAccessToken,
+  stravaTokenExpiresAtIso,
   todayIsoDate,
   WITHINGS_MEASURE_TYPE_WEIGHT,
 } from "@forgefit/integrations";
@@ -23,6 +27,7 @@ import {
 import {
   fitbitRedirectUri,
   getGoogleHealthClientConfig,
+  getStravaClientConfig,
   getWithingsClientConfig,
   withingsRedirectUri,
 } from "./config";
@@ -622,6 +627,232 @@ export async function syncFitbitForUser(
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Fitbit sync failed.";
+    await admin
+      .from("user_integrations")
+      .update({
+        status: "error",
+        last_sync_error: message,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", row.id);
+    throw error;
+  }
+}
+
+export async function saveStravaConnection(params: {
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAtIso: string;
+  scope: string;
+  externalUserId: string;
+}): Promise<void> {
+  const admin = createAdminClient();
+
+  const { error } = await admin.from("user_integrations").upsert(
+    {
+      user_id: params.userId,
+      provider: "strava",
+      external_user_id: params.externalUserId,
+      access_token_encrypted: encryptIntegrationSecret(params.accessToken),
+      refresh_token_encrypted: encryptIntegrationSecret(params.refreshToken),
+      token_expires_at: params.expiresAtIso,
+      scopes: params.scope,
+      status: "active",
+      last_sync_error: null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,provider" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function completeStravaOAuth(params: {
+  userId: string;
+  code: string;
+}): Promise<void> {
+  const { clientId, clientSecret } = getStravaClientConfig();
+  const token = await exchangeStravaAuthorizationCode({
+    clientId,
+    clientSecret,
+    code: params.code,
+  });
+
+  if (!token.refresh_token) {
+    throw new Error("Strava did not return a refresh token. Try connecting again.");
+  }
+
+  const externalUserId = token.athlete?.id
+    ? String(token.athlete.id)
+    : params.userId;
+
+  await saveStravaConnection({
+    userId: params.userId,
+    accessToken: token.access_token,
+    refreshToken: token.refresh_token,
+    expiresAtIso: stravaTokenExpiresAtIso(token),
+    scope: "read,activity:read_all",
+    externalUserId,
+  });
+
+  try {
+    await syncStravaForUser(params.userId);
+  } catch {
+    // Connection is saved; sync errors are stored on the integration row.
+  }
+}
+
+async function getValidStravaAccessToken(
+  row: UserIntegrationRow
+): Promise<string> {
+  const expiresAt = row.token_expires_at
+    ? new Date(row.token_expires_at).getTime()
+    : 0;
+
+  if (expiresAt - Date.now() > TOKEN_REFRESH_BUFFER_MS) {
+    return decryptIntegrationSecret(row.access_token_encrypted);
+  }
+
+  if (!row.refresh_token_encrypted) {
+    throw new Error("Strava refresh token is missing.");
+  }
+
+  const { clientId, clientSecret } = getStravaClientConfig();
+  const refreshed = await refreshStravaAccessToken({
+    clientId,
+    clientSecret,
+    refreshToken: decryptIntegrationSecret(row.refresh_token_encrypted),
+  });
+
+  const admin = createAdminClient();
+  const newExpiresAt = stravaTokenExpiresAtIso(refreshed);
+
+  const { error } = await admin
+    .from("user_integrations")
+    .update({
+      access_token_encrypted: encryptIntegrationSecret(refreshed.access_token),
+      refresh_token_encrypted: encryptIntegrationSecret(refreshed.refresh_token),
+      token_expires_at: newExpiresAt,
+      status: "active",
+      last_sync_error: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", row.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return refreshed.access_token;
+}
+
+export interface StravaSyncResult {
+  imported: number;
+  skipped: number;
+  latestActivityAt: string | null;
+}
+
+export async function syncStravaForUser(
+  userId: string
+): Promise<StravaSyncResult> {
+  const row = await getIntegrationRow(userId, "strava");
+  if (!row || row.status === "revoked") {
+    throw new IntegrationNotConnectedError("strava");
+  }
+
+  const admin = createAdminClient();
+
+  try {
+    const accessToken = await getValidStravaAccessToken(row);
+    const activities = await fetchStravaActivities({
+      accessToken,
+      afterUnix: syncFromUnix(row.last_sync_at),
+    });
+
+    let imported = 0;
+    let skipped = 0;
+    let latestActivityAt: string | null = null;
+
+    for (const activity of activities) {
+      const externalId = String(activity.id);
+
+      const { data: existing } = await admin
+        .from("external_activity_logs")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("source", "strava")
+        .eq("external_id", externalId)
+        .maybeSingle();
+
+      const unchanged =
+        existing &&
+        existing.name === activity.name &&
+        existing.activity_type === activity.sportType &&
+        existing.started_at === activity.startedAt &&
+        existing.duration_seconds === activity.elapsedSeconds &&
+        Number(existing.distance_meters ?? null) === activity.distanceMeters &&
+        Number(existing.calories ?? null) === activity.calories;
+
+      if (unchanged) {
+        skipped += 1;
+        if (
+          latestActivityAt == null ||
+          activity.startedAt > latestActivityAt
+        ) {
+          latestActivityAt = activity.startedAt;
+        }
+        continue;
+      }
+
+      const { error: upsertError } = await admin
+        .from("external_activity_logs")
+        .upsert(
+          {
+            user_id: userId,
+            source: "strava",
+            external_id: externalId,
+            name: activity.name,
+            activity_type: activity.sportType,
+            started_at: activity.startedAt,
+            duration_seconds: activity.elapsedSeconds,
+            moving_seconds: activity.movingSeconds,
+            distance_meters: activity.distanceMeters,
+            elevation_gain_meters: activity.elevationGainMeters,
+            calories: activity.calories,
+            average_heartrate: activity.averageHeartrate,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,source,external_id" }
+        );
+
+      if (upsertError) {
+        throw new Error(upsertError.message);
+      }
+
+      imported += 1;
+      if (latestActivityAt == null || activity.startedAt > latestActivityAt) {
+        latestActivityAt = activity.startedAt;
+      }
+    }
+
+    const now = new Date().toISOString();
+    await admin
+      .from("user_integrations")
+      .update({
+        status: "active",
+        last_sync_at: now,
+        last_sync_error: null,
+        updated_at: now,
+      })
+      .eq("id", row.id);
+
+    return { imported, skipped, latestActivityAt };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Strava sync failed.";
     await admin
       .from("user_integrations")
       .update({

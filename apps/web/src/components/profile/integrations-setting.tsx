@@ -50,6 +50,12 @@ function syncSuccessMessage(
     }.`;
   }
 
+  if (provider === "strava") {
+    return `Imported ${imported} workout${imported === 1 ? "" : "s"}${
+      skipped ? ` (${skipped} unchanged)` : ""
+    }.`;
+  }
+
   return `Imported ${imported} record${imported === 1 ? "" : "s"}.`;
 }
 
@@ -59,6 +65,9 @@ function connectDisclosure(provider: IntegrationProvider): string | null {
   }
   if (provider === "fitbit") {
     return "By connecting, you sign in with Google and authorize ForgeRep to read Fitbit activity (steps and active calories) through the Google Health API. Your Fitbit account must be linked to the same Google account in the Fitbit app first.";
+  }
+  if (provider === "strava") {
+    return "By connecting, you authorize ForgeRep to import your Strava runs, rides, and other cardio workouts.";
   }
   return null;
 }
@@ -112,6 +121,13 @@ export function IntegrationsSetting({
     if (integrationStatus === "fitbit_connected") {
       setMessage(
         "Fitbit connected via Google. Tap Sync now if your activity has not imported yet."
+      );
+      void refreshStatuses();
+      router.replace("/profile#integrations", { scroll: false });
+    }
+    if (integrationStatus === "strava_connected") {
+      setMessage(
+        "Strava connected. Tap Sync now if your recent workouts have not imported yet."
       );
       void refreshStatuses();
       router.replace("/profile#integrations", { scroll: false });
@@ -249,7 +265,7 @@ export function IntegrationsSetting({
         <div className="mt-4">
           <UpgradePrompt
             title="Pro+ integrations"
-            description="Sync weight from Withings and import Fitbit activity via Google Health."
+            description="Sync weight from Withings and import activity from Fitbit. Strava and more coming soon."
             suggestedTier="pro_plus"
             href="/profile#subscription"
           />
