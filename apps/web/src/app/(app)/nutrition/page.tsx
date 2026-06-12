@@ -1,4 +1,4 @@
-import { ProFeatureSection } from "@/components/billing/pro-feature-section";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
 import { NutritionAdherenceCard } from "@/components/nutrition/nutrition-adherence-card";
 import { NutritionDiary } from "@/components/nutrition/nutrition-diary";
@@ -42,20 +42,12 @@ export default async function NutritionPage() {
         Nutrition
       </h1>
       <p className="mt-2 text-forge-muted">
-        Quick macro logging against your evidence-based targets — no ingredient
-        hunt required.
+        Log macros at a glance — presets, restaurants, and meal ideas when you
+        need them.
       </p>
 
       {summary ? (
         <div className={`${appHeaderGap} space-y-6`}>
-          <ProFeatureSection
-            title="Nutrition adherence"
-            description="How often you hit protein and calorie targets over 7, 30, and 90 days."
-            unlocked={adherenceUnlocked}
-          >
-            <NutritionAdherenceCard adherence={adherence} />
-          </ProFeatureSection>
-
           <NutritionDiary
             initialSummary={summary}
             recentEntries={recentEntries}
@@ -63,6 +55,34 @@ export default async function NutritionPage() {
             yesterdayDate={yesterday}
             restaurantSearchUnlocked={restaurantSearchUnlocked}
           />
+
+          <details className="group rounded-2xl border border-[var(--border)] bg-forge-surface-raised">
+            <summary className="cursor-pointer list-none px-4 py-4 font-display text-sm font-semibold text-forge-text sm:px-5 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center justify-between gap-3">
+                Nutrition adherence
+                <span className="text-xs font-normal text-forge-muted group-open:hidden">
+                  Pro · tap to expand
+                </span>
+              </span>
+            </summary>
+            <div className="border-t border-[var(--border)] px-4 pb-4 pt-3 sm:px-5 sm:pb-5">
+              <p className="text-xs text-forge-muted">
+                How often you hit protein and calorie targets over 7, 30, and 90
+                days.
+              </p>
+              <div className="mt-4">
+                {adherenceUnlocked ? (
+                  <NutritionAdherenceCard adherence={adherence} />
+                ) : (
+                  <UpgradePrompt
+                    title="Unlock nutrition adherence"
+                    description="Upgrade to Pro for long-horizon analytics on your training and nutrition."
+                    suggestedTier="pro"
+                  />
+                )}
+              </div>
+            </div>
+          </details>
         </div>
       ) : (
         <div

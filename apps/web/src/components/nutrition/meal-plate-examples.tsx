@@ -10,28 +10,54 @@ import type { NutritionTargets } from "@forgefit/program-engine";
 
 interface MealPlateExamplesProps {
   targets: NutritionTargets | null;
+  /** Omit outer card shell when nested inside the log hub */
+  embedded?: boolean;
 }
 
-export function MealPlateExamples({ targets }: MealPlateExamplesProps) {
+export function MealPlateExamples({
+  targets,
+  embedded = false,
+}: MealPlateExamplesProps) {
   const plates = buildMealPlateExamples(targets);
   if (plates.length === 0) return null;
 
-  return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-        Example plates for your day
-      </h2>
-      <p className="mt-1 text-sm text-forge-muted">
-        Sample breakfasts, lunches, and dinners scaled to hit your per-meal targets.
-        Portions adjust to your program — swap foods freely as long as the macros
-        stay in the ballpark.
-      </p>
+  const content = (
+    <>
+      {!embedded && (
+        <>
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+            Example plates for your day
+          </h2>
+          <p className="mt-1 text-sm text-forge-muted">
+            Sample breakfasts, lunches, and dinners scaled to hit your per-meal
+            targets. Portions adjust to your program — swap foods freely as long
+            as the macros stay in the ballpark.
+          </p>
+        </>
+      )}
 
-      <div className="mt-5 space-y-6">
+      {embedded && (
+        <p className="text-sm text-forge-muted">
+          Sample meals scaled to your per-meal targets — swap foods freely as
+          long as macros stay in the ballpark.
+        </p>
+      )}
+
+      <div className={embedded ? "mt-4 space-y-6" : "mt-5 space-y-6"}>
         {plates.map((plate) => (
           <MealPlateCard key={plate.meal} plate={plate} />
         ))}
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+      {content}
     </section>
   );
 }

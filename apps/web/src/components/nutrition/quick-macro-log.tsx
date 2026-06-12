@@ -13,6 +13,8 @@ interface QuickMacroLogProps {
   loggedDate: string;
   onApplied?: (preset: MacroPreset) => void;
   initialValues?: Partial<MacroPreset>;
+  /** Omit outer card shell when nested inside the log hub */
+  embedded?: boolean;
 }
 
 const inputClass =
@@ -22,6 +24,7 @@ export function QuickMacroLog({
   loggedDate,
   onApplied,
   initialValues,
+  embedded = false,
 }: QuickMacroLogProps) {
   const router = useRouter();
   const [name, setName] = useState(initialValues?.name ?? "");
@@ -113,16 +116,23 @@ export function QuickMacroLog({
     }
   }
 
-  return (
-    <section className="rounded-2xl border border-forge-ember/25 bg-forge-surface-raised p-4 sm:p-5">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-        Quick log
-      </h2>
-      <p className="mt-1 text-xs text-forge-muted">
-        Hit your targets — name optional, calories + protein required
-      </p>
+  const content = (
+    <>
+      {!embedded && (
+        <>
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+            Quick log
+          </h2>
+          <p className="mt-1 text-xs text-forge-muted">
+            Hit your targets — name optional, calories + protein required
+          </p>
+        </>
+      )}
 
-      <form onSubmit={(e) => void handleSubmit(e)} className="mt-4 space-y-3">
+      <form
+        onSubmit={(e) => void handleSubmit(e)}
+        className={embedded ? "space-y-3" : "mt-4 space-y-3"}
+      >
         <input
           type="text"
           value={name}
@@ -232,6 +242,16 @@ export function QuickMacroLog({
           {submitting ? "Logging…" : "Log macros"}
         </button>
       </form>
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <section className="rounded-2xl border border-forge-ember/25 bg-forge-surface-raised p-4 sm:p-5">
+      {content}
     </section>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import type { FoodSearchResult } from "@forgefit/nutrition-core";
-import { appSectionStack } from "@/components/layout/page-layout";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,6 +11,8 @@ import { MealPlateExamples } from "./meal-plate-examples";
 import { MacroSummary } from "./macro-summary";
 import { QuickMacroLog } from "./quick-macro-log";
 import { RestaurantSearchPanel } from "./restaurant-search-panel";
+
+type DiaryTab = "log" | "browse" | "meals";
 
 interface NutritionDiaryProps {
   initialSummary: DailyNutritionSummary;
@@ -29,6 +30,7 @@ export function NutritionDiary({
   restaurantSearchUnlocked,
 }: NutritionDiaryProps) {
   const router = useRouter();
+  const [tab, setTab] = useState<DiaryTab>("log");
   const [adding, setAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
@@ -120,56 +122,134 @@ export function NutritionDiary({
   }
 
   return (
-    <div className={appSectionStack}>
-      <MacroSummary
-        totals={initialSummary.totals}
-        targets={initialSummary.targets}
-      />
+    <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-forge-surface-raised">
+      <div className="border-b border-[var(--border)] p-4 sm:p-5">
+        <MacroSummary
+          totals={initialSummary.totals}
+          targets={initialSummary.targets}
+          variant="compact"
+          embedded
+        />
+      </div>
 
-      <MealPlateExamples targets={initialSummary.targets} />
+      <div
+        className="grid grid-cols-3 gap-1 border-b border-[var(--border)] p-1"
+        role="tablist"
+        aria-label="Nutrition diary sections"
+      >
+        <DiaryTabButton
+          active={tab === "log"}
+          label="Log"
+          onClick={() => setTab("log")}
+        />
+        <DiaryTabButton
+          active={tab === "browse"}
+          label="Browse"
+          onClick={() => setTab("browse")}
+        />
+        <DiaryTabButton
+          active={tab === "meals"}
+          label="Meal ideas"
+          onClick={() => setTab("meals")}
+        />
+      </div>
 
-      <QuickMacroLog
-        loggedDate={initialSummary.date}
-        onApplied={() => setPresetVersion((v) => v + 1)}
-      />
+      <div className="p-4 sm:p-5">
+        {tab === "log" && (
+          <div className="space-y-6">
+            <div className="rounded-xl border border-forge-ember/25 bg-forge-surface p-4">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+                Quick log
+              </h2>
+              <p className="mt-1 text-xs text-forge-muted">
+                Name optional — calories + protein required
+              </p>
+              <div className="mt-3">
+                <QuickMacroLog
+                  loggedDate={initialSummary.date}
+                  embedded
+                  onApplied={() => setPresetVersion((v) => v + 1)}
+                />
+              </div>
+            </div>
 
-      <MacroPresets
-        key={presetVersion}
-        loggedDate={initialSummary.date}
-        recentEntries={recentEntries}
-      />
+            <MacroPresets
+              key={presetVersion}
+              loggedDate={initialSummary.date}
+              recentEntries={recentEntries}
+            />
 
-      <RestaurantSearchPanel
-        loggedDate={initialSummary.date}
-        unlocked={restaurantSearchUnlocked}
-        onSavedMeal={() => setPresetVersion((v) => v + 1)}
-      />
+            <LoggedEntries
+              entries={initialSummary.entries}
+              deletingId={deletingId}
+              onDelete={(id) => void handleDelete(id)}
+            />
+          </div>
+        )}
 
-      {yesterdayEntryCount > 0 && (
-        <div className="rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 py-3 sm:px-5">
-          <button
-            type="button"
-            disabled={copying}
-            onClick={() => void handleCopyYesterday()}
-            className="text-sm font-semibold text-forge-steel hover:text-forge-ember disabled:opacity-50"
-          >
-            {copying
-              ? "Copying…"
-              : `Copy yesterday (${yesterdayEntryCount} ${yesterdayEntryCount === 1 ? "entry" : "entries"})`}
-          </button>
-          {copyError && (
-            <p className="mt-2 text-sm text-forge-coral">{copyError}</p>
-          )}
-        </div>
-      )}
+        {tab === "browse" && (
+          <div className="space-y-5">
+            <RestaurantSearchPanel
+              loggedDate={initialSummary.date}
+              unlocked={restaurantSearchUnlocked}
+              onSavedMeal={() => setPresetVersion((v) => v + 1)}
+            />
 
-      <LoggedEntries
-        entries={initialSummary.entries}
-        deletingId={deletingId}
-        onDelete={(id) => void handleDelete(id)}
-      />
+            <FoodSearchPanel onAdd={handleFoodAdd} adding={adding} />
 
-      <FoodSearchPanel onAdd={handleFoodAdd} adding={adding} />
-    </div>
+            {yesterdayEntryCount > 0 && (
+              <div className="rounded-xl border border-[var(--border)] bg-forge-surface px-4 py-3">
+                <button
+                  type="button"
+                  disabled={copying}
+                  onClick={() => void handleCopyYesterday()}
+                  className="text-sm font-semibold text-forge-steel hover:text-forge-ember disabled:opacity-50"
+                >
+                  {copying
+                    ? "Copying…"
+                    : `Copy yesterday (${yesterdayEntryCount} ${yesterdayEntryCount === 1 ? "entry" : "entries"})`}
+                </button>
+                {copyError && (
+                  <p className="mt-2 text-sm text-forge-coral">{copyError}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "meals" && (
+          <MealPlateExamples
+            targets={initialSummary.targets}
+            embedded
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function DiaryTabButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`min-h-[44px] rounded-xl px-2 text-sm font-semibold transition-colors sm:px-3 ${
+        active
+          ? "bg-forge-ember text-white"
+          : "bg-forge-surface text-forge-muted hover:text-forge-text"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
