@@ -6,10 +6,8 @@ import {
   withingsOAuthRedirectUri,
 } from "@/lib/integrations/config";
 import { assertDeviceIntegrationsAccess } from "@/lib/integrations/service";
-import {
-  createWithingsOAuthState,
-  setWithingsOAuthCookies,
-} from "@/lib/integrations/oauth-state";
+import { setWithingsOAuthCookies } from "@/lib/integrations/oauth-state";
+import { createSignedIntegrationOAuthState } from "@/lib/integrations/oauth-state-token";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -43,7 +41,7 @@ export async function GET() {
 
   const { clientId } = getWithingsClientConfig();
   const redirectUri = withingsOAuthRedirectUri();
-  const state = createWithingsOAuthState();
+  const state = createSignedIntegrationOAuthState(user.id);
 
   await setWithingsOAuthCookies(state, user.id);
 

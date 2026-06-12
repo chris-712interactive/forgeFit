@@ -3,36 +3,23 @@ import {
   isGoogleHealthConfigured,
 } from "@/lib/integrations/config";
 import { completeFitbitOAuth } from "@/lib/integrations/service";
+import { clearFitbitOAuthCookies } from "@/lib/integrations/oauth-state";
 import {
-  clearFitbitOAuthCookies,
-  readFitbitOAuthCookies,
-} from "@/lib/integrations/oauth-state";
+  profileIntegrationsRedirectUrl,
+  verifySignedIntegrationOAuthState,
+} from "@/lib/integrations/oauth-state-token";
 import { getSiteUrl } from "@/lib/seo/site-url";
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-
-function isValidOAuthSession(params: {
-  state: string;
-  storedState: string | null;
-  storedUserId: string | null;
-  userId: string;
-}): boolean {
-  return (
-    Boolean(params.storedState) &&
-    Boolean(params.storedUserId) &&
-    params.storedState === params.state &&
-    params.storedUserId === params.userId
-  );
-}
 
 export async function GET(request: Request) {
   const siteUrl = getSiteUrl();
-  const profileUrl = `${siteUrl}/profile#integrations`;
+  const redirectToProfile = (query?: Record<string, string | undefined>) =>
+    NextResponse.redirect(profileIntegrationsRedirectUrl(siteUrl, query));
 
   if (!isGoogleHealthConfigured()) {
-    return NextResponse.redirect(
-      `${profileUrl}?integration_error=${encodeURIComponent("Fitbit integration is not configured.")}`
-    );
+    return redirectToProfile({
+      integration_error: "Fitbit integration is not configured.",
+    });
   }
 
   const url = new URL(request.url);
@@ -42,57 +29,38 @@ export async function GET(request: Request) {
 
   if (oauthError) {
     await clearFitbitOAuthCookies();
-    return NextResponse.redirect(
-      `${profileUrl}?integration_error=${encodeURIComponent("Fitbit authorization was canceled.")}`
-    );
+    return redirectToProfile({
+      integration_error: "Fitbit authorization was canceled.",
+    });
   }
 
   if (!code || !state) {
     await clearFitbitOAuthCookies();
-    return NextResponse.redirect(
-      `${profileUrl}?integration_error=${encodeURIComponent("Missing Fitbit authorization code.")}`
-    );
+    return redirectToProfile({
+      integration_error: "Missing Fitbit authorization code.",
+    });
   }
 
-  const stored = await readFitbitOAuthCookies();
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const userId = user?.id ?? stored.userId;
-
-  if (
-    !userId ||
-    !isValidOAuthSession({
-      state,
-      storedState: stored.state,
-      storedUserId: stored.userId,
-      userId,
-    })
-  ) {
-    await clearFitbitOAuthCookies();
-    return NextResponse.redirect(
-      `${profileUrl}?integration_error=${encodeURIComponent("Invalid OAuth session. Try connecting again.")}`
-    );
-  }
-
+  const verified = verifySignedIntegrationOAuthState(state);
   await clearFitbitOAuthCookies();
+
+  if (!verified) {
+    return redirectToProfile({
+      integration_error: "Invalid OAuth session. Try connecting again.",
+    });
+  }
 
   try {
     await completeFitbitOAuth({
-      userId,
+      userId: verified.userId,
       code,
       redirectUri: fitbitOAuthRedirectUri(),
     });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Could not connect Fitbit.";
-    return NextResponse.redirect(
-      `${profileUrl}?integration_error=${encodeURIComponent(message)}`
-    );
+    return redirectToProfile({ integration_error: message });
   }
 
-  return NextResponse.redirect(`${profileUrl}?integration=fitbit_connected`);
+  return redirectToProfile({ integration: "fitbit_connected" });
 }

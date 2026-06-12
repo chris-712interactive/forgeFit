@@ -108,11 +108,16 @@ export default async function ProfilePage({
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
   let initialIntegrations = buildIntegrationsHubView([]);
+  let integrationsLoadError: string | null = null;
   if (user && integrationsUnlocked) {
     try {
       const statuses = await listIntegrationStatuses(user.id);
       initialIntegrations = buildIntegrationsHubView(statuses);
-    } catch {
+    } catch (error) {
+      integrationsLoadError =
+        error instanceof Error
+          ? error.message
+          : "Could not load integration status.";
       initialIntegrations = buildIntegrationsHubView([]);
     }
   }
@@ -162,7 +167,7 @@ export default async function ProfilePage({
           }}
           initialIntegrations={initialIntegrations}
           integrationStatus={integrationStatus}
-          integrationError={integrationError}
+          integrationError={integrationError ?? integrationsLoadError}
         />
 
         <UnitPreferenceSetting initialUnit={unit} />

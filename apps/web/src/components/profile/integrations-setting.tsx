@@ -92,8 +92,8 @@ export function IntegrationsSetting({
       setMessage(
         "Fitbit connected via Google. Tap Sync now if your activity has not imported yet."
       );
-      router.replace("/profile#integrations", { scroll: false });
       void refreshStatuses();
+      router.replace("/profile#integrations", { scroll: false });
     }
   }, [integrationStatus, router]);
 

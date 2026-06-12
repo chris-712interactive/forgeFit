@@ -6,10 +6,8 @@ import {
   isGoogleHealthConfigured,
 } from "@/lib/integrations/config";
 import { assertDeviceIntegrationsAccess } from "@/lib/integrations/service";
-import {
-  createFitbitOAuthState,
-  setFitbitOAuthCookies,
-} from "@/lib/integrations/oauth-state";
+import { setFitbitOAuthCookies } from "@/lib/integrations/oauth-state";
+import { createSignedIntegrationOAuthState } from "@/lib/integrations/oauth-state-token";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -43,7 +41,7 @@ export async function GET() {
 
   const { clientId } = getGoogleHealthClientConfig();
   const redirectUri = fitbitOAuthRedirectUri();
-  const state = createFitbitOAuthState();
+  const state = createSignedIntegrationOAuthState(user.id);
 
   await setFitbitOAuthCookies(state, user.id);
 
