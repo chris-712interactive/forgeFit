@@ -47,15 +47,15 @@ export function ExperiencePathIndicator({
         onClick={() => setOpen(true)}
         aria-label={ariaLabel}
         aria-expanded={open}
-        className={`fixed right-4 z-40 flex items-center gap-2 rounded-full border px-3 py-2 shadow-lg backdrop-blur-md transition-transform hover:scale-[1.02] active:scale-[0.98] ${
+        className={`fixed right-4 z-40 flex items-center gap-2 rounded-full border px-2.5 py-1.5 shadow-md backdrop-blur-md transition-transform hover:scale-[1.02] active:scale-[0.98] sm:px-3 sm:py-2 sm:shadow-lg ${
           evaluation.showNudge
             ? "border-forge-gold/60 bg-forge-gold/15 text-forge-gold ring-2 ring-forge-gold/30"
             : "border-[var(--border)] bg-forge-surface-raised/95 text-forge-text"
         }`}
-        style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))" }}
+        style={{ top: "calc(0.75rem + env(safe-area-inset-top))" }}
       >
         <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-bold leading-none ${
+          className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold leading-none sm:h-8 sm:w-8 ${
             evaluation.showNudge
               ? "bg-forge-gold text-forge-surface"
               : "bg-forge-surface text-forge-muted"
