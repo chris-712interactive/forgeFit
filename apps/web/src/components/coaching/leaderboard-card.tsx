@@ -2,25 +2,30 @@ import type { GamificationContext } from "@/lib/coaching/types";
 
 interface LeaderboardCardProps {
   gamification: GamificationContext;
+  embedded?: boolean;
 }
 
-export function LeaderboardCard({ gamification }: LeaderboardCardProps) {
+export function LeaderboardCard({
+  gamification,
+  embedded = false,
+}: LeaderboardCardProps) {
   if (!gamification.unlocked || !gamification.optedIn) {
     return null;
   }
 
   const bucketLabel = "your goal & experience";
 
-  return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+  const content = (
+    <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-            Weekly leaderboard
-          </h2>
-          <p className="mt-1 text-xs text-forge-muted">
-            Habit score from training, protein, and session quality — bucketed by{" "}
-            {bucketLabel}
+          {!embedded && (
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+              Weekly leaderboard
+            </h2>
+          )}
+          <p className={`text-xs text-forge-muted ${embedded ? "" : "mt-1"}`}>
+            Habit score — bucketed by {bucketLabel}
           </p>
         </div>
         {gamification.userScore != null && gamification.userRank != null && (
@@ -81,6 +86,16 @@ export function LeaderboardCard({ gamification }: LeaderboardCardProps) {
           ))}
         </ol>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return <div>{content}</div>;
+  }
+
+  return (
+    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+      {content}
     </section>
   );
 }

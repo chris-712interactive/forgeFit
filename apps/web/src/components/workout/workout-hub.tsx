@@ -20,6 +20,7 @@ import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { ExperiencePromotionBanner } from "@/components/progression/experience-promotion-banner";
 import { TrainingConsistencyCard } from "@/components/progression/training-consistency-card";
@@ -443,9 +444,8 @@ export function WorkoutHub({
           <h1 className="font-display text-2xl font-bold text-forge-text">
             Workout
           </h1>
-          <p className="mt-2 text-forge-muted">
-            Your weekly plan — completed days are highlighted in green. Tap
-            results to compare with prior sessions.
+          <p className="mt-1 text-sm text-forge-muted">
+            This week&apos;s plan — tap a day to start or review.
           </p>
           {offline && (
             <p className="mt-2 text-sm text-forge-steel">
@@ -467,20 +467,19 @@ export function WorkoutHub({
 
         {plan ? (
           <section className={appSectionStackTight}>
-            <div className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised px-4 py-3 sm:px-5">
-              {plan.isDeloadWeek && (
-                <p className="mb-2 text-sm font-medium text-forge-steel">
-                  Deload week — reduced volume and lighter effort across
-                  sessions.
-                </p>
-              )}
+            {plan.isDeloadWeek && (
+              <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm font-medium text-forge-steel">
+                Deload week — reduced volume and lighter effort.
+              </p>
+            )}
+
+            <CollapsibleSection
+              title="Evidence basis"
+              hint={`${plan.appliedRuleIds.length} rules applied`}
+            >
               <p className="text-sm text-forge-muted">
-                Built from{" "}
-                <span className="font-medium text-forge-text">
-                  {plan.appliedRuleIds.length} evidence-backed rules
-                </span>{" "}
-                — volume, rest, recovery, and nutrition targets are cited, not
-                guessed.
+                Volume, rest, recovery, and nutrition targets are cited from
+                evidence-backed rules — not guessed.
               </p>
               <div className="mt-2">
                 <EvidenceExplainerLink
@@ -488,7 +487,7 @@ export function WorkoutHub({
                   label="See your evidence basis"
                 />
               </div>
-            </div>
+            </CollapsibleSection>
 
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               This week
@@ -510,21 +509,15 @@ export function WorkoutHub({
               />
             ))}
 
-            <div className="pt-2">
-              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-                History
-              </h2>
-              <p className="mt-1 text-sm text-forge-muted">
-                Past completed workouts — open any session to review sets and
-                compare progress.
-              </p>
-              <div className="mt-3">
-                <WorkoutHistoryList
-                  sessions={allSessions}
-                  onViewResults={openReview}
-                />
-              </div>
-            </div>
+            <CollapsibleSection
+              title="Workout history"
+              hint={`${allSessions.filter((s) => s.status === "completed").length} completed`}
+            >
+              <WorkoutHistoryList
+                sessions={allSessions}
+                onViewResults={openReview}
+              />
+            </CollapsibleSection>
           </section>
         ) : (
           <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">

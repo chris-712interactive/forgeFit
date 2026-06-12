@@ -6,9 +6,13 @@ import { kgToDisplayValue, weightUnitLabel } from "@/lib/units/measurements";
 
 interface WeeklyWorkStatsProps {
   stats: WeeklyWorkStats;
+  embedded?: boolean;
 }
 
-export function WeeklyWorkStatsGrid({ stats }: WeeklyWorkStatsProps) {
+export function WeeklyWorkStatsGrid({
+  stats,
+  embedded = false,
+}: WeeklyWorkStatsProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
   const volumeDisplay = kgToDisplayValue(stats.totalVolumeKg, unit);
@@ -56,6 +60,36 @@ export function WeeklyWorkStatsGrid({ stats }: WeeklyWorkStatsProps) {
     },
   ];
 
+  const grid = (
+    <div className={embedded ? "grid grid-cols-2 gap-3" : "mt-4 grid grid-cols-2 gap-3"}>
+      {tiles.map((tile) => (
+        <article
+          key={tile.label}
+          className="rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-3"
+        >
+          <p className="text-[11px] font-medium uppercase tracking-wide text-forge-muted">
+            {tile.label}
+          </p>
+          <p className={`mt-1 font-display text-2xl font-bold ${tile.accent}`}>
+            {tile.value}
+          </p>
+          <p className="text-xs text-forge-muted">{tile.unit}</p>
+        </article>
+      ))}
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <div>
+        <p className="text-xs text-forge-muted">
+          Logged effort this week — volume, sets, and time
+        </p>
+        {grid}
+      </div>
+    );
+  }
+
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
       <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
@@ -64,23 +98,7 @@ export function WeeklyWorkStatsGrid({ stats }: WeeklyWorkStatsProps) {
       <p className="mt-1 text-xs text-forge-muted">
         Your logged effort this week — accountability at a glance
       </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        {tiles.map((tile) => (
-          <article
-            key={tile.label}
-            className="rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-3"
-          >
-            <p className="text-[11px] font-medium uppercase tracking-wide text-forge-muted">
-              {tile.label}
-            </p>
-            <p className={`mt-1 font-display text-2xl font-bold ${tile.accent}`}>
-              {tile.value}
-            </p>
-            <p className="text-xs text-forge-muted">{tile.unit}</p>
-          </article>
-        ))}
-      </div>
+      {grid}
     </section>
   );
 }

@@ -16,9 +16,8 @@ export default async function ProgressPage() {
       <h1 className="font-display text-2xl font-bold text-forge-text">
         Progress
       </h1>
-      <p className="mt-2 text-forge-muted">
-        Track measurements, estimate body fat with calipers, and preview your
-        weight trajectory.
+      <p className="mt-1 text-sm text-forge-muted">
+        Trends, training analytics, and check-ins — one section at a time.
       </p>
 
       {data ? (
