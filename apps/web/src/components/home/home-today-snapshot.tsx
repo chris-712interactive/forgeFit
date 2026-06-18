@@ -2,7 +2,7 @@ import { MacroSummary } from "@/components/nutrition/macro-summary";
 import type { ActivityContext } from "@/lib/activity/types";
 import type { SleepContext } from "@/lib/sleep/types";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
-import { formatSleepHours } from "@/lib/sleep/service";
+import { formatSleepHours } from "@/lib/sleep/format";
 import Link from "next/link";
 
 interface HomeTodaySnapshotProps {

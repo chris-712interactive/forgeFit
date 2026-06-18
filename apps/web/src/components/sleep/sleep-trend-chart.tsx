@@ -1,7 +1,7 @@
 "use client";
 
 import type { DailySleepLog } from "@/lib/sleep/types";
-import { formatSleepHours } from "@/lib/sleep/service";
+import { formatSleepHours } from "@/lib/sleep/format";
 import { useMemo } from "react";
 import {
   Bar,

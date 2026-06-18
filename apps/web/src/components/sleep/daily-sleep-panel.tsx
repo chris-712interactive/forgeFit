@@ -1,5 +1,5 @@
 import type { SleepContext } from "@/lib/sleep/types";
-import { formatSleepHours } from "@/lib/sleep/service";
+import { formatSleepHours } from "@/lib/sleep/format";
 import Link from "next/link";
 import { SleepTrendChart } from "./sleep-trend-chart";
 
