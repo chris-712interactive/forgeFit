@@ -9,6 +9,7 @@ import type {
   WeeklyVolumePoint,
 } from "./types";
 import type { DailySleepStats } from "@/lib/sleep/types";
+import type { DailyRecoveryStats } from "@/lib/recovery/types";
 import { SLEEP_TARGET_MIN_MINUTES } from "@/lib/sleep/types";
 
 function weightChangeKg(
@@ -66,6 +67,7 @@ export function buildRuleInsights(input: {
   weeklyVolume: WeeklyVolumePoint[];
   nutritionAdherence: NutritionAdherenceSummary | null;
   sleepWeekStats: DailySleepStats | null;
+  recoveryWeekStats: DailyRecoveryStats | null;
 }): RuleInsight[] {
   const insights: RuleInsight[] = [];
 
@@ -76,6 +78,20 @@ export function buildRuleInsights(input: {
       title: "Deload week in progress",
       body: "Your plan reduced volume ~40% this week. Keep reps easy — this supports recovery before the next training block.",
     });
+
+    const recovery = input.recoveryWeekStats;
+    if (
+      recovery &&
+      recovery.restingHrElevated &&
+      recovery.daysWithData >= 3
+    ) {
+      insights.push({
+        id: "rhr_elevated_deload",
+        tone: "nudge",
+        title: "Resting heart rate is elevated",
+        body: `Your 7-day average resting HR is above your recent baseline during a deload week. Prioritize sleep and easy movement — elevated RHR can mean accumulated fatigue.`,
+      });
+    }
   }
 
   const weightDelta21 = weightChangeKg(input.measurements, 21);
@@ -139,12 +155,30 @@ export function buildRuleInsights(input: {
   if (input.weeklyVolume.length >= 2) {
     const current = input.weeklyVolume[input.weeklyVolume.length - 1]!;
     const prior = input.weeklyVolume[input.weeklyVolume.length - 2]!;
-    if (prior.volumeKg > 0 && current.volumeKg > prior.volumeKg * 1.1) {
+    const volumeUp =
+      prior.volumeKg > 0 && current.volumeKg > prior.volumeKg * 1.1;
+
+    if (volumeUp) {
       insights.push({
         id: "volume_up",
         tone: "positive",
         title: "Training volume climbed this week",
         body: `You moved ${current.volumeKg.toLocaleString()} kg vs ${prior.volumeKg.toLocaleString()} kg last week — progressive overload is showing up in the logs.`,
+      });
+    }
+
+    const recovery = input.recoveryWeekStats;
+    if (
+      volumeUp &&
+      recovery &&
+      recovery.daysWithData >= 3 &&
+      recovery.lowHrvDays >= 3
+    ) {
+      insights.push({
+        id: "hrv_suppressed_volume",
+        tone: "nudge",
+        title: "HRV is down while volume climbed",
+        body: `Training load increased this week and HRV ran below your baseline on ${recovery.lowHrvDays} of the last ${recovery.daysWithData} logged days. Consider an extra rest day or keeping accessory work lighter.`,
       });
     }
   }

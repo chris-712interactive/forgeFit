@@ -6,6 +6,7 @@ import type {
 import type { FitnessGoal } from "@forgefit/program-engine";
 import type { ActivityContext } from "@/lib/activity/types";
 import type { SleepContext } from "@/lib/sleep/types";
+import type { RecoveryContext } from "@/lib/recovery/types";
 import type { ProAnalyticsBundle } from "@/lib/analytics/types";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import type { ProgressPhotoRow } from "@/lib/progress-photos/types";
@@ -58,4 +59,5 @@ export interface ProgressDashboardData {
   photosTableReady: boolean;
   activity: ActivityContext;
   sleep: SleepContext;
+  recovery: RecoveryContext;
 }

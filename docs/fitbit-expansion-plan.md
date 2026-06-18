@@ -1,22 +1,24 @@
 # Fitbit / Google Health Expansion Plan
 
 > Roadmap for turning device sync into a well-rounded recovery and lifestyle signal layer.  
-> **Phase 1 (sleep) is implemented** in migration `20260610200000_daily_sleep_logs.sql`.
+> **Phase 1 (sleep)** and **Phase 2 (recovery metrics)** are implemented.
 
-## Current state (Phase 1 — shipped)
+## Current state (Phases 1–2 — shipped)
 
 | Data | Google Health type | OAuth scope | Storage | UI |
 |------|-------------------|-------------|---------|-----|
 | Steps | `steps` dailyRollUp | `activity_and_fitness.readonly` | `daily_activity_logs` | Home, Progress |
 | Active calories | `active-energy-burned` dailyRollUp | same | `daily_activity_logs` | Home, Progress |
 | Active minutes | `active-minutes` dailyRollUp | same | `daily_activity_logs` | Home, Progress |
-| **Sleep duration** | `sleep` list (sessions) | **`sleep.readonly`** | **`daily_sleep_logs`** | **Home, Progress** |
+| Sleep duration | `sleep` list (sessions) | `sleep.readonly` | `daily_sleep_logs` | Home, Progress |
 | Sleep stages (deep/REM) | parsed from session summary | `sleep.readonly` | `daily_sleep_logs` | Progress detail |
+| **Resting HR range** | `daily-resting-heart-rate` dailyRollUp | **`health_metrics_and_measurements.readonly`** | **`daily_recovery_logs`** | **Progress** |
+| **HRV range** | `daily-heart-rate-variability` dailyRollUp | same | `daily_recovery_logs` | **Progress** |
 
 **Sync:** `syncFitbitForUser()` on connect, Profile/Home/Progress visit (6h stale window), daily cron.  
-**Insights:** Pro rule — 3+ nights under 7h in a 7-day window triggers a recovery nudge.
+**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs.
 
-**Existing users:** Must **reconnect Fitbit** once to grant the sleep scope. Activity-only tokens continue to work for steps/calories.
+**Existing users:** Must **reconnect Fitbit** to grant new scopes (sleep, then health metrics). Activity-only tokens continue to work for steps/calories.
 
 ---
 
@@ -30,22 +32,11 @@
 
 ---
 
-## Phase 2 — Recovery metrics (resting HR, HRV)
+## Phase 2 — Recovery metrics (resting HR, HRV) ✅ Shipped
 
-**Goal:** Surface autonomic recovery and flag “hard training + poor recovery” weeks.
+Migration: `20260610300000_daily_recovery_logs.sql`
 
-| Metric | API | Scope | Suggested table |
-|--------|-----|-------|-----------------|
-| Resting HR range | `daily-resting-heart-rate` dailyRollUp | `health_metrics_and_measurements.readonly` | `daily_recovery_logs.resting_hr_min/max` |
-| HRV range | `daily-heart-rate-variability` dailyRollUp | same | `daily_recovery_logs.hrv_ms_min/max` |
-
-**UI:** Progress → Recovery section; optional Home tile when out of range.  
-**Insights:**
-
-- Resting HR elevated vs personal baseline during deload week  
-- HRV suppressed 3+ days while training volume is up  
-
-**Effort:** ~3–5 days (migration, fetch, sync, chart, 2 insight rules).
+See **Current state** table above. Next: Phase 3.
 
 ---
 

@@ -9,6 +9,7 @@ import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
 import { getSleepContext } from "@/lib/sleep/service";
+import { getRecoveryContext } from "@/lib/recovery/service";
 import {
   analyticsHistoryDays,
   hasFeature,
@@ -261,13 +262,15 @@ export async function getProgressDashboardData(
   ]);
 
   const isPro = hasProAccess(subscription);
-  const [proAnalytics, photoResult, activity, sleep] = await Promise.all([
+  const [proAnalytics, photoResult, activity, sleep, recovery] =
+    await Promise.all([
     isPro ? buildProAnalyticsBundle(userId, subscription) : Promise.resolve(null),
     hasFeature(subscription, "progress_photos")
       ? listProgressPhotos(userId)
       : Promise.resolve({ photos: [], tableReady: true }),
     getActivityContext(userId, subscription),
     getSleepContext(userId, subscription),
+    getRecoveryContext(userId, subscription),
   ]);
 
   const gates = buildGateContext(subscription);
@@ -343,6 +346,7 @@ export async function getProgressDashboardData(
     photosTableReady: photoResult.tableReady,
     activity,
     sleep,
+    recovery,
   };
 }
 

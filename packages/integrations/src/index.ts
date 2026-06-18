@@ -14,6 +14,7 @@ export type { StravaActivitySummary, StravaTokenResponse } from "./strava";
 export {
   GOOGLE_HEALTH_ACTIVITY_SCOPE,
   GOOGLE_HEALTH_SLEEP_SCOPE,
+  GOOGLE_HEALTH_METRICS_SCOPE,
   GOOGLE_HEALTH_FITBIT_SCOPES,
   GOOGLE_OAUTH_AUTHORIZE_URL,
   GOOGLE_OAUTH_TOKEN_URL,
@@ -22,14 +23,17 @@ export {
   buildGoogleHealthAuthorizeUrl,
   exchangeGoogleHealthAuthorizationCode,
   fetchDailyActivitySummaries,
+  fetchDailyRecoverySummaries,
   fetchDailySleepSummaries,
   fetchGoogleHealthIdentity,
+  integrationHasRecoveryScope,
   integrationHasSleepScope,
   refreshGoogleHealthAccessToken,
   todayIsoDate,
 } from "./google-health";
 export type {
   DailyActivitySummary,
+  DailyRecoverySummary,
   DailySleepSummary,
   GoogleHealthIdentity,
   GoogleOAuthTokenResponse,

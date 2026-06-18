@@ -5,8 +5,10 @@ import {
   exchangeWithingsAuthorizationCode,
   extractWeightKgFromGroup,
   fetchDailyActivitySummaries,
+  fetchDailyRecoverySummaries,
   fetchDailySleepSummaries,
   fetchGoogleHealthIdentity,
+  integrationHasRecoveryScope,
   integrationHasSleepScope,
   fetchStravaActivities,
   fetchWithingsMeasures,
@@ -596,6 +598,9 @@ export interface FitbitSyncResult {
   sleepImported: number;
   sleepSkipped: number;
   sleepLatestDate: string | null;
+  recoveryImported: number;
+  recoverySkipped: number;
+  recoveryLatestDate: string | null;
 }
 
 async function syncSleepLogsForUser(params: {
@@ -675,6 +680,125 @@ async function syncSleepLogsForUser(params: {
   }
 
   return { sleepImported, sleepSkipped, sleepLatestDate };
+}
+
+async function syncRecoveryLogsForUser(params: {
+  admin: ReturnType<typeof createAdminClient>;
+  userId: string;
+  accessToken: string;
+  startDate: string;
+  endDate: string;
+}): Promise<{
+  recoveryImported: number;
+  recoverySkipped: number;
+  recoveryLatestDate: string | null;
+}> {
+  const recoverySummaries = await fetchDailyRecoverySummaries({
+    accessToken: params.accessToken,
+    startDate: params.startDate,
+    endDate: params.endDate,
+  });
+
+  let recoveryImported = 0;
+  let recoverySkipped = 0;
+  let recoveryLatestDate: string | null = null;
+
+  for (const summary of recoverySummaries) {
+    if (
+      summary.restingHrMin == null &&
+      summary.restingHrMax == null &&
+      summary.hrvMsMin == null &&
+      summary.hrvMsMax == null
+    ) {
+      continue;
+    }
+
+    const { data: existing } = await params.admin
+      .from("daily_recovery_logs")
+      .select("*")
+      .eq("user_id", params.userId)
+      .eq("recovery_date", summary.date)
+      .maybeSingle();
+
+    const unchanged =
+      existing &&
+      (existing.resting_hr_min ?? null) === summary.restingHrMin &&
+      (existing.resting_hr_max ?? null) === summary.restingHrMax &&
+      (existing.hrv_ms_min ?? null) === summary.hrvMsMin &&
+      (existing.hrv_ms_max ?? null) === summary.hrvMsMax;
+
+    if (unchanged) {
+      recoverySkipped += 1;
+      if (recoveryLatestDate == null || summary.date > recoveryLatestDate) {
+        recoveryLatestDate = summary.date;
+      }
+      continue;
+    }
+
+    const { error: upsertError } = await params.admin
+      .from("daily_recovery_logs")
+      .upsert(
+        {
+          user_id: params.userId,
+          recovery_date: summary.date,
+          resting_hr_min: summary.restingHrMin,
+          resting_hr_max: summary.restingHrMax,
+          hrv_ms_min: summary.hrvMsMin,
+          hrv_ms_max: summary.hrvMsMax,
+          source: "fitbit",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,recovery_date" }
+      );
+
+    if (upsertError) {
+      throw new Error(upsertError.message);
+    }
+
+    recoveryImported += 1;
+    if (recoveryLatestDate == null || summary.date > recoveryLatestDate) {
+      recoveryLatestDate = summary.date;
+    }
+  }
+
+  return { recoveryImported, recoverySkipped, recoveryLatestDate };
+}
+
+export async function hasMissingRecoveryLogs(userId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data: integration } = await admin
+    .from("user_integrations")
+    .select("scopes, status")
+    .eq("user_id", userId)
+    .eq("provider", "fitbit")
+    .maybeSingle();
+
+  if (
+    !integration ||
+    integration.status === "revoked" ||
+    !integrationHasRecoveryScope(integration.scopes as string | null)
+  ) {
+    return false;
+  }
+
+  const lookbackStart = new Date(
+    Date.now() - INITIAL_SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
+  )
+    .toISOString()
+    .slice(0, 10);
+
+  const { data, error } = await admin
+    .from("daily_recovery_logs")
+    .select("id")
+    .eq("user_id", userId)
+    .gte("recovery_date", lookbackStart)
+    .limit(1);
+
+  if (error) {
+    return false;
+  }
+
+  return (data?.length ?? 0) === 0;
 }
 
 export async function hasMissingSleepLogs(userId: string): Promise<boolean> {
@@ -820,6 +944,31 @@ export async function syncFitbitForUser(
       }
     }
 
+    let recoveryImported = 0;
+    let recoverySkipped = 0;
+    let recoveryLatestDate: string | null = null;
+
+    if (integrationHasRecoveryScope(row.scopes)) {
+      try {
+        const recoveryResult = await syncRecoveryLogsForUser({
+          admin,
+          userId,
+          accessToken,
+          startDate,
+          endDate,
+        });
+        recoveryImported = recoveryResult.recoveryImported;
+        recoverySkipped = recoveryResult.recoverySkipped;
+        recoveryLatestDate = recoveryResult.recoveryLatestDate;
+      } catch (recoveryError) {
+        const message =
+          recoveryError instanceof Error
+            ? recoveryError.message
+            : "Recovery sync failed.";
+        throw new Error(message);
+      }
+    }
+
     const now = new Date().toISOString();
     await admin
       .from("user_integrations")
@@ -838,6 +987,9 @@ export async function syncFitbitForUser(
       sleepImported,
       sleepSkipped,
       sleepLatestDate,
+      recoveryImported,
+      recoverySkipped,
+      recoveryLatestDate,
     };
   } catch (error) {
     const message =

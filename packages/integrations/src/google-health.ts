@@ -11,10 +11,14 @@ export const GOOGLE_HEALTH_ACTIVITY_SCOPE =
 export const GOOGLE_HEALTH_SLEEP_SCOPE =
   "https://www.googleapis.com/auth/googlehealth.sleep.readonly";
 
+export const GOOGLE_HEALTH_METRICS_SCOPE =
+  "https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly";
+
 /** Scopes requested when connecting Fitbit via Google Health. */
 export const GOOGLE_HEALTH_FITBIT_SCOPES = [
   GOOGLE_HEALTH_ACTIVITY_SCOPE,
   GOOGLE_HEALTH_SLEEP_SCOPE,
+  GOOGLE_HEALTH_METRICS_SCOPE,
 ].join(" ");
 
 export const GOOGLE_OAUTH_AUTHORIZE_URL =
@@ -52,6 +56,14 @@ export interface DailySleepSummary {
   awakeMinutes: number | null;
 }
 
+export interface DailyRecoverySummary {
+  date: string;
+  restingHrMin: number | null;
+  restingHrMax: number | null;
+  hrvMsMin: number | null;
+  hrvMsMax: number | null;
+}
+
 interface CivilDateParts {
   year: number;
   month: number;
@@ -80,11 +92,23 @@ interface ActiveMinutesRollupValue {
   }>;
 }
 
+interface RestingHeartRatePersonalRangeRollupValue {
+  beatsPerMinuteMin?: string | number;
+  beatsPerMinuteMax?: string | number;
+}
+
+interface HeartRateVariabilityPersonalRangeRollupValue {
+  averageHeartRateVariabilityMillisecondsMin?: string | number;
+  averageHeartRateVariabilityMillisecondsMax?: string | number;
+}
+
 interface DailyRollupPoint {
   civilStartTime?: CivilDateTime;
   steps?: { countSum?: string | number };
   activeEnergyBurned?: ActiveEnergyBurnedRollupValue;
   activeMinutes?: ActiveMinutesRollupValue;
+  restingHeartRatePersonalRange?: RestingHeartRatePersonalRangeRollupValue;
+  heartRateVariabilityPersonalRange?: HeartRateVariabilityPersonalRangeRollupValue;
 }
 
 function parseCount(value: string | number | undefined): number | null {
@@ -143,13 +167,21 @@ function isoDateToCivilEndExclusive(endDate: string): CivilDateTime {
 }
 
 const DAILY_ROLLUP_MAX_DAYS: Record<
-  "steps" | "active-energy-burned" | "active-minutes",
+  | "steps"
+  | "active-energy-burned"
+  | "active-minutes"
+  | "daily-resting-heart-rate"
+  | "daily-heart-rate-variability",
   number
 > = {
   steps: 90,
   "active-energy-burned": 90,
   "active-minutes": 14,
+  "daily-resting-heart-rate": 90,
+  "daily-heart-rate-variability": 90,
 };
+
+type DailyRollupDataType = keyof typeof DAILY_ROLLUP_MAX_DAYS;
 
 function chunkIsoDateRange(
   startDate: string,
@@ -299,7 +331,7 @@ export async function fetchGoogleHealthIdentity(
 
 async function fetchDailyRollup(
   accessToken: string,
-  dataType: "steps" | "active-energy-burned" | "active-minutes",
+  dataType: DailyRollupDataType,
   startDate: string,
   endDate: string
 ): Promise<DailyRollupPoint[]> {
@@ -327,7 +359,7 @@ async function fetchDailyRollup(
 
 async function fetchDailyRollupChunked(
   accessToken: string,
-  dataType: "steps" | "active-energy-burned" | "active-minutes",
+  dataType: DailyRollupDataType,
   startDate: string,
   endDate: string
 ): Promise<DailyRollupPoint[]> {
@@ -549,4 +581,87 @@ export async function fetchDailySleepSummaries(params: {
 
 export function integrationHasSleepScope(scopes: string | null | undefined): boolean {
   return scopes?.includes("googlehealth.sleep.readonly") ?? false;
+}
+
+export function integrationHasRecoveryScope(
+  scopes: string | null | undefined
+): boolean {
+  return (
+    scopes?.includes("googlehealth.health_metrics_and_measurements.readonly") ??
+    false
+  );
+}
+
+function parseBpm(value: string | number | undefined): number | null {
+  if (value == null || value === "") return null;
+  const num = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Math.round(num);
+}
+
+export async function fetchDailyRecoverySummaries(params: {
+  accessToken: string;
+  startDate: string;
+  endDate: string;
+}): Promise<DailyRecoverySummary[]> {
+  const [rhrRollups, hrvRollups] = await Promise.all([
+    fetchDailyRollupChunked(
+      params.accessToken,
+      "daily-resting-heart-rate",
+      params.startDate,
+      params.endDate
+    ),
+    fetchDailyRollupChunked(
+      params.accessToken,
+      "daily-heart-rate-variability",
+      params.startDate,
+      params.endDate
+    ),
+  ]);
+
+  const byDate = new Map<string, DailyRecoverySummary>();
+
+  function ensure(date: string): DailyRecoverySummary {
+    const existing = byDate.get(date);
+    if (existing) return existing;
+    const created: DailyRecoverySummary = {
+      date,
+      restingHrMin: null,
+      restingHrMax: null,
+      hrvMsMin: null,
+      hrvMsMax: null,
+    };
+    byDate.set(date, created);
+    return created;
+  }
+
+  for (const point of rhrRollups) {
+    const date = civilStartToIso(point.civilStartTime);
+    if (!date) continue;
+    const rollup = point.restingHeartRatePersonalRange;
+    ensure(date).restingHrMin = parseBpm(rollup?.beatsPerMinuteMin);
+    ensure(date).restingHrMax = parseBpm(rollup?.beatsPerMinuteMax);
+  }
+
+  for (const point of hrvRollups) {
+    const date = civilStartToIso(point.civilStartTime);
+    if (!date) continue;
+    const rollup = point.heartRateVariabilityPersonalRange;
+    ensure(date).hrvMsMin = parseBpm(
+      rollup?.averageHeartRateVariabilityMillisecondsMin
+    );
+    ensure(date).hrvMsMax = parseBpm(
+      rollup?.averageHeartRateVariabilityMillisecondsMax
+    );
+  }
+
+  return [...byDate.values()]
+    .filter(
+      (row) =>
+        row.restingHrMin != null ||
+        row.restingHrMax != null ||
+        row.hrvMsMin != null ||
+        row.hrvMsMax != null
+    )
+    .sort((a, b) => a.date.localeCompare(b.date));
 }

@@ -2,6 +2,7 @@
 
 import { DailyActivityPanel } from "@/components/activity/daily-activity-panel";
 import { DailySleepPanel } from "@/components/sleep/daily-sleep-panel";
+import { DailyRecoveryPanel } from "@/components/recovery/daily-recovery-panel";
 import type { ProgressDashboardData } from "@/lib/measurements/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { hasProAccess } from "@/lib/billing/types";
@@ -184,6 +185,15 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
             suggestedTier="pro_plus"
           >
             <DailySleepPanel sleep={data.sleep} />
+          </ProFeatureSection>
+
+          <ProFeatureSection
+            title="Recovery metrics"
+            description="Resting heart rate and HRV from Fitbit."
+            unlocked={hasFeature(subscription, "device_integrations")}
+            suggestedTier="pro_plus"
+          >
+            <DailyRecoveryPanel recovery={data.recovery} />
           </ProFeatureSection>
         </div>
       )}

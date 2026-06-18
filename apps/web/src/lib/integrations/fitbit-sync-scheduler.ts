@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isGoogleHealthConfigured } from "./config";
 import {
   hasIncompleteActivityLogs,
+  hasMissingRecoveryLogs,
   hasMissingSleepLogs,
   IntegrationNotConnectedError,
   listIntegrationStatuses,
@@ -68,7 +69,8 @@ export async function maybeSyncFitbitForUser(
 
   const needsBackfill =
     (await hasIncompleteActivityLogs(userId)) ||
-    (await hasMissingSleepLogs(userId));
+    (await hasMissingSleepLogs(userId)) ||
+    (await hasMissingRecoveryLogs(userId));
 
   if (!isFitbitSyncStale(lastSyncAt, options?.force || needsBackfill)) {
     return { synced: false, skipped: true, reason: "fresh" };

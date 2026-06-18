@@ -19,6 +19,7 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [ ] Withings OAuth + weight sync (Pro+) — code ready; pending vendor approval
 - [x] Fitbit activity sync via Google Health API — steps, active calories, active minutes (Pro+)
 - [x] Fitbit sleep sync — duration + stages via Google Health sleep scope (Pro+)
+- [x] Fitbit recovery sync — resting HR + HRV via Google Health metrics scope (Pro+)
 - [ ] Strava workout sync (Pro+) — code ready; launch when prioritized
 - [x] Restaurant quick-log — curated US chains + saved meals (Pro+, $0 API)
 - [ ] Full restaurant menu API (deferred — evaluate when Pro+ MAU supports ~$6k/yr vendor)
