@@ -23,7 +23,7 @@ import { HealthDisclaimerStep } from "@/components/onboarding/health-disclaimer-
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
 const initialData: Partial<OnboardingData> = {
   equipment: [],
@@ -84,6 +84,8 @@ export function OnboardingWizard() {
         return !!data.sessions_per_week && !!data.minutes_per_session;
       case 9:
         return (data.why_started?.trim().length ?? 0) >= 10;
+      case 10:
+        return true;
       default:
         return false;
     }
@@ -296,17 +298,29 @@ export function OnboardingWizard() {
             title="Why did you start?"
             subtitle="We'll remind you of this when you need it most."
           >
-            <PwaInstallPrompt showAfterOnboarding />
             <textarea
               value={data.why_started ?? ""}
               onChange={(e) => update({ why_started: e.target.value })}
               rows={5}
               maxLength={500}
               placeholder="I want to feel stronger, more confident, and show up for myself every day…"
-              className="mt-4 w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
+              className="w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
             />
             <p className="mt-2 text-right text-xs text-forge-muted">
               {(data.why_started?.length ?? 0)}/500
+            </p>
+          </StepShell>
+        )}
+
+        {step === 10 && (
+          <StepShell
+            title="Almost done"
+            subtitle="Add ForgeRep to your home screen for faster access and offline workouts — optional."
+          >
+            <PwaInstallPrompt showAfterOnboarding />
+            <p className="mt-4 text-sm text-forge-muted">
+              You can always install later from Home. Tap finish to generate your
+              program.
             </p>
           </StepShell>
         )}
