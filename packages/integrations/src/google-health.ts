@@ -88,12 +88,38 @@ function isoDateToCivilStart(isoDate: string): CivilDateTime {
   };
 }
 
-function isoDateToCivilEnd(isoDate: string): CivilDateTime {
-  const [year, month, day] = isoDate.split("-").map(Number);
-  return {
-    date: { year, month, day },
-    time: { hours: 23, minutes: 59, seconds: 59, nanos: 0 },
-  };
+/** dailyRollUp ranges use an exclusive end — midnight on the day after `endDate`. */
+function isoDateToCivilEndExclusive(endDate: string): CivilDateTime {
+  return isoDateToCivilStart(addDaysIso(endDate, 1));
+}
+
+const DAILY_ROLLUP_MAX_DAYS: Record<
+  "steps" | "active-energy-burned" | "active-minutes",
+  number
+> = {
+  steps: 90,
+  "active-energy-burned": 90,
+  "active-minutes": 14,
+};
+
+function chunkIsoDateRange(
+  startDate: string,
+  endDate: string,
+  maxDays: number
+): Array<{ startDate: string; endDate: string }> {
+  if (startDate > endDate) return [];
+
+  const chunks: Array<{ startDate: string; endDate: string }> = [];
+  let cursor = startDate;
+
+  while (cursor <= endDate) {
+    const chunkEnd = addDaysIso(cursor, maxDays - 1);
+    const boundedEnd = chunkEnd > endDate ? endDate : chunkEnd;
+    chunks.push({ startDate: cursor, endDate: boundedEnd });
+    cursor = addDaysIso(boundedEnd, 1);
+  }
+
+  return chunks;
 }
 
 export function buildGoogleHealthAuthorizeUrl(params: {
@@ -179,7 +205,8 @@ export async function refreshGoogleHealthAccessToken(params: {
 async function googleHealthFetch<T>(
   accessToken: string,
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
+  context?: string
 ): Promise<T> {
   const response = await fetch(`${GOOGLE_HEALTH_API_BASE}${path}`, {
     ...init,
@@ -195,9 +222,12 @@ async function googleHealthFetch<T>(
   };
 
   if (!response.ok) {
-    const message =
-      json.error?.message ??
-      `Google Health API error (${response.status}) on ${path}`;
+    const apiMessage = json.error?.message;
+    const message = apiMessage
+      ? context
+        ? `${context}: ${apiMessage}`
+        : apiMessage
+      : `Google Health API error (${response.status}) on ${path}`;
     throw new Error(message);
   }
 
@@ -227,7 +257,7 @@ async function fetchDailyRollup(
   const body = {
     range: {
       start: isoDateToCivilStart(startDate),
-      end: isoDateToCivilEnd(endDate),
+      end: isoDateToCivilEndExclusive(endDate),
     },
     windowSizeDays: 1,
   };
@@ -239,10 +269,34 @@ async function fetchDailyRollup(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    }
+    },
+    `Google Health ${dataType} (${startDate} to ${endDate})`
   );
 
   return response.rollupDataPoints ?? [];
+}
+
+async function fetchDailyRollupChunked(
+  accessToken: string,
+  dataType: "steps" | "active-energy-burned" | "active-minutes",
+  startDate: string,
+  endDate: string
+): Promise<DailyRollupPoint[]> {
+  const maxDays = DAILY_ROLLUP_MAX_DAYS[dataType];
+  const chunks = chunkIsoDateRange(startDate, endDate, maxDays);
+  const points: DailyRollupPoint[] = [];
+
+  for (const chunk of chunks) {
+    const batch = await fetchDailyRollup(
+      accessToken,
+      dataType,
+      chunk.startDate,
+      chunk.endDate
+    );
+    points.push(...batch);
+  }
+
+  return points;
 }
 
 export async function fetchDailyActivitySummaries(params: {
@@ -251,19 +305,19 @@ export async function fetchDailyActivitySummaries(params: {
   endDate: string;
 }): Promise<DailyActivitySummary[]> {
   const [stepsRollups, energyRollups, minutesRollups] = await Promise.all([
-    fetchDailyRollup(
+    fetchDailyRollupChunked(
       params.accessToken,
       "steps",
       params.startDate,
       params.endDate
     ),
-    fetchDailyRollup(
+    fetchDailyRollupChunked(
       params.accessToken,
       "active-energy-burned",
       params.startDate,
       params.endDate
     ),
-    fetchDailyRollup(
+    fetchDailyRollupChunked(
       params.accessToken,
       "active-minutes",
       params.startDate,

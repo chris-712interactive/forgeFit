@@ -25,5 +25,27 @@ export function formatIntegrationErrorForUser(raw: string): string {
     return "Your connection session expired. Tap Connect and try again.";
   }
 
+  if (
+    lower.includes("invalid argument") ||
+    lower.includes("request contains an invalid argument")
+  ) {
+    return (
+      "Google Health rejected the sync request. If this keeps happening after reconnecting, " +
+      "confirm your Fitbit app is signed in with Google (Continue with Google), then try Sync again."
+    );
+  }
+
+  if (
+    lower.includes("could not mint") ||
+    lower.includes("does not have permission") ||
+    lower.includes("gaia")
+  ) {
+    return (
+      "This Google account is not fully linked to Fitbit yet. In the Fitbit app, sign out, then sign in " +
+      "with Continue with Google using the same account. Complete Fitbit’s move to Google if prompted, " +
+      "sync your tracker, then try Connect again."
+    );
+  }
+
   return message;
 }
