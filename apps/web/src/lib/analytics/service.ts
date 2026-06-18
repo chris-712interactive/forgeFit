@@ -9,7 +9,9 @@ import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import { buildNutritionAdherence } from "./nutrition-adherence";
 import { buildPrHistory } from "./pr-history";
 import { buildRuleInsights } from "./insights";
+import { buildWeeklyScorecard } from "./scorecard";
 import { buildStrengthSeries } from "./strength";
+import { computeWeeklyWorkStats } from "@/lib/home/weekly-stats";
 import { buildMuscleVolumeSlices, buildWeeklyVolumeTrend } from "./volume";
 import type { ProAnalyticsBundle } from "./types";
 import type { ActivityContext } from "@/lib/activity/types";
@@ -155,6 +157,16 @@ export async function buildProAnalyticsBundle(
     activityWeekStats: activityContext?.weekStats ?? null,
   });
 
+  const weeklyStats = computeWeeklyWorkStats(sessions, plan);
+  const scorecard = buildWeeklyScorecard({
+    plan,
+    weeklyStats,
+    nutritionAdherence,
+    sleepWeekStats: sleepContext?.weekStats ?? null,
+    recoveryWeekStats: recoveryContext?.weekStats ?? null,
+    activityWeekStats: activityContext?.weekStats ?? null,
+  });
+
   return {
     strengthSeries,
     prHistory,
@@ -162,6 +174,7 @@ export async function buildProAnalyticsBundle(
     muscleVolume,
     nutritionAdherence,
     insights,
+    scorecard,
   };
 }
 

@@ -1,9 +1,9 @@
 # Fitbit / Google Health Expansion Plan
 
 > Roadmap for turning device sync into a well-rounded recovery and lifestyle signal layer.  
-> **Phases 1–3** are implemented.
+> **Phases 1–4** are implemented.
 
-## Current state (Phases 1–3 — shipped)
+## Current state (Phases 1–4 — shipped)
 
 | Data | Google Health type | OAuth scope | Storage | UI |
 |------|-------------------|-------------|---------|-----|
@@ -19,7 +19,8 @@
 | **HRV range** | `daily-heart-rate-variability` **list** | same | `daily_recovery_logs` | **Progress** |
 
 **Sync:** `syncFitbitForUser()` on connect, Profile/Home/Progress visit (6h stale window), daily cron.  
-**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs; **high steps + low AZM**; **sedentary streak + missed sessions**.
+**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs; high steps + low AZM; sedentary streak + missed sessions.  
+**Scorecard (Pro):** Weekly cross-pillar strip on Home + Progress — Training · Protein · Sleep · Recovery · Activity with evidence citations.
 
 **Existing users:** Must **reconnect Fitbit** to grant new scopes (sleep, then health metrics). Activity-only tokens continue to work for steps/calories; extended activity fields backfill on next sync (no new scope).
 
@@ -50,30 +51,15 @@ Migration: `20260610400000_daily_activity_extended.sql`
 Extended `daily_activity_logs` with `active_zone_minutes`, `sedentary_minutes`, `total_calories`.  
 **Insights:** Steps high but AZM low; sedentary streak when training pace is behind.
 
-Next: Phase 4.
-
 ---
 
-## Phase 4 — Cross-pillar “problem area” engine
+## Phase 4 — Cross-pillar “problem area” engine ✅ Shipped
 
-**Goal:** Unified weekly scorecard: Training · Nutrition · Sleep · Recovery · Activity.
+`buildWeeklyScorecard()` in `apps/web/src/lib/analytics/scorecard.ts` — composite Training · Protein · Sleep · Recovery · Activity pillars with `good` / `watch` / `neutral` status, headline (e.g. “Recovery debt”), and evidence-kb citations.
 
-```
-Weekly scorecard (example)
-├── Training:  4/5 sessions ✓
-├── Protein:   5/7 days on target ✓
-├── Sleep:     2/7 nights ≥ 7h ⚠
-└── Recovery:  HRV down 3 days ⚠  → "Recovery debt"
-```
+**UI:** Home compact strip (Pro `rule_based_insights`); Progress → Trends full scorecard.
 
-**Implementation:**
-
-- `packages/coaching` or `apps/web/src/lib/analytics/insights.ts` — composite `buildWeeklyScorecard()`  
-- Feed: sessions, nutrition adherence, sleep logs, recovery logs (Phases 2–3)  
-- Home: compact strip linking to Progress Trends  
-- Tie citations to `evidence-kb` rules (`recovery_sleep`, deload, protein)
-
-**Effort:** ~1 week after Phases 2–3 data exists.
+Next: Phase 5.
 
 ---
 

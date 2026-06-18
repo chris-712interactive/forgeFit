@@ -66,6 +66,31 @@ export interface RuleInsight {
   body: string;
 }
 
+export type ScorecardStatus = "good" | "watch" | "neutral";
+
+export type ScorecardPillarId =
+  | "training"
+  | "protein"
+  | "sleep"
+  | "recovery"
+  | "activity";
+
+export interface ScorecardPillar {
+  id: ScorecardPillarId;
+  label: string;
+  summary: string;
+  status: ScorecardStatus;
+  evidenceRuleId?: string;
+}
+
+export interface WeeklyScorecard {
+  pillars: ScorecardPillar[];
+  /** Short label for the top problem area, e.g. "Recovery debt". */
+  headline: string | null;
+  problemArea: ScorecardPillarId | null;
+  evidenceRuleIds: string[];
+}
+
 export interface ProAnalyticsBundle {
   strengthSeries: LiftStrengthSeries[];
   prHistory: PrRecord[];
@@ -73,4 +98,5 @@ export interface ProAnalyticsBundle {
   muscleVolume: MuscleVolumeSlice[];
   nutritionAdherence: NutritionAdherenceSummary | null;
   insights: RuleInsight[];
+  scorecard: WeeklyScorecard;
 }

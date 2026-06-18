@@ -1,4 +1,4 @@
-import type { RuleInsight } from "@/lib/analytics/types";
+import type { RuleInsight, WeeklyScorecard } from "@/lib/analytics/types";
 import type { ActivityContext } from "@/lib/activity/types";
 import type { SleepContext } from "@/lib/sleep/types";
 import type { GamificationContext } from "@/lib/coaching/types";
@@ -29,6 +29,7 @@ export interface HomeDashboardData {
   nextSessionName: string | null;
   workoutsTableReady: boolean;
   proInsights: RuleInsight[];
+  weeklyScorecard: WeeklyScorecard | null;
   birthdayMessage: string | null;
   activity: ActivityContext;
   sleep: SleepContext;

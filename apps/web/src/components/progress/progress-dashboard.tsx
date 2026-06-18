@@ -22,6 +22,7 @@ import { StrengthProgressionChart } from "./strength-progression-chart";
 import { PrHistoryList } from "./pr-history-list";
 import { VolumeTrendChart } from "./volume-trend-chart";
 import { RuleInsightsCard } from "./rule-insights-card";
+import { WeeklyScorecardStrip } from "@/components/home/weekly-scorecard-strip";
 import { ProgressPhotoTimeline } from "./progress-photo-timeline";
 
 type ProgressTab = "trends" | "training" | "log";
@@ -72,6 +73,16 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
 
       {visitedTabs.has("trends") && (
         <div className={tab === "trends" ? "flex flex-col gap-4 sm:gap-5" : "hidden"}>
+          {analytics?.scorecard && (
+            <ProFeatureSection
+              title="Weekly scorecard"
+              description="Training, nutrition, sleep, recovery, and activity at a glance."
+              unlocked={hasFeature(subscription, "rule_based_insights")}
+            >
+              <WeeklyScorecardStrip scorecard={analytics.scorecard} />
+            </ProFeatureSection>
+          )}
+
           <ProFeatureSection
             title="Trend insights"
             description="Rule-based signals from your logs."

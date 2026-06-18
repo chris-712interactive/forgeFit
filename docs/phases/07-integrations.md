@@ -26,7 +26,7 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [ ] Full restaurant menu API (deferred — evaluate when Pro+ MAU supports ~$6k/yr vendor)
 - [x] Strength/volume/adherence analytics UI (Pro)
 - [x] Progress photos timeline (Pro)
-- [x] CSV export (Pro) + rule-based insights (Home + Progress)
+- [x] CSV export (Pro) + rule-based insights + weekly scorecard (Home + Progress)
 
 ## Pricing (Stripe Dashboard)
 

@@ -1,5 +1,6 @@
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
+import { getRecoveryContext } from "@/lib/recovery/service";
 import { getSleepContext } from "@/lib/sleep/service";
 import { getGamificationContext } from "@/lib/coaching/service";
 import { hasFeature } from "@/lib/billing/gates";
@@ -31,7 +32,11 @@ export async function getHomeDashboardData(
   const subscription = await getSubscriptionForUser(userId);
   scheduleFitbitBackgroundSync(userId, subscription);
 
-  const [profileResult, plan, nutrition, sessionResult, activity, sleep] =
+  const needsProAnalytics =
+    hasProAccess(subscription) &&
+    hasFeature(subscription, "rule_based_insights");
+
+  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recovery] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -45,6 +50,9 @@ export async function getHomeDashboardData(
       getServerSessionRecords(userId, 120),
       getActivityContext(userId, subscription),
       getSleepContext(userId, subscription),
+      needsProAnalytics
+        ? getRecoveryContext(userId, subscription)
+        : Promise.resolve(null),
     ]);
 
   const gamification = await getGamificationContext(
@@ -61,15 +69,15 @@ export async function getHomeDashboardData(
   const next = findNextPlannedSession(sessionResult.records, plan);
 
   let proInsights: HomeDashboardData["proInsights"] = [];
-  if (
-    hasProAccess(subscription) &&
-    hasFeature(subscription, "rule_based_insights")
-  ) {
+  let weeklyScorecard: HomeDashboardData["weeklyScorecard"] = null;
+  if (needsProAnalytics) {
     const bundle = await buildProAnalyticsBundle(userId, subscription, {
       activity,
       sleep,
+      recovery,
     });
     proInsights = bundle.insights;
+    weeklyScorecard = bundle.scorecard;
   }
 
   const firstName = profile
@@ -104,6 +112,7 @@ export async function getHomeDashboardData(
     nextSessionName: next?.name ?? null,
     workoutsTableReady: sessionResult.tableReady,
     proInsights,
+    weeklyScorecard,
     activity,
     sleep,
     gamification,

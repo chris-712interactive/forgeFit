@@ -6,6 +6,7 @@ import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { BirthdayBanner } from "@/components/home/birthday-banner";
 import { HomeTodaySnapshot } from "@/components/home/home-today-snapshot";
 import { ProInsightsStrip } from "@/components/home/pro-insights-strip";
+import { WeeklyScorecardStrip } from "@/components/home/weekly-scorecard-strip";
 import { WeekAccountability } from "@/components/home/week-accountability";
 import { WeeklyWorkStatsGrid } from "@/components/home/weekly-work-stats";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
@@ -51,6 +52,10 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         activity={data.activity}
         sleep={data.sleep}
       />
+
+      {data.weeklyScorecard && (
+        <WeeklyScorecardStrip scorecard={data.weeklyScorecard} compact />
+      )}
 
       {data.proInsights.length > 0 && (
         <ProInsightsStrip insights={data.proInsights} />
