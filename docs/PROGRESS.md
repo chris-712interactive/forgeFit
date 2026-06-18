@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-12 |
-| **Last session focus** | Phase 8 — coaching, PR celebration, gamification |
+| **Last updated** | 2026-06-18 |
+| **Last session focus** | Culver's restaurant quick-log menu |
 
 ---
 
@@ -32,6 +32,23 @@
 ---
 
 ## Session Log
+
+### 2026-06-18 — Culver's restaurant menu
+
+**What was done:**
+- Added Culver's to curated Pro+ restaurant search (`restaurant-chains.ts`)
+- 24 popular items: ButterBurgers, CurderBurger, chicken, cod, fries, cheese curds, chili cheddar fries, onion rings, coleslaw, George's chili, salad, custard, shake
+- Macros sourced from Culver's published nutrition guide
+
+**What's next:**
+1. Apply pending migrations on production if not yet applied
+2. Phase 7 vendor unblock: Withings, Garmin, Strava when ready
+
+**Files touched:**
+- `apps/web/src/lib/nutrition/restaurant-chains.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-12 — Phase 8 (motivation + gamification)
 
