@@ -331,12 +331,67 @@ export async function toggleCommunityFollow(
   }
 
   const supabase = await createClient();
-  const { data: existing } = await supabase
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, primary_goal, experience_level, gamification_opt_in")
+    .in("id", [followerId, followeeId]);
+
+  if (profileError) {
+    return { following: false, isMutual: false, error: profileError.message };
+  }
+
+  const follower = profiles?.find((row) => row.id === followerId);
+  const followee = profiles?.find((row) => row.id === followeeId);
+
+  if (!follower?.gamification_opt_in) {
+    return {
+      following: false,
+      isMutual: false,
+      error: "Join community in Profile to follow peers.",
+    };
+  }
+
+  if (!follower.primary_goal || !follower.experience_level) {
+    return {
+      following: false,
+      isMutual: false,
+      error: "Complete onboarding with your goal and experience first.",
+    };
+  }
+
+  if (!followee) {
+    return { following: false, isMutual: false, error: "Athlete not found." };
+  }
+
+  if (
+    follower.primary_goal !== followee.primary_goal ||
+    follower.experience_level !== followee.experience_level
+  ) {
+    return {
+      following: false,
+      isMutual: false,
+      error: "You can only follow athletes in your goal and experience bucket.",
+    };
+  }
+
+  const { data: existing, error: readError } = await supabase
     .from("community_follows")
     .select("id")
     .eq("follower_id", followerId)
     .eq("followee_id", followeeId)
     .maybeSingle();
+
+  if (readError) {
+    if (isSocialTableMissing(readError)) {
+      return {
+        following: false,
+        isMutual: false,
+        error: "Apply the community social migration to enable follows.",
+      };
+    }
+    return { following: false, isMutual: false, error: readError.message };
+  }
 
   if (existing) {
     const { error } = await supabase
@@ -357,7 +412,10 @@ export async function toggleCommunityFollow(
   });
 
   if (error) {
-    return { following: false, isMutual: false, error: error.message };
+    const message = error.message.toLowerCase().includes("row-level security")
+      ? "Could not follow — check that community migrations are applied and you are opted in."
+      : error.message;
+    return { following: false, isMutual: false, error: message };
   }
 
   const { data: reverseFollow } = await supabase
