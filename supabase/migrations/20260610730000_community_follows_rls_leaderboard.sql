@@ -1,5 +1,5 @@
--- Fix community_follows insert RLS: use unqualified followee_id in WITH CHECK.
--- Superseded by 20260610730000_community_follows_rls_leaderboard.sql for followee validation.
+-- Follow insert RLS must not read followee profiles (own-row-only RLS).
+-- Validate same bucket via leaderboard_entries, which peers can already read.
 
 drop policy if exists "Follow peers in same bucket" on community_follows;
 

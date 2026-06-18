@@ -78,10 +78,10 @@ create policy "Follow peers in same bucket"
     and exists (
       select 1
       from profiles me
-      join profiles them on them.id = followee_id
+      join leaderboard_entries le on le.user_id = followee_id
       where me.id = auth.uid()
-        and me.primary_goal::text = them.primary_goal::text
-        and me.experience_level::text = them.experience_level::text
+        and le.bucket_goal = me.primary_goal::text
+        and le.bucket_experience = me.experience_level::text
     )
   );
 

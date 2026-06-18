@@ -422,7 +422,7 @@ export async function toggleCommunityFollow(
 
   if (error) {
     const message = error.message.toLowerCase().includes("row-level security")
-      ? "Could not follow — check that community migrations are applied and you are opted in."
+      ? "Follow is blocked by a database policy. Apply the latest community migration on Supabase (20260610730000)."
       : error.message;
     return { following: false, isMutual: false, error: message };
   }
