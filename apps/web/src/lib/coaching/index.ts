@@ -1,12 +1,16 @@
 export type {
+  CommunityFollowRow,
+  CommunityNotificationRow,
   CommunityPageData,
   CommunityRankSnapshot,
   CommunityWinRow,
+  FollowState,
   GamificationContext,
   HabitScoreBreakdown,
   LeaderboardEntryRow,
   LeaderboardRankDelta,
   WeeklyCommunityRecap,
+  WeeklyRivalRow,
   WorkoutCoachingContext,
   WorkoutCoachingFeatures,
 } from "./types";

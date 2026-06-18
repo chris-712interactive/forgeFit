@@ -12,6 +12,10 @@ const NAV_ITEMS = [
   { href: "/profile", label: "Profile", icon: ProfileIcon },
 ] as const;
 
+interface BottomNavProps {
+  unreadCommunityCount?: number;
+}
+
 function subscribeOnline(callback: () => void) {
   window.addEventListener("online", callback);
   window.addEventListener("offline", callback);
@@ -29,7 +33,7 @@ function getServerSnapshot() {
   return true;
 }
 
-export function BottomNav() {
+export function BottomNav({ unreadCommunityCount = 0 }: BottomNavProps) {
   const pathname = usePathname();
   const online = useSyncExternalStore(
     subscribeOnline,
@@ -48,25 +52,38 @@ export function BottomNav() {
             pathname === href ||
             pathname.startsWith(`${href}/`) ||
             (href === "/workout" && pathname === "/workout");
-          const className = `flex min-h-[52px] min-w-[56px] flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-xs font-medium transition-colors ${
+          const showBadge = href === "/community" && unreadCommunityCount > 0;
+          const className = `relative flex min-h-[52px] min-w-[56px] flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-xs font-medium transition-colors ${
             active
               ? "text-forge-ember"
               : "text-forge-muted hover:text-forge-text"
           }`;
 
+          const content = (
+            <>
+              <span className="relative">
+                <Icon active={active} />
+                {showBadge && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-forge-coral px-1 text-[10px] font-bold text-white">
+                    {unreadCommunityCount > 9 ? "9+" : unreadCommunityCount}
+                  </span>
+                )}
+              </span>
+              <span>{label}</span>
+            </>
+          );
+
           if (!online) {
             return (
               <a key={href} href={href} className={className}>
-                <Icon active={active} />
-                <span>{label}</span>
+                {content}
               </a>
             );
           }
 
           return (
             <Link key={href} href={href} className={className}>
-              <Icon active={active} />
-              <span>{label}</span>
+              {content}
             </Link>
           );
         })}

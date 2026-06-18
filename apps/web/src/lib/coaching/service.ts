@@ -20,6 +20,15 @@ import type {
   CommunityPageData,
 } from "./types";
 import { computeTrainingStreakWeeks, highestNewStreakMilestone } from "./streak";
+import {
+  getCommunityNotifications,
+  getFollowStateForLeaderboard,
+  getFriendsLeaderboard,
+  getUnreadCommunityNotificationCount,
+  getWeeklyRival,
+  processRankChangeNotifications,
+  processRivalNotifications,
+} from "./community-social";
 
 function baseGamificationContext(
   overrides: Partial<GamificationContext> = {}
@@ -41,6 +50,9 @@ function baseGamificationContext(
     pointsToNextRank: null,
     leaderAboveLabel: null,
     weeklyRecap: null,
+    weeklyRival: null,
+    unreadNotificationCount: 0,
+    recentNotifications: [],
     ...overrides,
   };
 }
@@ -496,12 +508,20 @@ export async function getGamificationContext(
   const activePeerCount = activeWeekCountResult.count ?? 0;
   const bucketPeerCount = peerCountResult.count ?? activePeerCount;
 
-  const [habitBreakdown, weeklyRecap] = optedIn
+  const [habitBreakdown, weeklyRecap, weeklyRival, unreadNotificationCount, recentNotifications] =
+    optedIn
     ? await Promise.all([
         computeUserHabitBreakdown(userId, sessions),
         buildWeeklyRecap(userId, goal, experience),
+        getWeeklyRival(
+          userId,
+          weekStart,
+          await fetchBucketLeaderboard(goal, experience, weekStart, userId, 100)
+        ),
+        getUnreadCommunityNotificationCount(userId),
+        getCommunityNotifications(userId, 5),
       ])
-    : [null, null];
+    : [null, null, null, 0, []];
 
   return {
     unlocked: true,
@@ -520,6 +540,9 @@ export async function getGamificationContext(
     pointsToNextRank: rankContext.pointsToNextRank,
     leaderAboveLabel: rankContext.leaderAboveLabel,
     weeklyRecap,
+    weeklyRival,
+    unreadNotificationCount,
+    recentNotifications,
   };
 }
 
@@ -687,6 +710,25 @@ export async function syncLeaderboardAfterWorkout(
         ? null
         : null;
 
+  const actorDisplayLabel = leaderboardDisplayLabel(profile);
+  const weeklyRival = await getWeeklyRival(userId, weekStart, afterBoard);
+
+  await processRankChangeNotifications({
+    actorUserId: userId,
+    actorDisplayLabel,
+    beforeBoard,
+    afterBoard,
+    pointsToNextRank: after.pointsToNextRank,
+    leaderAboveLabel: after.leaderAboveLabel,
+  });
+
+  await processRivalNotifications({
+    userId,
+    rival: weeklyRival,
+    beforeBoard,
+    afterBoard,
+  });
+
   return {
     previousRank: before.userRank,
     newRank: after.userRank,
@@ -729,6 +771,7 @@ export async function getCommunityRankSnapshot(
       pointsToNextRank: null,
       leaderAboveLabel: null,
       activePeerCount: 0,
+      weeklyRival: null,
     };
   }
 
@@ -748,6 +791,9 @@ export async function getCommunityRankSnapshot(
   ]);
 
   const rankContext = rankContextFromLeaderboard(leaderboard, userId);
+  const weeklyRival = profile?.gamification_opt_in
+    ? await getWeeklyRival(userId, weekStart, leaderboard)
+    : null;
 
   return {
     unlocked: true,
@@ -758,6 +804,7 @@ export async function getCommunityRankSnapshot(
     pointsToNextRank: rankContext.pointsToNextRank,
     leaderAboveLabel: rankContext.leaderAboveLabel,
     activePeerCount: countResult.count ?? leaderboard.length,
+    weeklyRival,
   };
 }
 
@@ -781,6 +828,10 @@ export async function getCommunityPageData(
       gamification,
       fullLeaderboard: [],
       totalRankedThisWeek: 0,
+      friendsLeaderboard: [],
+      followState: {},
+      notifications: [],
+      unreadNotificationCount: 0,
     };
   }
 
@@ -793,9 +844,28 @@ export async function getCommunityPageData(
     50
   );
 
+  const [friendsLeaderboard, followStateMap, notifications, unreadNotificationCount] =
+    gamification.optedIn
+      ? await Promise.all([
+          getFriendsLeaderboard(userId, fullLeaderboard),
+          getFollowStateForLeaderboard(userId, fullLeaderboard),
+          getCommunityNotifications(userId, 20),
+          getUnreadCommunityNotificationCount(userId),
+        ])
+      : [[], new Map(), [], 0];
+
+  const followState = Object.fromEntries(followStateMap.entries());
+
   return {
-    gamification,
+    gamification: {
+      ...gamification,
+      unreadNotificationCount,
+    },
     fullLeaderboard,
     totalRankedThisWeek: gamification.activePeerCount,
+    friendsLeaderboard,
+    followState,
+    notifications,
+    unreadNotificationCount,
   };
 }

@@ -6,6 +6,7 @@ import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
 import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
 import type { GamificationContext } from "@/lib/coaching/types";
 import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
+import { WeeklyRivalCard } from "@/components/coaching/weekly-rival-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -140,6 +141,18 @@ export function CommunitySection({
           </Link>
         </p>
       )}
+
+      {gamification.unlocked &&
+        gamification.optedIn &&
+        gamification.weeklyRival && (
+          <div className="mt-4">
+            <WeeklyRivalCard
+              rival={gamification.weeklyRival}
+              userRank={gamification.userRank}
+              compact
+            />
+          </div>
+        )}
 
       {gamification.unlocked && gamification.bucketLabel && !gamification.optedIn && (
         <div className="mt-4">

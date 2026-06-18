@@ -1,10 +1,12 @@
 "use client";
 
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
+import { CommunityFollowButton } from "@/components/coaching/community-follow-button";
+import { CommunityNotificationsPanel } from "@/components/coaching/community-notifications-panel";
+import { FriendsLeaderboard } from "@/components/coaching/friends-leaderboard";
 import { HabitScoreBreakdownCard } from "@/components/coaching/habit-score-breakdown-card";
-import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
 import { CommunitySection } from "@/components/home/community-section";
-import type { CommunityPageData } from "@/lib/coaching/types";
+import type { CommunityPageData, FollowState } from "@/lib/coaching/types";
 import Link from "next/link";
 
 interface CommunityPageClientProps {
@@ -12,7 +14,15 @@ interface CommunityPageClientProps {
 }
 
 export function CommunityPageClient({ data }: CommunityPageClientProps) {
-  const { gamification, fullLeaderboard, totalRankedThisWeek } = data;
+  const {
+    gamification,
+    fullLeaderboard,
+    totalRankedThisWeek,
+    friendsLeaderboard,
+    followState,
+    notifications,
+    unreadNotificationCount,
+  } = data;
 
   return (
     <div className="flex flex-col gap-5 pb-4">
@@ -31,6 +41,17 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
         showLeaderboard={false}
         showWins={false}
       />
+
+      {gamification.optedIn && (
+        <CommunityNotificationsPanel
+          notifications={notifications}
+          unreadCount={unreadNotificationCount}
+        />
+      )}
+
+      {gamification.optedIn && (
+        <FriendsLeaderboard friends={friendsLeaderboard} />
+      )}
 
       {gamification.unlocked &&
         gamification.bucketLabel &&
@@ -51,6 +72,7 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
                 <p className="mt-1 text-xs text-forge-muted">
                   {totalRankedThisWeek} athletes ranked this week
                   {gamification.bucketLabel ? ` · ${gamification.bucketLabel}` : ""}
+                  {gamification.optedIn ? " · Follow peers to build your friends board" : ""}
                 </p>
               </div>
               {gamification.pointsToNextRank != null &&
@@ -66,35 +88,50 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
             </div>
 
             <ol className="mt-4 space-y-2">
-              {fullLeaderboard.map((entry, index) => (
-                <li
-                  key={entry.userId}
-                  className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 ${
-                    entry.isCurrentUser
-                      ? "border-forge-gold/40 bg-forge-surface"
-                      : "border-[var(--border)] bg-forge-surface/60"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-display w-6 text-sm font-bold text-forge-muted">
-                      {index + 1}
-                    </span>
-                    <span
-                      className={`text-sm ${
-                        entry.isCurrentUser
-                          ? "font-semibold text-forge-gold"
-                          : "text-forge-text"
-                      }`}
-                    >
-                      {entry.displayLabel}
-                      {entry.isCurrentUser ? " (you)" : ""}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-forge-text">
-                    {entry.habitScore}
-                  </span>
-                </li>
-              ))}
+              {fullLeaderboard.map((entry, index) => {
+                const state: FollowState = followState[entry.userId] ?? {
+                  following: false,
+                  isMutual: false,
+                };
+
+                return (
+                  <li
+                    key={entry.userId}
+                    className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 ${
+                      entry.isCurrentUser
+                        ? "border-forge-gold/40 bg-forge-surface"
+                        : "border-[var(--border)] bg-forge-surface/60"
+                    }`}
+                  >
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <span className="font-display w-6 shrink-0 text-sm font-bold text-forge-muted">
+                        {index + 1}
+                      </span>
+                      <span
+                        className={`truncate text-sm ${
+                          entry.isCurrentUser
+                            ? "font-semibold text-forge-gold"
+                            : "text-forge-text"
+                        }`}
+                      >
+                        {entry.displayLabel}
+                        {entry.isCurrentUser ? " (you)" : ""}
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-sm font-medium text-forge-text">
+                        {entry.habitScore}
+                      </span>
+                      {gamification.optedIn && !entry.isCurrentUser && (
+                        <CommunityFollowButton
+                          userId={entry.userId}
+                          initialState={state}
+                        />
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ol>
           </section>
         )}

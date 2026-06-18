@@ -1,6 +1,7 @@
 "use client";
 
 import { CommunitySection } from "@/components/home/community-section";
+import { HomeNotificationsStrip } from "@/components/home/home-notifications-strip";
 import { BirthdayBanner } from "@/components/home/birthday-banner";
 import { HomeTodaySnapshot } from "@/components/home/home-today-snapshot";
 import { ProInsightsStrip } from "@/components/home/pro-insights-strip";
@@ -64,6 +65,13 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         <CollapsibleSection title="Body of work" hint="Tap to expand">
           <WeeklyWorkStatsGrid stats={data.weeklyStats} embedded />
         </CollapsibleSection>
+      )}
+
+      {data.gamification.unreadNotificationCount > 0 && (
+        <HomeNotificationsStrip
+          notifications={data.gamification.recentNotifications}
+          unreadCount={data.gamification.unreadNotificationCount}
+        />
       )}
 
       <CommunitySection gamification={data.gamification} />

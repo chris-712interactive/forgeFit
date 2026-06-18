@@ -1,5 +1,6 @@
 import type { CommunityRankSnapshot } from "@/lib/coaching/types";
 import Link from "next/link";
+import { WeeklyRivalCard } from "@/components/coaching/weekly-rival-card";
 
 interface CommunityRankStripProps {
   rank: CommunityRankSnapshot;
@@ -32,7 +33,16 @@ export function CommunityRankStrip({ rank }: CommunityRankStripProps) {
   }
 
   return (
-    <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-3">
+    <div className="space-y-4">
+      {rank.weeklyRival && (
+        <WeeklyRivalCard
+          rival={rank.weeklyRival}
+          userRank={rank.userRank}
+          compact
+        />
+      )}
+
+      <div className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-forge-gold">
@@ -69,6 +79,7 @@ export function CommunityRankStrip({ rank }: CommunityRankStripProps) {
             this week
           </p>
         )}
+      </div>
       </div>
     </div>
   );

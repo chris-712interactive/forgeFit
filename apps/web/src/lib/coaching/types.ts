@@ -35,6 +35,7 @@ export interface CommunityRankSnapshot {
   pointsToNextRank: number | null;
   leaderAboveLabel: string | null;
   activePeerCount: number;
+  weeklyRival: WeeklyRivalRow | null;
 }
 
 export interface WeeklyCommunityRecap {
@@ -42,6 +43,39 @@ export interface WeeklyCommunityRecap {
   lastWeekRank: number | null;
   lastWeekScore: number | null;
   weekLabel: string;
+}
+
+export interface WeeklyRivalRow {
+  userId: string;
+  displayLabel: string;
+  habitScore: number;
+  rank: number;
+  pointsGap: number;
+  isAhead: boolean;
+}
+
+export interface CommunityFollowRow {
+  userId: string;
+  displayLabel: string;
+  habitScore: number | null;
+  rank: number | null;
+  isMutual: boolean;
+  following: boolean;
+}
+
+export interface CommunityNotificationRow {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
+  payload: Record<string, unknown>;
+}
+
+export interface FollowState {
+  following: boolean;
+  isMutual: boolean;
 }
 
 export interface CommunityWinRow {
@@ -74,12 +108,19 @@ export interface GamificationContext {
   pointsToNextRank: number | null;
   leaderAboveLabel: string | null;
   weeklyRecap: WeeklyCommunityRecap | null;
+  weeklyRival: WeeklyRivalRow | null;
+  unreadNotificationCount: number;
+  recentNotifications: CommunityNotificationRow[];
 }
 
 export interface CommunityPageData {
   gamification: GamificationContext;
   fullLeaderboard: LeaderboardEntryRow[];
   totalRankedThisWeek: number;
+  friendsLeaderboard: CommunityFollowRow[];
+  followState: Record<string, FollowState>;
+  notifications: CommunityNotificationRow[];
+  unreadNotificationCount: number;
 }
 
 export interface WorkoutCoachingContext {

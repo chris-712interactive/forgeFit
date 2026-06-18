@@ -3,6 +3,7 @@ import { ExperiencePathIndicator } from "@/components/progression/experience-pat
 import { PrefetchAppShell } from "@/components/offline/prefetch-app-shell";
 import { UnitPreferenceProvider } from "@/components/units/unit-preference-provider";
 import { SyncManager } from "@/components/workout/sync-manager";
+import { getUnreadCommunityNotificationCount } from "@/lib/coaching/community-social";
 import { getPromotionEvaluationForUser } from "@/lib/progression/service";
 import { getUserUnitSystem } from "@/lib/units/preference";
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,9 @@ export default async function AppLayout({
 
   const unitSystem = user ? await getUserUnitSystem(user.id) : "metric";
   const promotion = user ? await getPromotionEvaluationForUser(user.id) : null;
+  const unreadCommunityCount = user
+    ? await getUnreadCommunityNotificationCount(user.id)
+    : 0;
 
   return (
     <div className="min-h-dvh bg-forge-surface pb-[calc(5rem+env(safe-area-inset-bottom))]">
@@ -33,7 +37,7 @@ export default async function AppLayout({
       ) : (
         children
       )}
-      <BottomNav />
+      <BottomNav unreadCommunityCount={unreadCommunityCount} />
     </div>
   );
 }

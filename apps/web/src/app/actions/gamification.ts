@@ -112,6 +112,12 @@ export async function toggleCommunityWinCheer(winId: string): Promise<{
       return { ok: false, error: error.message };
     }
   } else {
+    const { data: win } = await supabase
+      .from("community_wins")
+      .select("user_id, headline")
+      .eq("id", winId)
+      .maybeSingle();
+
     const { error } = await supabase.from("community_win_cheers").insert({
       win_id: winId,
       user_id: user.id,
@@ -119,6 +125,28 @@ export async function toggleCommunityWinCheer(winId: string): Promise<{
 
     if (error) {
       return { ok: false, error: error.message };
+    }
+
+    if (win && win.user_id !== user.id) {
+      const { data: cheererProfile } = await supabase
+        .from("profiles")
+        .select("first_name, display_name, email")
+        .eq("id", user.id)
+        .single();
+
+      const cheererLabel =
+        (cheererProfile?.first_name as string | null) ??
+        (cheererProfile?.display_name as string | null) ??
+        "Someone";
+
+      const { notifyCheerReceived } = await import(
+        "@/lib/coaching/community-social"
+      );
+      await notifyCheerReceived({
+        winOwnerUserId: win.user_id as string,
+        cheererLabel,
+        winHeadline: win.headline as string,
+      });
     }
   }
 
@@ -128,6 +156,7 @@ export async function toggleCommunityWinCheer(winId: string): Promise<{
     .eq("win_id", winId);
 
   revalidatePath("/home");
+  revalidatePath("/community");
   return {
     ok: true,
     cheered: !existing,
