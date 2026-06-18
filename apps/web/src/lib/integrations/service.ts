@@ -528,6 +528,64 @@ function syncFromIsoDate(lastSyncAt: string | null): string {
   return new Date(Date.now() - lookbackMs).toISOString().slice(0, 10);
 }
 
+/** Steps imported but calories/minutes missing — usually a parser fix needs backfill. */
+export async function hasIncompleteActivityLogs(
+  userId: string
+): Promise<boolean> {
+  const admin = createAdminClient();
+  const lookbackStart = new Date(
+    Date.now() - INITIAL_SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
+  )
+    .toISOString()
+    .slice(0, 10);
+
+  const { data, error } = await admin
+    .from("daily_activity_logs")
+    .select("id")
+    .eq("user_id", userId)
+    .gte("activity_date", lookbackStart)
+    .not("steps", "is", null)
+    .or("active_calories.is.null,active_minutes.is.null")
+    .limit(1);
+
+  if (error) {
+    return false;
+  }
+
+  return (data?.length ?? 0) > 0;
+}
+
+async function resolveFitbitSyncStartDate(
+  userId: string,
+  lastSyncAt: string | null
+): Promise<string> {
+  const defaultStart = syncFromIsoDate(lastSyncAt);
+  const admin = createAdminClient();
+  const lookbackStart = new Date(
+    Date.now() - INITIAL_SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
+  )
+    .toISOString()
+    .slice(0, 10);
+
+  const { data } = await admin
+    .from("daily_activity_logs")
+    .select("activity_date")
+    .eq("user_id", userId)
+    .gte("activity_date", lookbackStart)
+    .not("steps", "is", null)
+    .or("active_calories.is.null,active_minutes.is.null")
+    .order("activity_date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const incompleteStart = data?.activity_date as string | undefined;
+  if (incompleteStart && incompleteStart < defaultStart) {
+    return incompleteStart;
+  }
+
+  return defaultStart;
+}
+
 export interface FitbitSyncResult {
   imported: number;
   skipped: number;
@@ -546,7 +604,10 @@ export async function syncFitbitForUser(
 
   try {
     const accessToken = await getValidFitbitAccessToken(row);
-    const startDate = syncFromIsoDate(row.last_sync_at);
+    const startDate = await resolveFitbitSyncStartDate(
+      userId,
+      row.last_sync_at
+    );
     const endDate = todayIsoDate();
 
     const summaries = await fetchDailyActivitySummaries({

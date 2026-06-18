@@ -49,14 +49,23 @@ interface CivilDateTime {
   };
 }
 
+interface ActiveEnergyBurnedRollupValue {
+  /** REST field from ActiveEnergyBurnedRollupValue. */
+  kcalSum?: string | number;
+}
+
+interface ActiveMinutesRollupValue {
+  activeMinutesRollupByActivityLevel?: Array<{
+    activityLevel?: string;
+    activeMinutesSum?: string | number;
+  }>;
+}
+
 interface DailyRollupPoint {
   civilStartTime?: CivilDateTime;
   steps?: { countSum?: string | number };
-  activeEnergyBurned?: {
-    energySum?: string | number;
-    kilocaloriesSum?: string | number;
-  };
-  activeMinutes?: { durationSum?: string | number; minutesSum?: string | number };
+  activeEnergyBurned?: ActiveEnergyBurnedRollupValue;
+  activeMinutes?: ActiveMinutesRollupValue;
 }
 
 function parseCount(value: string | number | undefined): number | null {
@@ -71,6 +80,27 @@ function parseEnergy(value: string | number | undefined): number | null {
   const num = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(num) || num < 0) return null;
   return Math.round(num * 10) / 10;
+}
+
+function parseActiveMinutesRollup(
+  rollup: ActiveMinutesRollupValue | undefined
+): number | null {
+  const levels = rollup?.activeMinutesRollupByActivityLevel;
+  if (!levels || levels.length === 0) {
+    return null;
+  }
+
+  let sum = 0;
+  let hasValue = false;
+  for (const level of levels) {
+    const parsed = parseCount(level.activeMinutesSum);
+    if (parsed != null) {
+      sum += parsed;
+      hasValue = true;
+    }
+  }
+
+  return hasValue ? sum : null;
 }
 
 function civilStartToIso(civilStartTime: CivilDateTime | undefined): string | null {
@@ -349,18 +379,15 @@ export async function fetchDailyActivitySummaries(params: {
   for (const point of energyRollups) {
     const date = civilStartToIso(point.civilStartTime);
     if (!date) continue;
-    const energy =
-      point.activeEnergyBurned?.kilocaloriesSum ??
-      point.activeEnergyBurned?.energySum;
-    ensure(date).activeCalories = parseEnergy(energy);
+    ensure(date).activeCalories = parseEnergy(
+      point.activeEnergyBurned?.kcalSum
+    );
   }
 
   for (const point of minutesRollups) {
     const date = civilStartToIso(point.civilStartTime);
     if (!date) continue;
-    const minutes =
-      point.activeMinutes?.minutesSum ?? point.activeMinutes?.durationSum;
-    ensure(date).activeMinutes = parseCount(minutes);
+    ensure(date).activeMinutes = parseActiveMinutesRollup(point.activeMinutes);
   }
 
   return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));

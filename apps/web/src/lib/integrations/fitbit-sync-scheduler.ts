@@ -3,6 +3,7 @@ import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isGoogleHealthConfigured } from "./config";
 import {
+  hasIncompleteActivityLogs,
   IntegrationNotConnectedError,
   listIntegrationStatuses,
   syncFitbitForUser,
@@ -64,7 +65,9 @@ export async function maybeSyncFitbitForUser(
     return { synced: false, skipped: true, reason: "not_connected" };
   }
 
-  if (!isFitbitSyncStale(lastSyncAt, options?.force)) {
+  const needsBackfill = await hasIncompleteActivityLogs(userId);
+
+  if (!isFitbitSyncStale(lastSyncAt, options?.force || needsBackfill)) {
     return { synced: false, skipped: true, reason: "fresh" };
   }
 
