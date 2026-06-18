@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { unstable_noStore as noStore } from "next/cache";
 import type { LeaderboardEntryRow } from "./types";
 import { buildRivalRow, pickWeeklyRivalUserId } from "./rival-matching";
 
@@ -241,6 +242,7 @@ export async function getCommunityNotifications(
   userId: string,
   limit = 20
 ): Promise<CommunityNotificationRow[]> {
+  noStore();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("community_notifications")
@@ -270,6 +272,7 @@ export async function getCommunityNotifications(
 export async function getUnreadCommunityNotificationCount(
   userId: string
 ): Promise<number> {
+  noStore();
   const supabase = await createClient();
   const { count, error } = await supabase
     .from("community_notifications")

@@ -113,7 +113,8 @@ create policy "Read own notifications"
 create policy "Update own notifications"
   on community_notifications
   for update
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 create policy "Insert community notifications when opted in"
   on community_notifications
