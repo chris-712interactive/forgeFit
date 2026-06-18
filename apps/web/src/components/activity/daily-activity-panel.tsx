@@ -1,4 +1,5 @@
 import type { ActivityContext } from "@/lib/activity/types";
+import { formatCalories, formatSedentaryHours } from "@/lib/activity/format";
 import Link from "next/link";
 import { ActivityTrendChart } from "./activity-trend-chart";
 
@@ -11,8 +12,8 @@ export function DailyActivityPanel({ activity }: DailyActivityPanelProps) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] p-6 text-sm text-forge-muted">
         <p>
-          Connect Fitbit in Profile to import daily steps, active calories, and
-          active minutes.
+          Connect Fitbit in Profile to import daily steps, active calories, zone
+          minutes, and sedentary time.
         </p>
         <Link
           href="/profile#integrations"
@@ -41,39 +42,72 @@ export function DailyActivityPanel({ activity }: DailyActivityPanelProps) {
       )}
 
       {stats && (
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            {
-              label: "7-day avg steps",
-              value: stats.avgSteps?.toLocaleString() ?? "—",
-            },
-            {
-              label: "7-day avg cal",
-              value:
-                stats.avgActiveCalories != null
-                  ? stats.avgActiveCalories.toLocaleString()
-                  : "—",
-            },
-            {
-              label: "7-day avg min",
-              value:
-                stats.avgActiveMinutes != null
-                  ? String(stats.avgActiveMinutes)
-                  : "—",
-            },
-          ].map((tile) => (
-            <article
-              key={tile.label}
-              className="rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-3"
-            >
-              <p className="text-[11px] font-medium uppercase tracking-wide text-forge-muted">
-                {tile.label}
-              </p>
-              <p className="mt-1 font-display text-xl font-bold text-forge-text">
-                {tile.value}
-              </p>
-            </article>
-          ))}
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              {
+                label: "7-day avg steps",
+                value: stats.avgSteps?.toLocaleString() ?? "—",
+              },
+              {
+                label: "7-day avg cal",
+                value: formatCalories(stats.avgActiveCalories),
+              },
+              {
+                label: "7-day avg min",
+                value:
+                  stats.avgActiveMinutes != null
+                    ? String(stats.avgActiveMinutes)
+                    : "—",
+              },
+            ].map((tile) => (
+              <article
+                key={tile.label}
+                className="rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-3"
+              >
+                <p className="text-[11px] font-medium uppercase tracking-wide text-forge-muted">
+                  {tile.label}
+                </p>
+                <p className="mt-1 font-display text-xl font-bold text-forge-text">
+                  {tile.value}
+                </p>
+              </article>
+            ))}
+          </div>
+
+          {activity.hasExtendedActivityData && (
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                {
+                  label: "7-day avg AZM",
+                  value:
+                    stats.avgActiveZoneMinutes != null
+                      ? String(stats.avgActiveZoneMinutes)
+                      : "—",
+                },
+                {
+                  label: "7-day sedentary",
+                  value: formatSedentaryHours(stats.avgSedentaryMinutes),
+                },
+                {
+                  label: "7-day total cal",
+                  value: formatCalories(stats.avgTotalCalories),
+                },
+              ].map((tile) => (
+                <article
+                  key={tile.label}
+                  className="rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-3"
+                >
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-forge-muted">
+                    {tile.label}
+                  </p>
+                  <p className="mt-1 font-display text-xl font-bold text-forge-text">
+                    {tile.value}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -7,6 +7,11 @@ import type {
   DailyActivityLog,
   DailyActivityStats,
 } from "./types";
+import {
+  AZM_LOW_THRESHOLD,
+  SEDENTARY_HIGH_MINUTES,
+  STEPS_HIGH_THRESHOLD,
+} from "./types";
 
 const CHART_DAYS = 14;
 const WEEK_DAYS = 7;
@@ -33,6 +38,12 @@ function mapActivityRow(row: Record<string, unknown>): DailyActivityLog {
       row.active_calories != null ? Number(row.active_calories) : null,
     activeMinutes:
       row.active_minutes != null ? Number(row.active_minutes) : null,
+    activeZoneMinutes:
+      row.active_zone_minutes != null ? Number(row.active_zone_minutes) : null,
+    sedentaryMinutes:
+      row.sedentary_minutes != null ? Number(row.sedentary_minutes) : null,
+    totalCalories:
+      row.total_calories != null ? Number(row.total_calories) : null,
     source: (row.source as string) ?? "fitbit",
   };
 }
@@ -62,6 +73,9 @@ function fillDateSeries(
         steps: null,
         activeCalories: null,
         activeMinutes: null,
+        activeZoneMinutes: null,
+        sedentaryMinutes: null,
+        totalCalories: null,
         source: "fitbit",
       }
     );
@@ -72,12 +86,7 @@ function fillDateSeries(
 }
 
 function computeStats(logs: DailyActivityLog[]): DailyActivityStats | null {
-  const withData = logs.filter(
-    (log) =>
-      log.steps != null ||
-      log.activeCalories != null ||
-      log.activeMinutes != null
-  );
+  const withData = logs.filter(hasActivityMetrics);
 
   if (withData.length === 0) {
     return null;
@@ -92,14 +101,58 @@ function computeStats(logs: DailyActivityLog[]): DailyActivityStats | null {
     (sum, log) => sum + (log.activeMinutes ?? 0),
     0
   );
+  const azmLogs = withData.filter((log) => log.activeZoneMinutes != null);
+  const sedentaryLogs = withData.filter((log) => log.sedentaryMinutes != null);
+  const totalCalorieLogs = withData.filter((log) => log.totalCalories != null);
   const count = withData.length;
+
+  const highSedentaryDays = withData.filter(
+    (log) =>
+      log.sedentaryMinutes != null &&
+      log.sedentaryMinutes >= SEDENTARY_HIGH_MINUTES
+  ).length;
+
+  const lowAzmHighStepsDays = withData.filter(
+    (log) =>
+      log.steps != null &&
+      log.steps >= STEPS_HIGH_THRESHOLD &&
+      log.activeZoneMinutes != null &&
+      log.activeZoneMinutes < AZM_LOW_THRESHOLD
+  ).length;
 
   return {
     avgSteps: Math.round(sumSteps / count),
     avgActiveCalories: Math.round(sumCalories / count),
     avgActiveMinutes: Math.round(sumMinutes / count),
+    avgActiveZoneMinutes:
+      azmLogs.length > 0
+        ? Math.round(
+            azmLogs.reduce((sum, log) => sum + (log.activeZoneMinutes ?? 0), 0) /
+              azmLogs.length
+          )
+        : null,
+    avgSedentaryMinutes:
+      sedentaryLogs.length > 0
+        ? Math.round(
+            sedentaryLogs.reduce(
+              (sum, log) => sum + (log.sedentaryMinutes ?? 0),
+              0
+            ) / sedentaryLogs.length
+          )
+        : null,
+    avgTotalCalories:
+      totalCalorieLogs.length > 0
+        ? Math.round(
+            totalCalorieLogs.reduce(
+              (sum, log) => sum + (log.totalCalories ?? 0),
+              0
+            ) / totalCalorieLogs.length
+          )
+        : null,
     totalSteps: sumSteps,
     daysWithData: count,
+    highSedentaryDays,
+    lowAzmHighStepsDays,
   };
 }
 
@@ -107,7 +160,18 @@ function hasActivityMetrics(log: DailyActivityLog): boolean {
   return (
     log.steps != null ||
     log.activeCalories != null ||
-    log.activeMinutes != null
+    log.activeMinutes != null ||
+    log.activeZoneMinutes != null ||
+    log.sedentaryMinutes != null ||
+    log.totalCalories != null
+  );
+}
+
+function hasExtendedActivityMetrics(log: DailyActivityLog): boolean {
+  return (
+    log.activeZoneMinutes != null ||
+    log.sedentaryMinutes != null ||
+    log.totalCalories != null
   );
 }
 
@@ -160,6 +224,7 @@ function emptyActivityContext(
     today: null,
     activityDayLabel: "Today",
     hasActivityData: false,
+    hasExtendedActivityData: false,
     series: [],
     weekStats: null,
     ...overrides,
@@ -188,7 +253,9 @@ export async function getActivityContext(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("daily_activity_logs")
-    .select("activity_date, steps, active_calories, active_minutes, source")
+    .select(
+      "activity_date, steps, active_calories, active_minutes, active_zone_minutes, sedentary_minutes, total_calories, source"
+    )
     .eq("user_id", userId)
     .gte("activity_date", chartStart)
     .lte("activity_date", chartEnd)
@@ -206,6 +273,7 @@ export async function getActivityContext(
 
   const logs = (data ?? []).map(mapActivityRow);
   const hasActivityData = logs.some(hasActivityMetrics);
+  const hasExtendedActivityData = logs.some(hasExtendedActivityMetrics);
   const displayDay = resolveDisplayDay(logs, utcToday);
   const series = fillDateSeries(logs, chartStart, utcToday);
   const weekLogs = series.filter((log) => log.activityDate >= weekStart);
@@ -222,6 +290,7 @@ export async function getActivityContext(
       utcToday
     ),
     hasActivityData,
+    hasExtendedActivityData,
     series,
     weekStats: computeStats(weekLogs),
   };

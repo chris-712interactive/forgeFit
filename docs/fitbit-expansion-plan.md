@@ -1,30 +1,33 @@
 # Fitbit / Google Health Expansion Plan
 
 > Roadmap for turning device sync into a well-rounded recovery and lifestyle signal layer.  
-> **Phase 1 (sleep)** and **Phase 2 (recovery metrics)** are implemented.
+> **Phases 1–3** are implemented.
 
-## Current state (Phases 1–2 — shipped)
+## Current state (Phases 1–3 — shipped)
 
 | Data | Google Health type | OAuth scope | Storage | UI |
 |------|-------------------|-------------|---------|-----|
 | Steps | `steps` dailyRollUp | `activity_and_fitness.readonly` | `daily_activity_logs` | Home, Progress |
 | Active calories | `active-energy-burned` dailyRollUp | same | `daily_activity_logs` | Home, Progress |
 | Active minutes | `active-minutes` dailyRollUp | same | `daily_activity_logs` | Home, Progress |
+| **Active Zone Minutes** | `active-zone-minutes` dailyRollUp | same | `daily_activity_logs` | **Progress, Home** |
+| **Sedentary time** | `sedentary-period` dailyRollUp | same | `daily_activity_logs` | **Progress** |
+| **Total calories** | `total-calories` dailyRollUp | same | `daily_activity_logs` | **Progress** |
 | Sleep duration | `sleep` list (sessions) | `sleep.readonly` | `daily_sleep_logs` | Home, Progress |
 | Sleep stages (deep/REM) | parsed from session summary | `sleep.readonly` | `daily_sleep_logs` | Progress detail |
 | **Resting HR range** | `daily-resting-heart-rate` **list** | **`health_metrics_and_measurements.readonly`** | **`daily_recovery_logs`** | **Progress** |
 | **HRV range** | `daily-heart-rate-variability` **list** | same | `daily_recovery_logs` | **Progress** |
 
 **Sync:** `syncFitbitForUser()` on connect, Profile/Home/Progress visit (6h stale window), daily cron.  
-**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs.
+**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs; **high steps + low AZM**; **sedentary streak + missed sessions**.
 
-**Existing users:** Must **reconnect Fitbit** to grant new scopes (sleep, then health metrics). Activity-only tokens continue to work for steps/calories.
+**Existing users:** Must **reconnect Fitbit** to grant new scopes (sleep, then health metrics). Activity-only tokens continue to work for steps/calories; extended activity fields backfill on next sync (no new scope).
 
 ---
 
 ## Design principles
 
-1. **Daily rollups for activity, session list for sleep** — match Google Health API shapes; avoid inventing aggregation logic the API already provides.
+1. **Daily rollups for activity, session list for sleep, list for daily recovery metrics** — match Google Health API shapes; avoid inventing aggregation logic the API already provides.
 2. **One OAuth connect, multiple scopes** — request only `googlehealth.*` scopes (never mix legacy `fitness.*`).
 3. **Store normalized daily rows** — keep raw vendor complexity in `@forgefit/integrations`; app reads simple tables with RLS.
 4. **Cross-signal insights over siloed charts** — highest value is correlating sleep + training + nutrition, not another dashboard tile.
@@ -36,27 +39,18 @@
 
 Migration: `20260610300000_daily_recovery_logs.sql`
 
-See **Current state** table above. Next: Phase 3.
+See **Current state** table above.
 
 ---
 
-## Phase 3 — Activity depth (zone minutes, sedentary, total calories)
+## Phase 3 — Activity depth (zone minutes, sedentary, total calories) ✅ Shipped
 
-**Goal:** Better “NEAT” and cardio context beyond raw steps.
+Migration: `20260610400000_daily_activity_extended.sql`
 
-| Metric | API | Notes |
-|--------|-----|-------|
-| Active Zone Minutes | `active-zone-minutes` dailyRollUp | Aligns with Fitbit AZM; may replace hand-rolled active-minutes sum |
-| Sedentary time | `sedentary-period` dailyRollUp | 14-day max range per request |
-| Total calories | `total-calories` dailyRollUp | 14-day max; distinct from active calories |
+Extended `daily_activity_logs` with `active_zone_minutes`, `sedentary_minutes`, `total_calories`.  
+**Insights:** Steps high but AZM low; sedentary streak when training pace is behind.
 
-**Storage:** Extend `daily_activity_logs` or add `daily_activity_extended` JSON column to avoid wide table sprawl.  
-**Insights:**
-
-- Sedentary streak + missed sessions  
-- Steps high but AZM low (lots of walking, little cardio)
-
-**Effort:** ~4–6 days.
+Next: Phase 4.
 
 ---
 

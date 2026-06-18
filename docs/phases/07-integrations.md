@@ -18,6 +18,7 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [x] Data export gated to Pro
 - [ ] Withings OAuth + weight sync (Pro+) — code ready; pending vendor approval
 - [x] Fitbit activity sync via Google Health API — steps, active calories, active minutes (Pro+)
+- [x] Fitbit activity depth — AZM, sedentary time, total calories (Pro+)
 - [x] Fitbit sleep sync — duration + stages via Google Health sleep scope (Pro+)
 - [x] Fitbit recovery sync — resting HR + HRV via Google Health metrics scope (Pro+)
 - [ ] Strava workout sync (Pro+) — code ready; launch when prioritized

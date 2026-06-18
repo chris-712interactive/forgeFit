@@ -2,6 +2,7 @@ import { analyticsHistoryCutoff, hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { getSleepContext } from "@/lib/sleep/service";
 import { getRecoveryContext } from "@/lib/recovery/service";
+import { getActivityContext } from "@/lib/activity/service";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -104,7 +105,7 @@ export async function buildProAnalyticsBundle(
   const cutoff = analyticsHistoryCutoff(subscription);
   const cutoffIso = cutoff?.toISOString().slice(0, 10) ?? null;
 
-  const [sessionResult, plan, nutritionLogs, measurements, sleepContext, recoveryContext] =
+  const [sessionResult, plan, nutritionLogs, measurements, sleepContext, recoveryContext, activityContext] =
     await Promise.all([
     getServerSessionRecords(userId, 500),
     getActiveProgram(userId),
@@ -115,6 +116,9 @@ export async function buildProAnalyticsBundle(
       : Promise.resolve(null),
     hasFeature(subscription, "device_integrations")
       ? getRecoveryContext(userId, subscription)
+      : Promise.resolve(null),
+    hasFeature(subscription, "device_integrations")
+      ? getActivityContext(userId, subscription)
       : Promise.resolve(null),
   ]);
 
@@ -137,6 +141,7 @@ export async function buildProAnalyticsBundle(
     nutritionAdherence,
     sleepWeekStats: sleepContext?.weekStats ?? null,
     recoveryWeekStats: recoveryContext?.weekStats ?? null,
+    activityWeekStats: activityContext?.weekStats ?? null,
   });
 
   return {

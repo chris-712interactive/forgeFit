@@ -550,7 +550,9 @@ export async function hasIncompleteActivityLogs(
     .eq("user_id", userId)
     .gte("activity_date", lookbackStart)
     .not("steps", "is", null)
-    .or("active_calories.is.null,active_minutes.is.null")
+    .or(
+      "active_calories.is.null,active_minutes.is.null,active_zone_minutes.is.null,sedentary_minutes.is.null,total_calories.is.null"
+    )
     .limit(1);
 
   if (error) {
@@ -578,7 +580,9 @@ async function resolveFitbitSyncStartDate(
     .eq("user_id", userId)
     .gte("activity_date", lookbackStart)
     .not("steps", "is", null)
-    .or("active_calories.is.null,active_minutes.is.null")
+    .or(
+      "active_calories.is.null,active_minutes.is.null,active_zone_minutes.is.null,sedentary_minutes.is.null,total_calories.is.null"
+    )
     .order("activity_date", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -870,7 +874,10 @@ export async function syncFitbitForUser(
       if (
         summary.steps == null &&
         summary.activeCalories == null &&
-        summary.activeMinutes == null
+        summary.activeMinutes == null &&
+        summary.activeZoneMinutes == null &&
+        summary.sedentaryMinutes == null &&
+        summary.totalCalories == null
       ) {
         continue;
       }
@@ -886,7 +893,10 @@ export async function syncFitbitForUser(
         existing &&
         (existing.steps ?? null) === summary.steps &&
         Number(existing.active_calories ?? null) === summary.activeCalories &&
-        (existing.active_minutes ?? null) === summary.activeMinutes;
+        (existing.active_minutes ?? null) === summary.activeMinutes &&
+        (existing.active_zone_minutes ?? null) === summary.activeZoneMinutes &&
+        (existing.sedentary_minutes ?? null) === summary.sedentaryMinutes &&
+        Number(existing.total_calories ?? null) === summary.totalCalories;
 
       if (unchanged) {
         skipped += 1;
@@ -903,6 +913,9 @@ export async function syncFitbitForUser(
           steps: summary.steps,
           active_calories: summary.activeCalories,
           active_minutes: summary.activeMinutes,
+          active_zone_minutes: summary.activeZoneMinutes,
+          sedentary_minutes: summary.sedentaryMinutes,
+          total_calories: summary.totalCalories,
           source: "fitbit",
           updated_at: new Date().toISOString(),
         },

@@ -57,7 +57,7 @@ export function HomeDailyActivity({ activity }: HomeDailyActivityProps) {
     {
       label: "Steps",
       value: formatMetric(today?.steps ?? null),
-      unit: "today",
+      unit: activity.activityDayLabel.toLowerCase(),
       accent: "text-forge-steel",
     },
     {
@@ -70,12 +70,19 @@ export function HomeDailyActivity({ activity }: HomeDailyActivityProps) {
       unit: "burned",
       accent: "text-forge-ember",
     },
-    {
-      label: "Active min",
-      value: formatMetric(today?.activeMinutes ?? null),
-      unit: "today",
-      accent: "text-forge-gold",
-    },
+    today?.activeZoneMinutes != null
+      ? {
+          label: "AZM",
+          value: formatMetric(today.activeZoneMinutes),
+          unit: activity.activityDayLabel.toLowerCase(),
+          accent: "text-forge-gold",
+        }
+      : {
+          label: "Active min",
+          value: formatMetric(today?.activeMinutes ?? null),
+          unit: activity.activityDayLabel.toLowerCase(),
+          accent: "text-forge-gold",
+        },
   ];
 
   return (

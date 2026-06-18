@@ -171,7 +171,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
 
           <ProFeatureSection
             title="Daily activity"
-            description="Steps and active calories from Fitbit."
+            description="Steps, zone minutes, and sedentary time from Fitbit."
             unlocked={hasFeature(subscription, "device_integrations")}
             suggestedTier="pro_plus"
           >

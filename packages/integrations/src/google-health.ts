@@ -44,6 +44,9 @@ export interface DailyActivitySummary {
   steps: number | null;
   activeCalories: number | null;
   activeMinutes: number | null;
+  activeZoneMinutes: number | null;
+  sedentaryMinutes: number | null;
+  totalCalories: number | null;
 }
 
 export interface DailySleepSummary {
@@ -92,11 +95,28 @@ interface ActiveMinutesRollupValue {
   }>;
 }
 
+interface ActiveZoneMinutesRollupValue {
+  sumInCardioHeartZone?: string | number;
+  sumInPeakHeartZone?: string | number;
+  sumInFatBurnHeartZone?: string | number;
+}
+
+interface SedentaryPeriodRollupValue {
+  durationSum?: string;
+}
+
+interface TotalCaloriesRollupValue {
+  kcalSum?: string | number;
+}
+
 interface DailyRollupPoint {
   civilStartTime?: CivilDateTime;
   steps?: { countSum?: string | number };
   activeEnergyBurned?: ActiveEnergyBurnedRollupValue;
   activeMinutes?: ActiveMinutesRollupValue;
+  activeZoneMinutes?: ActiveZoneMinutesRollupValue;
+  sedentaryPeriod?: SedentaryPeriodRollupValue;
+  totalCalories?: TotalCaloriesRollupValue;
 }
 
 function parseCount(value: string | number | undefined): number | null {
@@ -134,6 +154,38 @@ function parseActiveMinutesRollup(
   return hasValue ? sum : null;
 }
 
+function parseDurationToMinutes(value: string | undefined): number | null {
+  if (!value) return null;
+  const match = /^([\d.]+)s$/.exec(value.trim());
+  if (!match) return null;
+  const seconds = Number(match[1]);
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  return Math.round(seconds / 60);
+}
+
+function parseActiveZoneMinutesRollup(
+  rollup: ActiveZoneMinutesRollupValue | undefined
+): number | null {
+  if (!rollup) return null;
+
+  const zones = [
+    parseCount(rollup.sumInFatBurnHeartZone),
+    parseCount(rollup.sumInCardioHeartZone),
+    parseCount(rollup.sumInPeakHeartZone),
+  ];
+
+  let sum = 0;
+  let hasValue = false;
+  for (const value of zones) {
+    if (value != null) {
+      sum += value;
+      hasValue = true;
+    }
+  }
+
+  return hasValue ? sum : null;
+}
+
 function civilStartToIso(civilStartTime: CivilDateTime | undefined): string | null {
   if (!civilStartTime?.date) return null;
   const { year, month, day } = civilStartTime.date;
@@ -155,12 +207,20 @@ function isoDateToCivilEndExclusive(endDate: string): CivilDateTime {
 }
 
 const DAILY_ROLLUP_MAX_DAYS: Record<
-  "steps" | "active-energy-burned" | "active-minutes",
+  | "steps"
+  | "active-energy-burned"
+  | "active-minutes"
+  | "active-zone-minutes"
+  | "sedentary-period"
+  | "total-calories",
   number
 > = {
   steps: 90,
   "active-energy-burned": 90,
   "active-minutes": 14,
+  "active-zone-minutes": 90,
+  "sedentary-period": 90,
+  "total-calories": 14,
 };
 
 type DailyRollupDataType = keyof typeof DAILY_ROLLUP_MAX_DAYS;
@@ -367,7 +427,14 @@ export async function fetchDailyActivitySummaries(params: {
   startDate: string;
   endDate: string;
 }): Promise<DailyActivitySummary[]> {
-  const [stepsRollups, energyRollups, minutesRollups] = await Promise.all([
+  const [
+    stepsRollups,
+    energyRollups,
+    minutesRollups,
+    azmRollups,
+    sedentaryRollups,
+    totalCaloriesRollups,
+  ] = await Promise.all([
     fetchDailyRollupChunked(
       params.accessToken,
       "steps",
@@ -386,6 +453,24 @@ export async function fetchDailyActivitySummaries(params: {
       params.startDate,
       params.endDate
     ),
+    fetchDailyRollupChunked(
+      params.accessToken,
+      "active-zone-minutes",
+      params.startDate,
+      params.endDate
+    ),
+    fetchDailyRollupChunked(
+      params.accessToken,
+      "sedentary-period",
+      params.startDate,
+      params.endDate
+    ),
+    fetchDailyRollupChunked(
+      params.accessToken,
+      "total-calories",
+      params.startDate,
+      params.endDate
+    ),
   ]);
 
   const byDate = new Map<string, DailyActivitySummary>();
@@ -398,6 +483,9 @@ export async function fetchDailyActivitySummaries(params: {
       steps: null,
       activeCalories: null,
       activeMinutes: null,
+      activeZoneMinutes: null,
+      sedentaryMinutes: null,
+      totalCalories: null,
     };
     byDate.set(date, created);
     return created;
@@ -421,6 +509,28 @@ export async function fetchDailyActivitySummaries(params: {
     const date = civilStartToIso(point.civilStartTime);
     if (!date) continue;
     ensure(date).activeMinutes = parseActiveMinutesRollup(point.activeMinutes);
+  }
+
+  for (const point of azmRollups) {
+    const date = civilStartToIso(point.civilStartTime);
+    if (!date) continue;
+    ensure(date).activeZoneMinutes = parseActiveZoneMinutesRollup(
+      point.activeZoneMinutes
+    );
+  }
+
+  for (const point of sedentaryRollups) {
+    const date = civilStartToIso(point.civilStartTime);
+    if (!date) continue;
+    ensure(date).sedentaryMinutes = parseDurationToMinutes(
+      point.sedentaryPeriod?.durationSum
+    );
+  }
+
+  for (const point of totalCaloriesRollups) {
+    const date = civilStartToIso(point.civilStartTime);
+    if (!date) continue;
+    ensure(date).totalCalories = parseEnergy(point.totalCalories?.kcalSum);
   }
 
   return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));

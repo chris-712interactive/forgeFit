@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import type { DailySleepStats } from "@/lib/sleep/types";
 import type { DailyRecoveryStats } from "@/lib/recovery/types";
+import type { DailyActivityStats } from "@/lib/activity/types";
 import { SLEEP_TARGET_MIN_MINUTES } from "@/lib/sleep/types";
 
 function weightChangeKg(
@@ -68,6 +69,7 @@ export function buildRuleInsights(input: {
   nutritionAdherence: NutritionAdherenceSummary | null;
   sleepWeekStats: DailySleepStats | null;
   recoveryWeekStats: DailyRecoveryStats | null;
+  activityWeekStats: DailyActivityStats | null;
 }): RuleInsight[] {
   const insights: RuleInsight[] = [];
 
@@ -200,6 +202,35 @@ export function buildRuleInsights(input: {
       body: `${sleep.shortNights} of the last ${sleep.nightsWithData} logged nights were under ${SLEEP_TARGET_MIN_MINUTES / 60} hours${
         avgHours ? ` (7-day avg ${avgHours}h)` : ""
       }. Recovery rules target 7–9 hours — short sleep often shows up as missed sessions or stalled progress.`,
+    });
+  }
+
+  const activity = input.activityWeekStats;
+  if (
+    activity &&
+    activity.daysWithData >= 3 &&
+    activity.lowAzmHighStepsDays >= 3
+  ) {
+    insights.push({
+      id: "steps_high_azm_low",
+      tone: "nudge",
+      title: "Lots of steps, little cardio intensity",
+      body: `${activity.lowAzmHighStepsDays} of the last ${activity.daysWithData} logged days had high step counts but low Active Zone Minutes. Walking adds NEAT; a brisk walk or short cardio block can raise heart-rate zone time without extra gym sessions.`,
+    });
+  }
+
+  if (
+    activity &&
+    activity.daysWithData >= 3 &&
+    activity.highSedentaryDays >= 3 &&
+    planned > 0 &&
+    completed < Math.max(1, Math.floor(planned / 2))
+  ) {
+    insights.push({
+      id: "sedentary_streak",
+      tone: "nudge",
+      title: "Sedentary time is stacking up",
+      body: `${activity.highSedentaryDays} of the last ${activity.daysWithData} logged days were heavily sedentary while training pace is behind plan. Short movement breaks and stacking sessions on less desk-heavy days can help.`,
     });
   }
 
