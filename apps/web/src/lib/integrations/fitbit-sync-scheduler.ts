@@ -12,6 +12,7 @@ import {
   syncFitbitForUser,
   type FitbitSyncResult,
 } from "./service";
+import { hasMissingWorkoutDeviceMetrics } from "@/lib/workouts/device-metrics-service";
 
 /** Min time between background syncs on Home / Profile visit. */
 export const FITBIT_VISIT_SYNC_STALE_MS = 6 * 60 * 60 * 1000;
@@ -74,7 +75,8 @@ export async function maybeSyncFitbitForUser(
     const needsBackfill =
       (await hasIncompleteActivityLogs(userId)) ||
       (await hasMissingSleepLogs(userId)) ||
-      (await hasMissingRecoveryLogs(userId));
+      (await hasMissingRecoveryLogs(userId)) ||
+      (await hasMissingWorkoutDeviceMetrics(userId));
 
     if (!needsBackfill) {
       return { synced: false, skipped: true, reason: "fresh" };

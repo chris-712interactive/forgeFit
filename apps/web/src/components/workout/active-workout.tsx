@@ -18,6 +18,8 @@ import {
 import type { ExperienceLevel } from "@/lib/types/profile";
 import { publishWorkoutPrWin } from "@/app/actions/gamification";
 import { PreWorkoutHypeBanner } from "@/components/coaching/pre-workout-hype-banner";
+import { WorkoutReadinessStrip } from "@/components/workout/workout-readiness-strip";
+import type { WorkoutReadinessContext } from "@/lib/workouts/device-metrics-types";
 import { PrCelebrationModal } from "@/components/coaching/pr-celebration-modal";
 import {
   detectSetPr,
@@ -58,6 +60,7 @@ interface ActiveWorkoutProps {
   clientId: string;
   experienceLevel?: ExperienceLevel;
   coaching?: WorkoutCoachingFeatures | null;
+  readiness?: WorkoutReadinessContext | null;
   onBack?: () => void;
   onFinished?: () => void | Promise<void>;
 }
@@ -66,6 +69,7 @@ export function ActiveWorkout({
   clientId,
   experienceLevel = "beginner",
   coaching = null,
+  readiness = null,
   onBack,
   onFinished,
 }: ActiveWorkoutProps) {
@@ -661,6 +665,12 @@ export function ActiveWorkout({
         completedSets={completedCount}
         totalSets={totalCount}
       />
+
+      {readiness && currentStepIndex === 0 && (
+        <div className="mb-4">
+          <WorkoutReadinessStrip readiness={readiness} />
+        </div>
+      )}
 
       {preWorkoutHype && currentStepIndex === 0 && (
         <div className="mb-4">

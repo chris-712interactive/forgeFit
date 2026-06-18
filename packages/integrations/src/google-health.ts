@@ -927,3 +927,190 @@ export async function fetchDailyRecoverySummaries(params: {
     )
     .sort((a, b) => a.date.localeCompare(b.date));
 }
+
+export interface ExerciseHeartRateZoneDurations {
+  lightSeconds: number | null;
+  fatBurnSeconds: number | null;
+  cardioSeconds: number | null;
+  peakSeconds: number | null;
+}
+
+export interface ExerciseSessionSummary {
+  /** Google Health data point resource name or synthetic id. */
+  externalId: string;
+  startedAt: string;
+  completedAt: string;
+  exerciseType: string | null;
+  displayName: string | null;
+  durationSeconds: number | null;
+  avgHeartRateBpm: number | null;
+  activeZoneMinutes: number | null;
+  caloriesKcal: number | null;
+  zoneDurations: ExerciseHeartRateZoneDurations;
+  rawSummary: Record<string, unknown>;
+}
+
+interface ExerciseMetricsSummary {
+  averageHeartRateBeatsPerMinute?: string | number;
+  activeZoneMinutes?: string | number;
+  caloriesKcal?: string | number;
+  heartRateZoneDurations?: {
+    lightTime?: string;
+    fatBurnTime?: string;
+    cardioTime?: string;
+    peakTime?: string;
+  };
+}
+
+interface ExerciseSession {
+  interval?: {
+    startTime?: string;
+    endTime?: string;
+  };
+  exerciseType?: string;
+  displayName?: string;
+  activeDuration?: string;
+  metricsSummary?: ExerciseMetricsSummary;
+}
+
+interface ExerciseDataPoint {
+  name?: string;
+  exercise?: ExerciseSession;
+}
+
+function parseDurationSeconds(value: string | undefined): number | null {
+  if (!value) return null;
+  const match = /^([\d.]+)s$/.exec(value.trim());
+  if (!match) return null;
+  const seconds = Number(match[1]);
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  return Math.round(seconds);
+}
+
+function parseHeartRateZoneDurations(
+  zones: ExerciseMetricsSummary["heartRateZoneDurations"]
+): ExerciseHeartRateZoneDurations {
+  return {
+    lightSeconds: parseDurationSeconds(zones?.lightTime),
+    fatBurnSeconds: parseDurationSeconds(zones?.fatBurnTime),
+    cardioSeconds: parseDurationSeconds(zones?.cardioTime),
+    peakSeconds: parseDurationSeconds(zones?.peakTime),
+  };
+}
+
+function exerciseExternalId(name: string | undefined, session: ExerciseSession): string {
+  if (name) {
+    const segments = name.split("/");
+    const last = segments[segments.length - 1];
+    if (last) return last;
+  }
+  const start = session.interval?.startTime ?? "unknown";
+  const type = session.exerciseType ?? "exercise";
+  return `${type}-${start}`;
+}
+
+/** Parse a Google Health exercise list data point into a normalized session summary. */
+export function parseExerciseDataPoint(point: ExerciseDataPoint): ExerciseSessionSummary | null {
+  const session = point.exercise;
+  if (!session?.interval?.startTime || !session.interval?.endTime) {
+    return null;
+  }
+
+  const summary = session.metricsSummary;
+  const startedAt = session.interval.startTime;
+  const completedAt = session.interval.endTime;
+
+  let durationSeconds = parseDurationSeconds(session.activeDuration);
+  if (durationSeconds == null) {
+    const startMs = Date.parse(startedAt);
+    const endMs = Date.parse(completedAt);
+    if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs) {
+      durationSeconds = Math.round((endMs - startMs) / 1000);
+    }
+  }
+
+  return {
+    externalId: exerciseExternalId(point.name, session),
+    startedAt,
+    completedAt,
+    exerciseType: session.exerciseType ?? null,
+    displayName: session.displayName ?? null,
+    durationSeconds,
+    avgHeartRateBpm: parseCount(summary?.averageHeartRateBeatsPerMinute),
+    activeZoneMinutes: parseCount(summary?.activeZoneMinutes),
+    caloriesKcal: parseEnergy(summary?.caloriesKcal),
+    zoneDurations: parseHeartRateZoneDurations(summary?.heartRateZoneDurations),
+    rawSummary: {
+      exerciseType: session.exerciseType,
+      displayName: session.displayName,
+      metricsSummary: summary,
+    },
+  };
+}
+
+export function exerciseListFilter(startDate: string, endDate: string): string {
+  const endExclusive = addDaysIso(endDate, 1);
+  const endUtcStart = `${startDate}T00:00:00Z`;
+  const endUtcExclusive = `${endExclusive}T00:00:00Z`;
+  return `exercise.interval.end_time >= "${endUtcStart}" AND exercise.interval.end_time < "${endUtcExclusive}"`;
+}
+
+async function fetchExerciseDataPointsPage(
+  accessToken: string,
+  startDate: string,
+  endDate: string,
+  pageToken?: string
+): Promise<{ sessions: ExerciseSessionSummary[]; nextPageToken?: string }> {
+  const filter = exerciseListFilter(startDate, endDate);
+  const params = new URLSearchParams({
+    filter,
+    pageSize: "25",
+  });
+  if (pageToken) {
+    params.set("pageToken", pageToken);
+  }
+
+  const response = await googleHealthFetch<{
+    dataPoints?: ExerciseDataPoint[];
+    nextPageToken?: string;
+  }>(
+    accessToken,
+    `/users/me/dataTypes/exercise/dataPoints?${params.toString()}`,
+    undefined,
+    `Google Health exercise (${startDate} to ${endDate})`
+  );
+
+  const sessions = (response.dataPoints ?? [])
+    .map((point) => parseExerciseDataPoint(point))
+    .filter((session): session is ExerciseSessionSummary => session != null);
+
+  return {
+    sessions,
+    nextPageToken: response.nextPageToken,
+  };
+}
+
+/** Minimum lookback when syncing exercise sessions for workout correlation. */
+export const EXERCISE_SYNC_LOOKBACK_DAYS = 14;
+
+export async function fetchExerciseSessions(params: {
+  accessToken: string;
+  startDate: string;
+  endDate: string;
+}): Promise<ExerciseSessionSummary[]> {
+  const sessions: ExerciseSessionSummary[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const page = await fetchExerciseDataPointsPage(
+      params.accessToken,
+      params.startDate,
+      params.endDate,
+      pageToken
+    );
+    sessions.push(...page.sessions);
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+
+  return sessions.sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+}

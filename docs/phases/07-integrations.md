@@ -21,6 +21,7 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [x] Fitbit activity depth — AZM, sedentary time, total calories (Pro+)
 - [x] Fitbit sleep sync — duration + stages via Google Health sleep scope (Pro+)
 - [x] Fitbit recovery sync — resting HR + HRV via Google Health metrics scope (Pro+)
+- [x] Fitbit workout correlation — exercise sessions matched to logged workouts; intensity recap + readiness (Pro+)
 - [ ] Strava workout sync (Pro+) — code ready; launch when prioritized
 - [x] Restaurant quick-log — curated US chains + saved meals (Pro+, $0 API)
 - [ ] Full restaurant menu API (deferred — evaluate when Pro+ MAU supports ~$6k/yr vendor)

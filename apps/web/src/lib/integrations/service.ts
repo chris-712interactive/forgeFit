@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { IntegrationProvider } from "@forgefit/integrations";
 import {
+  addDaysIso,
   exchangeGoogleHealthAuthorizationCode,
   exchangeStravaAuthorizationCode,
   exchangeWithingsAuthorizationCode,
@@ -8,6 +9,8 @@ import {
   fetchDailyActivitySummaries,
   fetchDailyRecoverySummaries,
   fetchDailySleepSummaries,
+  fetchExerciseSessions,
+  EXERCISE_SYNC_LOOKBACK_DAYS,
   fetchGoogleHealthIdentity,
   integrationHasRecoveryScope,
   integrationHasSleepScope,
@@ -134,7 +137,7 @@ export function buildIntegrationsHubView(
   }));
 }
 
-async function getIntegrationRow(
+export async function getIntegrationRow(
   userId: string,
   provider: IntegrationProvider
 ): Promise<UserIntegrationRow | null> {
@@ -478,7 +481,7 @@ export async function completeFitbitOAuth(params: {
   }
 }
 
-async function getValidFitbitAccessToken(
+export async function getValidFitbitAccessToken(
   row: UserIntegrationRow
 ): Promise<string> {
   const expiresAt = row.token_expires_at
@@ -607,6 +610,8 @@ export interface FitbitSyncResult {
   recoveryImported: number;
   recoverySkipped: number;
   recoveryLatestDate: string | null;
+  exerciseCorrelated: number;
+  exerciseUnmatchedCardio: number;
 }
 
 async function syncSleepLogsForUser(params: {
@@ -984,7 +989,35 @@ export async function syncFitbitForUser(
       }
     }
 
-    const partialSyncError = sleepSyncError ?? recoverySyncError;
+    let exerciseCorrelated = 0;
+    let exerciseUnmatchedCardio = 0;
+    let exerciseSyncError: string | null = null;
+
+    try {
+      const exerciseStart = addDaysIso(endDate, -(EXERCISE_SYNC_LOOKBACK_DAYS - 1));
+      const exercises = await fetchExerciseSessions({
+        accessToken,
+        startDate: exerciseStart,
+        endDate,
+      });
+      const { correlateWorkoutSessionsForUser } = await import(
+        "@/lib/workouts/device-metrics-service"
+      );
+      const correlateResult = await correlateWorkoutSessionsForUser(userId, {
+        lookbackDays: EXERCISE_SYNC_LOOKBACK_DAYS,
+        exercises,
+      });
+      exerciseCorrelated = correlateResult.correlated;
+      exerciseUnmatchedCardio = correlateResult.unmatchedCardio;
+    } catch (exerciseError) {
+      exerciseSyncError =
+        exerciseError instanceof Error
+          ? exerciseError.message
+          : "Exercise sync failed.";
+    }
+
+    const partialSyncError =
+      sleepSyncError ?? recoverySyncError ?? exerciseSyncError;
 
     const now = new Date().toISOString();
     await admin
@@ -1007,6 +1040,8 @@ export async function syncFitbitForUser(
       recoveryImported,
       recoverySkipped,
       recoveryLatestDate,
+      exerciseCorrelated,
+      exerciseUnmatchedCardio,
     };
   } catch (error) {
     const message =

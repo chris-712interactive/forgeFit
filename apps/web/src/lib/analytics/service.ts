@@ -11,7 +11,11 @@ import { buildPrHistory } from "./pr-history";
 import { buildRuleInsights } from "./insights";
 import { buildWeeklyScorecard } from "./scorecard";
 import { buildStrengthSeries } from "./strength";
-import { computeWeeklyWorkStats } from "@/lib/home/weekly-stats";
+import { computeWeeklyWorkStats, getWeekBounds } from "@/lib/home/weekly-stats";
+import {
+  getWeeklyWorkoutDeviceMetrics,
+  summarizeSessionIntensity,
+} from "@/lib/workouts/device-metrics-service";
 import { buildMuscleVolumeSlices, buildWeeklyVolumeTrend } from "./volume";
 import type { ProAnalyticsBundle } from "./types";
 import type { ActivityContext } from "@/lib/activity/types";
@@ -145,6 +149,17 @@ export async function buildProAnalyticsBundle(
     plan?.nutrition ?? null
   );
 
+  const weeklyStats = computeWeeklyWorkStats(sessions, plan);
+  const { start, end } = getWeekBounds();
+  const weeklyDeviceMetrics = hasDeviceIntegrations
+    ? await getWeeklyWorkoutDeviceMetrics(
+        userId,
+        start.toISOString().slice(0, 10),
+        end.toISOString().slice(0, 10)
+      )
+    : [];
+  const sessionIntensity = summarizeSessionIntensity(weeklyDeviceMetrics);
+
   const insights = buildRuleInsights({
     measurements,
     sessions,
@@ -155,9 +170,9 @@ export async function buildProAnalyticsBundle(
     sleepWeekStats: sleepContext?.weekStats ?? null,
     recoveryWeekStats: recoveryContext?.weekStats ?? null,
     activityWeekStats: activityContext?.weekStats ?? null,
+    sessionIntensity,
   });
 
-  const weeklyStats = computeWeeklyWorkStats(sessions, plan);
   const scorecard = buildWeeklyScorecard({
     plan,
     weeklyStats,
@@ -165,6 +180,7 @@ export async function buildProAnalyticsBundle(
     sleepWeekStats: sleepContext?.weekStats ?? null,
     recoveryWeekStats: recoveryContext?.weekStats ?? null,
     activityWeekStats: activityContext?.weekStats ?? null,
+    sessionIntensity,
   });
 
   return {

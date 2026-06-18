@@ -1,9 +1,9 @@
 # Fitbit / Google Health Expansion Plan
 
 > Roadmap for turning device sync into a well-rounded recovery and lifestyle signal layer.  
-> **Phases 1–4** are implemented.
+> **Phases 1–5** are implemented.
 
-## Current state (Phases 1–4 — shipped)
+## Current state (Phases 1–5 — shipped)
 
 | Data | Google Health type | OAuth scope | Storage | UI |
 |------|-------------------|-------------|---------|-----|
@@ -17,18 +17,19 @@
 | Sleep stages (deep/REM) | parsed from session summary | `sleep.readonly` | `daily_sleep_logs` | Progress detail |
 | **Resting HR range** | `daily-resting-heart-rate` **list** | **`health_metrics_and_measurements.readonly`** | **`daily_recovery_logs`** | **Progress** |
 | **HRV range** | `daily-heart-rate-variability` **list** | same | `daily_recovery_logs` | **Progress** |
+| **Exercise sessions** | `exercise` **list** | `activity_and_fitness.readonly` | **`workout_device_metrics`** + `external_activity_logs` | **Workout recap, Active workout** |
 
-**Sync:** `syncFitbitForUser()` on connect, Profile/Home/Progress visit (6h stale window), daily cron.  
-**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs; high steps + low AZM; sedentary streak + missed sessions.  
-**Scorecard (Pro):** Weekly cross-pillar strip on Home + Progress — Training · Protein · Sleep · Recovery · Activity with evidence citations.
+**Sync:** `syncFitbitForUser()` on connect, Profile/Home/Progress visit (6h stale window), daily cron, post-workout `/api/sync` via `after()`.  
+**Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs; high steps + low AZM; sedentary streak + missed sessions; **device vs logged RIR mismatch; repeated low-intensity gym sessions**.  
+**Scorecard (Pro):** Weekly cross-pillar strip on Home + Progress — Training pillar includes **on-target intensity ratio** when device data exists.
 
-**Existing users:** Must **reconnect Fitbit** to grant new scopes (sleep, then health metrics). Activity-only tokens continue to work for steps/calories; extended activity fields backfill on next sync (no new scope).
+**Existing users:** Must **reconnect Fitbit** to grant new scopes (sleep, then health metrics). Activity-only tokens continue to work for steps/calories and **exercise session correlation** (same activity scope).
 
 ---
 
 ## Design principles
 
-1. **Daily rollups for activity, session list for sleep, list for daily recovery metrics** — match Google Health API shapes; avoid inventing aggregation logic the API already provides.
+1. **Daily rollups for activity, session list for sleep/recovery/exercise** — match Google Health API shapes; avoid inventing aggregation logic the API already provides.
 2. **One OAuth connect, multiple scopes** — request only `googlehealth.*` scopes (never mix legacy `fitness.*`).
 3. **Store normalized daily rows** — keep raw vendor complexity in `@forgefit/integrations`; app reads simple tables with RLS.
 4. **Cross-signal insights over siloed charts** — highest value is correlating sleep + training + nutrition, not another dashboard tile.
@@ -40,69 +41,70 @@
 
 Migration: `20260610300000_daily_recovery_logs.sql`
 
-See **Current state** table above.
-
 ---
 
 ## Phase 3 — Activity depth (zone minutes, sedentary, total calories) ✅ Shipped
 
 Migration: `20260610400000_daily_activity_extended.sql`
 
-Extended `daily_activity_logs` with `active_zone_minutes`, `sedentary_minutes`, `total_calories`.  
-**Insights:** Steps high but AZM low; sedentary streak when training pace is behind.
-
 ---
 
 ## Phase 4 — Cross-pillar “problem area” engine ✅ Shipped
 
-`buildWeeklyScorecard()` in `apps/web/src/lib/analytics/scorecard.ts` — composite Training · Protein · Sleep · Recovery · Activity pillars with `good` / `watch` / `neutral` status, headline (e.g. “Recovery debt”), and evidence-kb citations.
-
-**UI:** Home compact strip (Pro `rule_based_insights`); Progress → Trends full scorecard.
-
-Next: Phase 5.
+`buildWeeklyScorecard()` — composite Training · Protein · Sleep · Recovery · Activity pillars.
 
 ---
 
-## Phase 5 — Strava + weight (Withings) unification
+## Phase 5 — Workout–device correlation (optimal zone) ✅ Shipped
 
-**Goal:** Single “body of work” timeline: lifts (ForgeRep), cardio (Strava), weight (Withings), lifestyle (Fitbit).
+Migration: `20260610500000_workout_device_metrics.sql`
+
+**Goal:** Match ForgeRep `workout_sessions` to Fitbit `exercise` sessions by time overlap; assess intensity vs goal (RIR + heart rate + AZM).
+
+| Component | Location |
+|-----------|----------|
+| Exercise fetch | `fetchExerciseSessions()` in `@forgefit/integrations` |
+| Correlation | `device-correlation.ts`, `device-metrics-service.ts` |
+| Goal-aware verdicts | `intensity-assessment.ts` + evidence-kb session intensity rules |
+| Triggers | `POST /api/sync` (`after()`), `syncFitbitForUser()`, backfill in `fitbit-sync-scheduler` |
+| UI | Pre-workout readiness strip; post-workout intensity card on recap |
+
+Unmatched Fitbit cardio upserts to `external_activity_logs` with `source = google_health`.
+
+Next: Phase 6.
+
+---
+
+## Phase 6 — Strava + weight (Withings) unification
+
+**Goal:** Single “body of work” timeline: lifts (ForgeRep), cardio (Strava + Google Health), weight (Withings), lifestyle (Fitbit daily).
 
 | Source | Status | Data |
 |--------|--------|------|
-| Fitbit / Google Health | Live | Activity + sleep |
+| Fitbit / Google Health | Live | Activity + sleep + per-workout intensity |
 | Withings | Code ready | Weight → `body_measurements` |
 | Strava | Code ready | Cardio → `external_activity_logs` |
 
-**UI:** Progress Training tab merges Strava cardio with logged sessions; weight chart auto-updates from Withings.  
-**Insights:** Cardio volume vs leg day recovery; weight trend vs nutrition adherence.
-
-**Effort:** Vendor unblock + ~3 days integration polish each.
-
 ---
 
-## Phase 6 — Optional advanced signals
-
-Lower priority until MAU justifies complexity:
+## Phase 7 — Optional advanced signals
 
 | Signal | API scope | Use case |
 |--------|-----------|----------|
+| Live HR during workout | `exercise` + polling | In-session zone strip (deferred) |
 | VO2 Max | `activity_and_fitness` | Cardio fitness trend |
 | Time in HR zones | dailyRollUp | Intensity distribution |
-| Sleep temperature derivations | `health_metrics` | Illness / overtraining hints |
 | Body fat (Fitbit scale) | `health_metrics` | Composition trend |
 
 ---
 
 ## OAuth scope checklist
 
-Add scopes incrementally; each new scope requires **reconnect** for existing users.
-
 | Scope | Phase |
 |-------|-------|
-| `googlehealth.activity_and_fitness.readonly` | ✅ Live |
+| `googlehealth.activity_and_fitness.readonly` | ✅ Live (includes exercise list) |
 | `googlehealth.sleep.readonly` | ✅ Phase 1 |
-| `googlehealth.health_metrics_and_measurements.readonly` | Phase 2–3 |
-| `googlehealth.nutrition.readonly` | Future (if importing Fitbit food log) |
+| `googlehealth.health_metrics_and_measurements.readonly` | ✅ Phase 2–3 |
 
 **Never** pass `include_granted_scopes=true` on authorize URL.
 
@@ -110,28 +112,18 @@ Add scopes incrementally; each new scope requires **reconnect** for existing use
 
 ## Ops checklist (each phase)
 
-- [ ] Supabase migration + RLS `select` for own rows  
-- [ ] `@forgefit/integrations` fetch + unit-test response parsing against Google REST field names  
-- [ ] Extend `syncFitbitForUser` with isolated try/catch per data family  
-- [ ] Backfill trigger in `fitbit-sync-scheduler` when new columns empty  
-- [ ] Update Profile connect disclosure + privacy copy  
-- [ ] Progress UI + at least one Pro insight rule  
-- [ ] Document in `docs/phases/07-integrations.md`
-
----
-
-## Success metrics
-
-- **Adoption:** % of Pro+ Fitbit users with sleep data after reconnect  
-- **Engagement:** Home/Progress views with device data populated  
-- **Insight CTR:** Users acting on sleep/recovery nudges (future: track dismiss/snooze)  
-- **Support:** Reduction in “data not showing” tickets (parser + scope docs)
+- [x] Supabase migration + RLS `select` for own rows  
+- [x] `@forgefit/integrations` fetch + unit-test response parsing  
+- [x] Extend `syncFitbitForUser` with isolated try/catch per data family  
+- [x] Backfill trigger in `fitbit-sync-scheduler` when metrics missing  
+- [x] Update Profile connect disclosure  
+- [x] Workout UI + Pro insight rules  
+- [x] Document in `docs/phases/07-integrations.md`
 
 ---
 
 ## References
 
 - [Google Health data types](https://developers.google.com/health/data-types)  
-- [dailyRollUp](https://developers.google.com/health/reference/rest/v4/users.dataTypes.dataPoints/dailyRollUp)  
-- [Sleep list filter](https://developers.google.com/health/reference/rest/v4/users.dataTypes.dataPoints/list)  
-- ForgeRep evidence rule: `recovery_sleep` (7–9h target) in `@forgefit/evidence-kb`
+- [Exercise list](https://developers.google.com/health/reference/rest/v4/users.dataTypes.dataPoints/list)  
+- ForgeRep evidence rules: `session_intensity_*`, `recovery_sleep`, `hypertrophy_rep_range`

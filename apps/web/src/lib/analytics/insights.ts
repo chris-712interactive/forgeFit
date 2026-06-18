@@ -11,6 +11,7 @@ import type {
 import type { DailySleepStats } from "@/lib/sleep/types";
 import type { DailyRecoveryStats } from "@/lib/recovery/types";
 import type { DailyActivityStats } from "@/lib/activity/types";
+import type { SessionIntensitySummary } from "@/lib/workouts/device-metrics-types";
 import { SLEEP_TARGET_MIN_MINUTES } from "@/lib/sleep/types";
 
 function weightChangeKg(
@@ -70,6 +71,7 @@ export function buildRuleInsights(input: {
   sleepWeekStats: DailySleepStats | null;
   recoveryWeekStats: DailyRecoveryStats | null;
   activityWeekStats: DailyActivityStats | null;
+  sessionIntensity?: SessionIntensitySummary | null;
 }): RuleInsight[] {
   const insights: RuleInsight[] = [];
 
@@ -231,6 +233,33 @@ export function buildRuleInsights(input: {
       tone: "nudge",
       title: "Sedentary time is stacking up",
       body: `${activity.highSedentaryDays} of the last ${activity.daysWithData} logged days were heavily sedentary while training pace is behind plan. Short movement breaks and stacking sessions on less desk-heavy days can help.`,
+    });
+  }
+
+  const intensity = input.sessionIntensity;
+  if (
+    intensity &&
+    intensity.sessionsWithMetrics >= 2 &&
+    intensity.sessionsHarderThanLogged >= 2
+  ) {
+    insights.push({
+      id: "device_harder_than_logged",
+      tone: "nudge",
+      title: "Watch intensity exceeds logged effort",
+      body: `${intensity.sessionsHarderThanLogged} recent sessions showed higher heart-rate load than your Easy/Good RIR labels. Match effort tags to how hard sets actually feel for better autoregulation.`,
+    });
+  }
+
+  if (
+    intensity &&
+    intensity.sessionsWithMetrics >= 2 &&
+    intensity.sessionsTooEasy >= 2
+  ) {
+    insights.push({
+      id: "device_sessions_too_easy",
+      tone: "nudge",
+      title: "Recent gym sessions ran light",
+      body: `${intensity.sessionsTooEasy} matched workouts had low heart-rate intensity relative to your goal. Consider pushing working sets closer to your target RIR band.`,
     });
   }
 

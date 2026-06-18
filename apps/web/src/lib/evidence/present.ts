@@ -76,6 +76,18 @@ const RULE_COPY: Record<string, { title: string; summary: string }> = {
     title: "Cardio for fat loss",
     summary: "Adds moderate cardio as an adjunct to resistance training.",
   },
+  session_intensity_hypertrophy: {
+    title: "Hypertrophy session intensity",
+    summary: "Matches heart-rate load and RIR to moderate hypertrophy effort.",
+  },
+  session_intensity_strength: {
+    title: "Strength session intensity",
+    summary: "Allows brief peak heart-rate spikes with adequate rest between heavy sets.",
+  },
+  session_intensity_fat_loss: {
+    title: "Fat loss session intensity",
+    summary: "Keeps resistance training demanding while supporting a sustainable deficit.",
+  },
   beginner_volume_cap: {
     title: "Beginner volume cap",
     summary: "Limits training volume while you adapt to new stimulus.",

@@ -1,6 +1,6 @@
 import type { SyncRequestBody } from "@forgefit/offline-sync";
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 function friendlySyncError(message: string): string {
@@ -86,11 +86,12 @@ export async function POST(request: Request) {
   const sessionIdByClientId = new Map<string, string>();
   let syncedSessions = 0;
   let syncedSets = 0;
+  const newlyCompletedSessionIds: string[] = [];
 
   for (const session of body.sessions) {
     const { data: existing, error: lookupError } = await supabase
       .from("workout_sessions")
-      .select("id, updated_at")
+      .select("id, updated_at, status")
       .eq("user_id", user.id)
       .eq("client_id", session.clientId)
       .maybeSingle();
@@ -136,6 +137,12 @@ export async function POST(request: Request) {
             { error: friendlySyncError(error.message) },
             { status: 500 }
           );
+        }
+        if (
+          session.status === "completed" &&
+          existing.status !== "completed"
+        ) {
+          newlyCompletedSessionIds.push(existing.id);
         }
       }
       sessionIdByClientId.set(session.clientId, existing.id);
@@ -196,6 +203,9 @@ export async function POST(request: Request) {
     }
 
     sessionIdByClientId.set(session.clientId, inserted.id);
+    if (session.status === "completed") {
+      newlyCompletedSessionIds.push(inserted.id);
+    }
     syncedSessions++;
   }
 
@@ -287,6 +297,17 @@ export async function POST(request: Request) {
     }
 
     syncedSets++;
+  }
+
+  if (newlyCompletedSessionIds.length > 0) {
+    const userId = user.id;
+    const sessionIds = [...newlyCompletedSessionIds];
+    after(async () => {
+      const { scheduleWorkoutDeviceCorrelation } = await import(
+        "@/lib/workouts/device-metrics-service"
+      );
+      await scheduleWorkoutDeviceCorrelation(userId, sessionIds);
+    });
   }
 
   return NextResponse.json({ syncedSessions, syncedSets });

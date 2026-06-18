@@ -9,7 +9,7 @@ export {
 } from "./match";
 
 /** Evidence KB version — bump when rules change materially */
-export const EVIDENCE_KB_VERSION = "0.3.0";
+export const EVIDENCE_KB_VERSION = "0.3.1";
 
 const SEED_RULES: EvidenceRule[] = [
   {

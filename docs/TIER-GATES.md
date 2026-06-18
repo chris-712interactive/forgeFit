@@ -64,7 +64,7 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | Feature | Free | Pro | Pro+ |
 |---------|:----:|:---:|:----:|
 | Withings weight sync | — | — | ✓ |
-| Fitbit activity sync | — | — | ✓ |
+| Fitbit activity + workout intensity sync | — | — | ✓ |
 | Strava activity sync | — | — | ✓ |
 | Restaurant quick-log & saved meals (curated chains) | — | — | ✓ |
 | Full restaurant menu API search | — | — | Planned |
@@ -97,7 +97,7 @@ Use `hasTierFeature(tier, feature)` from `@/lib/billing/gates`.
 | `data_export` | Pro | Profile — export button |
 | `progress_photos` | Pro | Progress tab — photo timeline |
 | `rule_based_insights` | Pro | Home / Progress — insight cards |
-| `device_integrations` | Pro+ | Profile — Integrations hub |
+| `device_integrations` | Pro+ | Profile — Integrations hub; workout device intensity + readiness |
 | `restaurant_search` | Pro+ | Nutrition — eating out quick-log |
 | `ai_motivation` | Pro+ | Home / pre-workout — AI copy |
 | `gamification` | Pro+ | Profile opt-in + leaderboard |

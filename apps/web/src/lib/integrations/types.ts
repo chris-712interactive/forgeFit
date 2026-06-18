@@ -40,7 +40,7 @@ export const INTEGRATION_LABELS: Record<IntegrationProvider, string> = {
 
 export const INTEGRATION_DESCRIPTIONS: Record<IntegrationProvider, string> = {
   withings: "Sync weight from your Withings scale to Progress. Coming soon.",
-  fitbit: "Import daily steps, active calories, sleep, and recovery metrics via Google Health (Fitbit).",
+  fitbit: "Import daily steps, active calories, sleep, recovery metrics, and per-workout heart-rate intensity via Google Health (Fitbit).",
   strava: "Sync cardio workouts and training load. Coming soon.",
 };
 

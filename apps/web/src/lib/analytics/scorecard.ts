@@ -10,6 +10,7 @@ import type {
 import type { DailySleepStats } from "@/lib/sleep/types";
 import type { DailyRecoveryStats } from "@/lib/recovery/types";
 import type { DailyActivityStats } from "@/lib/activity/types";
+import type { SessionIntensitySummary } from "@/lib/workouts/device-metrics-types";
 
 const PROTEIN_GOOD_DAYS = 5;
 const PROTEIN_WATCH_DAYS = 2;
@@ -26,7 +27,8 @@ const PROBLEM_PRIORITY: ScorecardPillarId[] = [
 
 function trainingPillar(
   plan: ProgramPlan | null,
-  weeklyStats: WeeklyWorkStats
+  weeklyStats: WeeklyWorkStats,
+  sessionIntensity?: SessionIntensitySummary | null
 ): ScorecardPillar {
   const planned = weeklyStats.workoutsPlanned;
   const completed = weeklyStats.workoutsCompleted;
@@ -45,14 +47,40 @@ function trainingPillar(
     completed < Math.max(1, Math.floor(planned / 2));
   const onTrack = completed >= planned || completed >= Math.ceil(planned * 0.8);
 
+  let intensityWatch = false;
+  if (
+    sessionIntensity &&
+    sessionIntensity.sessionsWithMetrics >= 2
+  ) {
+    const offTarget =
+      sessionIntensity.sessionsTooEasy + sessionIntensity.sessionsTooHard;
+    intensityWatch =
+      offTarget >= Math.ceil(sessionIntensity.sessionsWithMetrics / 2);
+  }
+
+  const status = onTrack
+    ? intensityWatch
+      ? "watch"
+      : "good"
+    : behind
+      ? "watch"
+      : "good";
+
+  const intensityNote =
+    sessionIntensity && sessionIntensity.sessionsWithMetrics > 0
+      ? ` · ${sessionIntensity.sessionsOnTarget}/${sessionIntensity.sessionsWithMetrics} on-target intensity`
+      : "";
+
   return {
     id: "training",
     label: "Training",
-    summary: `${completed}/${planned} sessions`,
-    status: onTrack ? "good" : behind ? "watch" : "good",
+    summary: `${completed}/${planned} sessions${intensityNote}`,
+    status,
     evidenceRuleId: plan?.isDeloadWeek
       ? "deload_intermediate"
-      : "strength_training_frequency",
+      : intensityWatch
+        ? "session_intensity_hypertrophy"
+        : "strength_training_frequency",
   };
 }
 
@@ -241,9 +269,10 @@ export function buildWeeklyScorecard(input: {
   sleepWeekStats: DailySleepStats | null;
   recoveryWeekStats: DailyRecoveryStats | null;
   activityWeekStats: DailyActivityStats | null;
+  sessionIntensity?: SessionIntensitySummary | null;
 }): WeeklyScorecard {
   const pillars = [
-    trainingPillar(input.plan, input.weeklyStats),
+    trainingPillar(input.plan, input.weeklyStats, input.sessionIntensity),
     proteinPillar(input.nutritionAdherence),
     sleepPillar(input.sleepWeekStats),
     recoveryPillar(input.recoveryWeekStats),

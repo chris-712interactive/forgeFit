@@ -527,4 +527,52 @@ export const EXTRA_RULES: EvidenceRule[] = [
     ],
     confidence: "moderate",
   },
+  {
+    id: "session_intensity_hypertrophy",
+    domain: "training",
+    applies_to: ["goal:bodybuilding", "goal:recomposition"],
+    recommendation: {
+      session_azm: { min: 8, optimal: 16, max: 25 },
+      peak_zone_max_pct: 0.4,
+    },
+    citations: [
+      {
+        url: "https://elementssystem.com/wp-content/uploads/2018/08/Schoenfeld-volumen-review.pdf",
+        summary: "Hypertrophy sessions benefit from moderate cardiovascular load without sustained peak-zone work",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "session_intensity_strength",
+    domain: "training",
+    applies_to: ["goal:general_strength", "goal:powerlifting"],
+    recommendation: {
+      session_azm: { min: 5, optimal: 12, max: 22 },
+      peak_zone_max_pct: 0.5,
+    },
+    citations: [
+      {
+        url: "https://sportrxiv.org/index.php/server/preprint/view/460",
+        summary: "Strength sessions tolerate brief peak heart-rate spikes with longer rest intervals",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "session_intensity_fat_loss",
+    domain: "training",
+    applies_to: ["goal:fat_loss"],
+    recommendation: {
+      session_azm: { min: 10, optimal: 18, max: 30 },
+      peak_zone_max_pct: 0.35,
+    },
+    citations: [
+      {
+        url: "https://www.mdpi.com/2072-6643/16/17/3007",
+        summary: "Resistance training with moderate cardio load supports fat loss while preserving lean mass",
+      },
+    ],
+    confidence: "moderate",
+  },
 ];

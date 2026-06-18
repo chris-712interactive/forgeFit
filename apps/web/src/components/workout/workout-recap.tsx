@@ -24,11 +24,15 @@ import {
   appSectionStackTight,
 } from "@/components/layout/page-layout";
 import { WorkoutSyncNotice } from "./workout-sync-notice";
+import { WorkoutDeviceIntensityCard } from "./workout-device-intensity-card";
+import type { WorkoutDeviceMetricsRecord } from "@/lib/workouts/device-metrics-types";
 
 interface WorkoutRecapProps {
   session: WorkoutSessionRecord;
   dayStatus?: DayPlanStatus;
   workoutsTableReady: boolean;
+  deviceMetrics?: WorkoutDeviceMetricsRecord | null;
+  fitbitConnected?: boolean;
   onBack: () => void;
 }
 
@@ -36,6 +40,8 @@ export function WorkoutRecap({
   session,
   dayStatus,
   workoutsTableReady,
+  deviceMetrics = null,
+  fitbitConnected = false,
   onBack,
 }: WorkoutRecapProps) {
   const unit = useUnitPreference();
@@ -44,6 +50,11 @@ export function WorkoutRecap({
   const comparisons = compareSessions(session, prior);
   const completedSets = session.sets.filter((s) => s.completed).length;
   const syncedToAccount = !session.pendingSync;
+  const pendingDeviceSync =
+    fitbitConnected &&
+    syncedToAccount &&
+    session.status === "completed" &&
+    deviceMetrics == null;
 
   return (
     <div className={appPagePadding}>
@@ -73,6 +84,12 @@ export function WorkoutRecap({
           compact
         />
       )}
+
+      <WorkoutDeviceIntensityCard
+        metrics={deviceMetrics}
+        pendingDeviceSync={pendingDeviceSync}
+        fitbitConnected={fitbitConnected}
+      />
 
       {prior && (
         <p className="mt-3 rounded-xl border border-forge-steel/20 bg-forge-surface-raised px-3 py-2 text-sm text-forge-muted">

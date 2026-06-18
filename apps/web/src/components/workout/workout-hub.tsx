@@ -28,6 +28,7 @@ import {
 } from "@/lib/progression/rir-progression";
 import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
+import type { WorkoutDeviceMetricsRecord, WorkoutReadinessContext } from "@/lib/workouts/device-metrics-types";
 import {
   appPagePadding,
   appSectionStack,
@@ -54,6 +55,9 @@ interface WorkoutHubProps {
   bodyweightKg?: number;
   declaredE1rmKg?: Record<string, number>;
   coachingFeatures?: WorkoutCoachingFeatures | null;
+  deviceMetricsByClientId?: Map<string, WorkoutDeviceMetricsRecord>;
+  fitbitConnected?: boolean;
+  readiness?: WorkoutReadinessContext | null;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -104,6 +108,9 @@ export function WorkoutHub({
   bodyweightKg,
   declaredE1rmKg,
   coachingFeatures = null,
+  deviceMetricsByClientId = new Map(),
+  fitbitConnected = false,
+  readiness = null,
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -386,6 +393,7 @@ export function WorkoutHub({
         clientId={activeClientId}
         experienceLevel={experienceLevel}
         coaching={coachingFeatures}
+        readiness={readiness}
         onBack={closeToHub}
         onFinished={refreshAllSessions}
       />
@@ -419,6 +427,8 @@ export function WorkoutHub({
         session={reviewSession}
         dayStatus={reviewDayStatus}
         workoutsTableReady={workoutsTableReady}
+        deviceMetrics={deviceMetricsByClientId.get(reviewSession.clientId) ?? null}
+        fitbitConnected={fitbitConnected}
         onBack={closeToHub}
       />
     );

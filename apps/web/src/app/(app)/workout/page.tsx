@@ -1,12 +1,15 @@
 import { WorkoutHub } from "@/components/workout/workout-hub";
 import { getWorkoutCoachingFeatures } from "@/lib/coaching/workout-features";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { listIntegrationStatuses } from "@/lib/integrations/service";
 import {
   getUserOneRepMaxes,
   userOneRepMaxMap,
 } from "@/lib/progression/user-maxes";
 import { getActiveProgramRow } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
+import { getWorkoutDeviceMetricsByClientIds } from "@/lib/workouts/device-metrics-service";
+import { getWorkoutReadinessContext } from "@/lib/workouts/readiness";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 
 export default async function WorkoutPage() {
@@ -36,7 +39,7 @@ export default async function WorkoutPage() {
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
       };
-  const [oneRepMaxes, coachingFeatures] = user
+  const [oneRepMaxes, coachingFeatures, deviceMetricsByClientId, readiness, integrationStatuses] = user
     ? await Promise.all([
         getUserOneRepMaxes(user.id),
         getWorkoutCoachingFeatures(
@@ -44,8 +47,18 @@ export default async function WorkoutPage() {
           subscription,
           serverSessionsResult.records
         ),
+        getWorkoutDeviceMetricsByClientIds(
+          user.id,
+          serverSessionsResult.records.map((session) => session.clientId)
+        ),
+        getWorkoutReadinessContext(user.id, subscription),
+        listIntegrationStatuses(user.id),
       ])
-    : [{ rows: [], tableReady: true }, null];
+    : [{ rows: [], tableReady: true }, null, new Map(), null, []];
+
+  const fitbitConnected =
+    integrationStatuses.find((row) => row.provider === "fitbit")?.connected ===
+    true;
 
   const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
 
@@ -63,6 +76,9 @@ export default async function WorkoutPage() {
       }
       declaredE1rmKg={Object.fromEntries(declaredE1rmKg)}
       coachingFeatures={coachingFeatures}
+      deviceMetricsByClientId={deviceMetricsByClientId}
+      fitbitConnected={fitbitConnected}
+      readiness={readiness}
     />
   );
 }
