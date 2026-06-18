@@ -1,14 +1,22 @@
 export type {
+  CommunityPageData,
+  CommunityRankSnapshot,
   CommunityWinRow,
   GamificationContext,
+  HabitScoreBreakdown,
   LeaderboardEntryRow,
+  LeaderboardRankDelta,
+  WeeklyCommunityRecap,
   WorkoutCoachingContext,
   WorkoutCoachingFeatures,
 } from "./types";
 
 export {
   getGamificationContext,
+  getCommunityPageData,
+  getCommunityRankSnapshot,
   recordCommunityWin,
+  syncLeaderboardAfterWorkout,
   upsertWeeklyLeaderboardScore,
 } from "./service";
 

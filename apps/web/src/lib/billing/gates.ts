@@ -37,13 +37,13 @@ const PRO_FEATURES: ReadonlySet<TierFeature> = new Set([
   "data_export",
   "progress_photos",
   "rule_based_insights",
+  "gamification",
 ]);
 
 const PRO_PLUS_ONLY_FEATURES: ReadonlySet<TierFeature> = new Set([
   "device_integrations",
   "restaurant_search",
   "ai_motivation",
-  "gamification",
   "pr_celebration",
 ]);
 

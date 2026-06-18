@@ -26,7 +26,11 @@ import {
   buildSessionLoadProgressions,
   progressionToPrefill,
 } from "@/lib/progression/rir-progression";
-import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
+import { finishWorkoutCommunitySync } from "@/app/actions/gamification";
+import type {
+  LeaderboardRankDelta,
+  WorkoutCoachingFeatures,
+} from "@/lib/coaching/types";
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import type { WorkoutDeviceMetricsRecord, WorkoutReadinessContext } from "@/lib/workouts/device-metrics-types";
 import {
@@ -125,6 +129,8 @@ export function WorkoutHub({
   const [discardingClientId, setDiscardingClientId] = useState<string | null>(
     null
   );
+  const [finishRankDelta, setFinishRankDelta] =
+    useState<LeaderboardRankDelta | null>(null);
   const offline = useOfflineStatus();
   const unit = useUnitPreference();
 
@@ -245,9 +251,30 @@ export function WorkoutHub({
   const closeToHub = useCallback(() => {
     setActiveClientId(null);
     setReviewClientId(null);
+    setFinishRankDelta(null);
     replaceWorkoutUrl("hub", null);
     void refreshSessions();
   }, [refreshSessions]);
+
+  const handleWorkoutFinished = useCallback(
+    async (clientId: string) => {
+      await refreshAllSessions();
+
+      let rankDelta: LeaderboardRankDelta | null = null;
+      if (navigator.onLine) {
+        const result = await finishWorkoutCommunitySync();
+        if (result.ok) {
+          rankDelta = result.rankDelta ?? null;
+        }
+      }
+
+      setFinishRankDelta(rankDelta);
+      setActiveClientId(null);
+      setReviewClientId(clientId);
+      replaceWorkoutUrl("review", clientId);
+    },
+    [refreshAllSessions]
+  );
 
   const handleStart = useCallback(
     async (dayIndex: number) => {
@@ -395,7 +422,7 @@ export function WorkoutHub({
         coaching={coachingFeatures}
         readiness={readiness}
         onBack={closeToHub}
-        onFinished={refreshAllSessions}
+        onFinished={handleWorkoutFinished}
       />
     );
   }
@@ -429,6 +456,7 @@ export function WorkoutHub({
         workoutsTableReady={workoutsTableReady}
         deviceMetrics={deviceMetricsByClientId.get(reviewSession.clientId) ?? null}
         fitbitConnected={fitbitConnected}
+        rankDelta={finishRankDelta}
         onBack={closeToHub}
       />
     );

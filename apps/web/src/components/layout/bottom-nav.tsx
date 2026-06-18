@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: HomeIcon },
   { href: "/workout", label: "Workout", icon: WorkoutIcon },
   { href: "/nutrition", label: "Nutrition", icon: NutritionIcon },
-  { href: "/progress", label: "Progress", icon: ProgressIcon },
+  { href: "/community", label: "Community", icon: CommunityIcon },
   { href: "/profile", label: "Profile", icon: ProfileIcon },
 ] as const;
 
@@ -121,17 +121,19 @@ function NutritionIcon({ active }: { active: boolean }) {
   );
 }
 
-function ProgressIcon({ active: _active }: { active: boolean }) {
+function CommunityIcon({ active }: { active: boolean }) {
   return (
     <svg
       width="24"
       height="24"
       viewBox="0 0 24 24"
-      fill="none"
+      fill={active ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="2"
     >
-      <path d="M4 20V10M10 20V4M16 20v-8M22 20V8" />
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
     </svg>
   );
 }

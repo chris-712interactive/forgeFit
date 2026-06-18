@@ -5,12 +5,15 @@ import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
 import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
 import type { GamificationContext } from "@/lib/coaching/types";
+import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CommunitySectionProps {
   gamification: GamificationContext;
+  showLeaderboard?: boolean;
+  showWins?: boolean;
 }
 
 function CommunityOptInBanner({
@@ -44,7 +47,11 @@ function CommunityOptInBanner({
   );
 }
 
-export function CommunitySection({ gamification }: CommunitySectionProps) {
+export function CommunitySection({
+  gamification,
+  showLeaderboard = true,
+  showWins = true,
+}: CommunitySectionProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,27 +83,43 @@ export function CommunitySection({ gamification }: CommunitySectionProps) {
           </h2>
           <p className="mt-1 max-w-prose text-sm leading-relaxed text-forge-text">
             Train alongside {bucketCopy}. Weekly scores and wins keep everyone
-            accountable.
+            accountable.{" "}
+            {gamification.unlocked && (
+              <Link
+                href="/community"
+                className="font-medium text-forge-ember underline-offset-2 hover:underline"
+              >
+                Full standings →
+              </Link>
+            )}
           </p>
         </div>
-        {gamification.unlocked && gamification.optedIn && gamification.activePeerCount > 0 && (
+        {gamification.unlocked && gamification.optedIn && gamification.pointsToNextRank != null &&
+          gamification.pointsToNextRank > 0 &&
+          gamification.leaderAboveLabel && (
           <div className="rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-right">
             <p className="text-[11px] uppercase tracking-wide text-forge-muted">
-              Active this week
+              To pass {gamification.leaderAboveLabel}
             </p>
             <p className="font-display text-xl font-bold text-forge-gold">
-              {gamification.activePeerCount}
+              {gamification.pointsToNextRank} pts
             </p>
           </div>
         )}
       </div>
 
+      {gamification.weeklyRecap && (
+        <div className="mt-4">
+          <WeeklyCommunityRecapCard recap={gamification.weeklyRecap} />
+        </div>
+      )}
+
       {!gamification.unlocked && (
         <div className="mt-4 space-y-3">
           <UpgradePrompt
             title="Train with a community"
-            description="Pro+ unlocks weekly leaderboards, shared wins, and cheers — all bucketed by your goal and experience so comparisons stay fair."
-            suggestedTier="pro_plus"
+            description="Pro unlocks weekly leaderboards, shared wins, and cheers — all bucketed by your goal and experience so comparisons stay fair."
+            suggestedTier="pro"
           />
           <p className="text-xs text-forge-muted">
             Accountability works best when you are not doing it alone. Upgrade to
@@ -128,10 +151,14 @@ export function CommunitySection({ gamification }: CommunitySectionProps) {
         </div>
       )}
 
-      {gamification.unlocked && gamification.bucketLabel && (
+      {gamification.unlocked && gamification.bucketLabel && (showLeaderboard || showWins) && (
         <div className="mt-5 space-y-5">
-          <LeaderboardCard gamification={gamification} embedded preview={!gamification.optedIn} />
-          <CommunityWinsFeed gamification={gamification} preview={!gamification.optedIn} />
+          {showLeaderboard && (
+            <LeaderboardCard gamification={gamification} embedded preview={!gamification.optedIn} />
+          )}
+          {showWins && (
+            <CommunityWinsFeed gamification={gamification} preview={!gamification.optedIn} />
+          )}
         </div>
       )}
 

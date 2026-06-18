@@ -51,8 +51,8 @@ export function GamificationSetting({
         <div className="mt-4">
           <UpgradePrompt
             title="Unlock community features"
-            description="Pro+ includes opt-in leaderboards, PR celebrations, and personalized coaching copy."
-            suggestedTier="pro_plus"
+            description="Pro includes opt-in leaderboards and community wins. Pro+ adds AI coaching and PR celebrations."
+            suggestedTier="pro"
           />
         </div>
       ) : (

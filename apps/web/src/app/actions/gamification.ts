@@ -31,7 +31,43 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
 
   revalidatePath("/profile");
   revalidatePath("/home");
+  revalidatePath("/community");
   return { ok: true };
+}
+
+export async function finishWorkoutCommunitySync(): Promise<{
+  ok: boolean;
+  rankDelta?: import("@/lib/coaching/types").LeaderboardRankDelta | null;
+  error?: string;
+}> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, error: "Sign in required." };
+  }
+
+  const { getSubscriptionForUser } = await import("@/lib/billing/subscription");
+  const { getServerSessionRecords } = await import(
+    "@/lib/workouts/sessions-server"
+  );
+  const { syncLeaderboardAfterWorkout } = await import("@/lib/coaching/service");
+
+  const subscription = await getSubscriptionForUser(user.id);
+  const { records } = await getServerSessionRecords(user.id, 120);
+  const rankDelta = await syncLeaderboardAfterWorkout(
+    user.id,
+    subscription,
+    records
+  );
+
+  revalidatePath("/home");
+  revalidatePath("/community");
+  revalidatePath("/workout");
+
+  return { ok: true, rankDelta };
 }
 
 export async function toggleCommunityWinCheer(winId: string): Promise<{

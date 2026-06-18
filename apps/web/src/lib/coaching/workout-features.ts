@@ -4,6 +4,7 @@ import { computeWeeklyWorkStats } from "@/lib/home/weekly-stats";
 import { buildExerciseE1rmMap } from "@/lib/progression/one-rep-max";
 import { profileFirstName } from "@/lib/profile/identity";
 import { getActiveProgram } from "@/lib/programs/service";
+import { getCommunityRankSnapshot } from "@/lib/coaching/service";
 import type {
   ExperienceLevel,
   FitnessGoal,
@@ -31,6 +32,9 @@ export async function getWorkoutCoachingFeatures(
   const priorMap = buildExerciseE1rmMap(
     sessions.filter((session) => session.status === "completed")
   );
+  const communityRank = hasFeature(subscription, "gamification")
+    ? await getCommunityRankSnapshot(userId, subscription, sessions)
+    : null;
 
   return {
     aiMotivationEnabled: hasFeature(subscription, "ai_motivation"),
@@ -51,5 +55,6 @@ export async function getWorkoutCoachingFeatures(
     isDeloadWeek: plan?.isDeloadWeek ?? false,
     workoutsCompletedThisWeek: weekly.workoutsCompleted,
     workoutsPlannedThisWeek: weekly.workoutsPlanned,
+    communityRank,
   };
 }

@@ -12,8 +12,14 @@ import { bucketLabel as formatBucketLabel } from "./community-labels";
 import type {
   CommunityWinRow,
   GamificationContext,
+  HabitScoreBreakdown,
   LeaderboardEntryRow,
+  LeaderboardRankDelta,
+  CommunityRankSnapshot,
+  WeeklyCommunityRecap,
+  CommunityPageData,
 } from "./types";
+import { computeTrainingStreakWeeks, highestNewStreakMilestone } from "./streak";
 
 function baseGamificationContext(
   overrides: Partial<GamificationContext> = {}
@@ -31,7 +37,153 @@ function baseGamificationContext(
     communityWins: [],
     userRank: null,
     userScore: null,
+    habitBreakdown: null,
+    pointsToNextRank: null,
+    leaderAboveLabel: null,
+    weeklyRecap: null,
     ...overrides,
+  };
+}
+
+function rankContextFromLeaderboard(
+  leaderboard: LeaderboardEntryRow[],
+  userId: string
+): {
+  userRank: number | null;
+  userScore: number | null;
+  pointsToNextRank: number | null;
+  leaderAboveLabel: string | null;
+} {
+  const userIndex = leaderboard.findIndex((row) => row.userId === userId);
+  const userRank = userIndex >= 0 ? userIndex + 1 : null;
+  const userScore = userIndex >= 0 ? leaderboard[userIndex]!.habitScore : null;
+
+  if (userIndex <= 0) {
+    return {
+      userRank,
+      userScore,
+      pointsToNextRank: null,
+      leaderAboveLabel: null,
+    };
+  }
+
+  const leader = leaderboard[userIndex - 1]!;
+  return {
+    userRank,
+    userScore,
+    pointsToNextRank: leader.habitScore - (userScore ?? 0),
+    leaderAboveLabel: leader.displayLabel,
+  };
+}
+
+async function computeUserHabitBreakdown(
+  userId: string,
+  sessions: WorkoutSessionRecord[]
+): Promise<HabitScoreBreakdown | null> {
+  const plan = await getActiveProgram(userId);
+  const weekly = computeWeeklyWorkStats(sessions, plan);
+  const proteinHitDays = await proteinHitDaysLast7(userId);
+  const qualitySessions = countQualitySessionsInLookback(sessions, 4, 0.5);
+  const habit = computeHabitScore({
+    workoutsCompleted: weekly.workoutsCompleted,
+    workoutsPlanned: weekly.workoutsPlanned,
+    proteinHitDays,
+    proteinWindowDays: 7,
+    qualitySessions,
+  });
+
+  return {
+    score: habit.score,
+    training: habit.breakdown.training,
+    nutrition: habit.breakdown.nutrition,
+    quality: habit.breakdown.quality,
+    workoutsCompleted: weekly.workoutsCompleted,
+    workoutsPlanned: weekly.workoutsPlanned,
+    proteinHitDays,
+    qualitySessions,
+  };
+}
+
+async function fetchBucketLeaderboard(
+  goal: string,
+  experience: string,
+  weekStart: string,
+  userId: string,
+  limit = 10
+): Promise<LeaderboardEntryRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("leaderboard_entries")
+    .select("user_id, display_label, habit_score")
+    .eq("bucket_goal", goal)
+    .eq("bucket_experience", experience)
+    .eq("week_start", weekStart)
+    .order("habit_score", { ascending: false })
+    .limit(limit);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map((row) => ({
+    userId: row.user_id as string,
+    displayLabel: row.display_label as string,
+    habitScore: Number(row.habit_score),
+    isCurrentUser: row.user_id === userId,
+  }));
+}
+
+function previousWeekStartIso(reference = new Date()): string {
+  const { start } = getWeekBounds(reference);
+  const previous = new Date(start);
+  previous.setDate(previous.getDate() - 7);
+  return getWeekBounds(previous).startIso;
+}
+
+async function buildWeeklyRecap(
+  userId: string,
+  goal: string,
+  experience: string
+): Promise<WeeklyCommunityRecap | null> {
+  const day = new Date().getDay();
+  if (day !== 1 && day !== 2) {
+    return null;
+  }
+
+  const lastWeekStart = previousWeekStartIso();
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("leaderboard_entries")
+    .select("user_id, habit_score")
+    .eq("bucket_goal", goal)
+    .eq("bucket_experience", experience)
+    .eq("week_start", lastWeekStart)
+    .order("habit_score", { ascending: false });
+
+  if (!rows || rows.length === 0) {
+    return null;
+  }
+
+  const index = rows.findIndex((row) => row.user_id === userId);
+  if (index < 0) {
+    return null;
+  }
+
+  const lastWeekEnd = new Date(lastWeekStart);
+  lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
+  const weekLabel = `${new Date(lastWeekStart).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  })} – ${lastWeekEnd.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  })}`;
+
+  return {
+    showRecap: true,
+    lastWeekRank: index + 1,
+    lastWeekScore: Number(rows[index]!.habit_score),
+    weekLabel,
   };
 }
 
@@ -274,9 +426,7 @@ export async function getGamificationContext(
     isCurrentUser: row.user_id === userId,
   }));
 
-  const userIndex = leaderboard.findIndex((row) => row.isCurrentUser);
-  const userRank = userIndex >= 0 ? userIndex + 1 : null;
-  const userScore = userIndex >= 0 ? leaderboard[userIndex]!.habitScore : null;
+  const rankContext = rankContextFromLeaderboard(leaderboard, userId);
 
   const winRows = winsResult.data ?? [];
   const winUserIds = [...new Set(winRows.map((w) => w.user_id as string))];
@@ -346,6 +496,13 @@ export async function getGamificationContext(
   const activePeerCount = activeWeekCountResult.count ?? 0;
   const bucketPeerCount = peerCountResult.count ?? activePeerCount;
 
+  const [habitBreakdown, weeklyRecap] = optedIn
+    ? await Promise.all([
+        computeUserHabitBreakdown(userId, sessions),
+        buildWeeklyRecap(userId, goal, experience),
+      ])
+    : [null, null];
+
   return {
     unlocked: true,
     optedIn,
@@ -357,8 +514,12 @@ export async function getGamificationContext(
     activePeerCount,
     leaderboard,
     communityWins,
-    userRank,
-    userScore,
+    userRank: rankContext.userRank,
+    userScore: rankContext.userScore,
+    habitBreakdown,
+    pointsToNextRank: rankContext.pointsToNextRank,
+    leaderAboveLabel: rankContext.leaderAboveLabel,
+    weeklyRecap,
   };
 }
 
@@ -398,4 +559,243 @@ export async function recordCommunityWin(input: {
   if (error && !isGamificationTableMissing(error)) {
     console.error("community win insert failed:", error.message);
   }
+}
+
+export async function publishCommunityMilestoneWins(
+  userId: string,
+  sessions: WorkoutSessionRecord[]
+): Promise<void> {
+  const plan = await getActiveProgram(userId);
+  const weekly = computeWeeklyWorkStats(sessions, plan);
+  const { startIso } = getWeekBounds();
+
+  const supabase = await createClient();
+
+  if (
+    weekly.workoutsPlanned > 0 &&
+    weekly.workoutsCompleted >= weekly.workoutsPlanned
+  ) {
+    const { data: existingPlanWin } = await supabase
+      .from("community_wins")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("win_type", "weekly_plan")
+      .gte("occurred_at", `${startIso}T00:00:00.000Z`)
+      .limit(1)
+      .maybeSingle();
+
+    if (!existingPlanWin) {
+      await recordCommunityWin({
+        userId,
+        winType: "weekly_plan",
+        headline: "Weekly plan complete",
+        detail: `${weekly.workoutsCompleted}/${weekly.workoutsPlanned} workouts logged this week`,
+      });
+    }
+  }
+
+  const streakWeeks = computeTrainingStreakWeeks(sessions, plan);
+  if (streakWeeks < 4) {
+    return;
+  }
+
+  const { data: streakWins, error } = await supabase
+    .from("community_wins")
+    .select("detail")
+    .eq("user_id", userId)
+    .eq("win_type", "streak");
+
+  if (error && !isGamificationTableMissing(error)) {
+    console.error("streak win lookup failed:", error.message);
+    return;
+  }
+
+  const publishedMilestones = (streakWins ?? [])
+    .map((row) => {
+      const match = (row.detail as string | null)?.match(/(\d+)-week/);
+      return match ? Number(match[1]) : null;
+    })
+    .filter((value): value is number => value != null);
+
+  const milestone = highestNewStreakMilestone(streakWeeks, publishedMilestones);
+  if (milestone == null) {
+    return;
+  }
+
+  await recordCommunityWin({
+    userId,
+    winType: "streak",
+    headline: `${milestone}-week training streak`,
+    detail: `${milestone}-week streak — every planned workout completed`,
+  });
+}
+
+export async function syncLeaderboardAfterWorkout(
+  userId: string,
+  subscription: SubscriptionSnapshot,
+  sessions: WorkoutSessionRecord[]
+): Promise<LeaderboardRankDelta | null> {
+  if (!hasFeature(subscription, "gamification")) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(
+      "first_name, last_name, display_name, email, primary_goal, experience_level, gamification_opt_in"
+    )
+    .eq("id", userId)
+    .single();
+
+  if (!profile?.gamification_opt_in) {
+    return null;
+  }
+
+  const goal = profile.primary_goal;
+  const experience = profile.experience_level;
+  if (!goal || !experience) {
+    return null;
+  }
+
+  const weekStart = weekStartIso();
+  const beforeBoard = await fetchBucketLeaderboard(
+    goal,
+    experience,
+    weekStart,
+    userId,
+    100
+  );
+  const before = rankContextFromLeaderboard(beforeBoard, userId);
+
+  await upsertWeeklyLeaderboardScore(userId, subscription, sessions);
+  await publishCommunityMilestoneWins(userId, sessions);
+
+  const afterBoard = await fetchBucketLeaderboard(
+    goal,
+    experience,
+    weekStart,
+    userId,
+    100
+  );
+  const after = rankContextFromLeaderboard(afterBoard, userId);
+
+  const rankChange =
+    before.userRank != null && after.userRank != null
+      ? before.userRank - after.userRank
+      : after.userRank != null && before.userRank == null
+        ? null
+        : null;
+
+  return {
+    previousRank: before.userRank,
+    newRank: after.userRank,
+    previousScore: before.userScore,
+    newScore: after.userScore,
+    rankChange,
+    pointsToNextRank: after.pointsToNextRank,
+    leaderAboveLabel: after.leaderAboveLabel,
+  };
+}
+
+export async function getCommunityRankSnapshot(
+  userId: string,
+  subscription: SubscriptionSnapshot,
+  sessions: WorkoutSessionRecord[]
+): Promise<CommunityRankSnapshot | null> {
+  const unlocked = hasFeature(subscription, "gamification");
+  if (!unlocked) {
+    return null;
+  }
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("primary_goal, experience_level, gamification_opt_in")
+    .eq("id", userId)
+    .single();
+
+  const goal = profile?.primary_goal;
+  const experience = profile?.experience_level;
+  const bucketLabelValue = formatBucketLabel(goal, experience);
+
+  if (!goal || !experience) {
+    return {
+      unlocked: true,
+      optedIn: profile?.gamification_opt_in ?? false,
+      bucketLabel: bucketLabelValue,
+      userRank: null,
+      userScore: null,
+      pointsToNextRank: null,
+      leaderAboveLabel: null,
+      activePeerCount: 0,
+    };
+  }
+
+  if (profile?.gamification_opt_in) {
+    await upsertWeeklyLeaderboardScore(userId, subscription, sessions);
+  }
+
+  const weekStart = weekStartIso();
+  const [leaderboard, countResult] = await Promise.all([
+    fetchBucketLeaderboard(goal, experience, weekStart, userId, 100),
+    supabase
+      .from("leaderboard_entries")
+      .select("user_id", { count: "exact", head: true })
+      .eq("bucket_goal", goal)
+      .eq("bucket_experience", experience)
+      .eq("week_start", weekStart),
+  ]);
+
+  const rankContext = rankContextFromLeaderboard(leaderboard, userId);
+
+  return {
+    unlocked: true,
+    optedIn: profile?.gamification_opt_in ?? false,
+    bucketLabel: bucketLabelValue,
+    userRank: rankContext.userRank,
+    userScore: rankContext.userScore,
+    pointsToNextRank: rankContext.pointsToNextRank,
+    leaderAboveLabel: rankContext.leaderAboveLabel,
+    activePeerCount: countResult.count ?? leaderboard.length,
+  };
+}
+
+export async function getCommunityPageData(
+  userId: string,
+  subscription: SubscriptionSnapshot,
+  sessions: WorkoutSessionRecord[]
+): Promise<CommunityPageData> {
+  const gamification = await getGamificationContext(
+    userId,
+    subscription,
+    sessions
+  );
+
+  if (
+    !gamification.unlocked ||
+    !gamification.bucketGoal ||
+    !gamification.bucketExperience
+  ) {
+    return {
+      gamification,
+      fullLeaderboard: [],
+      totalRankedThisWeek: 0,
+    };
+  }
+
+  const weekStart = weekStartIso();
+  const fullLeaderboard = await fetchBucketLeaderboard(
+    gamification.bucketGoal,
+    gamification.bucketExperience,
+    weekStart,
+    userId,
+    50
+  );
+
+  return {
+    gamification,
+    fullLeaderboard,
+    totalRankedThisWeek: gamification.activePeerCount,
+  };
 }

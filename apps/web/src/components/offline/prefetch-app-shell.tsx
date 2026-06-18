@@ -6,9 +6,10 @@ const APP_TAB_ROUTES = [
   "/home",
   "/workout",
   "/nutrition",
-  "/progress",
+  "/community",
   "/profile",
   "/exercises",
+  "/progress",
 ];
 
 /**

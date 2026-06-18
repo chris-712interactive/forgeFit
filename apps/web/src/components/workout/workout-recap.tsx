@@ -25,6 +25,8 @@ import {
 } from "@/components/layout/page-layout";
 import { WorkoutSyncNotice } from "./workout-sync-notice";
 import { WorkoutDeviceIntensityCard } from "./workout-device-intensity-card";
+import { WorkoutRankDeltaCard } from "@/components/coaching/workout-rank-delta-card";
+import type { LeaderboardRankDelta } from "@/lib/coaching/types";
 import type { WorkoutDeviceMetricsRecord } from "@/lib/workouts/device-metrics-types";
 
 interface WorkoutRecapProps {
@@ -33,6 +35,7 @@ interface WorkoutRecapProps {
   workoutsTableReady: boolean;
   deviceMetrics?: WorkoutDeviceMetricsRecord | null;
   fitbitConnected?: boolean;
+  rankDelta?: LeaderboardRankDelta | null;
   onBack: () => void;
 }
 
@@ -42,6 +45,7 @@ export function WorkoutRecap({
   workoutsTableReady,
   deviceMetrics = null,
   fitbitConnected = false,
+  rankDelta = null,
   onBack,
 }: WorkoutRecapProps) {
   const unit = useUnitPreference();
@@ -90,6 +94,8 @@ export function WorkoutRecap({
         pendingDeviceSync={pendingDeviceSync}
         fitbitConnected={fitbitConnected}
       />
+
+      {rankDelta && <WorkoutRankDeltaCard rankDelta={rankDelta} />}
 
       {prior && (
         <p className="mt-3 rounded-xl border border-forge-steel/20 bg-forge-surface-raised px-3 py-2 text-sm text-forge-muted">

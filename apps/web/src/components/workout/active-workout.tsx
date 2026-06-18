@@ -18,6 +18,7 @@ import {
 import type { ExperienceLevel } from "@/lib/types/profile";
 import { publishWorkoutPrWin } from "@/app/actions/gamification";
 import { PreWorkoutHypeBanner } from "@/components/coaching/pre-workout-hype-banner";
+import { CommunityRankStrip } from "@/components/coaching/community-rank-strip";
 import { WorkoutReadinessStrip } from "@/components/workout/workout-readiness-strip";
 import type { WorkoutReadinessContext } from "@/lib/workouts/device-metrics-types";
 import { PrCelebrationModal } from "@/components/coaching/pr-celebration-modal";
@@ -75,7 +76,7 @@ interface ActiveWorkoutProps {
   coaching?: WorkoutCoachingFeatures | null;
   readiness?: WorkoutReadinessContext | null;
   onBack?: () => void;
-  onFinished?: () => void | Promise<void>;
+  onFinished?: (clientId: string) => void | Promise<void>;
 }
 
 export function ActiveWorkout({
@@ -505,8 +506,7 @@ export function ActiveWorkout({
       if (navigator.onLine) {
         await sync?.runSync();
       }
-      await onFinished?.();
-      goBack();
+      await onFinished?.(clientId);
     } catch {
       setFinishError("Could not save workout on this device. Try again.");
       setFinishing(false);
@@ -530,7 +530,6 @@ export function ActiveWorkout({
       if (navigator.onLine) {
         await sync?.runSync();
       }
-      await onFinished?.();
       goBack();
     } catch {
       setFinishError("Could not discard workout on this device. Try again.");
@@ -831,6 +830,12 @@ export function ActiveWorkout({
       {readiness && currentStepIndex === 0 && (
         <div className="mb-4">
           <WorkoutReadinessStrip readiness={readiness} />
+        </div>
+      )}
+
+      {coaching?.communityRank && currentStepIndex === 0 && (
+        <div className="mb-4">
+          <CommunityRankStrip rank={coaching.communityRank} />
         </div>
       )}
 
