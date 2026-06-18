@@ -5,7 +5,9 @@ import {
   exchangeWithingsAuthorizationCode,
   extractWeightKgFromGroup,
   fetchDailyActivitySummaries,
+  fetchDailySleepSummaries,
   fetchGoogleHealthIdentity,
+  integrationHasSleepScope,
   fetchStravaActivities,
   fetchWithingsMeasures,
   measureGroupToDate,
@@ -80,6 +82,7 @@ function rowToPublicStatus(
     externalUserId: row?.external_user_id ?? null,
     lastSyncAt: row?.last_sync_at ?? null,
     lastSyncError: row?.last_sync_error ?? null,
+    scopes: row?.scopes ?? null,
   };
 }
 
@@ -90,7 +93,7 @@ export async function listIntegrationStatuses(
   const { data, error } = await supabase
     .from("user_integrations")
     .select(
-      "id, user_id, provider, external_user_id, status, last_sync_at, last_sync_error"
+      "id, user_id, provider, external_user_id, status, last_sync_at, last_sync_error, scopes"
     )
     .eq("user_id", userId);
 
@@ -590,6 +593,125 @@ export interface FitbitSyncResult {
   imported: number;
   skipped: number;
   latestDate: string | null;
+  sleepImported: number;
+  sleepSkipped: number;
+  sleepLatestDate: string | null;
+}
+
+async function syncSleepLogsForUser(params: {
+  admin: ReturnType<typeof createAdminClient>;
+  userId: string;
+  accessToken: string;
+  startDate: string;
+  endDate: string;
+}): Promise<{
+  sleepImported: number;
+  sleepSkipped: number;
+  sleepLatestDate: string | null;
+}> {
+  const sleepSummaries = await fetchDailySleepSummaries({
+    accessToken: params.accessToken,
+    startDate: params.startDate,
+    endDate: params.endDate,
+  });
+
+  let sleepImported = 0;
+  let sleepSkipped = 0;
+  let sleepLatestDate: string | null = null;
+
+  for (const summary of sleepSummaries) {
+    if (summary.durationMinutes == null || summary.durationMinutes <= 0) {
+      continue;
+    }
+
+    const { data: existing } = await params.admin
+      .from("daily_sleep_logs")
+      .select("*")
+      .eq("user_id", params.userId)
+      .eq("sleep_date", summary.date)
+      .maybeSingle();
+
+    const unchanged =
+      existing &&
+      (existing.duration_minutes ?? null) === summary.durationMinutes &&
+      (existing.minutes_in_bed ?? null) === summary.minutesInBed &&
+      (existing.deep_minutes ?? null) === summary.deepMinutes &&
+      (existing.rem_minutes ?? null) === summary.remMinutes &&
+      (existing.awake_minutes ?? null) === summary.awakeMinutes;
+
+    if (unchanged) {
+      sleepSkipped += 1;
+      if (sleepLatestDate == null || summary.date > sleepLatestDate) {
+        sleepLatestDate = summary.date;
+      }
+      continue;
+    }
+
+    const { error: upsertError } = await params.admin
+      .from("daily_sleep_logs")
+      .upsert(
+        {
+          user_id: params.userId,
+          sleep_date: summary.date,
+          duration_minutes: summary.durationMinutes,
+          minutes_in_bed: summary.minutesInBed,
+          deep_minutes: summary.deepMinutes,
+          rem_minutes: summary.remMinutes,
+          awake_minutes: summary.awakeMinutes,
+          source: "fitbit",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,sleep_date" }
+      );
+
+    if (upsertError) {
+      throw new Error(upsertError.message);
+    }
+
+    sleepImported += 1;
+    if (sleepLatestDate == null || summary.date > sleepLatestDate) {
+      sleepLatestDate = summary.date;
+    }
+  }
+
+  return { sleepImported, sleepSkipped, sleepLatestDate };
+}
+
+export async function hasMissingSleepLogs(userId: string): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data: integration } = await admin
+    .from("user_integrations")
+    .select("scopes, status")
+    .eq("user_id", userId)
+    .eq("provider", "fitbit")
+    .maybeSingle();
+
+  if (
+    !integration ||
+    integration.status === "revoked" ||
+    !integrationHasSleepScope(integration.scopes as string | null)
+  ) {
+    return false;
+  }
+
+  const lookbackStart = new Date(
+    Date.now() - INITIAL_SYNC_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
+  )
+    .toISOString()
+    .slice(0, 10);
+
+  const { data, error } = await admin
+    .from("daily_sleep_logs")
+    .select("id")
+    .eq("user_id", userId)
+    .gte("sleep_date", lookbackStart)
+    .limit(1);
+
+  if (error) {
+    return false;
+  }
+
+  return (data?.length ?? 0) === 0;
 }
 
 export async function syncFitbitForUser(
@@ -673,6 +795,31 @@ export async function syncFitbitForUser(
       }
     }
 
+    let sleepImported = 0;
+    let sleepSkipped = 0;
+    let sleepLatestDate: string | null = null;
+
+    if (integrationHasSleepScope(row.scopes)) {
+      try {
+        const sleepResult = await syncSleepLogsForUser({
+          admin,
+          userId,
+          accessToken,
+          startDate,
+          endDate,
+        });
+        sleepImported = sleepResult.sleepImported;
+        sleepSkipped = sleepResult.sleepSkipped;
+        sleepLatestDate = sleepResult.sleepLatestDate;
+      } catch (sleepError) {
+        const message =
+          sleepError instanceof Error
+            ? sleepError.message
+            : "Sleep sync failed.";
+        throw new Error(message);
+      }
+    }
+
     const now = new Date().toISOString();
     await admin
       .from("user_integrations")
@@ -684,7 +831,14 @@ export async function syncFitbitForUser(
       })
       .eq("id", row.id);
 
-    return { imported, skipped, latestDate };
+    return {
+      imported,
+      skipped,
+      latestDate,
+      sleepImported,
+      sleepSkipped,
+      sleepLatestDate,
+    };
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Fitbit sync failed.";

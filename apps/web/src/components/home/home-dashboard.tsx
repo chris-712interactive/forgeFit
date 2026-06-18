@@ -46,7 +46,11 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         </p>
       )}
 
-      <HomeTodaySnapshot nutrition={data.nutrition} activity={data.activity} />
+      <HomeTodaySnapshot
+        nutrition={data.nutrition}
+        activity={data.activity}
+        sleep={data.sleep}
+      />
 
       {data.proInsights.length > 0 && (
         <ProInsightsStrip insights={data.proInsights} />

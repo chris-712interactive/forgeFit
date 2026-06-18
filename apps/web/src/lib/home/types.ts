@@ -1,5 +1,6 @@
 import type { RuleInsight } from "@/lib/analytics/types";
 import type { ActivityContext } from "@/lib/activity/types";
+import type { SleepContext } from "@/lib/sleep/types";
 import type { GamificationContext } from "@/lib/coaching/types";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import type { ProgramPlan } from "@forgefit/program-engine";
@@ -30,5 +31,6 @@ export interface HomeDashboardData {
   proInsights: RuleInsight[];
   birthdayMessage: string | null;
   activity: ActivityContext;
+  sleep: SleepContext;
   gamification: GamificationContext;
 }

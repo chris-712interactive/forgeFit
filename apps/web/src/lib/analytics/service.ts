@@ -1,5 +1,6 @@
 import { analyticsHistoryCutoff, hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { getSleepContext } from "@/lib/sleep/service";
 import { getActiveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -102,11 +103,15 @@ export async function buildProAnalyticsBundle(
   const cutoff = analyticsHistoryCutoff(subscription);
   const cutoffIso = cutoff?.toISOString().slice(0, 10) ?? null;
 
-  const [sessionResult, plan, nutritionLogs, measurements] = await Promise.all([
+  const [sessionResult, plan, nutritionLogs, measurements, sleepContext] =
+    await Promise.all([
     getServerSessionRecords(userId, 500),
     getActiveProgram(userId),
     loadNutritionDailyTotals(userId, cutoffIso),
     loadWeightMeasurements(userId),
+    hasFeature(subscription, "device_integrations")
+      ? getSleepContext(userId, subscription)
+      : Promise.resolve(null),
   ]);
 
   const sessions = sessionResult.records;
@@ -126,6 +131,7 @@ export async function buildProAnalyticsBundle(
     strengthSeries,
     weeklyVolume,
     nutritionAdherence,
+    sleepWeekStats: sleepContext?.weekStats ?? null,
   });
 
   return {

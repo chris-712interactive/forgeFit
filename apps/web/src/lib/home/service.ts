@@ -1,5 +1,6 @@
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
+import { getSleepContext } from "@/lib/sleep/service";
 import { getGamificationContext } from "@/lib/coaching/service";
 import type { ActivityContext } from "@/lib/activity/types";
 import { hasFeature } from "@/lib/billing/gates";
@@ -31,7 +32,7 @@ export async function getHomeDashboardData(
   const subscription = await getSubscriptionForUser(userId);
   await maybeSyncFitbitForUser(userId, subscription);
 
-  const [profileResult, plan, nutrition, sessionResult, activity] =
+  const [profileResult, plan, nutrition, sessionResult, activity, sleep] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -44,6 +45,7 @@ export async function getHomeDashboardData(
       getDailyNutritionSummary(userId),
       getServerSessionRecords(userId, 120),
       getActivityContext(userId, subscription),
+      getSleepContext(userId, subscription),
     ]);
 
   const gamification = await getGamificationContext(
@@ -101,6 +103,7 @@ export async function getHomeDashboardData(
     workoutsTableReady: sessionResult.tableReady,
     proInsights,
     activity,
+    sleep,
     gamification,
   };
 }

@@ -9,6 +9,7 @@ export interface IntegrationPublicStatus {
   externalUserId: string | null;
   lastSyncAt: string | null;
   lastSyncError: string | null;
+  scopes: string | null;
 }
 
 export interface UserIntegrationRow {
@@ -39,7 +40,7 @@ export const INTEGRATION_LABELS: Record<IntegrationProvider, string> = {
 
 export const INTEGRATION_DESCRIPTIONS: Record<IntegrationProvider, string> = {
   withings: "Sync weight from your Withings scale to Progress. Coming soon.",
-  fitbit: "Import daily steps and active calories via Google Health (Fitbit).",
+  fitbit: "Import daily steps, active calories, and sleep via Google Health (Fitbit).",
   strava: "Sync cardio workouts and training load. Coming soon.",
 };
 

@@ -8,12 +8,14 @@ import {
 import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
+import { getSleepContext } from "@/lib/sleep/service";
 import {
   analyticsHistoryDays,
   hasFeature,
   projectionHorizonDays,
 } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { maybeSyncFitbitForUser } from "@/lib/integrations/fitbit-sync-scheduler";
 import { hasProAccess, type SubscriptionSnapshot } from "@/lib/billing/types";
 import { listProgressPhotos } from "@/lib/progress-photos/service";
 import { getActiveProgram } from "@/lib/programs/service";
@@ -248,22 +250,24 @@ function buildGateContext(
 export async function getProgressDashboardData(
   userId: string
 ): Promise<ProgressDashboardData> {
-  const [profile, measurementResult, caliperEntries, plan, subscription] =
-    await Promise.all([
-      getProfileBasics(userId),
-      loadMeasurements(userId),
-      loadCaliperEntries(userId),
-      getActiveProgram(userId),
-      getSubscriptionForUser(userId),
-    ]);
+  const subscription = await getSubscriptionForUser(userId);
+  await maybeSyncFitbitForUser(userId, subscription);
+
+  const [profile, measurementResult, caliperEntries, plan] = await Promise.all([
+    getProfileBasics(userId),
+    loadMeasurements(userId),
+    loadCaliperEntries(userId),
+    getActiveProgram(userId),
+  ]);
 
   const isPro = hasProAccess(subscription);
-  const [proAnalytics, photoResult, activity] = await Promise.all([
+  const [proAnalytics, photoResult, activity, sleep] = await Promise.all([
     isPro ? buildProAnalyticsBundle(userId, subscription) : Promise.resolve(null),
     hasFeature(subscription, "progress_photos")
       ? listProgressPhotos(userId)
       : Promise.resolve({ photos: [], tableReady: true }),
     getActivityContext(userId, subscription),
+    getSleepContext(userId, subscription),
   ]);
 
   const gates = buildGateContext(subscription);
@@ -338,6 +342,7 @@ export async function getProgressDashboardData(
     progressPhotos: photoResult.photos,
     photosTableReady: photoResult.tableReady,
     activity,
+    sleep,
   };
 }
 

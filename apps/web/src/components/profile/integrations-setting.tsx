@@ -2,6 +2,7 @@
 
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import type { IntegrationProvider } from "@forgefit/integrations";
+import { integrationHasSleepScope } from "@forgefit/integrations";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
 import { formatIntegrationErrorForUser } from "@/lib/integrations/user-errors";
 import Link from "next/link";
@@ -36,7 +37,8 @@ function formatSyncTime(iso: string | null): string | null {
 function syncSuccessMessage(
   provider: IntegrationProvider,
   imported: number,
-  skipped: number
+  skipped: number,
+  sleepImported?: number
 ): string {
   if (provider === "withings") {
     return `Imported ${imported} weigh-in${imported === 1 ? "" : "s"}${
@@ -45,8 +47,12 @@ function syncSuccessMessage(
   }
 
   if (provider === "fitbit") {
-    return `Imported ${imported} day${imported === 1 ? "" : "s"} of activity${
-      skipped ? ` (${skipped} unchanged)` : ""
+    const sleepPart =
+      sleepImported != null && sleepImported > 0
+        ? ` and ${sleepImported} night${sleepImported === 1 ? "" : "s"} of sleep`
+        : "";
+    return `Imported ${imported} day${imported === 1 ? "" : "s"} of activity${sleepPart}${
+      skipped ? ` (${skipped} activity rows unchanged)` : ""
     }.`;
   }
 
@@ -64,7 +70,7 @@ function connectDisclosure(provider: IntegrationProvider): string | null {
     return "By connecting, you authorize ForgeRep to access weight readings from your Withings account.";
   }
   if (provider === "fitbit") {
-    return "By connecting, you sign in with Google and authorize ForgeRep to read Fitbit activity (steps and active calories) through the Google Health API. Your Fitbit account must be linked to the same Google account in the Fitbit app first.";
+    return "By connecting, you sign in with Google and authorize ForgeRep to read Fitbit activity (steps, active calories, active minutes) and sleep through the Google Health API. Your Fitbit account must be linked to the same Google account in the Fitbit app first.";
   }
   if (provider === "strava") {
     return "By connecting, you authorize ForgeRep to import your Strava runs, rides, and other cardio workouts.";
@@ -158,6 +164,7 @@ export function IntegrationsSetting({
         error?: string;
         imported?: number;
         skipped?: number;
+        sleepImported?: number;
       };
 
       if (!response.ok) {
@@ -166,7 +173,12 @@ export function IntegrationsSetting({
       }
 
       setMessage(
-        syncSuccessMessage(provider, body.imported ?? 0, body.skipped ?? 0)
+        syncSuccessMessage(
+          provider,
+          body.imported ?? 0,
+          body.skipped ?? 0,
+          body.sleepImported
+        )
       );
       await refreshStatuses();
       router.refresh();
@@ -330,6 +342,15 @@ export function IntegrationsSetting({
                     {integration.lastSyncError}
                   </p>
                 )}
+
+                {integration.provider === "fitbit" &&
+                  integration.connected &&
+                  !integrationHasSleepScope(integration.scopes) && (
+                    <p className="mt-2 text-xs text-forge-gold">
+                      Reconnect Fitbit to enable sleep import (activity-only
+                      connection).
+                    </p>
+                  )}
 
                 {integration.available && (
                   <div className="mt-3 flex flex-wrap gap-2">

@@ -8,6 +8,15 @@
 export const GOOGLE_HEALTH_ACTIVITY_SCOPE =
   "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly";
 
+export const GOOGLE_HEALTH_SLEEP_SCOPE =
+  "https://www.googleapis.com/auth/googlehealth.sleep.readonly";
+
+/** Scopes requested when connecting Fitbit via Google Health. */
+export const GOOGLE_HEALTH_FITBIT_SCOPES = [
+  GOOGLE_HEALTH_ACTIVITY_SCOPE,
+  GOOGLE_HEALTH_SLEEP_SCOPE,
+].join(" ");
+
 export const GOOGLE_OAUTH_AUTHORIZE_URL =
   "https://accounts.google.com/o/oauth2/v2/auth";
 export const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -31,6 +40,16 @@ export interface DailyActivitySummary {
   steps: number | null;
   activeCalories: number | null;
   activeMinutes: number | null;
+}
+
+export interface DailySleepSummary {
+  /** Wake date (civil end date of the main sleep session). */
+  date: string;
+  durationMinutes: number | null;
+  minutesInBed: number | null;
+  deepMinutes: number | null;
+  remMinutes: number | null;
+  awakeMinutes: number | null;
 }
 
 interface CivilDateParts {
@@ -166,7 +185,7 @@ export function buildGoogleHealthAuthorizeUrl(params: {
   url.searchParams.set("response_type", "code");
   url.searchParams.set(
     "scope",
-    params.scope ?? GOOGLE_HEALTH_ACTIVITY_SCOPE
+    params.scope ?? GOOGLE_HEALTH_FITBIT_SCOPES
   );
   url.searchParams.set("access_type", "offline");
   url.searchParams.set("state", params.state);
@@ -401,4 +420,133 @@ export function addDaysIso(isoDate: string, days: number): string {
 
 export function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+interface SleepStageSummary {
+  type?: string;
+  minutes?: string | number;
+}
+
+interface SleepSummaryBlock {
+  minutesAsleep?: string | number;
+  minutesInSleepPeriod?: string | number;
+  minutesAwake?: string | number;
+  stagesSummary?: SleepStageSummary[];
+}
+
+interface SleepSession {
+  interval?: {
+    civilEndTime?: CivilDateTime;
+  };
+  metadata?: {
+    nap?: boolean;
+  };
+  summary?: SleepSummaryBlock;
+}
+
+interface SleepDataPoint {
+  sleep?: SleepSession;
+}
+
+function stageMinutes(
+  summary: SleepSummaryBlock | undefined,
+  stageType: string
+): number | null {
+  const match = summary?.stagesSummary?.find((stage) => stage.type === stageType);
+  return parseCount(match?.minutes);
+}
+
+function aggregateSleepSessions(sessions: SleepSession[]): DailySleepSummary[] {
+  const byDate = new Map<string, DailySleepSummary>();
+
+  for (const session of sessions) {
+    if (session.metadata?.nap) continue;
+
+    const date = civilStartToIso(session.interval?.civilEndTime);
+    if (!date) continue;
+
+    const durationMinutes = parseCount(session.summary?.minutesAsleep);
+    if (durationMinutes == null || durationMinutes <= 0) continue;
+
+    const candidate: DailySleepSummary = {
+      date,
+      durationMinutes,
+      minutesInBed: parseCount(session.summary?.minutesInSleepPeriod),
+      deepMinutes: stageMinutes(session.summary, "DEEP"),
+      remMinutes: stageMinutes(session.summary, "REM"),
+      awakeMinutes: parseCount(session.summary?.minutesAwake),
+    };
+
+    const existing = byDate.get(date);
+    if (
+      !existing ||
+      (candidate.durationMinutes ?? 0) > (existing.durationMinutes ?? 0)
+    ) {
+      byDate.set(date, candidate);
+    }
+  }
+
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function fetchSleepDataPointsPage(
+  accessToken: string,
+  startDate: string,
+  endDate: string,
+  pageToken?: string
+): Promise<{ sessions: SleepSession[]; nextPageToken?: string }> {
+  const endExclusive = addDaysIso(endDate, 1);
+  const filter = `sleep.interval.civil_end_time >= "${startDate}" AND sleep.interval.civil_end_time < "${endExclusive}"`;
+  const params = new URLSearchParams({
+    filter,
+    pageSize: "25",
+  });
+  if (pageToken) {
+    params.set("pageToken", pageToken);
+  }
+
+  const response = await googleHealthFetch<{
+    dataPoints?: SleepDataPoint[];
+    nextPageToken?: string;
+  }>(
+    accessToken,
+    `/users/me/dataTypes/sleep/dataPoints?${params.toString()}`,
+    undefined,
+    `Google Health sleep (${startDate} to ${endDate})`
+  );
+
+  const sessions = (response.dataPoints ?? [])
+    .map((point) => point.sleep)
+    .filter((session): session is SleepSession => session != null);
+
+  return {
+    sessions,
+    nextPageToken: response.nextPageToken,
+  };
+}
+
+export async function fetchDailySleepSummaries(params: {
+  accessToken: string;
+  startDate: string;
+  endDate: string;
+}): Promise<DailySleepSummary[]> {
+  const sessions: SleepSession[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const page = await fetchSleepDataPointsPage(
+      params.accessToken,
+      params.startDate,
+      params.endDate,
+      pageToken
+    );
+    sessions.push(...page.sessions);
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+
+  return aggregateSleepSessions(sessions);
+}
+
+export function integrationHasSleepScope(scopes: string | null | undefined): boolean {
+  return scopes?.includes("googlehealth.sleep.readonly") ?? false;
 }

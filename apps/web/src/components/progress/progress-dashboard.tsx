@@ -1,6 +1,7 @@
 "use client";
 
 import { DailyActivityPanel } from "@/components/activity/daily-activity-panel";
+import { DailySleepPanel } from "@/components/sleep/daily-sleep-panel";
 import type { ProgressDashboardData } from "@/lib/measurements/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { hasProAccess } from "@/lib/billing/types";
@@ -174,6 +175,15 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
             suggestedTier="pro_plus"
           >
             <DailyActivityPanel activity={data.activity} />
+          </ProFeatureSection>
+
+          <ProFeatureSection
+            title="Sleep"
+            description="Nightly duration and 7-day trends from Fitbit."
+            unlocked={hasFeature(subscription, "device_integrations")}
+            suggestedTier="pro_plus"
+          >
+            <DailySleepPanel sleep={data.sleep} />
           </ProFeatureSection>
         </div>
       )}

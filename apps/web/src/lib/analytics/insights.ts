@@ -8,6 +8,8 @@ import type {
   RuleInsight,
   WeeklyVolumePoint,
 } from "./types";
+import type { DailySleepStats } from "@/lib/sleep/types";
+import { SLEEP_TARGET_MIN_MINUTES } from "@/lib/sleep/types";
 
 function weightChangeKg(
   measurements: BodyMeasurementRow[],
@@ -63,6 +65,7 @@ export function buildRuleInsights(input: {
   strengthSeries: LiftStrengthSeries[];
   weeklyVolume: WeeklyVolumePoint[];
   nutritionAdherence: NutritionAdherenceSummary | null;
+  sleepWeekStats: DailySleepStats | null;
 }): RuleInsight[] {
   const insights: RuleInsight[] = [];
 
@@ -144,6 +147,26 @@ export function buildRuleInsights(input: {
         body: `You moved ${current.volumeKg.toLocaleString()} kg vs ${prior.volumeKg.toLocaleString()} kg last week — progressive overload is showing up in the logs.`,
       });
     }
+  }
+
+  const sleep = input.sleepWeekStats;
+  if (
+    sleep &&
+    sleep.nightsWithData >= 3 &&
+    sleep.shortNights >= 3
+  ) {
+    const avgHours =
+      sleep.avgDurationMinutes != null
+        ? (sleep.avgDurationMinutes / 60).toFixed(1)
+        : null;
+    insights.push({
+      id: "sleep_short",
+      tone: "nudge",
+      title: "Sleep is running short",
+      body: `${sleep.shortNights} of the last ${sleep.nightsWithData} logged nights were under ${SLEEP_TARGET_MIN_MINUTES / 60} hours${
+        avgHours ? ` (7-day avg ${avgHours}h)` : ""
+      }. Recovery rules target 7–9 hours — short sleep often shows up as missed sessions or stalled progress.`,
+    });
   }
 
   return insights.slice(0, 4);
