@@ -17,6 +17,7 @@ import {
   refreshGoogleHealthAccessToken,
   refreshStravaAccessToken,
   refreshWithingsAccessToken,
+  resolveSleepSyncStartDate,
   stravaTokenExpiresAtIso,
   todayIsoDate,
   WITHINGS_MEASURE_TYPE_WEIGHT,
@@ -621,7 +622,7 @@ async function syncSleepLogsForUser(params: {
 }> {
   const sleepSummaries = await fetchDailySleepSummaries({
     accessToken: params.accessToken,
-    startDate: params.startDate,
+    startDate: resolveSleepSyncStartDate(params.startDate, params.endDate),
     endDate: params.endDate,
   });
 
@@ -936,6 +937,7 @@ export async function syncFitbitForUser(
     let sleepImported = 0;
     let sleepSkipped = 0;
     let sleepLatestDate: string | null = null;
+    let sleepSyncError: string | null = null;
 
     if (integrationHasSleepScope(row.scopes)) {
       try {
@@ -950,17 +952,17 @@ export async function syncFitbitForUser(
         sleepSkipped = sleepResult.sleepSkipped;
         sleepLatestDate = sleepResult.sleepLatestDate;
       } catch (sleepError) {
-        const message =
+        sleepSyncError =
           sleepError instanceof Error
             ? sleepError.message
             : "Sleep sync failed.";
-        throw new Error(message);
       }
     }
 
     let recoveryImported = 0;
     let recoverySkipped = 0;
     let recoveryLatestDate: string | null = null;
+    let recoverySyncError: string | null = null;
 
     if (integrationHasRecoveryScope(row.scopes)) {
       try {
@@ -975,21 +977,22 @@ export async function syncFitbitForUser(
         recoverySkipped = recoveryResult.recoverySkipped;
         recoveryLatestDate = recoveryResult.recoveryLatestDate;
       } catch (recoveryError) {
-        const message =
+        recoverySyncError =
           recoveryError instanceof Error
             ? recoveryError.message
             : "Recovery sync failed.";
-        throw new Error(message);
       }
     }
+
+    const partialSyncError = sleepSyncError ?? recoverySyncError;
 
     const now = new Date().toISOString();
     await admin
       .from("user_integrations")
       .update({
-        status: "active",
+        status: partialSyncError ? "error" : "active",
         last_sync_at: now,
-        last_sync_error: null,
+        last_sync_error: partialSyncError,
         updated_at: now,
       })
       .eq("id", row.id);

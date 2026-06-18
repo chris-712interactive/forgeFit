@@ -561,9 +561,12 @@ interface SleepSummaryBlock {
 interface SleepSession {
   interval?: {
     civilEndTime?: CivilDateTime;
+    endTime?: string;
   };
   metadata?: {
     nap?: boolean;
+    stagesStatus?: string;
+    processed?: boolean;
   };
   summary?: SleepSummaryBlock;
 }
@@ -580,16 +583,67 @@ function stageMinutes(
   return parseCount(match?.minutes);
 }
 
+function sleepWakeDate(session: SleepSession): string | null {
+  const fromCivil = civilStartToIso(session.interval?.civilEndTime);
+  if (fromCivil) return fromCivil;
+
+  const endTime = session.interval?.endTime;
+  if (!endTime) return null;
+
+  const dateMatch = /^(\d{4}-\d{2}-\d{2})/.exec(endTime);
+  return dateMatch?.[1] ?? null;
+}
+
+function durationFromStagesSummary(
+  summary: SleepSummaryBlock | undefined
+): number | null {
+  const stages = summary?.stagesSummary;
+  if (!stages?.length) return null;
+
+  let total = 0;
+  let hasValue = false;
+  for (const stage of stages) {
+    if (!stage.type || stage.type === "AWAKE" || stage.type === "RESTLESS") {
+      continue;
+    }
+    const mins = parseCount(stage.minutes);
+    if (mins != null) {
+      total += mins;
+      hasValue = true;
+    }
+  }
+
+  return hasValue ? total : null;
+}
+
+function sleepDurationMinutes(session: SleepSession): number | null {
+  const fromSummary = parseCount(session.summary?.minutesAsleep);
+  if (fromSummary != null && fromSummary > 0) return fromSummary;
+
+  const fromStages = durationFromStagesSummary(session.summary);
+  if (fromStages != null && fromStages > 0) return fromStages;
+
+  const inBed = parseCount(session.summary?.minutesInSleepPeriod);
+  if (inBed != null && inBed > 0) return inBed;
+
+  return null;
+}
+
+function isSkippedSleepSession(session: SleepSession): boolean {
+  if (session.metadata?.nap) return true;
+  return session.metadata?.stagesStatus === "REJECTED_NAP";
+}
+
 function aggregateSleepSessions(sessions: SleepSession[]): DailySleepSummary[] {
   const byDate = new Map<string, DailySleepSummary>();
 
   for (const session of sessions) {
-    if (session.metadata?.nap) continue;
+    if (isSkippedSleepSession(session)) continue;
 
-    const date = civilStartToIso(session.interval?.civilEndTime);
+    const date = sleepWakeDate(session);
     if (!date) continue;
 
-    const durationMinutes = parseCount(session.summary?.minutesAsleep);
+    const durationMinutes = sleepDurationMinutes(session);
     if (durationMinutes == null || durationMinutes <= 0) continue;
 
     const candidate: DailySleepSummary = {
@@ -613,14 +667,22 @@ function aggregateSleepSessions(sessions: SleepSession[]): DailySleepSummary[] {
   return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
+function sleepListFilter(startDate: string, endDate: string): string {
+  const endExclusive = addDaysIso(endDate, 1);
+  const civilFilter = `sleep.interval.civil_end_time >= "${startDate}" AND sleep.interval.civil_end_time < "${endExclusive}"`;
+  const endUtcStart = `${startDate}T00:00:00Z`;
+  const endUtcExclusive = `${endExclusive}T00:00:00Z`;
+  const endTimeFilter = `sleep.interval.end_time >= "${endUtcStart}" AND sleep.interval.end_time < "${endUtcExclusive}"`;
+  return `(${civilFilter}) OR (${endTimeFilter})`;
+}
+
 async function fetchSleepDataPointsPage(
   accessToken: string,
   startDate: string,
   endDate: string,
   pageToken?: string
 ): Promise<{ sessions: SleepSession[]; nextPageToken?: string }> {
-  const endExclusive = addDaysIso(endDate, 1);
-  const filter = `sleep.interval.civil_end_time >= "${startDate}" AND sleep.interval.civil_end_time < "${endExclusive}"`;
+  const filter = sleepListFilter(startDate, endDate);
   const params = new URLSearchParams({
     filter,
     pageSize: "25",
@@ -671,16 +733,32 @@ export async function fetchDailySleepSummaries(params: {
   return aggregateSleepSessions(sessions);
 }
 
+/** Minimum civil-date lookback for sleep list queries (sessions can span midnight). */
+export const SLEEP_SYNC_LOOKBACK_DAYS = 14;
+
+export function resolveSleepSyncStartDate(
+  activityStartDate: string,
+  endDate: string
+): string {
+  const minStart = addDaysIso(endDate, -(SLEEP_SYNC_LOOKBACK_DAYS - 1));
+  return activityStartDate < minStart ? activityStartDate : minStart;
+}
+
 export function integrationHasSleepScope(scopes: string | null | undefined): boolean {
-  return scopes?.includes("googlehealth.sleep.readonly") ?? false;
+  if (!scopes) return false;
+  return (
+    scopes.includes(GOOGLE_HEALTH_SLEEP_SCOPE) ||
+    scopes.includes("googlehealth.sleep.readonly")
+  );
 }
 
 export function integrationHasRecoveryScope(
   scopes: string | null | undefined
 ): boolean {
+  if (!scopes) return false;
   return (
-    scopes?.includes("googlehealth.health_metrics_and_measurements.readonly") ??
-    false
+    scopes.includes(GOOGLE_HEALTH_METRICS_SCOPE) ||
+    scopes.includes("googlehealth.health_metrics_and_measurements.readonly")
   );
 }
 

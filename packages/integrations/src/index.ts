@@ -29,6 +29,7 @@ export {
   integrationHasRecoveryScope,
   integrationHasSleepScope,
   refreshGoogleHealthAccessToken,
+  resolveSleepSyncStartDate,
   todayIsoDate,
 } from "./google-health";
 export type {
