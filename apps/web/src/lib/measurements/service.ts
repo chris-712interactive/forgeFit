@@ -16,7 +16,7 @@ import {
   projectionHorizonDays,
 } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
-import { maybeSyncFitbitForUser } from "@/lib/integrations/fitbit-sync-scheduler";
+import { scheduleFitbitBackgroundSync } from "@/lib/integrations/fitbit-sync-scheduler";
 import { hasProAccess, type SubscriptionSnapshot } from "@/lib/billing/types";
 import { listProgressPhotos } from "@/lib/progress-photos/service";
 import { getActiveProgram } from "@/lib/programs/service";
@@ -252,25 +252,31 @@ export async function getProgressDashboardData(
   userId: string
 ): Promise<ProgressDashboardData> {
   const subscription = await getSubscriptionForUser(userId);
-  await maybeSyncFitbitForUser(userId, subscription);
+  scheduleFitbitBackgroundSync(userId, subscription);
 
-  const [profile, measurementResult, caliperEntries, plan] = await Promise.all([
+  const [profile, measurementResult, caliperEntries, plan, activity, sleep, recovery] =
+    await Promise.all([
     getProfileBasics(userId),
     loadMeasurements(userId),
     loadCaliperEntries(userId),
     getActiveProgram(userId),
-  ]);
-
-  const isPro = hasProAccess(subscription);
-  const [proAnalytics, photoResult, activity, sleep, recovery] =
-    await Promise.all([
-    isPro ? buildProAnalyticsBundle(userId, subscription) : Promise.resolve(null),
-    hasFeature(subscription, "progress_photos")
-      ? listProgressPhotos(userId)
-      : Promise.resolve({ photos: [], tableReady: true }),
     getActivityContext(userId, subscription),
     getSleepContext(userId, subscription),
     getRecoveryContext(userId, subscription),
+  ]);
+
+  const isPro = hasProAccess(subscription);
+  const [proAnalytics, photoResult] = await Promise.all([
+    isPro
+      ? buildProAnalyticsBundle(userId, subscription, {
+          activity,
+          sleep,
+          recovery,
+        })
+      : Promise.resolve(null),
+    hasFeature(subscription, "progress_photos")
+      ? listProgressPhotos(userId)
+      : Promise.resolve({ photos: [], tableReady: true }),
   ]);
 
   const gates = buildGateContext(subscription);

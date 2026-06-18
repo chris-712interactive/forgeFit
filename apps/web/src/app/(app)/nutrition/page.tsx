@@ -26,12 +26,15 @@ export default async function NutritionPage() {
 
   const yesterday = yesterdayIsoDate();
 
-  const summary = user ? await getDailyNutritionSummary(user.id) : null;
-  const recentEntries = user ? await getRecentMacroEntries(user.id) : [];
-  const yesterdayEntryCount = user
-    ? await getDayLogCount(user.id, yesterday)
-    : 0;
-  const subscription = user ? await getSubscriptionForUser(user.id) : null;
+  const [summary, recentEntries, yesterdayEntryCount, subscription] = user
+    ? await Promise.all([
+        getDailyNutritionSummary(user.id),
+        getRecentMacroEntries(user.id),
+        getDayLogCount(user.id, yesterday),
+        getSubscriptionForUser(user.id),
+      ])
+    : [null, [], 0, null];
+
   const adherence =
     user && subscription
       ? await getNutritionAdherenceForUser(user.id, subscription)

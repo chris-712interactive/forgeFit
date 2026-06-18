@@ -12,7 +12,7 @@ import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { appHeaderGap, appSectionStack } from "@/components/layout/page-layout";
 import { buildEvidenceHref } from "@/lib/evidence/present";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CaliperCalculator } from "./caliper-calculator";
 import { LogMeasurementForm } from "./log-measurement-form";
 import { MeasurementTrendChart } from "./measurement-trend-chart";
@@ -32,11 +32,23 @@ interface ProgressDashboardProps {
 
 export function ProgressDashboard({ data }: ProgressDashboardProps) {
   const [tab, setTab] = useState<ProgressTab>("trends");
+  const [visitedTabs, setVisitedTabs] = useState<Set<ProgressTab>>(
+    () => new Set(["trends"])
+  );
   const { gates } = data;
   const subscription = gates.subscription;
   const isPro = hasProAccess(subscription);
   const horizonLabel = `${gates.horizonDays}-day`;
   const analytics = data.proAnalytics;
+
+  useEffect(() => {
+    setVisitedTabs((current) => {
+      if (current.has(tab)) return current;
+      const next = new Set(current);
+      next.add(tab);
+      return next;
+    });
+  }, [tab]);
 
   return (
     <div className={`${appHeaderGap} ${appSectionStack}`}>
@@ -58,8 +70,8 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         </div>
       )}
 
-      {tab === "trends" && (
-        <div className="flex flex-col gap-4 sm:gap-5">
+      {visitedTabs.has("trends") && (
+        <div className={tab === "trends" ? "flex flex-col gap-4 sm:gap-5" : "hidden"}>
           <ProFeatureSection
             title="Trend insights"
             description="Rule-based signals from your logs."
@@ -140,8 +152,8 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         </div>
       )}
 
-      {tab === "training" && (
-        <div className="flex flex-col gap-4 sm:gap-5">
+      {visitedTabs.has("training") && (
+        <div className={tab === "training" ? "flex flex-col gap-4 sm:gap-5" : "hidden"}>
           <ProFeatureSection
             title="Strength progression"
             description="Estimated 1RM trends for compound lifts."
@@ -198,8 +210,8 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
         </div>
       )}
 
-      {tab === "log" && (
-        <div className="flex flex-col gap-4 sm:gap-5">
+      {visitedTabs.has("log") && (
+        <div className={tab === "log" ? "flex flex-col gap-4 sm:gap-5" : "hidden"}>
           <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               Log measurement

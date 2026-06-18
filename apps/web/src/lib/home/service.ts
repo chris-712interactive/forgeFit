@@ -2,12 +2,11 @@ import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
 import { getSleepContext } from "@/lib/sleep/service";
 import { getGamificationContext } from "@/lib/coaching/service";
-import type { ActivityContext } from "@/lib/activity/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasProAccess } from "@/lib/billing/types";
 import { getDailyNutritionSummary } from "@/lib/nutrition/service";
-import { maybeSyncFitbitForUser } from "@/lib/integrations/fitbit-sync-scheduler";
+import { scheduleFitbitBackgroundSync } from "@/lib/integrations/fitbit-sync-scheduler";
 import { ensureActiveProgram } from "@/lib/programs/service";
 import type { FitnessGoal } from "@/lib/types/profile";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -30,7 +29,7 @@ export async function getHomeDashboardData(
   const supabase = await createClient();
 
   const subscription = await getSubscriptionForUser(userId);
-  await maybeSyncFitbitForUser(userId, subscription);
+  scheduleFitbitBackgroundSync(userId, subscription);
 
   const [profileResult, plan, nutrition, sessionResult, activity, sleep] =
     await Promise.all([
@@ -66,7 +65,10 @@ export async function getHomeDashboardData(
     hasProAccess(subscription) &&
     hasFeature(subscription, "rule_based_insights")
   ) {
-    const bundle = await buildProAnalyticsBundle(userId, subscription);
+    const bundle = await buildProAnalyticsBundle(userId, subscription, {
+      activity,
+      sleep,
+    });
     proInsights = bundle.insights;
   }
 

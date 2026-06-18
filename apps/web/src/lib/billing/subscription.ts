@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
   hasProAccess,
@@ -8,7 +9,7 @@ import {
   type SubscriptionTier,
 } from "./types";
 
-export async function getSubscriptionForUser(
+export const getSubscriptionForUser = cache(async function getSubscriptionForUser(
   userId: string
 ): Promise<SubscriptionSnapshot> {
   const supabase = await createClient();
@@ -28,7 +29,7 @@ export async function getSubscriptionForUser(
     currentPeriodEnd: data?.subscription_current_period_end ?? null,
     cancelAtPeriodEnd: data?.subscription_cancel_at_period_end ?? false,
   };
-}
+});
 
 export async function getCurrentUserSubscription(): Promise<SubscriptionSnapshot | null> {
   const supabase = await createClient();

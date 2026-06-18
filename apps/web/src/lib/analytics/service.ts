@@ -12,6 +12,15 @@ import { buildRuleInsights } from "./insights";
 import { buildStrengthSeries } from "./strength";
 import { buildMuscleVolumeSlices, buildWeeklyVolumeTrend } from "./volume";
 import type { ProAnalyticsBundle } from "./types";
+import type { ActivityContext } from "@/lib/activity/types";
+import type { RecoveryContext } from "@/lib/recovery/types";
+import type { SleepContext } from "@/lib/sleep/types";
+
+export interface DeviceIntegrationContexts {
+  activity?: ActivityContext | null;
+  sleep?: SleepContext | null;
+  recovery?: RecoveryContext | null;
+}
 
 async function loadNutritionDailyTotals(
   userId: string,
@@ -100,10 +109,12 @@ async function loadWeightMeasurements(userId: string) {
 
 export async function buildProAnalyticsBundle(
   userId: string,
-  subscription: SubscriptionSnapshot
+  subscription: SubscriptionSnapshot,
+  deviceContexts?: DeviceIntegrationContexts
 ): Promise<ProAnalyticsBundle> {
   const cutoff = analyticsHistoryCutoff(subscription);
   const cutoffIso = cutoff?.toISOString().slice(0, 10) ?? null;
+  const hasDeviceIntegrations = hasFeature(subscription, "device_integrations");
 
   const [sessionResult, plan, nutritionLogs, measurements, sleepContext, recoveryContext, activityContext] =
     await Promise.all([
@@ -111,14 +122,14 @@ export async function buildProAnalyticsBundle(
     getActiveProgram(userId),
     loadNutritionDailyTotals(userId, cutoffIso),
     loadWeightMeasurements(userId),
-    hasFeature(subscription, "device_integrations")
-      ? getSleepContext(userId, subscription)
+    hasDeviceIntegrations
+      ? (deviceContexts?.sleep ?? getSleepContext(userId, subscription))
       : Promise.resolve(null),
-    hasFeature(subscription, "device_integrations")
-      ? getRecoveryContext(userId, subscription)
+    hasDeviceIntegrations
+      ? (deviceContexts?.recovery ?? getRecoveryContext(userId, subscription))
       : Promise.resolve(null),
-    hasFeature(subscription, "device_integrations")
-      ? getActivityContext(userId, subscription)
+    hasDeviceIntegrations
+      ? (deviceContexts?.activity ?? getActivityContext(userId, subscription))
       : Promise.resolve(null),
   ]);
 

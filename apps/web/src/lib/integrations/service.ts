@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { IntegrationProvider } from "@forgefit/integrations";
 import {
   exchangeGoogleHealthAuthorizationCode,
@@ -88,7 +89,7 @@ function rowToPublicStatus(
   };
 }
 
-export async function listIntegrationStatuses(
+export const listIntegrationStatuses = cache(async function listIntegrationStatuses(
   userId: string
 ): Promise<IntegrationPublicStatus[]> {
   const supabase = await createClient();
@@ -113,7 +114,7 @@ export async function listIntegrationStatuses(
       (byProvider.get(provider) as UserIntegrationRow | undefined) ?? null
     )
   );
-}
+});
 
 export function buildIntegrationsHubView(
   statuses: IntegrationPublicStatus[]

@@ -1,6 +1,7 @@
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { after } from "next/server";
 import { isGoogleHealthConfigured } from "./config";
 import {
   hasIncompleteActivityLogs,
@@ -67,13 +68,17 @@ export async function maybeSyncFitbitForUser(
     return { synced: false, skipped: true, reason: "not_connected" };
   }
 
-  const needsBackfill =
-    (await hasIncompleteActivityLogs(userId)) ||
-    (await hasMissingSleepLogs(userId)) ||
-    (await hasMissingRecoveryLogs(userId));
+  const force = options?.force ?? false;
 
-  if (!isFitbitSyncStale(lastSyncAt, options?.force || needsBackfill)) {
-    return { synced: false, skipped: true, reason: "fresh" };
+  if (!force && !isFitbitSyncStale(lastSyncAt, false)) {
+    const needsBackfill =
+      (await hasIncompleteActivityLogs(userId)) ||
+      (await hasMissingSleepLogs(userId)) ||
+      (await hasMissingRecoveryLogs(userId));
+
+    if (!needsBackfill) {
+      return { synced: false, skipped: true, reason: "fresh" };
+    }
   }
 
   try {
@@ -88,6 +93,26 @@ export async function maybeSyncFitbitForUser(
       error instanceof Error ? error.message : "Fitbit sync failed.";
     return { synced: false, skipped: false, error: message };
   }
+}
+
+/**
+ * Queue Fitbit sync after the page response is sent so navigation stays fast.
+ * Cron and explicit Profile sync still use maybeSyncFitbitForUser directly.
+ */
+export function scheduleFitbitBackgroundSync(
+  userId: string,
+  subscription: SubscriptionSnapshot
+): void {
+  if (!isGoogleHealthConfigured()) return;
+  if (!hasFeature(subscription, "device_integrations")) return;
+
+  after(async () => {
+    try {
+      await maybeSyncFitbitForUser(userId, subscription);
+    } catch {
+      // Errors are persisted on the integration row by syncFitbitForUser.
+    }
+  });
 }
 
 export interface FitbitCronSyncSummary {

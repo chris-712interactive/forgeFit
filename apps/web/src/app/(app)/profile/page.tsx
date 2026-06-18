@@ -12,7 +12,7 @@ import {
   buildIntegrationsHubView,
   listIntegrationStatuses,
 } from "@/lib/integrations/service";
-import { maybeSyncFitbitForUser } from "@/lib/integrations/fitbit-sync-scheduler";
+import { scheduleFitbitBackgroundSync } from "@/lib/integrations/fitbit-sync-scheduler";
 import {
   isDeviceIntegrationsConfigured,
   isFitbitIntegrationConfigured,
@@ -87,7 +87,7 @@ export default async function ProfilePage({
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
   if (user && integrationsUnlocked) {
-    await maybeSyncFitbitForUser(user.id, subscription);
+    scheduleFitbitBackgroundSync(user.id, subscription);
   }
 
   let initialIntegrations = buildIntegrationsHubView([]);
