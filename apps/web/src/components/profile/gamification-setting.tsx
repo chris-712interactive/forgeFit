@@ -43,8 +43,8 @@ export function GamificationSetting({
         Gamification
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Opt in to weekly leaderboards and a community win feed with others who
-        share your goal and experience level. Off by default.
+        Opt in to weekly leaderboards, cheer peer wins, and share your PRs with
+        others who share your goal and experience level. Off by default.
       </p>
 
       {!unlocked ? (

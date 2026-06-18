@@ -3,17 +3,20 @@ import type { GamificationContext } from "@/lib/coaching/types";
 interface LeaderboardCardProps {
   gamification: GamificationContext;
   embedded?: boolean;
+  preview?: boolean;
 }
 
 export function LeaderboardCard({
   gamification,
   embedded = false,
+  preview = false,
 }: LeaderboardCardProps) {
-  if (!gamification.unlocked || !gamification.optedIn) {
+  if (!gamification.unlocked) {
     return null;
   }
 
-  const bucketLabel = "your goal & experience";
+  const bucketCopy =
+    gamification.bucketLabel ?? "your goal & experience level";
 
   const content = (
     <>
@@ -25,20 +28,25 @@ export function LeaderboardCard({
             </h2>
           )}
           <p className={`text-xs text-forge-muted ${embedded ? "" : "mt-1"}`}>
-            Habit score — bucketed by {bucketLabel}
+            Habit score — {bucketCopy}
+            {preview ? " · preview" : ""}
           </p>
         </div>
-        {gamification.userScore != null && gamification.userRank != null && (
-          <div className="rounded-xl border border-forge-gold/35 bg-forge-surface px-3 py-2 text-right">
-            <p className="text-[11px] uppercase tracking-wide text-forge-muted">
-              You
-            </p>
-            <p className="font-display text-xl font-bold text-forge-gold">
-              #{gamification.userRank}
-            </p>
-            <p className="text-xs text-forge-muted">{gamification.userScore} pts</p>
-          </div>
-        )}
+        {!preview &&
+          gamification.userScore != null &&
+          gamification.userRank != null && (
+            <div className="rounded-xl border border-forge-gold/35 bg-forge-surface px-3 py-2 text-right">
+              <p className="text-[11px] uppercase tracking-wide text-forge-muted">
+                You
+              </p>
+              <p className="font-display text-xl font-bold text-forge-gold">
+                #{gamification.userRank}
+              </p>
+              <p className="text-xs text-forge-muted">
+                {gamification.userScore} pts
+              </p>
+            </div>
+          )}
       </div>
 
       {!gamification.tableReady && (
@@ -49,7 +57,9 @@ export function LeaderboardCard({
 
       {gamification.tableReady && gamification.leaderboard.length === 0 && (
         <p className="mt-4 text-sm text-forge-muted">
-          No scores yet this week — log workouts and nutrition to climb the board.
+          {preview
+            ? "No one has posted a score this week yet. Be the first in your bucket once you join."
+            : "No scores yet this week — log workouts and nutrition to climb the board."}
         </p>
       )}
 
@@ -59,7 +69,7 @@ export function LeaderboardCard({
             <li
               key={entry.userId}
               className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 ${
-                entry.isCurrentUser
+                entry.isCurrentUser && !preview
                   ? "border-forge-gold/40 bg-forge-surface"
                   : "border-[var(--border)] bg-forge-surface/60"
               }`}
@@ -70,13 +80,13 @@ export function LeaderboardCard({
                 </span>
                 <span
                   className={`text-sm ${
-                    entry.isCurrentUser
+                    entry.isCurrentUser && !preview
                       ? "font-semibold text-forge-gold"
                       : "text-forge-text"
                   }`}
                 >
                   {entry.displayLabel}
-                  {entry.isCurrentUser ? " (you)" : ""}
+                  {entry.isCurrentUser && !preview ? " (you)" : ""}
                 </span>
               </div>
               <span className="text-sm font-medium text-forge-text">

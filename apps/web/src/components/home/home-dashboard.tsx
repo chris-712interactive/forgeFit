@@ -1,14 +1,13 @@
 "use client";
 
-import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
-import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
-import { CollapsibleSection } from "@/components/layout/collapsible-section";
+import { CommunitySection } from "@/components/home/community-section";
 import { BirthdayBanner } from "@/components/home/birthday-banner";
 import { HomeTodaySnapshot } from "@/components/home/home-today-snapshot";
 import { ProInsightsStrip } from "@/components/home/pro-insights-strip";
 import { WeeklyScorecardStrip } from "@/components/home/weekly-scorecard-strip";
 import { WeekAccountability } from "@/components/home/week-accountability";
 import { WeeklyWorkStatsGrid } from "@/components/home/weekly-work-stats";
+import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import type { HomeDashboardData } from "@/lib/home/types";
 
@@ -18,8 +17,6 @@ interface HomeDashboardProps {
 }
 
 export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
-  const showCommunity =
-    data.gamification.unlocked && data.gamification.optedIn;
   const hasWeeklyDetail =
     data.weeklyStats.totalSets > 0 ||
     data.weeklyStats.cardioMinutes > 0 ||
@@ -69,14 +66,7 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         </CollapsibleSection>
       )}
 
-      {showCommunity && (
-        <CollapsibleSection title="Community" hint="Leaderboard & wins">
-          <div className="space-y-4">
-            <LeaderboardCard gamification={data.gamification} embedded />
-            <CommunityWinsFeed gamification={data.gamification} />
-          </div>
-        </CollapsibleSection>
-      )}
+      <CommunitySection gamification={data.gamification} />
 
       {!data.workoutsTableReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-surface-raised px-4 py-3 text-sm text-forge-muted">

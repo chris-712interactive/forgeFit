@@ -7,17 +7,26 @@ export interface LeaderboardEntryRow {
 
 export interface CommunityWinRow {
   id: string;
+  userId: string;
   displayLabel: string;
   winType: "pr" | "weekly_plan" | "streak";
   headline: string;
   detail: string | null;
   occurredAt: string;
+  cheerCount: number;
+  cheeredByMe: boolean;
+  isCurrentUser: boolean;
 }
 
 export interface GamificationContext {
   unlocked: boolean;
   optedIn: boolean;
   tableReady: boolean;
+  bucketGoal: string | null;
+  bucketExperience: string | null;
+  bucketLabel: string | null;
+  bucketPeerCount: number;
+  activePeerCount: number;
   leaderboard: LeaderboardEntryRow[];
   communityWins: CommunityWinRow[];
   userRank: number | null;
