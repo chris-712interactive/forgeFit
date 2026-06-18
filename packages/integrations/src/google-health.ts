@@ -92,23 +92,11 @@ interface ActiveMinutesRollupValue {
   }>;
 }
 
-interface RestingHeartRatePersonalRangeRollupValue {
-  beatsPerMinuteMin?: string | number;
-  beatsPerMinuteMax?: string | number;
-}
-
-interface HeartRateVariabilityPersonalRangeRollupValue {
-  averageHeartRateVariabilityMillisecondsMin?: string | number;
-  averageHeartRateVariabilityMillisecondsMax?: string | number;
-}
-
 interface DailyRollupPoint {
   civilStartTime?: CivilDateTime;
   steps?: { countSum?: string | number };
   activeEnergyBurned?: ActiveEnergyBurnedRollupValue;
   activeMinutes?: ActiveMinutesRollupValue;
-  restingHeartRatePersonalRange?: RestingHeartRatePersonalRangeRollupValue;
-  heartRateVariabilityPersonalRange?: HeartRateVariabilityPersonalRangeRollupValue;
 }
 
 function parseCount(value: string | number | undefined): number | null {
@@ -167,18 +155,12 @@ function isoDateToCivilEndExclusive(endDate: string): CivilDateTime {
 }
 
 const DAILY_ROLLUP_MAX_DAYS: Record<
-  | "steps"
-  | "active-energy-burned"
-  | "active-minutes"
-  | "daily-resting-heart-rate"
-  | "daily-heart-rate-variability",
+  "steps" | "active-energy-burned" | "active-minutes",
   number
 > = {
   steps: 90,
   "active-energy-burned": 90,
   "active-minutes": 14,
-  "daily-resting-heart-rate": 90,
-  "daily-heart-rate-variability": 90,
 };
 
 type DailyRollupDataType = keyof typeof DAILY_ROLLUP_MAX_DAYS;
@@ -599,19 +581,108 @@ function parseBpm(value: string | number | undefined): number | null {
   return Math.round(num);
 }
 
+interface CalendarDate {
+  year?: number;
+  month?: number;
+  day?: number;
+}
+
+function calendarDateToIso(date: CalendarDate | undefined): string | null {
+  if (!date?.year || !date?.month || !date?.day) return null;
+  return `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}`;
+}
+
+type DailyListDataType =
+  | "daily-resting-heart-rate"
+  | "daily-heart-rate-variability";
+
+const DAILY_LIST_FILTER_KEY: Record<DailyListDataType, string> = {
+  "daily-resting-heart-rate": "daily_resting_heart_rate",
+  "daily-heart-rate-variability": "daily_heart_rate_variability",
+};
+
+interface RecoveryListDataPoint {
+  dailyRestingHeartRate?: {
+    date?: CalendarDate;
+    beatsPerMinute?: string | number;
+  };
+  dailyHeartRateVariability?: {
+    date?: CalendarDate;
+    averageHeartRateVariabilityMilliseconds?: number;
+  };
+}
+
+async function fetchDailyListDataPointsPage(
+  accessToken: string,
+  dataType: DailyListDataType,
+  startDate: string,
+  endDate: string,
+  pageToken?: string
+): Promise<{ points: RecoveryListDataPoint[]; nextPageToken?: string }> {
+  const endExclusive = addDaysIso(endDate, 1);
+  const filterKey = DAILY_LIST_FILTER_KEY[dataType];
+  const filter = `${filterKey}.date >= "${startDate}" AND ${filterKey}.date < "${endExclusive}"`;
+  const params = new URLSearchParams({
+    filter,
+    pageSize: "100",
+  });
+  if (pageToken) {
+    params.set("pageToken", pageToken);
+  }
+
+  const response = await googleHealthFetch<{
+    dataPoints?: RecoveryListDataPoint[];
+    nextPageToken?: string;
+  }>(
+    accessToken,
+    `/users/me/dataTypes/${dataType}/dataPoints?${params.toString()}`,
+    undefined,
+    `Google Health ${dataType} (${startDate} to ${endDate})`
+  );
+
+  return {
+    points: response.dataPoints ?? [],
+    nextPageToken: response.nextPageToken,
+  };
+}
+
+async function fetchAllDailyListDataPoints(
+  accessToken: string,
+  dataType: DailyListDataType,
+  startDate: string,
+  endDate: string
+): Promise<RecoveryListDataPoint[]> {
+  const points: RecoveryListDataPoint[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const page = await fetchDailyListDataPointsPage(
+      accessToken,
+      dataType,
+      startDate,
+      endDate,
+      pageToken
+    );
+    points.push(...page.points);
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+
+  return points;
+}
+
 export async function fetchDailyRecoverySummaries(params: {
   accessToken: string;
   startDate: string;
   endDate: string;
 }): Promise<DailyRecoverySummary[]> {
-  const [rhrRollups, hrvRollups] = await Promise.all([
-    fetchDailyRollupChunked(
+  const [rhrPoints, hrvPoints] = await Promise.all([
+    fetchAllDailyListDataPoints(
       params.accessToken,
       "daily-resting-heart-rate",
       params.startDate,
       params.endDate
     ),
-    fetchDailyRollupChunked(
+    fetchAllDailyListDataPoints(
       params.accessToken,
       "daily-heart-rate-variability",
       params.startDate,
@@ -635,24 +706,28 @@ export async function fetchDailyRecoverySummaries(params: {
     return created;
   }
 
-  for (const point of rhrRollups) {
-    const date = civilStartToIso(point.civilStartTime);
+  for (const point of rhrPoints) {
+    const daily = point.dailyRestingHeartRate;
+    if (!daily) continue;
+    const date = calendarDateToIso(daily.date);
     if (!date) continue;
-    const rollup = point.restingHeartRatePersonalRange;
-    ensure(date).restingHrMin = parseBpm(rollup?.beatsPerMinuteMin);
-    ensure(date).restingHrMax = parseBpm(rollup?.beatsPerMinuteMax);
+    const bpm = parseBpm(daily.beatsPerMinute);
+    if (bpm == null) continue;
+    const row = ensure(date);
+    row.restingHrMin = bpm;
+    row.restingHrMax = bpm;
   }
 
-  for (const point of hrvRollups) {
-    const date = civilStartToIso(point.civilStartTime);
+  for (const point of hrvPoints) {
+    const daily = point.dailyHeartRateVariability;
+    if (!daily) continue;
+    const date = calendarDateToIso(daily.date);
     if (!date) continue;
-    const rollup = point.heartRateVariabilityPersonalRange;
-    ensure(date).hrvMsMin = parseBpm(
-      rollup?.averageHeartRateVariabilityMillisecondsMin
-    );
-    ensure(date).hrvMsMax = parseBpm(
-      rollup?.averageHeartRateVariabilityMillisecondsMax
-    );
+    const hrv = parseBpm(daily.averageHeartRateVariabilityMilliseconds);
+    if (hrv == null) continue;
+    const row = ensure(date);
+    row.hrvMsMin = hrv;
+    row.hrvMsMax = hrv;
   }
 
   return [...byDate.values()]

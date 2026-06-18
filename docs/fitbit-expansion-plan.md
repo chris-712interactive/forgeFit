@@ -12,8 +12,8 @@
 | Active minutes | `active-minutes` dailyRollUp | same | `daily_activity_logs` | Home, Progress |
 | Sleep duration | `sleep` list (sessions) | `sleep.readonly` | `daily_sleep_logs` | Home, Progress |
 | Sleep stages (deep/REM) | parsed from session summary | `sleep.readonly` | `daily_sleep_logs` | Progress detail |
-| **Resting HR range** | `daily-resting-heart-rate` dailyRollUp | **`health_metrics_and_measurements.readonly`** | **`daily_recovery_logs`** | **Progress** |
-| **HRV range** | `daily-heart-rate-variability` dailyRollUp | same | `daily_recovery_logs` | **Progress** |
+| **Resting HR range** | `daily-resting-heart-rate` **list** | **`health_metrics_and_measurements.readonly`** | **`daily_recovery_logs`** | **Progress** |
+| **HRV range** | `daily-heart-rate-variability` **list** | same | `daily_recovery_logs` | **Progress** |
 
 **Sync:** `syncFitbitForUser()` on connect, Profile/Home/Progress visit (6h stale window), daily cron.  
 **Insights:** Short sleep (Pro); elevated RHR during deload; HRV suppressed when volume climbs.
