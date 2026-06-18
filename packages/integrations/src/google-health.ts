@@ -669,11 +669,10 @@ function aggregateSleepSessions(sessions: SleepSession[]): DailySleepSummary[] {
 
 function sleepListFilter(startDate: string, endDate: string): string {
   const endExclusive = addDaysIso(endDate, 1);
-  const civilFilter = `sleep.interval.civil_end_time >= "${startDate}" AND sleep.interval.civil_end_time < "${endExclusive}"`;
+  // Sleep list only accepts end_time (RFC3339) — not civil_end_time and not OR expressions.
   const endUtcStart = `${startDate}T00:00:00Z`;
   const endUtcExclusive = `${endExclusive}T00:00:00Z`;
-  const endTimeFilter = `sleep.interval.end_time >= "${endUtcStart}" AND sleep.interval.end_time < "${endUtcExclusive}"`;
-  return `(${civilFilter}) OR (${endTimeFilter})`;
+  return `sleep.interval.end_time >= "${endUtcStart}" AND sleep.interval.end_time < "${endUtcExclusive}"`;
 }
 
 async function fetchSleepDataPointsPage(
