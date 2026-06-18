@@ -6,6 +6,7 @@ import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasProAccess } from "@/lib/billing/types";
 import { getDailyNutritionSummary } from "@/lib/nutrition/service";
+import { maybeSyncFitbitForUser } from "@/lib/integrations/fitbit-sync-scheduler";
 import { ensureActiveProgram } from "@/lib/programs/service";
 import type { FitnessGoal } from "@/lib/types/profile";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -27,9 +28,10 @@ export async function getHomeDashboardData(
 ): Promise<HomeDashboardData> {
   const supabase = await createClient();
 
-  const subscriptionPromise = getSubscriptionForUser(userId);
+  const subscription = await getSubscriptionForUser(userId);
+  await maybeSyncFitbitForUser(userId, subscription);
 
-  const [profileResult, plan, nutrition, sessionResult, subscription, activity] =
+  const [profileResult, plan, nutrition, sessionResult, activity] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -41,8 +43,7 @@ export async function getHomeDashboardData(
       ensureActiveProgram(userId),
       getDailyNutritionSummary(userId),
       getServerSessionRecords(userId, 120),
-      subscriptionPromise,
-      subscriptionPromise.then((sub) => getActivityContext(userId, sub)),
+      getActivityContext(userId, subscription),
     ]);
 
   const gamification = await getGamificationContext(
