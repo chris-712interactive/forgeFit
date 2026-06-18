@@ -59,9 +59,15 @@ describe("parseExerciseDataPoint", () => {
 });
 
 describe("exerciseListFilter", () => {
-  it("uses RFC3339 end_time bounds", () => {
+  it("uses civil_start_time bounds per Google Health session filter", () => {
     const filter = exerciseListFilter("2026-06-01", "2026-06-07");
-    assert.match(filter, /exercise\.interval\.end_time >= "2026-06-01T00:00:00Z"/);
-    assert.match(filter, /exercise\.interval\.end_time < "2026-06-08T00:00:00Z"/);
+    assert.match(
+      filter,
+      /exercise\.interval\.civil_start_time >= "2026-06-01"/
+    );
+    assert.match(
+      filter,
+      /exercise\.interval\.civil_start_time < "2026-06-08"/
+    );
   });
 });

@@ -1050,9 +1050,8 @@ export function parseExerciseDataPoint(point: ExerciseDataPoint): ExerciseSessio
 
 export function exerciseListFilter(startDate: string, endDate: string): string {
   const endExclusive = addDaysIso(endDate, 1);
-  const endUtcStart = `${startDate}T00:00:00Z`;
-  const endUtcExclusive = `${endExclusive}T00:00:00Z`;
-  return `exercise.interval.end_time >= "${endUtcStart}" AND exercise.interval.end_time < "${endUtcExclusive}"`;
+  // Exercise sessions filter by civil_start_time only — end_time is sleep-specific.
+  return `exercise.interval.civil_start_time >= "${startDate}" AND exercise.interval.civil_start_time < "${endExclusive}"`;
 }
 
 async function fetchExerciseDataPointsPage(
