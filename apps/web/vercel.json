@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/sync-fitbit",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/community-sunday-nudge",
+      "schedule": "0 22 * * 0"
     }
   ]
 }

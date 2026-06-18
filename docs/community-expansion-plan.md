@@ -1,7 +1,7 @@
 # Community Expansion Plan
 
 > Adoption-focused competition layer — MapMyRun-style visible rivalry, fair buckets, and weekly urgency.  
-> **Phases 1–3** are implemented. Phases 4–6 are planned.
+> **Phases 1–4** are implemented. Phases 5–6 are planned.
 
 Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket stats before opt-in; Pro unlocks full participation.
 
@@ -31,6 +31,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 | Mark read / mark all read | `community.ts` actions | — |
 | Weekly bucket challenge + crew squads | `weekly-challenge-card.tsx`, `crew-panel.tsx` | `20260610800000` |
 | Crew win feed + shareable recap | `crew-wins-feed.tsx`, `share-recap-button.tsx` | — |
+| Web push + preferences + Sunday nudge | `community-push-setting.tsx`, `community-push.ts` | `20260610820000` |
 
 **Scoring:** Habit score 0–100 — training 40 / protein 35 / quality 25. Buckets by goal × experience.
 
@@ -79,11 +80,23 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 
 ---
 
-## Phase 4 — Push & loops (planned)
+## Phase 4 — Push & loops ✅ Shipped
 
-- Web Push subscription + notification preferences
-- Rival activity + cheer received pushes
-- Sunday “final hours” nudge
+- Web Push subscription (VAPID) + service worker handlers
+- Profile notification preferences (rank passed, rival, cheer, Sunday nudge, etc.)
+- In-app notification triggers also send push when enabled
+- Sunday cron (`/api/cron/community-sunday-nudge`) — 10 PM UTC for final-hours nudge
+
+**Migration:** `20260610820000_community_push.sql`
+
+**Env:** `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `SUPABASE_SERVICE_ROLE_KEY`
+
+**Key files:**
+- `community-push.ts`, `app/actions/community-push.ts`
+- `app/api/community/push/subscribe`, `app/api/community/push/vapid-key`
+- `app/api/cron/community-sunday-nudge`
+- `components/profile/community-push-setting.tsx`
+- `app/sw.ts` — push + notificationclick handlers
 
 ---
 
@@ -113,6 +126,8 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 5. `20260610730000_community_follows_rls_leaderboard.sql` — **required for follow buttons**
 6. `20260610740000_community_notifications_update_rls.sql` — individual mark-read UPDATE policy
 7. `20260610800000_community_crews_challenges.sql` — crews + weekly challenge status
+8. `20260610810000_community_crew_members_rls_fix.sql` — **required if crew create fails with RLS recursion**
+9. `20260610820000_community_push.sql` — web push subscriptions + preferences
 
 ---
 

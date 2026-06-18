@@ -5,6 +5,7 @@ import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
 import { ProfileSettingsHub } from "@/components/profile/profile-settings-hub";
 import { getUserEquipmentSettings } from "@/lib/equipment/service";
 import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
+import { getCommunityPushSettings } from "@/lib/coaching/community-push";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasFeature } from "@/lib/billing/gates";
 import { isStripeProConfigured } from "@/lib/billing/stripe";
@@ -59,11 +60,12 @@ export default async function ProfilePage({
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [oneRepMaxes, equipmentSettings, subscription] = user
+  const [oneRepMaxes, equipmentSettings, subscription, communityPush] = user
     ? await Promise.all([
         getUserOneRepMaxes(user.id),
         getUserEquipmentSettings(user.id),
         getSubscriptionForUser(user.id),
+        getCommunityPushSettings(user.id),
       ])
     : [
         { rows: [], tableReady: true },
@@ -82,6 +84,18 @@ export default async function ProfilePage({
           status: "inactive" as const,
           currentPeriodEnd: null,
           cancelAtPeriodEnd: false,
+        },
+        {
+          configured: false,
+          subscribed: false,
+          preferences: {
+            rankPassed: true,
+            closeToPass: true,
+            rivalEvents: true,
+            cheerReceived: true,
+            followMutual: true,
+            sundayNudge: true,
+          },
         },
       ];
 
@@ -127,6 +141,7 @@ export default async function ProfilePage({
           integrationError={integrationError ?? integrationsLoadError}
           gamificationUnlocked={hasFeature(subscription, "gamification")}
           gamificationOptIn={profile?.gamification_opt_in ?? false}
+          communityPush={communityPush}
           unit={unit}
           initialGoal={profile?.primary_goal ?? null}
           initialSessionsPerWeek={profile?.sessions_per_week ?? null}

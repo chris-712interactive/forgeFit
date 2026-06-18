@@ -71,6 +71,18 @@ export async function insertCommunityNotification(input: {
 
   if (error && !isSocialTableMissing(error)) {
     console.error("community notification insert failed:", error.message);
+    return;
+  }
+
+  if (!error) {
+    void import("./community-push").then(({ sendCommunityPushForNotification }) =>
+      sendCommunityPushForNotification({
+        userId: input.userId,
+        type: input.type,
+        title: input.title,
+        body: input.body,
+      })
+    );
   }
 }
 

@@ -56,6 +56,52 @@ alter table community_crews enable row level security;
 alter table community_crew_members enable row level security;
 alter table community_weekly_challenge_status enable row level security;
 
+-- SECURITY DEFINER helpers avoid RLS infinite recursion on community_crew_members.
+create or replace function public.is_community_crew_member(p_crew_id uuid, p_user_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.community_crew_members
+    where crew_id = p_crew_id
+      and user_id = p_user_id
+  );
+$$;
+
+create or replace function public.community_crew_member_count(p_crew_id uuid)
+returns integer
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select count(*)::integer
+  from public.community_crew_members
+  where crew_id = p_crew_id;
+$$;
+
+create or replace function public.user_has_community_crew(p_user_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.community_crew_members
+    where user_id = p_user_id
+  );
+$$;
+
+grant execute on function public.is_community_crew_member(uuid, uuid) to authenticated;
+grant execute on function public.community_crew_member_count(uuid) to authenticated;
+grant execute on function public.user_has_community_crew(uuid) to authenticated;
+
 -- Crews: members read their crew; same-bucket users can read for join preview.
 create policy "Read crews in same bucket"
   on community_crews
@@ -83,11 +129,7 @@ create policy "Create crew when opted in"
         and me.primary_goal::text = bucket_goal
         and me.experience_level::text = bucket_experience
     )
-    and not exists (
-      select 1
-      from community_crew_members m
-      where m.user_id = auth.uid()
-    )
+    and not public.user_has_community_crew(auth.uid())
   );
 
 create policy "Owner deletes crew"
@@ -99,12 +141,8 @@ create policy "Read crew members in shared crew"
   on community_crew_members
   for select
   using (
-    exists (
-      select 1
-      from community_crew_members mine
-      where mine.crew_id = community_crew_members.crew_id
-        and mine.user_id = auth.uid()
-    )
+    user_id = auth.uid()
+    or public.is_community_crew_member(crew_id, auth.uid())
   );
 
 create policy "Join crew when opted in and same bucket"
@@ -126,16 +164,8 @@ create policy "Join crew when opted in and same bucket"
         and c.bucket_goal = me.primary_goal::text
         and c.bucket_experience = me.experience_level::text
     )
-    and (
-      select count(*)::int
-      from community_crew_members existing
-      where existing.crew_id = community_crew_members.crew_id
-    ) < 8
-    and not exists (
-      select 1
-      from community_crew_members other
-      where other.user_id = auth.uid()
-    )
+    and public.community_crew_member_count(crew_id) < 8
+    and not public.user_has_community_crew(auth.uid())
   );
 
 create policy "Leave own crew membership"

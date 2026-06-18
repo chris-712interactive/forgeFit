@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Community Phase 3 — crews & challenges |
+| **Last session focus** | Community Phase 4 — web push notifications |
 
 ---
 
@@ -28,11 +28,26 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| — | Community expansion (Phases 1–3) | ✅ Complete | 2026-06 |
+| — | Community expansion (Phases 1–4) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-06-08 — Community Phase 4 (web push)
+
+**What was done:**
+- Migration `20260610820000_community_push.sql` — push subscriptions + preferences
+- VAPID web push via `web-push`; subscribe API; Profile preference toggles
+- Service worker push + notification click handlers in `sw.ts`
+- In-app community notifications also send push when enabled
+- Sunday cron `/api/cron/community-sunday-nudge` (22:00 UTC Sundays)
+
+**Setup:** VAPID keys + `SUPABASE_SERVICE_ROLE_KEY` (see `.env.example`)
+
+**What's next:** Community Phase 5 — leagues & seasons
+
+---
 
 ### 2026-06-08 — Community Phase 3 (crews & challenges)
 

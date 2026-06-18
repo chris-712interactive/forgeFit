@@ -67,6 +67,8 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 30. `20260610730000_community_follows_rls_leaderboard.sql` — **required for follow buttons**
 31. `20260610740000_community_notifications_update_rls.sql` — individual mark-read
 32. `20260610800000_community_crews_challenges.sql` — crews + weekly challenges
+33. `20260610810000_community_crew_members_rls_fix.sql` — crew member RLS recursion fix
+34. `20260610820000_community_push.sql` — web push subscriptions + preferences
 
 ## 4. Auth providers
 
