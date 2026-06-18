@@ -189,19 +189,13 @@ export async function getFriendsLeaderboard(
   const missingIds = mutualIds.filter((id) => !labelByUserId.has(id));
   if (missingIds.length > 0) {
     const supabase = await createClient();
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name, display_name, email")
-      .in("id", missingIds);
+    const { data: entries } = await supabase
+      .from("leaderboard_entries")
+      .select("user_id, display_label")
+      .in("user_id", missingIds);
 
-    for (const row of profiles ?? []) {
-      const first = row.first_name as string | null;
-      const label =
-        first ??
-        (row.display_name as string | null) ??
-        (row.email as string | null)?.split("@")[0] ??
-        "Forge athlete";
-      labelByUserId.set(row.id as string, label);
+    for (const row of entries ?? []) {
+      labelByUserId.set(row.user_id as string, row.display_label as string);
     }
   }
 
@@ -332,19 +326,17 @@ export async function toggleCommunityFollow(
 
   const supabase = await createClient();
 
-  const { data: profiles, error: profileError } = await supabase
+  const { data: follower, error: followerError } = await supabase
     .from("profiles")
-    .select("id, primary_goal, experience_level, gamification_opt_in")
-    .in("id", [followerId, followeeId]);
+    .select("primary_goal, experience_level, gamification_opt_in")
+    .eq("id", followerId)
+    .single();
 
-  if (profileError) {
-    return { following: false, isMutual: false, error: profileError.message };
+  if (followerError || !follower) {
+    return { following: false, isMutual: false, error: "Profile not found." };
   }
 
-  const follower = profiles?.find((row) => row.id === followerId);
-  const followee = profiles?.find((row) => row.id === followeeId);
-
-  if (!follower?.gamification_opt_in) {
+  if (!follower.gamification_opt_in) {
     return {
       following: false,
       isMutual: false,
@@ -360,18 +352,35 @@ export async function toggleCommunityFollow(
     };
   }
 
-  if (!followee) {
-    return { following: false, isMutual: false, error: "Athlete not found." };
+  const bucketGoal = String(follower.primary_goal);
+  const bucketExperience = String(follower.experience_level);
+
+  // Profiles RLS is own-row only — validate peers via leaderboard_entries instead.
+  const { data: peerEntry, error: peerError } = await supabase
+    .from("leaderboard_entries")
+    .select("user_id")
+    .eq("user_id", followeeId)
+    .eq("bucket_goal", bucketGoal)
+    .eq("bucket_experience", bucketExperience)
+    .limit(1)
+    .maybeSingle();
+
+  if (peerError) {
+    if (isSocialTableMissing(peerError)) {
+      return {
+        following: false,
+        isMutual: false,
+        error: "Apply the community social migration to enable follows.",
+      };
+    }
+    return { following: false, isMutual: false, error: peerError.message };
   }
 
-  if (
-    follower.primary_goal !== followee.primary_goal ||
-    follower.experience_level !== followee.experience_level
-  ) {
+  if (!peerEntry) {
     return {
       following: false,
       isMutual: false,
-      error: "You can only follow athletes in your goal and experience bucket.",
+      error: "Athlete not found in your community bucket.",
     };
   }
 
@@ -456,6 +465,19 @@ export async function toggleCommunityFollow(
 
 async function resolveDisplayLabel(userId: string): Promise<string> {
   const supabase = await createClient();
+
+  const { data: entry } = await supabase
+    .from("leaderboard_entries")
+    .select("display_label")
+    .eq("user_id", userId)
+    .order("week_start", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (entry?.display_label) {
+    return entry.display_label as string;
+  }
+
   const { data } = await supabase
     .from("profiles")
     .select("first_name, display_name, email")
