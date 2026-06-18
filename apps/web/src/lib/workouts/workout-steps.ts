@@ -1,13 +1,14 @@
 import type { ExerciseSnapshot, LocalExerciseSet, LocalWorkoutSession } from "@forgefit/offline-sync";
 
 export type WorkoutStep =
+  | { kind: "overview" }
   | { kind: "warmup" }
   | { kind: "exercise"; exerciseIndex: number }
   | { kind: "recovery" }
   | { kind: "finish" };
 
 export function buildWorkoutSteps(session: LocalWorkoutSession): WorkoutStep[] {
-  const steps: WorkoutStep[] = [];
+  const steps: WorkoutStep[] = [{ kind: "overview" }];
 
   if (session.warmupBlock) {
     steps.push({ kind: "warmup" });
@@ -30,6 +31,8 @@ export function stepLabel(
   session: LocalWorkoutSession
 ): string {
   switch (step.kind) {
+    case "overview":
+      return "Equipment check";
     case "warmup":
       return "Warm-up";
     case "exercise":
@@ -46,6 +49,16 @@ export function initialStepIndex(
   session: LocalWorkoutSession,
   sets: LocalExerciseSet[]
 ): number {
+  const hasProgress =
+    session.warmupStatus === "completed" ||
+    session.warmupStatus === "skipped" ||
+    sets.some((set) => set.completed);
+
+  if (!hasProgress) {
+    const overviewIndex = steps.findIndex((step) => step.kind === "overview");
+    if (overviewIndex >= 0) return overviewIndex;
+  }
+
   if (
     session.warmupBlock &&
     (session.warmupStatus === "pending" || !session.warmupStatus)
@@ -82,6 +95,8 @@ export function canAdvanceFromStep(
   session: LocalWorkoutSession
 ): boolean {
   switch (step.kind) {
+    case "overview":
+      return true;
     case "warmup":
       return (
         session.warmupStatus === "completed" ||

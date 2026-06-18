@@ -118,6 +118,55 @@ export async function startWorkoutSession(input: {
   return clientId;
 }
 
+export async function appendExerciseSet(input: {
+  sessionClientId: string;
+  userId: string;
+  exerciseId: string;
+  exerciseName: string;
+  prefill?: Pick<LocalExerciseSet, "weightKg" | "reps" | "durationMs">;
+}): Promise<LocalExerciseSet | undefined> {
+  const db = getOfflineDb();
+  const session = await db.workoutSessions.get(input.sessionClientId);
+  if (!session || session.status !== "in_progress") return undefined;
+
+  const existingSets = await db.exerciseSets
+    .where("sessionClientId")
+    .equals(input.sessionClientId)
+    .filter((set) => set.exerciseId === input.exerciseId)
+    .toArray();
+
+  const maxSetNumber = existingSets.reduce(
+    (max, set) => Math.max(max, set.setNumber),
+    0
+  );
+
+  const timestamp = nowIso();
+  const created: LocalExerciseSet = {
+    clientId: crypto.randomUUID(),
+    sessionClientId: input.sessionClientId,
+    userId: input.userId,
+    exerciseId: input.exerciseId,
+    exerciseName: input.exerciseName,
+    setNumber: maxSetNumber + 1,
+    weightKg: input.prefill?.weightKg,
+    reps: input.prefill?.reps,
+    durationMs: input.prefill?.durationMs,
+    completed: false,
+    updatedAt: timestamp,
+    synced: false,
+  };
+
+  await db.transaction("rw", db.workoutSessions, db.exerciseSets, async () => {
+    await db.exerciseSets.add(created);
+    await db.workoutSessions.update(input.sessionClientId, {
+      updatedAt: timestamp,
+      synced: false,
+    });
+  });
+
+  return created;
+}
+
 export async function updateSet(
   clientId: string,
   patch: Partial<

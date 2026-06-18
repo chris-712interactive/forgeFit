@@ -35,6 +35,7 @@ import {
 } from "@/lib/workouts/workout-steps";
 import {
   completeWorkoutSession,
+  appendExerciseSet,
   getSession,
   getSetsForSession,
   updateSet,
@@ -43,6 +44,18 @@ import {
   type LocalExerciseSet,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  buildEasySetSuggestion,
+  type EasySetSuggestion,
+} from "@/lib/workouts/in-session-progression";
+import { collectSessionEquipment } from "@/lib/workouts/session-equipment";
+import {
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
+import { EasySetSuggestionBanner } from "./easy-set-suggestion";
+import { WorkoutEquipmentOverviewCard } from "./workout-equipment-overview-card";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
@@ -101,6 +114,12 @@ export function ActiveWorkout({
   );
   const sessionBestE1rmRef = useRef<Map<string, number>>(new Map());
   const offline = useOfflineStatus();
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
+  const [easySuggestion, setEasySuggestion] = useState<{
+    setClientId: string;
+    suggestion: EasySetSuggestion;
+  } | null>(null);
 
   const goBack = useCallback(() => {
     onBack?.();
@@ -155,8 +174,16 @@ export function ActiveWorkout({
       group.push(set);
       map.set(set.exerciseId, group);
     }
+    for (const group of map.values()) {
+      group.sort((a, b) => a.setNumber - b.setNumber);
+    }
     return map;
   }, [sets]);
+
+  const sessionEquipment = useMemo(
+    () => (session ? collectSessionEquipment(session) : []),
+    [session]
+  );
 
   const completedCount = sets.filter((s) => s.completed).length;
   const totalCount = sets.length;
@@ -166,6 +193,99 @@ export function ActiveWorkout({
     setTimedTimer(null);
     setWarmupTimer(null);
     setRecoveryTimer(null);
+  }
+
+  function refreshEasySuggestion(
+    setRow: LocalExerciseSet,
+    patch: Partial<Pick<LocalExerciseSet, "rir">>
+  ) {
+    if (!session) return;
+
+    const nextRir = patch.rir ?? setRow.rir;
+    if (nextRir == null || nextRir < 3) {
+      setEasySuggestion((current) =>
+        current?.setClientId === setRow.clientId ? null : current
+      );
+      return;
+    }
+
+    const exercise = session.exercises.find(
+      (item) => item.exerciseId === setRow.exerciseId
+    );
+    if (!exercise) return;
+
+    const isTimed = isTimedExercise(exercise.exerciseId);
+    const timedPrescription = isTimed
+      ? resolveTimedPrescription(
+          exercise.exerciseId,
+          exercise.reps,
+          experienceLevel as HoldExperience
+        )
+      : exercise.reps;
+    const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
+
+    const suggestion = buildEasySetSuggestion({
+      set: { ...setRow, rir: nextRir },
+      exerciseId: exercise.exerciseId,
+      targetReps: timedPrescription,
+      plannedSets: exercise.sets,
+      plannedExtraSets: exercise.extraSets ?? 0,
+      allSetsForExercise: exerciseSets,
+      experienceLevel: coaching?.experienceLevel ?? experienceLevel,
+      goal: coaching?.goal ?? "general_strength",
+      unit,
+      isDeloadWeek: coaching?.isDeloadWeek ?? false,
+      estimatedE1rmKg: coaching?.priorBestE1rmKg[exercise.exerciseId],
+    });
+
+    if (suggestion) {
+      setEasySuggestion({ setClientId: setRow.clientId, suggestion });
+    } else {
+      setEasySuggestion((current) =>
+        current?.setClientId === setRow.clientId ? null : current
+      );
+    }
+  }
+
+  async function handleApplyEasyWeight() {
+    const nextSetClientId = easySuggestion?.suggestion.nextSetClientId;
+    const suggestedWeightKg = easySuggestion?.suggestion.suggestedWeightKg;
+    if (!nextSetClientId || suggestedWeightKg == null) return;
+
+    await handleSetUpdate(nextSetClientId, { weightKg: suggestedWeightKg });
+    setEasySuggestion(null);
+  }
+
+  async function handleAddBonusSet(setRow: LocalExerciseSet) {
+    if (!session) return;
+
+    const created = await appendExerciseSet({
+      sessionClientId: clientId,
+      userId: session.userId,
+      exerciseId: setRow.exerciseId,
+      exerciseName: setRow.exerciseName,
+      prefill: {
+        weightKg: setRow.weightKg,
+        reps: setRow.reps,
+        durationMs: setRow.durationMs,
+      },
+    });
+
+    if (created) {
+      setSets((prev) =>
+        [...prev, created].sort(
+          (a, b) =>
+            a.exerciseId.localeCompare(b.exerciseId) ||
+            a.setNumber - b.setNumber
+        )
+      );
+    }
+
+    setEasySuggestion(null);
+    void sync?.refreshPending();
+    if (navigator.onLine) {
+      void sync?.runSync();
+    }
   }
 
   function goToStep(index: number) {
@@ -196,6 +316,7 @@ export function ActiveWorkout({
   ) {
     const wasCompleted = sets.find((s) => s.clientId === setClientId)?.completed;
     const completing = patch.completed === true && !wasCompleted;
+    const currentSet = sets.find((s) => s.clientId === setClientId);
 
     const updated = await updateSet(setClientId, {
       ...patch,
@@ -207,6 +328,10 @@ export function ActiveWorkout({
       setSets((prev) =>
         prev.map((s) => (s.clientId === setClientId ? updated : s))
       );
+    }
+
+    if (currentSet && patch.rir !== undefined) {
+      refreshEasySuggestion(currentSet, patch);
     }
 
     if (patch.completed === true) {
@@ -484,35 +609,65 @@ export function ActiveWorkout({
         </div>
 
         <div className="space-y-3">
-          {exerciseSets.map((set) => (
-            <SetRow
-              key={set.clientId}
-              set={set}
-              exerciseId={exercise.exerciseId}
-              targetReps={timedPrescription}
-              targetTimerSeconds={targetTimerSeconds}
-              isTimerActive={timedTimer?.setClientId === set.clientId}
-              showProgressionHint={Boolean(
-                exercise.progressionNote &&
-                  !set.completed &&
-                  (isTimed
-                    ? set.durationMs != null || set.reps != null
-                    : set.weightKg != null || set.reps != null)
-              )}
-              onStartTimer={
-                isTimed && targetTimerSeconds
-                  ? (setClientId) =>
-                      handleStartTimer(
-                        setClientId,
-                        exercise.exerciseId,
-                        targetTimerSeconds,
-                        timerLabel
-                      )
-                  : undefined
-              }
-              onUpdate={handleSetUpdate}
-            />
-          ))}
+          {exerciseSets.map((set) => {
+            const activeSuggestion =
+              easySuggestion?.setClientId === set.clientId
+                ? easySuggestion.suggestion
+                : null;
+            const displayWeight =
+              activeSuggestion?.suggestedWeightKg != null
+                ? kgToDisplayValue(activeSuggestion.suggestedWeightKg, unit)
+                : undefined;
+            const canAddBonusSet =
+              exerciseSets.length <
+              exercise.sets + (exercise.extraSets ?? 0) + 1;
+
+            return (
+              <div key={set.clientId}>
+                <SetRow
+                  set={set}
+                  exerciseId={exercise.exerciseId}
+                  targetReps={timedPrescription}
+                  targetTimerSeconds={targetTimerSeconds}
+                  isTimerActive={timedTimer?.setClientId === set.clientId}
+                  showProgressionHint={Boolean(
+                    exercise.progressionNote &&
+                      !set.completed &&
+                      (isTimed
+                        ? set.durationMs != null || set.reps != null
+                        : set.weightKg != null || set.reps != null)
+                  )}
+                  onStartTimer={
+                    isTimed && targetTimerSeconds
+                      ? (setClientId) =>
+                          handleStartTimer(
+                            setClientId,
+                            exercise.exerciseId,
+                            targetTimerSeconds,
+                            timerLabel
+                          )
+                      : undefined
+                  }
+                  onUpdate={handleSetUpdate}
+                />
+                {activeSuggestion && (
+                  <EasySetSuggestionBanner
+                    suggestion={activeSuggestion}
+                    weightLabel={weightLabel}
+                    displayWeight={displayWeight}
+                    canAddBonusSet={canAddBonusSet}
+                    onApplyWeight={
+                      activeSuggestion.kind === "increase_weight"
+                        ? () => void handleApplyEasyWeight()
+                        : undefined
+                    }
+                    onAddBonusSet={() => void handleAddBonusSet(set)}
+                    onDismiss={() => setEasySuggestion(null)}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {exerciseSetsComplete && (
@@ -528,6 +683,13 @@ export function ActiveWorkout({
     if (!session || !currentStep) return null;
 
     switch (currentStep.kind) {
+      case "overview":
+        return (
+          <WorkoutEquipmentOverviewCard
+            sessionName={session.sessionName}
+            equipment={sessionEquipment}
+          />
+        );
       case "warmup":
         return (
           <WarmupBlockCard
