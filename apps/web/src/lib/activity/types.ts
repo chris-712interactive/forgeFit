@@ -20,7 +20,12 @@ export interface ActivityContext {
   lastSyncAt: string | null;
   lastSyncError: string | null;
   tableReady: boolean;
+  /** Best day to show on Home — prefers today, then yesterday, then latest log. */
   today: DailyActivityLog | null;
+  /** Label for the Home activity row ("Today", "Yesterday", or a short date). */
+  activityDayLabel: string;
+  /** True when any stored day in the chart window has metrics. */
+  hasActivityData: boolean;
   series: DailyActivityLog[];
   weekStats: DailyActivityStats | null;
 }

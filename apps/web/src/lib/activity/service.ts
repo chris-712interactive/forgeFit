@@ -103,6 +103,51 @@ function computeStats(logs: DailyActivityLog[]): DailyActivityStats | null {
   };
 }
 
+function hasActivityMetrics(log: DailyActivityLog): boolean {
+  return (
+    log.steps != null ||
+    log.activeCalories != null ||
+    log.activeMinutes != null
+  );
+}
+
+function formatActivityDayLabel(
+  isoDate: string | undefined,
+  utcToday: string
+): string {
+  if (!isoDate) return "Today";
+  if (isoDate === utcToday) return "Today";
+  if (isoDate === subtractDays(utcToday, 1)) return "Yesterday";
+  return new Date(`${isoDate}T12:00:00`).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/** Prefer today's log; fall back for timezone gaps or partial syncs. */
+function resolveDisplayDay(
+  logs: DailyActivityLog[],
+  utcToday: string
+): DailyActivityLog | null {
+  const byDate = new Map(logs.map((log) => [log.activityDate, log]));
+  const todayLog = byDate.get(utcToday) ?? null;
+
+  if (todayLog && hasActivityMetrics(todayLog)) {
+    return todayLog;
+  }
+
+  const yesterdayLog = byDate.get(subtractDays(utcToday, 1)) ?? null;
+  if (yesterdayLog && hasActivityMetrics(yesterdayLog)) {
+    return yesterdayLog;
+  }
+
+  const latest = [...logs]
+    .filter(hasActivityMetrics)
+    .sort((a, b) => b.activityDate.localeCompare(a.activityDate))[0];
+
+  return latest ?? todayLog;
+}
+
 function emptyActivityContext(
   overrides: Partial<ActivityContext> = {}
 ): ActivityContext {
@@ -113,6 +158,8 @@ function emptyActivityContext(
     lastSyncError: null,
     tableReady: true,
     today: null,
+    activityDayLabel: "Today",
+    hasActivityData: false,
     series: [],
     weekStats: null,
     ...overrides,
@@ -133,9 +180,10 @@ export async function getActivityContext(
   const fitbit = statuses.find((status) => status.provider === "fitbit");
   const fitbitConnected = fitbit?.connected ?? false;
 
-  const today = todayIsoDate();
-  const chartStart = subtractDays(today, CHART_DAYS - 1);
-  const weekStart = subtractDays(today, WEEK_DAYS - 1);
+  const utcToday = todayIsoDate();
+  const chartStart = subtractDays(utcToday, CHART_DAYS - 1);
+  const chartEnd = addDays(utcToday, 1);
+  const weekStart = subtractDays(utcToday, WEEK_DAYS - 1);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -143,7 +191,7 @@ export async function getActivityContext(
     .select("activity_date, steps, active_calories, active_minutes, source")
     .eq("user_id", userId)
     .gte("activity_date", chartStart)
-    .lte("activity_date", today)
+    .lte("activity_date", chartEnd)
     .order("activity_date", { ascending: true });
 
   if (error) {
@@ -157,7 +205,9 @@ export async function getActivityContext(
   }
 
   const logs = (data ?? []).map(mapActivityRow);
-  const series = fillDateSeries(logs, chartStart, today);
+  const hasActivityData = logs.some(hasActivityMetrics);
+  const displayDay = resolveDisplayDay(logs, utcToday);
+  const series = fillDateSeries(logs, chartStart, utcToday);
   const weekLogs = series.filter((log) => log.activityDate >= weekStart);
 
   return {
@@ -166,7 +216,12 @@ export async function getActivityContext(
     lastSyncAt: fitbit?.lastSyncAt ?? null,
     lastSyncError: fitbit?.lastSyncError ?? null,
     tableReady: true,
-    today: series.find((log) => log.activityDate === today) ?? null,
+    today: displayDay,
+    activityDayLabel: formatActivityDayLabel(
+      displayDay?.activityDate,
+      utcToday
+    ),
+    hasActivityData,
     series,
     weekStats: computeStats(weekLogs),
   };

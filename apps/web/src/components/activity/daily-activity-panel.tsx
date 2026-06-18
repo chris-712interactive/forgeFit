@@ -7,7 +7,7 @@ interface DailyActivityPanelProps {
 }
 
 export function DailyActivityPanel({ activity }: DailyActivityPanelProps) {
-  if (!activity.fitbitConnected) {
+  if (!activity.fitbitConnected && !activity.hasActivityData) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] p-6 text-sm text-forge-muted">
         <p>
