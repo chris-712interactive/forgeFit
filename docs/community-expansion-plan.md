@@ -1,7 +1,7 @@
 # Community Expansion Plan
 
 > Adoption-focused competition layer — MapMyRun-style visible rivalry, fair buckets, and weekly urgency.  
-> **Phases 1–2** are implemented. Phases 3–6 are planned.
+> **Phases 1–3** are implemented. Phases 4–6 are planned.
 
 Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket stats before opt-in; Pro unlocks full participation.
 
@@ -29,6 +29,8 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 | Follow / friends board | `community-follow-button.tsx`, `friends-leaderboard.tsx` | `20260610700000`, RLS fixes `10710000`/`10730000` |
 | In-app notifications (passed, close to pass, rival, cheer, mutual follow) | `community-notifications-panel.tsx` | `20260610700000`, update RLS `10740000` |
 | Mark read / mark all read | `community.ts` actions | — |
+| Weekly bucket challenge + crew squads | `weekly-challenge-card.tsx`, `crew-panel.tsx` | `20260610800000` |
+| Crew win feed + shareable recap | `crew-wins-feed.tsx`, `share-recap-button.tsx` | — |
 
 **Scoring:** Habit score 0–100 — training 40 / protein 35 / quality 25. Buckets by goal × experience.
 
@@ -59,12 +61,21 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 
 ---
 
-## Phase 3 — Crews & challenges (planned)
+## Phase 3 — Crews & challenges ✅ Shipped
 
-- Crew create/join/invite link (3–8 members)
-- Weekly bucket challenge engine + progress UI
-- Crew shared goal + crew feed filter
-- Shareable weekly recap card
+- Crew create/join via invite link (`/community/join?code=…`) — 3–8 members, one crew per user
+- Weekly bucket challenge (rotates: plan completion, quality sessions, protein days)
+- Personal + bucket completion counts on challenge card
+- Crew shared goal: 80% of members complete the weekly challenge
+- Crew-scoped win feed with cheers
+- Shareable weekly recap (Web Share API + clipboard fallback)
+
+**Migration:** `20260610800000_community_crews_challenges.sql`
+
+**Key files:**
+- `community-crews.ts`, `community-challenges.ts`
+- `crew-panel.tsx`, `weekly-challenge-card.tsx`, `crew-wins-feed.tsx`, `share-recap-button.tsx`
+- `app/actions/community.ts` — `createCrew`, `joinCrewByCode`, `leaveCrew`
 
 ---
 
@@ -101,6 +112,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 4. `20260610710000_community_follows_rls_fix.sql` (superseded by 10730000 if re-run)
 5. `20260610730000_community_follows_rls_leaderboard.sql` — **required for follow buttons**
 6. `20260610740000_community_notifications_update_rls.sql` — individual mark-read UPDATE policy
+7. `20260610800000_community_crews_challenges.sql` — crews + weekly challenge status
 
 ---
 

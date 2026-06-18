@@ -27,6 +27,7 @@ Community expansion roadmap: [docs/community-expansion-plan.md](../community-exp
 - [x] Community win feed + cheers (Pro)
 - [x] `/community` tab, rank delta, habit breakdown, weekly recap (Community Phase 1)
 - [x] Weekly rival, follows, in-app notifications (Community Phase 2)
+- [x] Crews, bucket challenges, crew feed, share recap (Community Phase 3)
 
 ## Migrations
 
@@ -37,6 +38,7 @@ Community expansion roadmap: [docs/community-expansion-plan.md](../community-exp
 | `20260610700000_community_social.sql` | Follows, rivals, notifications |
 | `20260610730000_community_follows_rls_leaderboard.sql` | Follow RLS fix |
 | `20260610740000_community_notifications_update_rls.sql` | Notification mark-read RLS |
+| `20260610800000_community_crews_challenges.sql` | Crews + weekly challenge tracking |
 
 ## Notes
 

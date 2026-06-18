@@ -1,5 +1,6 @@
 import type { WeeklyCommunityRecap } from "@/lib/coaching/types";
 import Link from "next/link";
+import { ShareRecapButton } from "@/components/coaching/share-recap-button";
 
 interface WeeklyCommunityRecapCardProps {
   recap: WeeklyCommunityRecap;
@@ -25,6 +26,7 @@ export function WeeklyCommunityRecapCard({ recap }: WeeklyCommunityRecapCardProp
         )}{" "}
         <span className="text-forge-muted">({recap.weekLabel})</span>
       </p>
+      <ShareRecapButton recap={recap} />
       <p className="mt-1 text-xs text-forge-muted">
         New week — climb the board again.{" "}
         <Link

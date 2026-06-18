@@ -1,6 +1,9 @@
 "use client";
 
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
+import { CrewPanel } from "@/components/coaching/crew-panel";
+import { CrewWinsFeed } from "@/components/coaching/crew-wins-feed";
+import { WeeklyChallengeCard } from "@/components/coaching/weekly-challenge-card";
 import { CommunityFollowButton } from "@/components/coaching/community-follow-button";
 import { CommunityNotificationsPanel } from "@/components/coaching/community-notifications-panel";
 import { FriendsLeaderboard } from "@/components/coaching/friends-leaderboard";
@@ -22,6 +25,10 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
     followState,
     notifications,
     unreadNotificationCount,
+    crew,
+    weeklyChallenge,
+    crewChallenge,
+    crewWins,
   } = data;
 
   return (
@@ -41,6 +48,16 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
         showLeaderboard={false}
         showWins={false}
       />
+
+      {gamification.optedIn && weeklyChallenge && (
+        <WeeklyChallengeCard challenge={weeklyChallenge} />
+      )}
+
+      {gamification.optedIn && (
+        <CrewPanel crew={crew} crewChallenge={crewChallenge} />
+      )}
+
+      {gamification.optedIn && crew && <CrewWinsFeed wins={crewWins} />}
 
       {gamification.optedIn && (
         <CommunityNotificationsPanel

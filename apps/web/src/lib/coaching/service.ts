@@ -21,6 +21,15 @@ import type {
 } from "./types";
 import { computeTrainingStreakWeeks, highestNewStreakMilestone } from "./streak";
 import {
+  getCrewChallengeProgress,
+  getWeeklyChallengeProgress,
+  upsertWeeklyChallengeStatus,
+} from "./community-challenges";
+import {
+  getCrewWins,
+  getUserCrew,
+} from "./community-crews";
+import {
   getCommunityNotifications,
   getFollowStateForLeaderboard,
   getFriendsLeaderboard,
@@ -196,6 +205,7 @@ async function buildWeeklyRecap(
     lastWeekRank: index + 1,
     lastWeekScore: Number(rows[index]!.habit_score),
     weekLabel,
+    bucketLabel: formatBucketLabel(goal, experience),
   };
 }
 
@@ -338,6 +348,16 @@ export async function upsertWeeklyLeaderboardScore(
   if (error && !isGamificationTableMissing(error)) {
     console.error("leaderboard upsert failed:", error.message);
   }
+
+  await upsertWeeklyChallengeStatus({
+    userId,
+    weekStart,
+    bucketGoal: goal,
+    bucketExperience: experience,
+    sessions,
+    plan,
+    proteinHitDays,
+  });
 }
 
 export async function getGamificationContext(
@@ -832,6 +852,10 @@ export async function getCommunityPageData(
       followState: {},
       notifications: [],
       unreadNotificationCount: 0,
+      crew: null,
+      weeklyChallenge: null,
+      crewChallenge: null,
+      crewWins: [],
     };
   }
 
@@ -844,22 +868,79 @@ export async function getCommunityPageData(
     50
   );
 
-  const [friendsLeaderboard, followStateMap, notifications, unreadNotificationCount] =
+  const plan = gamification.optedIn ? await getActiveProgram(userId) : null;
+  const proteinHitDays = gamification.optedIn
+    ? await proteinHitDaysLast7(userId)
+    : 0;
+
+  const [friendsLeaderboard, followStateMap, notifications, unreadNotificationCount, crew] =
     gamification.optedIn
       ? await Promise.all([
           getFriendsLeaderboard(userId, fullLeaderboard),
           getFollowStateForLeaderboard(userId, fullLeaderboard),
           getCommunityNotifications(userId, 20),
           getUnreadCommunityNotificationCount(userId),
+          getUserCrew(userId),
         ])
-      : [[], new Map(), [], 0];
+      : [[], new Map(), [], 0, null];
+
+  const weeklyChallenge = gamification.optedIn
+    ? await getWeeklyChallengeProgress({
+        userId,
+        weekStart,
+        bucketGoal: gamification.bucketGoal,
+        bucketExperience: gamification.bucketExperience,
+        sessions,
+        plan,
+        proteinHitDays,
+      })
+    : null;
+
+  const crewMemberIds = crew?.members.map((member) => member.userId) ?? [];
+  const crewChallenge =
+    crew && gamification.optedIn
+      ? await getCrewChallengeProgress({
+          crewMemberIds,
+          weekStart,
+        })
+      : null;
+
+  const crewWins =
+    crew && gamification.optedIn
+      ? await getCrewWins(
+          crewMemberIds,
+          gamification.bucketGoal,
+          gamification.bucketExperience,
+          userId
+        )
+      : [];
 
   const followState = Object.fromEntries(followStateMap.entries());
+
+  const weeklyChallengeView = weeklyChallenge
+    ? {
+        key: weeklyChallenge.definition.key,
+        title: weeklyChallenge.definition.title,
+        description: weeklyChallenge.definition.description,
+        targetValue: weeklyChallenge.definition.targetValue,
+        unit: weeklyChallenge.definition.unit,
+        progressValue: weeklyChallenge.progressValue,
+        completed: weeklyChallenge.completed,
+        bucketCompletedCount: weeklyChallenge.bucketCompletedCount,
+        bucketParticipantCount: weeklyChallenge.bucketParticipantCount,
+      }
+    : null;
+
+  const recap = gamification.weeklyRecap;
+  if (recap && crew) {
+    recap.crewName = crew.name;
+  }
 
   return {
     gamification: {
       ...gamification,
       unreadNotificationCount,
+      weeklyRecap: recap,
     },
     fullLeaderboard,
     totalRankedThisWeek: gamification.activePeerCount,
@@ -867,5 +948,9 @@ export async function getCommunityPageData(
     followState,
     notifications,
     unreadNotificationCount,
+    crew,
+    weeklyChallenge: weeklyChallengeView,
+    crewChallenge,
+    crewWins,
   };
 }

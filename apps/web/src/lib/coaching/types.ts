@@ -43,6 +43,46 @@ export interface WeeklyCommunityRecap {
   lastWeekRank: number | null;
   lastWeekScore: number | null;
   weekLabel: string;
+  bucketLabel?: string | null;
+  crewName?: string | null;
+}
+
+export interface CrewMemberRow {
+  userId: string;
+  displayLabel: string;
+  role: "owner" | "member";
+  habitScore: number | null;
+  joinedAt: string;
+}
+
+export interface CrewContext {
+  id: string;
+  name: string;
+  inviteCode: string;
+  ownerId: string;
+  memberCount: number;
+  maxMembers: number;
+  members: CrewMemberRow[];
+  isOwner: boolean;
+}
+
+export interface WeeklyChallengeView {
+  key: string;
+  title: string;
+  description: string;
+  targetValue: number;
+  unit: "percent" | "count";
+  progressValue: number;
+  completed: boolean;
+  bucketCompletedCount: number;
+  bucketParticipantCount: number;
+}
+
+export interface CrewChallengeView {
+  completedCount: number;
+  memberCount: number;
+  targetPercent: number;
+  crewMetGoal: boolean;
 }
 
 export interface WeeklyRivalRow {
@@ -121,6 +161,10 @@ export interface CommunityPageData {
   followState: Record<string, FollowState>;
   notifications: CommunityNotificationRow[];
   unreadNotificationCount: number;
+  crew: CrewContext | null;
+  weeklyChallenge: WeeklyChallengeView | null;
+  crewChallenge: CrewChallengeView | null;
+  crewWins: CommunityWinRow[];
 }
 
 export interface WorkoutCoachingContext {

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-08 |
-| **Last session focus** | Doc sync + community tier gate on Pro |
+| **Last session focus** | Community Phase 3 — crews & challenges |
 
 ---
 
@@ -28,11 +28,37 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| — | Community expansion (Phases 1–2) | ✅ Complete | 2026-06 |
+| — | Community expansion (Phases 1–3) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-06-08 — Community Phase 3 (crews & challenges)
+
+**What was done:**
+- Migration `20260610800000_community_crews_challenges.sql` — crews, members, weekly challenge status
+- Weekly bucket challenges (rotating plan / quality / protein) with bucket completion stats
+- Crew create/join/leave, invite link at `/community/join?code=…`, max 8 members
+- Crew shared goal (80% complete weekly challenge), crew win feed, shareable recap
+- UI: `CrewPanel`, `WeeklyChallengeCard`, `CrewWinsFeed`, `ShareRecapButton`
+
+**Apply migration:** `20260610800000_community_crews_challenges.sql`
+
+**What's next:**
+1. Community Phase 4 — web push notifications
+2. Apply pending community migrations on production
+
+**Files touched:**
+- `supabase/migrations/20260610800000_community_crews_challenges.sql`
+- `apps/web/src/lib/coaching/community-crews.ts`, `community-challenges.ts`
+- `apps/web/src/app/actions/community.ts`
+- `apps/web/src/components/coaching/crew-panel.tsx`, `weekly-challenge-card.tsx`, `crew-wins-feed.tsx`, `share-recap-button.tsx`
+- `apps/web/src/components/community/community-page-client.tsx`, `community-join-client.tsx`
+- `apps/web/src/app/(app)/community/join/page.tsx`
+- `docs/community-expansion-plan.md`, `docs/PROGRESS.md`, `docs/supabase-setup.md`
+
+---
 
 ### 2026-06-08 — Doc sync + community on Pro tier
 
