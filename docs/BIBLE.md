@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-12 · **Current phase:** Phase 8 complete
+**Last updated:** 2026-06-08 · **Current phase:** Phase 8 complete · Community Phases 1–2 shipped
 
 ---
 
@@ -163,7 +163,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 13. **Time-budget scheduling** — sessions/week × minutes/session scaling
 14. **Fitness tech integrations** — integration hub + recommendations
 15. **Motivational UX** — coaching package, hype tone
-16. **Gamification** — opt-in leaderboards, habit-based scoring
+16. **Gamification** — opt-in leaderboards, habit-based scoring, rivals, follows (Pro). See [community-expansion-plan.md](./community-expansion-plan.md).
 
 ---
 
@@ -182,7 +182,8 @@ Three tiers. Full gate matrix: [docs/TIER-GATES.md](./TIER-GATES.md).
 | Restaurant quick-log & saved meals | — | — | ✓ |
 | Full restaurant menu search (paid API) | — | — | Planned |
 | Motivation | Templated | Templated + insights | AI-personalized |
-| Gamification & PR celebrations | — | PR badges | Full (leaderboards, celebration UX) |
+| Community (leaderboards, rivals, win feed) | — | Full (opt-in) | ✓ |
+| PR celebrations | Templated badges | Templated badges | Celebration modal UX |
 
 Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 
@@ -200,9 +201,9 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 5 | Measurements + projections | Complete |
 | 6 | Exercise library UI | Complete |
 | 7 | Pro integrations (Stripe, OAuth) | Partial — Fitbit live; vendors pending |
-| 8 | Motivation + gamification | Complete |
+| 8 | Motivation + gamification + community (Phases 1–2) | Complete |
 
-See `docs/phases/` for per-phase acceptance criteria.
+See `docs/phases/` for per-phase acceptance criteria. Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
 
 ---
 

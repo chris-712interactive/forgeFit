@@ -46,16 +46,17 @@ export const TIER_MARKETING: Record<
       "Strength progression & PR history",
       "Volume trends & nutrition adherence",
       "Unlimited history, export & progress photos",
+      "Community leaderboards, rivals & win feed",
     ],
   },
   pro_plus: {
     name: "Pro+",
-    tagline: "Sync your data, search restaurants, get coached, compete.",
+    tagline: "Sync your data, search restaurants, get coached.",
     highlights: [
       "Everything in Pro",
       "Withings, Fitbit & Strava sync",
       "Restaurant quick-log & saved meals",
-      "AI coaching & gamification",
+      "AI coaching & PR celebration UX",
     ],
   },
 };

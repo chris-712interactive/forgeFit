@@ -4,22 +4,23 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 
 ## Features
 
-**Live now (Phase 1–6):**
+**Live now:**
 - Email + Google sign up / sign in
 - 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
-- Mobile app shell with bottom navigation
 - **Personalized programs** — evidence-based plans for fat loss, bodybuilding, powerlifting, strength, recomposition
-- **Home dashboard** — weekly workout schedule + macro targets with cited evidence rules
 - **Offline workouts** — log sets, reps, and RIR in the gym; syncs when back online
-- **Rest timer** — auto-starts between sets with Forge Gold pulse
-- **Nutrition diary** — USDA + Open Food Facts search, daily macro tracking vs evidence-based targets
-- **Progress tracking** — weight trends, Jackson-Pollock caliper BF%, 30-day weight projection
+- **Nutrition diary** — USDA + Open Food Facts, restaurant quick-log (Pro+), macro tracking vs program targets
+- **Progress tracking** — 30/90-day projections (Pro), strength/volume analytics, caliper BF%, progress photos
 - **Exercise library** — 800+ demos, muscle heatmaps, equipment substitution preview
+- **Stripe billing** — Free, Pro ($8.99/mo), Pro+ ($14.99/mo)
+- **Fitbit / Google Health sync** (Pro+) — activity, sleep, recovery, workout intensity correlation
+- **Community** (Pro) — opt-in bucket leaderboards, rivals, follows, win feed, in-app notifications
+- **Coaching** (Pro+) — pre-workout hype, PR celebration modal
 
 **Coming soon:**
-- **Device sync** — Withings, Fitbit, Strava (Pro tier)
+- Withings weight sync, Strava cardio sync (Pro+)
 
-See [docs/BIBLE.md](./docs/BIBLE.md) for the full build plan.
+See [docs/BIBLE.md](./docs/BIBLE.md) and [docs/community-expansion-plan.md](./docs/community-expansion-plan.md) for the full roadmap.
 
 ## Quick start
 
@@ -43,7 +44,9 @@ Open [http://localhost:3000](http://localhost:3000).
 | `packages/offline-sync` | Dexie offline workout store + sync |
 | `packages/nutrition-core` | USDA/OFF food search + macro helpers |
 | `packages/projection-engine` | Caliper BF% + weight projections |
-| `docs/` | Bible, progress log, architecture |
+| `packages/coaching` | Pre-workout hype + PR celebration copy |
+| `packages/integrations` | Fitbit / Google Health, Withings, Strava |
+| `docs/` | Bible, progress log, architecture, tier gates |
 
 ## Environment
 
@@ -53,6 +56,9 @@ Copy `.env.example` to `apps/web/.env.local` and follow [docs/supabase-setup.md]
 
 - **[BIBLE.md](./docs/BIBLE.md)** — authoritative build plan
 - **[PROGRESS.md](./docs/PROGRESS.md)** — AI session handoff log (updated every change)
+- **[TIER-GATES.md](./docs/TIER-GATES.md)** — Free / Pro / Pro+ feature matrix
+- **[community-expansion-plan.md](./docs/community-expansion-plan.md)** — community roadmap
+- **[fitbit-expansion-plan.md](./docs/fitbit-expansion-plan.md)** — device sync roadmap
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — developer reference
 - **[DESIGN.md](./docs/DESIGN.md)** — Forge Ember design system
 

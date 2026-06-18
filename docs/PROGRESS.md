@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-18 |
-| **Last session focus** | Culver's restaurant quick-log menu |
+| **Last updated** | 2026-06-08 |
+| **Last session focus** | Doc sync + community tier gate on Pro |
 
 ---
 
@@ -28,10 +28,47 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
+| — | Community expansion (Phases 1–2) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-06-08 — Doc sync + community on Pro tier
+
+**What was done:**
+- Confirmed `gamification` gate is **Pro** in `gates.ts` (already correct)
+- Updated `TIER-GATES.md`, `BIBLE.md`, `08-gamification.md`, `07-integrations.md`, `README.md`, `supabase-setup.md`
+- Added `docs/community-expansion-plan.md` (Phases 1–2 shipped; 3–6 planned)
+- Pro marketing highlights now include community; Pro+ no longer lists gamification
+
+**What's next:**
+1. Apply community migrations on production if not yet applied (see `community-expansion-plan.md`)
+2. Phase 7 vendor unblock: Withings, Strava when ready
+3. Community Phase 3 (crews & challenges) when prioritized
+
+**Files touched:**
+- `docs/community-expansion-plan.md` (new)
+- `docs/TIER-GATES.md`, `docs/BIBLE.md`, `docs/PROGRESS.md`
+- `docs/phases/07-integrations.md`, `docs/phases/08-gamification.md`
+- `docs/supabase-setup.md`, `README.md`
+- `apps/web/src/lib/billing/pricing.ts`
+
+---
+
+### 2026-06 — Community expansion Phases 1–2
+
+**What was done:**
+- **Phase 1:** `/community` tab, full standings, habit breakdown, rank delta on recap, pre-workout strip, auto wins, weekly recap, cheers
+- **Phase 2:** Weekly rival, follow/friends board, in-app notifications, notification panel
+- Migrations `20260610600000` through `20260610740000`
+- Gamification tier moved to **Pro** in `gates.ts`
+
+**Apply migrations:** see [docs/community-expansion-plan.md](./community-expansion-plan.md)
+
+**Files touched:** `apps/web/src/lib/coaching/`, `components/coaching/`, `components/community/`, `components/home/community-section.tsx`, `app/actions/community.ts`, community migrations
+
+---
 
 ### 2026-06-18 — Culver's restaurant menu
 

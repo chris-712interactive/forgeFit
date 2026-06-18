@@ -3,7 +3,7 @@
 > **Authoritative feature matrix** for Free, Pro, and Pro+.
 > Code gates live in `apps/web/src/lib/billing/gates.ts` — keep in sync with this doc.
 
-**Last updated:** 2026-06-09
+**Last updated:** 2026-06-08
 
 ---
 
@@ -13,7 +13,7 @@
 |------|-------|-------|
 | **Free** | $0 | Full training loop — programs, logging, nutrition, 30-day projections |
 | **Pro** | $8.99/mo · $69.99/yr | Long-horizon progress intelligence |
-| **Pro+** | $14.99/mo · $119.99/yr | Automation, integrations, AI coaching, community |
+| **Pro+** | $14.99/mo · $119.99/yr | Automation, integrations, AI coaching |
 
 Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 
@@ -59,6 +59,17 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | CSV data export | — | ✓ | ✓ |
 | Progress photo timeline | — | ✓ | ✓ |
 
+### Community & competition (Pro)
+
+| Feature | Free | Pro | Pro+ |
+|---------|:----:|:---:|:----:|
+| Community preview (bucket stats before opt-in) | — | ✓ | ✓ |
+| Opt-in leaderboards & habit score | — | ✓ | ✓ |
+| Community win feed & cheers | — | ✓ | ✓ |
+| Rank delta, weekly recap, `/community` tab | — | ✓ | ✓ |
+| Weekly rival, follow/friends board | — | ✓ | ✓ |
+| In-app community notifications | — | ✓ | ✓ |
+
 ### Integrations & automation (Pro+)
 
 | Feature | Free | Pro | Pro+ |
@@ -69,14 +80,12 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | Restaurant quick-log & saved meals (curated chains) | — | — | ✓ |
 | Full restaurant menu API search | — | — | Planned |
 
-### Coaching & community (Pro+)
+### Coaching (Pro+)
 
 | Feature | Free | Pro | Pro+ |
 |---------|:----:|:---:|:----:|
 | AI-personalized motivation & coaching copy | — | — | ✓ |
 | PR celebration modal (`gradient-forge-celebrate`) | — | — | ✓ |
-| Opt-in leaderboards & gamification | — | — | ✓ |
-| Community win feed | — | — | ✓ |
 
 ---
 
@@ -99,8 +108,8 @@ Use `hasTierFeature(tier, feature)` from `@/lib/billing/gates`.
 | `rule_based_insights` | Pro | Home / Progress — insight cards |
 | `device_integrations` | Pro+ | Profile — Integrations hub; workout device intensity + readiness |
 | `restaurant_search` | Pro+ | Nutrition — eating out quick-log |
+| `gamification` | Pro | Profile opt-in, Home community, `/community`, rivals, notifications |
 | `ai_motivation` | Pro+ | Home / pre-workout — AI copy |
-| `gamification` | Pro+ | Profile opt-in + leaderboard |
 | `pr_celebration` | Pro+ | Workout — celebration modal |
 
 ### Free-tier limits (constants)
@@ -152,7 +161,7 @@ Checkout accepts `{ tier: "pro" | "pro_plus", interval: "monthly" | "annual" }`.
 | Phase | Tier scope |
 |-------|------------|
 | Phase 7 | Stripe billing, Pro gates (projections, analytics), Pro+ integrations |
-| Phase 8 | Pro+ only — AI motivation, gamification, PR celebration |
+| Phase 8 | Pro — community/gamification; Pro+ — AI motivation, PR celebration |
 
 Pro analytics UI can ship incrementally; gates should land before or with each surface.
 
@@ -185,4 +194,4 @@ The 35% Pro annual discount is a **retention trade**, not a margin problem — a
 | 7. Strength/volume/adherence analytics UI | ✅ Done | Progress, Nutrition, Home insights |
 | 8. Progress photos UI | ✅ Done | `progress_photos` migration + timeline |
 | 9. Pro+ integrations | ⏳ Partial | Fitbit live; Withings + Strava coming soon |
-| 10. Phase 8 Pro+ features | ✅ Done | Coaching hype, PR celebration, leaderboards |
+| 10. Phase 8 features | ✅ Done | Pro community; Pro+ coaching hype + PR celebration |
