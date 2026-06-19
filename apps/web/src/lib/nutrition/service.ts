@@ -1,5 +1,11 @@
 import { sumMacros, type MacroTotals } from "@forgefit/nutrition-core";
 import type { NutritionTargets } from "@forgefit/program-engine";
+import {
+  addDaysIso,
+  todayLocalIsoDate,
+  yesterdayLocalIsoDate,
+} from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveProgram } from "@/lib/programs/service";
 import type {
@@ -8,14 +14,14 @@ import type {
   NutritionLogRow,
 } from "./types";
 
-export function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
+export async function todayIsoDate(): Promise<string> {
+  const timeZone = await getUserTimeZone();
+  return todayLocalIsoDate(new Date(), timeZone);
 }
 
-export function yesterdayIsoDate(reference = new Date()): string {
-  const date = new Date(reference);
-  date.setDate(date.getDate() - 1);
-  return date.toISOString().slice(0, 10);
+export async function yesterdayIsoDate(reference = new Date()): Promise<string> {
+  const timeZone = await getUserTimeZone();
+  return yesterdayLocalIsoDate(reference, timeZone);
 }
 
 function mapRow(row: Record<string, unknown>): NutritionLogRow {
@@ -39,8 +45,9 @@ function mapRow(row: Record<string, unknown>): NutritionLogRow {
 
 export async function getDailyNutritionSummary(
   userId: string,
-  date = todayIsoDate()
+  date?: string
 ): Promise<DailyNutritionSummary> {
+  const resolvedDate = date ?? (await todayIsoDate());
   const supabase = await createClient();
 
   const [{ data: rows, error }, targets] = await Promise.all([
@@ -48,14 +55,14 @@ export async function getDailyNutritionSummary(
       .from("nutrition_logs")
       .select("*")
       .eq("user_id", userId)
-      .eq("logged_date", date)
+      .eq("logged_date", resolvedDate)
       .order("created_at", { ascending: true }),
     getActiveProgram(userId).then((plan) => plan?.nutrition ?? null),
   ]);
 
   if (error) {
     return {
-      date,
+      date: resolvedDate,
       targets,
       totals: { calories: 0, proteinG: 0, fatG: 0, carbsG: 0 },
       entries: [],
@@ -72,7 +79,7 @@ export async function getDailyNutritionSummary(
     }))
   );
 
-  return { date, targets, totals, entries };
+  return { date: resolvedDate, targets, totals, entries };
 }
 
 export function emptyTotals(): MacroTotals {
@@ -99,14 +106,14 @@ export async function getRecentMacroEntries(
   limit = 8
 ): Promise<MacroQuickEntry[]> {
   const supabase = await createClient();
-  const since = new Date();
-  since.setDate(since.getDate() - 30);
+  const timeZone = await getUserTimeZone();
+  const sinceDate = addDaysIso(todayLocalIsoDate(new Date(), timeZone), -30);
 
   const { data, error } = await supabase
     .from("nutrition_logs")
     .select("food_name, calories, protein_g, fat_g, carbs_g, created_at")
     .eq("user_id", userId)
-    .gte("logged_date", since.toISOString().slice(0, 10))
+    .gte("logged_date", sinceDate)
     .order("created_at", { ascending: false })
     .limit(40);
 

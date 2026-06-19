@@ -24,7 +24,7 @@ export default async function NutritionPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const yesterday = yesterdayIsoDate();
+  const yesterday = await yesterdayIsoDate();
 
   const [summary, recentEntries, yesterdayEntryCount, subscription] = user
     ? await Promise.all([

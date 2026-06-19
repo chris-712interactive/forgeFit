@@ -1,4 +1,6 @@
 import { scaleMacrosFrom100g } from "@forgefit/nutrition-core";
+import { todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -39,8 +41,10 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+  const timeZone = await getUserTimeZone();
   const date =
-    searchParams.get("date") ?? new Date().toISOString().slice(0, 10);
+    searchParams.get("date") ??
+    todayLocalIsoDate(new Date(), timeZone);
 
   const { data, error } = await supabase
     .from("nutrition_logs")

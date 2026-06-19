@@ -1,6 +1,7 @@
 "use client";
 
 import type { FoodSearchResult } from "@forgefit/nutrition-core";
+import { browserTodayIsoDate } from "@/lib/datetime/local-date";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { appSectionStack } from "@/components/layout/page-layout";
@@ -45,13 +46,14 @@ export function NutritionDiary({
     servingGrams: number
   ) {
     setAdding(true);
+    const loggedDate = browserTodayIsoDate();
     try {
       const response = await fetch("/api/nutrition/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clientId: crypto.randomUUID(),
-          loggedDate: initialSummary.date,
+          loggedDate,
           foodName: food.name,
           foodSource: food.source,
           externalFoodId: food.id,

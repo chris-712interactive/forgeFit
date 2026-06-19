@@ -1,22 +1,26 @@
+import { browserTodayIsoDate } from "@/lib/datetime/local-date";
+
 export interface MacroLogInput {
   foodName: string;
   calories: number;
   proteinG: number;
   carbsG?: number;
   fatG?: number;
-  loggedDate: string;
+  /** Defaults to the browser's local calendar day. */
+  loggedDate?: string;
   mealType?: "breakfast" | "lunch" | "dinner" | "snack";
 }
 
 export async function postMacroLogEntry(
   input: MacroLogInput
 ): Promise<void> {
+  const loggedDate = input.loggedDate ?? browserTodayIsoDate();
   const response = await fetch("/api/nutrition/logs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       clientId: crypto.randomUUID(),
-      loggedDate: input.loggedDate,
+      loggedDate,
       mealType: input.mealType,
       foodName: input.foodName.trim(),
       foodSource: "custom",

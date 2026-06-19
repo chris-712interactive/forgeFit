@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-08 |
-| **Last session focus** | Community Phase 4 — web push notifications |
+| **Last updated** | 2026-06-18 |
+| **Last session focus** | Nutrition diary timezone fix |
 
 ---
 
@@ -33,6 +33,31 @@
 ---
 
 ## Session Log
+
+### 2026-06-18 — Nutrition diary timezone fix
+
+**What was done:**
+- Fixed "today's macros" rolling to the next day after ~8pm US Eastern (UTC date boundary bug)
+- Added `@/lib/datetime/local-date` — timezone-aware `YYYY-MM-DD` formatting
+- Added `TimezoneSync` client component — stores IANA timezone in `forge-timezone` cookie and refreshes SSR
+- Nutrition service, home dashboard, and `/api/nutrition/logs` now resolve dates in the user's timezone
+- Client-side logging uses the browser's local calendar day via `browserTodayIsoDate()`
+
+**What's next:** Apply same timezone cookie pattern to activity/sleep/recovery "today" displays if users report similar issues
+
+**Files touched:**
+- `apps/web/src/lib/datetime/local-date.ts`
+- `apps/web/src/lib/datetime/local-date.test.ts`
+- `apps/web/src/lib/datetime/timezone.ts`
+- `apps/web/src/components/datetime/timezone-sync.tsx`
+- `apps/web/src/lib/nutrition/service.ts`
+- `apps/web/src/lib/nutrition/log-entry.ts`
+- `apps/web/src/app/(app)/nutrition/page.tsx`
+- `apps/web/src/app/api/nutrition/logs/route.ts`
+- `apps/web/src/components/nutrition/nutrition-diary.tsx`
+- `apps/web/src/app/(app)/layout.tsx`
+
+---
 
 ### 2026-06-08 — Community Phase 4 (web push)
 
