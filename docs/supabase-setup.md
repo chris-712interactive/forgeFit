@@ -70,6 +70,8 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 33. `20260610810000_community_crew_members_rls_fix.sql` — crew member RLS recursion fix
 34. `20260610820000_community_push.sql` — web push subscriptions + preferences
 35. `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
+36. `20260610840000_community_league_tiers_backfill.sql` — bronze tier rows for existing opt-in users
+37. `20260610850000_community_phase6.sql` — reactions, preset comments, score flags, moderation, opt-in A/B
 
 ## 4. Auth providers
 

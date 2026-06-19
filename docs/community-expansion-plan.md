@@ -1,7 +1,7 @@
 # Community Expansion Plan
 
 > Adoption-focused competition layer — MapMyRun-style visible rivalry, fair buckets, and weekly urgency.  
-> **Phases 1–5** are implemented. Phase 6 is planned.
+> **Phases 1–6** are implemented.
 
 Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket stats before opt-in; Pro unlocks full participation.
 
@@ -122,12 +122,24 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 
 ---
 
-## Phase 6 — Scale & polish (planned)
+## Phase 6 — Scale & polish ✅ Shipped
 
-- Feed reactions/comments (preset only)
-- Anti-gaming heuristics
-- Admin moderation tools
-- A/B test default-on opt-in with clear privacy copy
+- Preset win reactions (fire, strong, clap, trophy, motivated) + quick-reply comments
+- Anti-gaming heuristics on weekly score upsert (flags suspicious scores; excluded from ranks until cleared)
+- Moderator tools: hide/unhide wins, clear score flags, suspend users (bucket-scoped)
+- Opt-in A/B variant (`control` vs `default_on_ui`) with privacy-forward copy on Home, Community, Profile
+
+**Migration:** `20260610850000_community_phase6.sql`
+
+**Key files:**
+- `community-reactions.ts`, `community-anti-gaming.ts`, `community-moderation.ts`, `community-opt-in-experiment.ts`
+- `community-win-interactions.tsx`, `community-moderation-panel.tsx`
+- `app/actions/gamification.ts` (reactions/comments), `app/actions/community.ts` (moderation)
+
+**Env (optional):**
+- `COMMUNITY_OPT_IN_AB_ENABLED=true` — enable opt-in A/B assignment
+- `COMMUNITY_OPT_IN_AB_DEFAULT_ON_PERCENT=50` — % bucketed to default-on UI copy
+- `COMMUNITY_MODERATOR_USER_IDS` — comma-separated user IDs with moderator access (also `profiles.is_community_moderator`)
 
 ---
 
@@ -144,6 +156,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 9. `20260610820000_community_push.sql` — web push subscriptions + preferences
 10. `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
 11. `20260610840000_community_league_tiers_backfill.sql` — bronze tier rows for existing opt-in users
+12. `20260610850000_community_phase6.sql` — reactions, preset comments, score flags, moderation, opt-in A/B
 
 ---
 

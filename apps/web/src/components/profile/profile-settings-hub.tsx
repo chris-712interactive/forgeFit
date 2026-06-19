@@ -40,6 +40,7 @@ interface ProfileSettingsHubProps {
   integrationError: string | null;
   gamificationUnlocked: boolean;
   gamificationOptIn: boolean;
+  communityOptInVariant?: import("@/lib/coaching/types").CommunityOptInVariant;
   communityPush: CommunityPushSettings;
   unit: UnitSystem;
   initialGoal: FitnessGoal | null;
@@ -65,6 +66,7 @@ export function ProfileSettingsHub({
   integrationError,
   gamificationUnlocked,
   gamificationOptIn,
+  communityOptInVariant = "control",
   communityPush,
   unit,
   initialGoal,
@@ -116,6 +118,7 @@ export function ProfileSettingsHub({
           <GamificationSetting
             unlocked={gamificationUnlocked}
             optedIn={gamificationOptIn}
+            optInVariant={communityOptInVariant}
           />
           <CommunityPushSetting
             enabled={gamificationUnlocked && gamificationOptIn}

@@ -47,6 +47,20 @@ import {
   processRankChangeNotifications,
   processRivalNotifications,
 } from "./community-social";
+import {
+  aggregateWinInteractions,
+  applyWinInteractions,
+} from "./community-reactions";
+import { evaluateScoreFlags } from "./community-anti-gaming";
+import {
+  filterLeaderboardRows,
+  loadSuspendedUserIds,
+} from "./community-leaderboard-filters";
+import {
+  getModerationQueue,
+  isCommunityModerator,
+} from "./community-moderation";
+import { ensureOptInVariantAssigned } from "./community-opt-in-experiment";
 
 function baseGamificationContext(
   overrides: Partial<GamificationContext> = {}
@@ -72,6 +86,8 @@ function baseGamificationContext(
     unreadNotificationCount: 0,
     recentNotifications: [],
     league: null,
+    optInVariant: "control",
+    isModerator: false,
     ...overrides,
   };
 }
@@ -145,23 +161,31 @@ async function fetchBucketLeaderboard(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("leaderboard_entries")
-    .select("user_id, display_label, habit_score")
+    .select("user_id, display_label, habit_score, score_flagged")
     .eq("bucket_goal", goal)
     .eq("bucket_experience", experience)
     .eq("week_start", weekStart)
     .order("habit_score", { ascending: false })
-    .limit(limit);
+    .limit(Math.max(limit, 50));
 
   if (error || !data) {
     return [];
   }
 
-  return data.map((row) => ({
-    userId: row.user_id as string,
-    displayLabel: row.display_label as string,
-    habitScore: Number(row.habit_score),
-    isCurrentUser: row.user_id === userId,
-  }));
+  const suspendedUserIds = await loadSuspendedUserIds(
+    data.map((row) => row.user_id as string)
+  );
+
+  return filterLeaderboardRows(
+    data.map((row) => ({
+      user_id: row.user_id as string,
+      display_label: row.display_label as string,
+      habit_score: row.habit_score as number,
+      score_flagged: row.score_flagged as boolean | null,
+    })),
+    suspendedUserIds,
+    userId
+  ).slice(0, limit);
 }
 
 function previousWeekStartIso(reference = new Date()): string {
@@ -229,6 +253,9 @@ function isGamificationTableMissing(error: {
     message.includes("leaderboard_entries") ||
     message.includes("community_wins") ||
     message.includes("community_win_cheers") ||
+    message.includes("community_win_reactions") ||
+    message.includes("community_win_preset_comments") ||
+    message.includes("score_flagged") ||
     message.includes("schema cache")
   );
 }
@@ -310,12 +337,12 @@ export async function upsertWeeklyLeaderboardScore(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, display_name, email, primary_goal, experience_level, gamification_opt_in"
+      "first_name, last_name, display_name, email, primary_goal, experience_level, gamification_opt_in, community_suspended"
     )
     .eq("id", userId)
     .single();
 
-  if (!profile?.gamification_opt_in) {
+  if (!profile?.gamification_opt_in || profile.community_suspended) {
     return;
   }
 
@@ -342,6 +369,32 @@ export async function upsertWeeklyLeaderboardScore(
   });
 
   const weekStart = weekStartIso();
+  const previousWeekStart = previousWeekStartIso();
+
+  const [previousScoreResult, nutritionLogs] = await Promise.all([
+    supabase
+      .from("leaderboard_entries")
+      .select("habit_score")
+      .eq("user_id", userId)
+      .eq("week_start", previousWeekStart)
+      .maybeSingle(),
+    loadRecentNutritionTotals(userId, 7),
+  ]);
+
+  const scoreFlags = evaluateScoreFlags({
+    habitScore: habit.score,
+    workoutsCompleted: weekly.workoutsCompleted,
+    workoutsPlanned: weekly.workoutsPlanned,
+    proteinHitDays,
+    nutritionLogDays: nutritionLogs.length,
+    qualitySessions,
+    previousWeekScore:
+      previousScoreResult.data?.habit_score != null
+        ? Number(previousScoreResult.data.habit_score)
+        : null,
+    sessions,
+  });
+
   const { error } = await supabase.from("leaderboard_entries").upsert(
     {
       user_id: userId,
@@ -350,6 +403,8 @@ export async function upsertWeeklyLeaderboardScore(
       week_start: weekStart,
       habit_score: habit.score,
       display_label: leaderboardDisplayLabel(profile),
+      score_flagged: scoreFlags.flagged,
+      flag_reason: scoreFlags.reason,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id,week_start" }
@@ -386,11 +441,22 @@ export async function getGamificationContext(
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("primary_goal, experience_level, gamification_opt_in")
+    .select(
+      "primary_goal, experience_level, gamification_opt_in, community_opt_in_variant, is_community_moderator"
+    )
     .eq("id", userId)
     .single();
 
   const optedIn = profile?.gamification_opt_in ?? false;
+  const optInVariant = await ensureOptInVariantAssigned({
+    userId,
+    storedVariant: profile?.community_opt_in_variant,
+    optedIn,
+  });
+  const isModerator = isCommunityModerator({
+    userId,
+    profileFlag: profile?.is_community_moderator,
+  });
   const goal = profile?.primary_goal ?? null;
   const experience = profile?.experience_level ?? null;
   const bucketLabelValue = formatBucketLabel(goal, experience);
@@ -427,12 +493,12 @@ export async function getGamificationContext(
   ] = await Promise.all([
     supabase
       .from("leaderboard_entries")
-      .select("user_id, display_label, habit_score")
+      .select("user_id, display_label, habit_score, score_flagged")
       .eq("bucket_goal", goal)
       .eq("bucket_experience", experience)
       .eq("week_start", weekStart)
       .order("habit_score", { ascending: false })
-      .limit(10),
+      .limit(50),
     optedIn
       ? fetchTierLeaderboard({
           bucketGoal: goal,
@@ -459,6 +525,7 @@ export async function getGamificationContext(
       .select("id, user_id, win_type, headline, detail, occurred_at")
       .eq("bucket_goal", goal)
       .eq("bucket_experience", experience)
+      .is("hidden_at", null)
       .order("occurred_at", { ascending: false })
       .limit(8),
   ]);
@@ -480,13 +547,21 @@ export async function getGamificationContext(
     });
   }
 
-  const leaderboardRows = leaderboardResult.data ?? [];
-  const previewLeaderboard: LeaderboardEntryRow[] = leaderboardRows.map((row) => ({
-    userId: row.user_id as string,
-    displayLabel: row.display_label as string,
-    habitScore: Number(row.habit_score),
-    isCurrentUser: row.user_id === userId,
-  }));
+  const leaderboardRowsRaw = leaderboardResult.data ?? [];
+  const suspendedUserIds = await loadSuspendedUserIds(
+    leaderboardRowsRaw.map((row) => row.user_id as string)
+  );
+  const leaderboardRows = filterLeaderboardRows(
+    leaderboardRowsRaw.map((row) => ({
+      user_id: row.user_id as string,
+      display_label: row.display_label as string,
+      habit_score: row.habit_score as number,
+      score_flagged: row.score_flagged as boolean | null,
+    })),
+    suspendedUserIds,
+    userId
+  );
+  const previewLeaderboard: LeaderboardEntryRow[] = leaderboardRows;
 
   const rankLeaderboard = optedIn && tierLeaderboard.length > 0
     ? tierLeaderboard
@@ -497,7 +572,7 @@ export async function getGamificationContext(
   const winRows = winsResult.data ?? [];
   const winUserIds = [...new Set(winRows.map((w) => w.user_id as string))];
   const labelByUserId = new Map<string, string>(
-    leaderboardRows.map((row) => [row.user_id as string, row.display_label as string])
+    leaderboardRows.map((row) => [row.userId, row.displayLabel])
   );
 
   if (winUserIds.length > 0) {
@@ -525,24 +600,7 @@ export async function getGamificationContext(
   const cheerCountByWinId = new Map<string, number>();
   const cheeredWinIds = new Set<string>();
 
-  if (winIds.length > 0) {
-    const { data: cheers, error: cheersError } = await supabase
-      .from("community_win_cheers")
-      .select("win_id, user_id")
-      .in("win_id", winIds);
-
-    if (!cheersError || !isGamificationTableMissing(cheersError)) {
-      for (const cheer of cheers ?? []) {
-        const winId = cheer.win_id as string;
-        cheerCountByWinId.set(winId, (cheerCountByWinId.get(winId) ?? 0) + 1);
-        if (cheer.user_id === userId) {
-          cheeredWinIds.add(winId);
-        }
-      }
-    }
-  }
-
-  const communityWins: CommunityWinRow[] = winRows.map((row) => {
+  let communityWins: CommunityWinRow[] = winRows.map((row) => {
     const winUserId = row.user_id as string;
     const winId = row.id as string;
     return {
@@ -553,11 +611,65 @@ export async function getGamificationContext(
       headline: row.headline as string,
       detail: (row.detail as string | null) ?? null,
       occurredAt: row.occurred_at as string,
-      cheerCount: cheerCountByWinId.get(winId) ?? 0,
-      cheeredByMe: cheeredWinIds.has(winId),
+      cheerCount: 0,
+      cheeredByMe: false,
       isCurrentUser: winUserId === userId,
     };
   });
+
+  if (winIds.length > 0) {
+    const [
+      { data: cheers, error: cheersError },
+      { data: reactions, error: reactionsError },
+      { data: comments, error: commentsError },
+    ] = await Promise.all([
+      supabase
+        .from("community_win_cheers")
+        .select("win_id, user_id")
+        .in("win_id", winIds),
+      supabase
+        .from("community_win_reactions")
+        .select("win_id, user_id, reaction_key")
+        .in("win_id", winIds),
+      supabase
+        .from("community_win_preset_comments")
+        .select("win_id, user_id, comment_key")
+        .in("win_id", winIds),
+    ]);
+
+    if (!cheersError || !isGamificationTableMissing(cheersError)) {
+      for (const cheer of cheers ?? []) {
+        const winId = cheer.win_id as string;
+        cheerCountByWinId.set(winId, (cheerCountByWinId.get(winId) ?? 0) + 1);
+        if (cheer.user_id === userId) {
+          cheeredWinIds.add(winId);
+        }
+      }
+    }
+
+    communityWins = communityWins.map((win) => ({
+      ...win,
+      cheerCount: cheerCountByWinId.get(win.id) ?? 0,
+      cheeredByMe: cheeredWinIds.has(win.id),
+    }));
+
+    const reactionsMissing =
+      reactionsError && isGamificationTableMissing(reactionsError);
+    const commentsMissing =
+      commentsError && isGamificationTableMissing(commentsError);
+    const canEnrichInteractions =
+      (!reactionsError || reactionsMissing) && (!commentsError || commentsMissing);
+
+    if (canEnrichInteractions && !reactionsError && !commentsError) {
+      const interactionAggregates = aggregateWinInteractions(
+        winIds,
+        reactions ?? [],
+        comments ?? [],
+        userId
+      );
+      communityWins = applyWinInteractions(communityWins, interactionAggregates);
+    }
+  }
 
   const activePeerCount = activeWeekCountResult.count ?? 0;
   const bucketPeerCount = peerCountResult.count ?? activePeerCount;
@@ -632,6 +744,8 @@ export async function getGamificationContext(
     unreadNotificationCount,
     recentNotifications,
     league,
+    optInVariant,
+    isModerator,
   };
 }
 
@@ -943,6 +1057,7 @@ export async function getCommunityPageData(
       weeklyChallenge: null,
       crewChallenge: null,
       crewWins: [],
+      moderationQueue: null,
     };
   }
 
@@ -1036,6 +1151,17 @@ export async function getCommunityPageData(
     recap.crewName = crew.name;
   }
 
+  const moderationQueue =
+    gamification.isModerator &&
+    gamification.bucketGoal &&
+    gamification.bucketExperience
+      ? await getModerationQueue({
+          bucketGoal: gamification.bucketGoal,
+          bucketExperience: gamification.bucketExperience,
+          weekStart,
+        })
+      : null;
+
   return {
     gamification: {
       ...gamification,
@@ -1052,5 +1178,6 @@ export async function getCommunityPageData(
     weeklyChallenge: weeklyChallengeView,
     crewChallenge,
     crewWins,
+    moderationQueue,
   };
 }

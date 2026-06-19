@@ -1,4 +1,4 @@
-import { CommunityWinCheerButton } from "@/components/coaching/community-win-cheer-button";
+import { CommunityWinInteractions } from "@/components/coaching/community-win-interactions";
 import { winTypeLabel } from "@/lib/coaching/community-labels";
 import type { GamificationContext } from "@/lib/coaching/types";
 import Link from "next/link";
@@ -112,27 +112,19 @@ export function CommunityWinsFeed({
                 )}
               </div>
 
-              <div className={`flex flex-wrap items-center justify-between gap-2 ${compact ? "mt-1.5" : "mt-3"}`}>
-                <CommunityWinCheerButton
-                  winId={win.id}
-                  initialCheered={win.cheeredByMe}
-                  initialCount={win.cheerCount}
-                  disabled={preview || !gamification.optedIn || win.isCurrentUser}
-                  disabledReason={
-                    preview
-                      ? "Join community to cheer"
-                      : win.isCurrentUser
-                        ? "Others cheer your wins"
-                        : "Join community to cheer"
-                  }
-                />
-                {win.cheerCount > 0 && !compact && (
-                  <p className="text-[11px] text-forge-muted">
-                    {win.cheerCount === 1
-                      ? "1 athlete cheered"
-                      : `${win.cheerCount} athletes cheered`}
-                  </p>
-                )}
+              <div className={compact ? "mt-1.5" : "mt-3"}>
+              <CommunityWinInteractions
+                win={win}
+                compact={compact}
+                disabled={preview || !gamification.optedIn || win.isCurrentUser}
+                disabledReason={
+                  preview
+                    ? "Join community to interact"
+                    : win.isCurrentUser
+                      ? "Others react to your wins"
+                      : "Join community to interact"
+                }
+              />
               </div>
             </li>
           ))}

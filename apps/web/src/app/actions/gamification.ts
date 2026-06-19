@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { ensureLeagueTier } from "@/lib/coaching/community-leagues";
+import type {
+  WinPresetCommentKey,
+  WinReactionKey,
+} from "@/lib/coaching/community-reactions";
 import { recordCommunityWin as persistCommunityWin } from "@/lib/coaching/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -204,4 +208,123 @@ export async function publishWorkoutPrWin(input: {
   });
 
   revalidatePath("/home");
+}
+
+async function requireCommunityMemberForInteractions() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false as const, error: "Sign in required." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("gamification_opt_in, community_suspended")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.gamification_opt_in) {
+    return { ok: false as const, error: "Join community to react to wins." };
+  }
+
+  if (profile.community_suspended) {
+    return { ok: false as const, error: "Community access is paused." };
+  }
+
+  return { ok: true as const, userId: user.id };
+}
+
+export async function toggleCommunityWinReaction(
+  winId: string,
+  reactionKey: WinReactionKey
+): Promise<{ ok: boolean; active?: boolean; error?: string }> {
+  const auth = await requireCommunityMemberForInteractions();
+  if (!auth.ok) {
+    return auth;
+  }
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("community_win_reactions")
+    .select("reaction_key")
+    .eq("win_id", winId)
+    .eq("user_id", auth.userId)
+    .maybeSingle();
+
+  if (existing?.reaction_key === reactionKey) {
+    const { error } = await supabase
+      .from("community_win_reactions")
+      .delete()
+      .eq("win_id", winId)
+      .eq("user_id", auth.userId);
+
+    if (error) {
+      return { ok: false, error: error.message };
+    }
+
+    revalidatePath("/home");
+    revalidatePath("/community");
+    return { ok: true, active: false };
+  }
+
+  const { error } = await supabase.from("community_win_reactions").upsert(
+    {
+      win_id: winId,
+      user_id: auth.userId,
+      reaction_key: reactionKey,
+    },
+    { onConflict: "win_id,user_id" }
+  );
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/home");
+  revalidatePath("/community");
+  return { ok: true, active: true };
+}
+
+export async function setCommunityWinPresetComment(
+  winId: string,
+  commentKey: WinPresetCommentKey | null
+): Promise<{ ok: boolean; error?: string }> {
+  const auth = await requireCommunityMemberForInteractions();
+  if (!auth.ok) {
+    return auth;
+  }
+
+  const supabase = await createClient();
+
+  if (!commentKey) {
+    const { error } = await supabase
+      .from("community_win_preset_comments")
+      .delete()
+      .eq("win_id", winId)
+      .eq("user_id", auth.userId);
+
+    if (error) {
+      return { ok: false, error: error.message };
+    }
+  } else {
+    const { error } = await supabase.from("community_win_preset_comments").upsert(
+      {
+        win_id: winId,
+        user_id: auth.userId,
+        comment_key: commentKey,
+      },
+      { onConflict: "win_id,user_id" }
+    );
+
+    if (error) {
+      return { ok: false, error: error.message };
+    }
+  }
+
+  revalidatePath("/home");
+  revalidatePath("/community");
+  return { ok: true };
 }

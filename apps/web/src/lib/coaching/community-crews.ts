@@ -390,6 +390,7 @@ export async function getCrewWins(
     .eq("bucket_goal", bucketGoal)
     .eq("bucket_experience", bucketExperience)
     .in("user_id", crewMemberIds)
+    .is("hidden_at", null)
     .order("occurred_at", { ascending: false })
     .limit(limit);
 

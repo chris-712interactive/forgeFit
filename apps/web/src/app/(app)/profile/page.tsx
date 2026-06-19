@@ -141,6 +141,11 @@ export default async function ProfilePage({
           integrationError={integrationError ?? integrationsLoadError}
           gamificationUnlocked={hasFeature(subscription, "gamification")}
           gamificationOptIn={profile?.gamification_opt_in ?? false}
+          communityOptInVariant={
+            profile?.community_opt_in_variant === "default_on_ui"
+              ? "default_on_ui"
+              : "control"
+          }
           communityPush={communityPush}
           unit={unit}
           initialGoal={profile?.primary_goal ?? null}

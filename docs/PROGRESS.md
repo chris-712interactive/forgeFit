@@ -28,7 +28,7 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| — | Community expansion (Phases 1–5) | ✅ Complete | 2026-06 |
+| — | Community expansion (Phases 1–6) | ✅ Complete | 2026-06 |
 
 ---
 
@@ -54,6 +54,31 @@
 - `apps/web/src/components/workout/set-row.tsx`, `workout-recap.tsx`, `active-workout.tsx`
 - `apps/web/src/lib/progression/one-rep-max.ts`
 
+### 2026-06-08 — Community Phase 6 (scale & polish)
+
+**What was done:**
+- Migration `20260610850000_community_phase6.sql` — preset reactions/comments, score flags, moderation columns, opt-in A/B variant
+- Win feed: preset reactions + quick-reply comments (`community-win-interactions.tsx`)
+- Anti-gaming heuristics on score upsert; flagged scores excluded from leaderboards until cleared
+- Moderator panel on Community feed tab (hide wins, clear flags, suspend users)
+- Opt-in A/B: `control` vs `default_on_ui` with privacy-forward copy (env-gated)
+
+**Apply migration:** `20260610850000_community_phase6.sql`
+
+**What's next:** Community metrics instrumentation (WACP, opt-in funnel); weekly email recap
+
+**Files touched:**
+- `supabase/migrations/20260610850000_community_phase6.sql`
+- `apps/web/src/lib/coaching/community-reactions.ts`, `community-anti-gaming.ts`, `community-moderation.ts`, `community-opt-in-experiment.ts`, `community-leaderboard-filters.ts`
+- `apps/web/src/lib/coaching/service.ts`, `types.ts`, `community-leagues.ts`, `community-crews.ts`
+- `apps/web/src/app/actions/gamification.ts`, `community.ts`
+- `apps/web/src/components/coaching/community-win-interactions.tsx`, `community-moderation-panel.tsx`
+- `apps/web/src/components/community/community-hero.tsx`, `community-page-client.tsx`
+- `apps/web/src/components/profile/gamification-setting.tsx`
+- `docs/community-expansion-plan.md`, `docs/PROGRESS.md`
+
+---
+
 ### 2026-06-08 — Community Phase 5 (leagues & seasons)
 
 **What was done:**
@@ -67,7 +92,7 @@
 
 **Apply migration:** `20260610830000_community_leagues.sql`
 
-**What's next:** Community Phase 6 — scale & polish (reactions, anti-gaming, moderation)
+**What's next:** Community metrics instrumentation (WACP, opt-in funnel); weekly email recap
 
 **Files touched:**
 - `supabase/migrations/20260610830000_community_leagues.sql`

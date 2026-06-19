@@ -161,6 +161,22 @@ export interface FollowState {
   isMutual: boolean;
 }
 
+export type WinReactionKey =
+  | "fire"
+  | "strong"
+  | "clap"
+  | "trophy"
+  | "motivated";
+
+export type WinPresetCommentKey =
+  | "lets_go"
+  | "crushing_it"
+  | "inspired"
+  | "same_goal"
+  | "well_done";
+
+export type CommunityOptInVariant = "control" | "default_on_ui";
+
 export interface CommunityWinRow {
   id: string;
   userId: string;
@@ -172,6 +188,32 @@ export interface CommunityWinRow {
   cheerCount: number;
   cheeredByMe: boolean;
   isCurrentUser: boolean;
+  reactionCounts?: Partial<Record<WinReactionKey, number>>;
+  myReaction?: WinReactionKey | null;
+  commentCounts?: Partial<Record<WinPresetCommentKey, number>>;
+  myComment?: WinPresetCommentKey | null;
+}
+
+export interface FlaggedScoreRow {
+  userId: string;
+  displayLabel: string;
+  habitScore: number;
+  flagReason: string | null;
+  weekStart: string;
+}
+
+export interface ModerationWinRow {
+  id: string;
+  userId: string;
+  displayLabel: string;
+  headline: string;
+  occurredAt: string;
+  hiddenAt: string | null;
+}
+
+export interface ModerationQueue {
+  flaggedScores: FlaggedScoreRow[];
+  recentWins: ModerationWinRow[];
 }
 
 export interface GamificationContext {
@@ -195,6 +237,8 @@ export interface GamificationContext {
   unreadNotificationCount: number;
   recentNotifications: CommunityNotificationRow[];
   league: LeagueContext | null;
+  optInVariant: CommunityOptInVariant;
+  isModerator: boolean;
 }
 
 export interface CommunityPageData {
@@ -209,6 +253,7 @@ export interface CommunityPageData {
   weeklyChallenge: WeeklyChallengeView | null;
   crewChallenge: CrewChallengeView | null;
   crewWins: CommunityWinRow[];
+  moderationQueue: ModerationQueue | null;
 }
 
 export interface WorkoutCoachingContext {

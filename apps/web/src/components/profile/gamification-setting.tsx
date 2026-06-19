@@ -5,17 +5,25 @@ import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { defaultOnUiCopy } from "@/lib/coaching/community-opt-in-experiment";
+import type { CommunityOptInVariant } from "@/lib/coaching/types";
+
 interface GamificationSettingProps {
   unlocked: boolean;
   optedIn: boolean;
+  optInVariant?: CommunityOptInVariant;
 }
 
 export function GamificationSetting({
   unlocked,
   optedIn,
+  optInVariant = "control",
 }: GamificationSettingProps) {
   const router = useRouter();
-  const [enabled, setEnabled] = useState(optedIn);
+  const defaultEnabled =
+    !optedIn && optInVariant === "default_on_ui" ? true : optedIn;
+  const [enabled, setEnabled] = useState(defaultEnabled);
+  const optInCopy = defaultOnUiCopy(optInVariant);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,8 +51,7 @@ export function GamificationSetting({
         Gamification
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Opt in to weekly leaderboards, cheer peer wins, and share your PRs with
-        others who share your goal and experience level. Off by default.
+        {optInCopy.settingsHint}
       </p>
 
       {!unlocked ? (

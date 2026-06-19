@@ -2,6 +2,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { LeaderboardEntryRow } from "./types";
 import { leagueTierLabel } from "./community-labels";
+import {
+  filterLeaderboardRows,
+  loadSuspendedUserIds,
+} from "./community-leaderboard-filters";
 
 export type LeagueTier = "bronze" | "silver" | "gold";
 
@@ -258,7 +262,7 @@ export async function fetchTierLeaderboard(input: {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("leaderboard_entries")
-    .select("user_id, display_label, habit_score")
+    .select("user_id, display_label, habit_score, score_flagged")
     .eq("bucket_goal", input.bucketGoal)
     .eq("bucket_experience", input.bucketExperience)
     .eq("week_start", input.weekStart)
@@ -272,19 +276,26 @@ export async function fetchTierLeaderboard(input: {
     return [];
   }
 
-  const userIds = data.map((row) => row.user_id as string);
+  const suspendedUserIds = await loadSuspendedUserIds(
+    data.map((row) => row.user_id as string)
+  );
+  const validRows = filterLeaderboardRows(
+    data.map((row) => ({
+      user_id: row.user_id as string,
+      display_label: row.display_label as string,
+      habit_score: row.habit_score as number,
+      score_flagged: row.score_flagged as boolean | null,
+    })),
+    suspendedUserIds,
+    input.userId
+  );
+
+  const userIds = validRows.map((row) => row.userId);
   const tierMap = await getTierMapForUserIds(userIds);
 
-  const filtered = data
-    .filter((row) => (tierMap.get(row.user_id as string) ?? "bronze") === input.tier)
+  return validRows
+    .filter((row) => (tierMap.get(row.userId) ?? "bronze") === input.tier)
     .slice(0, input.limit ?? 50);
-
-  return filtered.map((row) => ({
-    userId: row.user_id as string,
-    displayLabel: row.display_label as string,
-    habitScore: Number(row.habit_score),
-    isCurrentUser: row.user_id === input.userId,
-  }));
 }
 
 export async function getUserBadges(userId: string): Promise<CommunityBadgeRow[]> {

@@ -3,6 +3,7 @@
 import { setGamificationOptIn } from "@/app/actions/gamification";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { LeagueTierBadge } from "@/components/coaching/league-tier-badge";
+import { defaultOnUiCopy } from "@/lib/coaching/community-opt-in-experiment";
 import type { GamificationContext } from "@/lib/coaching/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -103,6 +104,7 @@ export function CommunityHero({
     gamification.pointsToNextRank != null &&
     gamification.pointsToNextRank > 0 &&
     gamification.leaderAboveLabel;
+  const optInCopy = defaultOnUiCopy(gamification.optInVariant);
 
   return (
     <section className={shellClass}>
@@ -196,12 +198,11 @@ export function CommunityHero({
       {!gamification.optedIn && (
         <div className={`relative rounded-2xl border border-forge-ember/30 bg-forge-ember/10 px-4 py-3 ${compact ? "mt-3" : "mt-5"}`}>
           <p className="text-sm font-medium text-forge-text">
-            Join to compete on the board
+            {optInCopy.heroTitle}
           </p>
           {!compact && (
             <p className="mt-1 text-xs leading-relaxed text-forge-muted">
-              First name only. Share your weekly score, find rivals, and cheer
-              wins.
+              {optInCopy.heroBody}
             </p>
           )}
           {error && (
@@ -213,7 +214,7 @@ export function CommunityHero({
             disabled={saving}
             className={`mt-3 rounded-xl bg-forge-ember px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 ${compact ? "w-full" : "w-full sm:w-auto"}`}
           >
-            {saving ? "Joining…" : "Join community"}
+            {saving ? "Joining…" : optInCopy.joinLabel}
           </button>
         </div>
       )}
