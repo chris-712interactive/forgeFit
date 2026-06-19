@@ -26,13 +26,13 @@ export const WORKOUT_MUSIC_PLAYLISTS: readonly WorkoutMusicPlaylist[] = [
     vibe: "cardio",
     label: "Cardio",
     description: "Upbeat tracks for intervals and conditioning",
-    spotifyPlaylistId: "4NVckWkqeA2hEajOG5aMlw",
+    spotifyPlaylistId: "08QQItS1zdpZOpb9orHKIw",
   },
   {
     vibe: "cooldown",
     label: "Cooldown",
     description: "Wind down after your session",
-    spotifyPlaylistId: "6q2k3zsQVWM20W4gMCMSwn",
+    spotifyPlaylistId: "30Cy6UK0S0yHj30uawbbQG",
   },
 ] as const;
 
