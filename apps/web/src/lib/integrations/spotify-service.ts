@@ -3,10 +3,12 @@ import {
   fetchSpotifyPlaybackState,
   fetchSpotifyProfile,
   refreshSpotifyAccessToken,
+  resolveSpotifyControlDeviceId,
+  resumeSpotifyPlayback,
   spotifyPlaybackControl,
   spotifyPlaylistContextUri,
   spotifyTokenExpiresAtIso,
-  startSpotifyPlayback,
+  startSpotifyPlaybackResolved,
   type SpotifyPlaybackAction,
   type SpotifyPlaybackState,
 } from "@forgefit/integrations";
@@ -388,7 +390,7 @@ export async function startSpotifyWorkoutPlaylist(params: {
 
   try {
     const result = await withSpotifyAccessToken(params.userId, async (accessToken) =>
-      startSpotifyPlayback({
+      startSpotifyPlaybackResolved({
         accessToken,
         contextUri: spotifyPlaylistContextUri(playlist.spotifyPlaylistId),
       })
@@ -427,7 +429,9 @@ export async function controlSpotifyPlayback(params: {
       params.userId,
       async (accessToken) => {
         const stateResult = await fetchSpotifyPlaybackState(accessToken);
-        const deviceId = stateResult.ok ? stateResult.state?.deviceId : null;
+        const playbackDeviceId = stateResult.ok
+          ? stateResult.state?.deviceId
+          : null;
 
         let playbackAction: SpotifyPlaybackAction;
         if (params.action === "toggle") {
@@ -438,11 +442,10 @@ export async function controlSpotifyPlayback(params: {
         }
 
         if (playbackAction === "resume") {
-          const resumeResult = await spotifyPlaybackControl(
+          const resumeResult = await resumeSpotifyPlayback({
             accessToken,
-            "resume",
-            deviceId
-          );
+            deviceId: playbackDeviceId,
+          });
           if (resumeResult.ok) {
             return { controlResult: resumeResult, playbackAction };
           }
@@ -460,14 +463,18 @@ export async function controlSpotifyPlayback(params: {
             };
           }
 
-          const startResult = await startSpotifyPlayback({
+          const startResult = await startSpotifyPlaybackResolved({
             accessToken,
             contextUri: spotifyPlaylistContextUri(playlist.spotifyPlaylistId),
-            deviceId,
+            deviceId: playbackDeviceId,
           });
           return { controlResult: startResult, playbackAction };
         }
 
+        const deviceId = await resolveSpotifyControlDeviceId(
+          accessToken,
+          playbackDeviceId
+        );
         const controlResult = await spotifyPlaybackControl(
           accessToken,
           playbackAction,

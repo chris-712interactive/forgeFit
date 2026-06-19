@@ -36,6 +36,14 @@ export interface SpotifyPlaybackState {
   deviceId: string | null;
 }
 
+export interface SpotifyDevice {
+  id: string;
+  isActive: boolean;
+  isRestricted: boolean;
+  name: string;
+  type: string;
+}
+
 export interface SpotifyApiErrorBody {
   error?: {
     status?: number;
@@ -297,4 +305,174 @@ export async function spotifyPlaybackControl(
 
 export function spotifyPlaylistContextUri(playlistId: string): string {
   return `spotify:playlist:${playlistId}`;
+}
+
+interface SpotifyDevicesApi {
+  devices: Array<{
+    id: string | null;
+    is_active: boolean;
+    is_restricted: boolean;
+    name: string;
+    type: string;
+  }>;
+}
+
+export async function fetchSpotifyDevices(
+  accessToken: string
+): Promise<
+  | { ok: true; devices: SpotifyDevice[] }
+  | { ok: false; status: number; message: string }
+> {
+  const result = await spotifyApiFetch<SpotifyDevicesApi>(
+    accessToken,
+    "/me/player/devices"
+  );
+
+  if (!result.ok) {
+    return result;
+  }
+
+  const devices = (result.data.devices ?? [])
+    .filter((device): device is SpotifyDevicesApi["devices"][number] & { id: string } =>
+      Boolean(device.id)
+    )
+    .map((device) => ({
+      id: device.id,
+      isActive: device.is_active,
+      isRestricted: device.is_restricted,
+      name: device.name,
+      type: device.type,
+    }));
+
+  return { ok: true, devices };
+}
+
+export function pickSpotifyControlDevice(
+  devices: SpotifyDevice[]
+): SpotifyDevice | null {
+  const usable = devices.filter((device) => !device.isRestricted);
+  if (usable.length === 0) return null;
+
+  const score = (device: SpotifyDevice) => {
+    let value = 0;
+    if (device.isActive) value += 100;
+    if (device.type.toLowerCase() === "smartphone") value += 50;
+    return value;
+  };
+
+  return [...usable].sort((left, right) => score(right) - score(left))[0] ?? null;
+}
+
+export async function resolveSpotifyControlDeviceId(
+  accessToken: string,
+  playbackDeviceId?: string | null
+): Promise<string | null> {
+  if (playbackDeviceId) return playbackDeviceId;
+
+  const devicesResult = await fetchSpotifyDevices(accessToken);
+  if (!devicesResult.ok) return null;
+
+  return pickSpotifyControlDevice(devicesResult.devices)?.id ?? null;
+}
+
+export async function transferSpotifyPlayback(params: {
+  accessToken: string;
+  deviceId: string;
+  play?: boolean;
+}): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  return spotifyApiFetch(params.accessToken, "/me/player", {
+    method: "PUT",
+    body: JSON.stringify({
+      device_ids: [params.deviceId],
+      play: params.play ?? false,
+    }),
+  });
+}
+
+function isNoActiveDeviceError(result: {
+  ok: false;
+  status: number;
+  message: string;
+}): boolean {
+  return result.status === 404 || result.message === "NO_ACTIVE_DEVICE";
+}
+
+export async function resumeSpotifyPlayback(params: {
+  accessToken: string;
+  deviceId?: string | null;
+}): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  const deviceId = await resolveSpotifyControlDeviceId(
+    params.accessToken,
+    params.deviceId
+  );
+  if (!deviceId) {
+    return { ok: false, status: 404, message: "NO_ACTIVE_DEVICE" };
+  }
+
+  let result = await spotifyPlaybackControl(
+    params.accessToken,
+    "resume",
+    deviceId
+  );
+  if (result.ok || !isNoActiveDeviceError(result)) {
+    return result;
+  }
+
+  const transferResult = await transferSpotifyPlayback({
+    accessToken: params.accessToken,
+    deviceId,
+    play: false,
+  });
+  if (!transferResult.ok) {
+    return result;
+  }
+
+  return spotifyPlaybackControl(params.accessToken, "resume", deviceId);
+}
+
+export async function startSpotifyPlaybackResolved(params: {
+  accessToken: string;
+  contextUri: string;
+  deviceId?: string | null;
+}): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  const deviceId = await resolveSpotifyControlDeviceId(
+    params.accessToken,
+    params.deviceId
+  );
+  if (!deviceId) {
+    return { ok: false, status: 404, message: "NO_ACTIVE_DEVICE" };
+  }
+
+  // No active player session — transfer Connect to the phone before starting.
+  if (!params.deviceId) {
+    await transferSpotifyPlayback({
+      accessToken: params.accessToken,
+      deviceId,
+      play: false,
+    });
+  }
+
+  let result = await startSpotifyPlayback({
+    accessToken: params.accessToken,
+    contextUri: params.contextUri,
+    deviceId,
+  });
+  if (result.ok || !isNoActiveDeviceError(result)) {
+    return result;
+  }
+
+  const transferResult = await transferSpotifyPlayback({
+    accessToken: params.accessToken,
+    deviceId,
+    play: false,
+  });
+  if (!transferResult.ok) {
+    return result;
+  }
+
+  return startSpotifyPlayback({
+    accessToken: params.accessToken,
+    contextUri: params.contextUri,
+    deviceId,
+  });
 }

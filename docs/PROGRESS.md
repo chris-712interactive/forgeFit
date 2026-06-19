@@ -40,6 +40,7 @@
 - Fixed pause API call: Spotify requires `PUT /me/player/pause` (was incorrectly `POST`) — skip worked, pause did not
 - Resume/play sends `{}` body with `Content-Type: application/json`; targets active `device_id` from playback state
 - Play falls back to starting default workout playlist when resume has no active context
+- **Device discovery:** when Spotify has no active player, resolve phone via `/me/player/devices`, transfer Connect target, then start playlist
 - Transport sends explicit `pause`/`resume` (not server toggle re-fetch); optimistic UI + larger 48px tap targets
 
 **What's next:**

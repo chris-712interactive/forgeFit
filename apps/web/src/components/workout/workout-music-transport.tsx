@@ -21,7 +21,7 @@ function formatPlaybackError(reason: string): string {
     case "premium_required":
       return "Spotify Premium required for in-app controls.";
     case "no_active_device":
-      return "Open Spotify on this device, then try again.";
+      return "Open Spotify on this phone, play any song once, then try again.";
     case "not_connected":
       return "Connect Spotify in Profile → Workout music.";
     default:
