@@ -3,7 +3,7 @@
 import {
   TIMEZONE_COOKIE,
   TIMEZONE_COOKIE_MAX_AGE,
-} from "@/lib/datetime/timezone";
+} from "@/lib/datetime/timezone-cookie";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
