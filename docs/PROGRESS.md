@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Profile sections collapsed by default |
+| **Last session focus** | Spotify OAuth redirect URI fix (local dev) |
 
 ---
 
@@ -33,6 +33,25 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Spotify OAuth redirect URI (local dev)
+
+**What was done:**
+- `spotifyOAuthRedirectUri(request)` — uses browser origin in dev when `NEXT_PUBLIC_SITE_URL` is production; optional `SPOTIFY_OAUTH_REDIRECT_URI` override
+- Connect stores redirect URI in OAuth cookie; callback reuses same URI for token exchange
+- Profile Workout music shows exact redirect URI to register in Spotify Dashboard
+- `.env.example` documents redirect URI setup
+
+**What's next:**
+- User: add `http://localhost:3000/api/integrations/spotify/callback` to Spotify Developer Dashboard when testing locally (see Profile → Workout music hint)
+- Run migration `20260610870000_spotify_integration.sql` if not applied
+- QA connect + playback with Spotify Premium
+
+**Files touched:**
+- `apps/web/src/lib/integrations/config.ts`, `oauth-state.ts`, `spotify-service.ts`
+- `apps/web/src/app/api/integrations/spotify/connect/route.ts`, `callback/route.ts`, `status/route.ts`
+- `apps/web/src/components/profile/workout-music-setting.tsx`
+- `.env.example`, `docs/PROGRESS.md`
 
 ### 2026-06-19 — Profile sections collapsed by default
 

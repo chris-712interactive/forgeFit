@@ -6,13 +6,13 @@ import {
 } from "@/lib/integrations/config";
 import {
   createSpotifyPkcePair,
-  setSpotifyOAuthVerifierCookie,
+  setSpotifyOAuthCookies,
 } from "@/lib/integrations/oauth-state";
 import { createSignedIntegrationOAuthState } from "@/lib/integrations/oauth-state-token";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!isSpotifyConfigured()) {
     return NextResponse.json(
       { error: "Spotify integration is not configured." },
@@ -30,11 +30,11 @@ export async function GET() {
   }
 
   const { clientId } = getSpotifyClientConfig();
-  const redirectUri = spotifyOAuthRedirectUri();
+  const redirectUri = spotifyOAuthRedirectUri(request);
   const state = createSignedIntegrationOAuthState(user.id);
   const { verifier, challenge } = createSpotifyPkcePair();
 
-  await setSpotifyOAuthVerifierCookie(verifier);
+  await setSpotifyOAuthCookies(verifier, redirectUri);
 
   const authorizeUrl = buildSpotifyAuthorizeUrl({
     clientId,

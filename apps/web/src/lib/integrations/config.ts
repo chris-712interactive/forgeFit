@@ -156,6 +156,34 @@ export function spotifyRedirectUri(siteUrl: string): string {
   return `${siteUrl.replace(/\/$/, "")}/api/integrations/spotify/callback`;
 }
 
-export function spotifyOAuthRedirectUri(): string {
+/**
+ * Redirect URI sent to Spotify — must match the Spotify Developer Dashboard exactly.
+ * Priority: SPOTIFY_OAUTH_REDIRECT_URI → request origin (dev) → NEXT_PUBLIC_SITE_URL
+ */
+export function spotifyOAuthRedirectUri(request?: Request): string {
+  const explicit = process.env.SPOTIFY_OAUTH_REDIRECT_URI?.trim();
+  if (explicit) {
+    return explicit.replace(/\/$/, "");
+  }
+
+  if (request) {
+    const requestOrigin = new URL(request.url).origin;
+
+    // Local dev: NEXT_PUBLIC_SITE_URL is often the production domain while testing on localhost
+    if (process.env.NODE_ENV !== "production") {
+      return spotifyRedirectUri(requestOrigin);
+    }
+
+    try {
+      const siteHost = new URL(getSiteUrl()).host;
+      const requestHost = new URL(requestOrigin).host;
+      if (siteHost === requestHost) {
+        return spotifyRedirectUri(requestOrigin);
+      }
+    } catch {
+      // fall through to canonical site URL
+    }
+  }
+
   return spotifyRedirectUri(getSiteUrl());
 }

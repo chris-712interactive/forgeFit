@@ -115,6 +115,7 @@ export async function clearFitbitOAuthCookies(): Promise<void> {
 }
 
 const SPOTIFY_VERIFIER_COOKIE = "spotify_oauth_verifier";
+const SPOTIFY_REDIRECT_COOKIE = "spotify_oauth_redirect";
 
 export function createSpotifyPkcePair(): { verifier: string; challenge: string } {
   const verifier = randomBytes(64).toString("base64url");
@@ -122,9 +123,25 @@ export function createSpotifyPkcePair(): { verifier: string; challenge: string }
   return { verifier, challenge };
 }
 
-export async function setSpotifyOAuthVerifierCookie(
-  verifier: string
+export async function setSpotifyOAuthCookies(
+  verifier: string,
+  redirectUri: string
 ): Promise<void> {
+  const cookieStore = await cookies();
+  const options = integrationCookieOptions();
+  cookieStore.set(SPOTIFY_VERIFIER_COOKIE, verifier, options);
+  cookieStore.set(SPOTIFY_REDIRECT_COOKIE, redirectUri, options);
+}
+
+/** @deprecated Use setSpotifyOAuthCookies */
+export async function setSpotifyOAuthVerifierCookie(
+  verifier: string,
+  redirectUri?: string
+): Promise<void> {
+  if (redirectUri) {
+    await setSpotifyOAuthCookies(verifier, redirectUri);
+    return;
+  }
   const cookieStore = await cookies();
   cookieStore.set(SPOTIFY_VERIFIER_COOKIE, verifier, integrationCookieOptions());
 }
@@ -134,6 +151,12 @@ export async function readSpotifyOAuthVerifierCookie(): Promise<string | null> {
   return cookieStore.get(SPOTIFY_VERIFIER_COOKIE)?.value ?? null;
 }
 
+export async function readSpotifyOAuthRedirectCookie(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SPOTIFY_REDIRECT_COOKIE)?.value ?? null;
+}
+
 export async function clearSpotifyOAuthCookies(): Promise<void> {
   await deleteIntegrationCookie(SPOTIFY_VERIFIER_COOKIE);
+  await deleteIntegrationCookie(SPOTIFY_REDIRECT_COOKIE);
 }

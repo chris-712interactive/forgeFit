@@ -1,9 +1,11 @@
 import {
   isSpotifyConfigured,
+  spotifyOAuthRedirectUri,
 } from "@/lib/integrations/config";
 import { completeSpotifyOAuth } from "@/lib/integrations/spotify-service";
 import {
   clearSpotifyOAuthCookies,
+  readSpotifyOAuthRedirectCookie,
   readSpotifyOAuthVerifierCookie,
 } from "@/lib/integrations/oauth-state";
 import {
@@ -41,6 +43,9 @@ export async function GET(request: Request) {
 
   const verified = verifySignedIntegrationOAuthState(state);
   const codeVerifier = await readSpotifyOAuthVerifierCookie();
+  const redirectUri =
+    (await readSpotifyOAuthRedirectCookie()) ??
+    spotifyOAuthRedirectUri(request);
   await clearSpotifyOAuthCookies();
 
   if (!verified) {
@@ -56,6 +61,7 @@ export async function GET(request: Request) {
       userId: verified.userId,
       code,
       codeVerifier,
+      redirectUri,
     });
   } catch (error) {
     const message =

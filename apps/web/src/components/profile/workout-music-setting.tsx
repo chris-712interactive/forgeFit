@@ -151,6 +151,15 @@ export function WorkoutMusicSetting({
         </p>
       )}
 
+      {status.configured && status.oauthRedirectUri && !status.connected && (
+        <p className="mt-3 rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-2 text-[11px] leading-relaxed text-forge-muted">
+          Add this redirect URI in your Spotify Developer app settings:{" "}
+          <code className="break-all text-forge-steel">
+            {status.oauthRedirectUri}
+          </code>
+        </p>
+      )}
+
       {status.configured && (
         <div className="mt-4 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">

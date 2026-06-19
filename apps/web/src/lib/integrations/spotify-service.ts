@@ -36,6 +36,8 @@ export interface SpotifyPublicStatus {
   autoStart: boolean;
   defaultVibe: WorkoutMusicVibe | null;
   lastError: string | null;
+  /** Register this exact URI in the Spotify Developer Dashboard. */
+  oauthRedirectUri?: string;
 }
 
 export interface SpotifyPlaybackView {
@@ -54,7 +56,8 @@ export async function getSpotifyPublicStatus(
   profile?: {
     workout_music_auto_start?: boolean | null;
     workout_music_default_vibe?: string | null;
-  } | null
+  } | null,
+  request?: Request
 ): Promise<SpotifyPublicStatus> {
   const configured = Boolean(
     process.env.SPOTIFY_CLIENT_ID?.trim() &&
@@ -76,6 +79,7 @@ export async function getSpotifyPublicStatus(
         ? defaultVibeRaw
         : null,
     lastError: row?.last_sync_error ?? null,
+    oauthRedirectUri: configured ? spotifyOAuthRedirectUri(request) : undefined,
   };
 }
 
@@ -114,13 +118,14 @@ export async function completeSpotifyOAuth(params: {
   userId: string;
   code: string;
   codeVerifier: string;
+  redirectUri: string;
 }): Promise<void> {
   const { clientId, clientSecret } = getSpotifyClientConfig();
   const token = await exchangeSpotifyAuthorizationCode({
     clientId,
     clientSecret,
     code: params.code,
-    redirectUri: spotifyOAuthRedirectUri(),
+    redirectUri: params.redirectUri,
     codeVerifier: params.codeVerifier,
   });
 

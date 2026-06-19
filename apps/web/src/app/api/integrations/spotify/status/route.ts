@@ -2,7 +2,7 @@ import { getSpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,6 +18,6 @@ export async function GET() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const status = await getSpotifyPublicStatus(user.id, profile);
+  const status = await getSpotifyPublicStatus(user.id, profile, request);
   return NextResponse.json(status);
 }
