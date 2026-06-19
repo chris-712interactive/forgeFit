@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify play/pause transport fix + larger tap targets |
+| **Last session focus** | Spotify wake-and-retry when app not running |
 
 ---
 
@@ -33,6 +33,20 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Spotify wake-and-retry (cold start)
+
+**What was done:**
+- Spotify Connect cannot control the phone until the app is awake — documented platform limit
+- Press ▶ with no active device: opens workout playlist in Spotify, retries API start every 2s (~12s)
+- Auto-start on workout begin uses same wake flow when remote start fails
+- Idle transport hint: "Press ▶ to open Spotify and start your workout playlist"
+
+**Files touched:**
+- `apps/web/src/lib/workout-music/spotify-wake-playback.ts`
+- `apps/web/src/components/workout/workout-music-transport.tsx`
+- `apps/web/src/components/workout/workout-hub.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify play/pause transport fix
 

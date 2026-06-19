@@ -345,7 +345,23 @@ export function WorkoutHub({
         openWorkout(clientId);
 
         if (navigator.onLine && spotifyConnected) {
-          void fetch("/api/integrations/spotify/autostart", { method: "POST" });
+          void (async () => {
+            const response = await fetch("/api/integrations/spotify/autostart", {
+              method: "POST",
+            });
+            const body = (await response.json()) as {
+              ok?: boolean;
+              reason?: string;
+            };
+
+            if (body.ok) return;
+            if (body.reason === "no_active_device") {
+              const { wakeSpotifyAndStartPlayback } = await import(
+                "@/lib/workout-music/spotify-wake-playback"
+              );
+              await wakeSpotifyAndStartPlayback();
+            }
+          })();
         }
       } finally {
         setStartingDay(null);
