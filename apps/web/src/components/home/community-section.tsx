@@ -1,17 +1,13 @@
 "use client";
 
-import { setGamificationOptIn } from "@/app/actions/gamification";
-import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
-import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
-import type { GamificationContext } from "@/lib/coaching/types";
-import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
 import { SeasonRecapCard } from "@/components/coaching/season-recap-card";
-import { LeagueTierBadge } from "@/components/coaching/league-tier-badge";
 import { WeeklyRivalCard } from "@/components/coaching/weekly-rival-card";
+import { CommunityHero } from "@/components/community/community-hero";
+import { CommunityMiniLeaderboard } from "@/components/community/community-mini-leaderboard";
+import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
+import type { GamificationContext } from "@/lib/coaching/types";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 interface CommunitySectionProps {
   gamification: GamificationContext;
@@ -19,190 +15,93 @@ interface CommunitySectionProps {
   showWins?: boolean;
 }
 
-function CommunityOptInBanner({
-  onOptIn,
-  saving,
-  error,
-}: {
-  onOptIn: () => void;
-  saving: boolean;
-  error: string | null;
-}) {
-  return (
-    <div className="rounded-xl border border-forge-ember/30 bg-forge-ember/5 px-4 py-3">
-      <p className="text-sm font-medium text-forge-text">
-        Join to appear on the board and cheer peers
-      </p>
-      <p className="mt-1 text-xs leading-relaxed text-forge-muted">
-        You can browse your community now. Opt in to share your weekly habit
-        score, celebrate PRs, and give others a 👏 — first name only.
-      </p>
-      {error && <p className="mt-2 text-xs text-forge-coral">{error}</p>}
-      <button
-        type="button"
-        onClick={onOptIn}
-        disabled={saving}
-        className="mt-3 rounded-lg bg-forge-ember px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-      >
-        {saving ? "Joining…" : "Join community"}
-      </button>
-    </div>
-  );
-}
-
 export function CommunitySection({
   gamification,
   showLeaderboard = true,
   showWins = true,
 }: CommunitySectionProps) {
-  const router = useRouter();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleOptIn() {
-    setSaving(true);
-    setError(null);
-    const result = await setGamificationOptIn(true);
-    setSaving(false);
-
-    if (!result.ok) {
-      setError(result.error ?? "Could not join community.");
-      return;
-    }
-
-    router.refresh();
-  }
-
-  const bucketCopy = gamification.bucketLabel
-    ? `${gamification.bucketLabel} athletes`
-    : "your goal & experience level";
+  const showBucketContent =
+    gamification.unlocked && Boolean(gamification.bucketLabel);
+  const hasRecap =
+    gamification.league?.seasonRecap?.showRecap ||
+    gamification.weeklyRecap?.showRecap;
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3 px-0.5">
         <div>
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
             Community
           </h2>
-          <p className="mt-1 max-w-prose text-sm leading-relaxed text-forge-text">
-            Train alongside {bucketCopy}. Weekly scores in your{" "}
-            {gamification.league?.tierLabel ?? "Bronze"} league tier keep
-            competition fair.{" "}
-            {gamification.unlocked && (
-              <Link
-                href="/community"
-                className="font-medium text-forge-ember underline-offset-2 hover:underline"
-              >
-                Full standings →
-              </Link>
-            )}
-          </p>
+          {gamification.unreadNotificationCount > 0 && gamification.optedIn && (
+            <p className="mt-0.5 text-xs text-forge-ember">
+              {gamification.unreadNotificationCount} new update
+              {gamification.unreadNotificationCount === 1 ? "" : "s"}
+            </p>
+          )}
         </div>
-        {gamification.unlocked && gamification.optedIn && gamification.pointsToNextRank != null &&
-          gamification.pointsToNextRank > 0 &&
-          gamification.leaderAboveLabel && (
-          <div className="rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-right">
-            <p className="text-[11px] uppercase tracking-wide text-forge-muted">
-              To pass {gamification.leaderAboveLabel}
-            </p>
-            <p className="font-display text-xl font-bold text-forge-gold">
-              {gamification.pointsToNextRank} pts
-            </p>
-          </div>
-        )}
-        {gamification.unlocked && gamification.optedIn && gamification.league && (
-          <div className="mt-2">
-            <LeagueTierBadge
-              tier={gamification.league.tier}
-              label={gamification.league.tierLabel}
-              size="md"
-            />
-          </div>
+        {gamification.unlocked && (
+          <Link
+            href="/community"
+            className="shrink-0 rounded-full border border-forge-ember/30 bg-forge-ember/10 px-3 py-1.5 text-xs font-semibold text-forge-ember transition-colors hover:bg-forge-ember/20"
+          >
+            Open community
+          </Link>
         )}
       </div>
 
-      {gamification.league?.seasonRecap && (
-        <div className="mt-4">
-          <SeasonRecapCard recap={gamification.league.seasonRecap} />
+      <CommunityHero gamification={gamification} variant="compact" />
+
+      {showBucketContent && hasRecap && (
+        <div className="flex flex-col gap-2">
+          {gamification.league?.seasonRecap && (
+            <SeasonRecapCard recap={gamification.league.seasonRecap} />
+          )}
+          {gamification.weeklyRecap && (
+            <WeeklyCommunityRecapCard recap={gamification.weeklyRecap} />
+          )}
         </div>
       )}
 
-      {gamification.weeklyRecap && (
-        <div className="mt-4">
-          <WeeklyCommunityRecapCard recap={gamification.weeklyRecap} />
-        </div>
-      )}
-
-      {!gamification.unlocked && (
-        <div className="mt-4 space-y-3">
-          <UpgradePrompt
-            title="Train with a community"
-            description="Pro unlocks weekly leaderboards, shared wins, and cheers — all bucketed by your goal and experience so comparisons stay fair."
-            suggestedTier="pro"
-          />
-          <p className="text-xs text-forge-muted">
-            Accountability works best when you are not doing it alone. Upgrade to
-            see how others in your bucket are showing up each week.
-          </p>
-        </div>
-      )}
-
-      {gamification.unlocked && !gamification.bucketLabel && (
-        <p className="mt-4 rounded-xl border border-[var(--border)] bg-forge-surface px-4 py-3 text-sm text-forge-muted">
-          Finish onboarding with your goal and experience level to find your
-          community bucket.{" "}
-          <Link
-            href="/onboarding"
-            className="font-medium text-forge-ember underline-offset-2 hover:underline"
-          >
-            Complete profile
-          </Link>
-        </p>
-      )}
-
-      {gamification.unlocked &&
+      {showBucketContent &&
         gamification.optedIn &&
         gamification.weeklyRival && (
-          <div className="mt-4">
-            <WeeklyRivalCard
-              rival={gamification.weeklyRival}
-              userRank={gamification.userRank}
-              compact
-            />
-          </div>
+          <WeeklyRivalCard
+            rival={gamification.weeklyRival}
+            userRank={gamification.userRank}
+            compact
+            hideFooterLink
+          />
         )}
 
-      {gamification.unlocked && gamification.bucketLabel && !gamification.optedIn && (
-        <div className="mt-4">
-          <CommunityOptInBanner
-            onOptIn={() => void handleOptIn()}
-            saving={saving}
-            error={error}
+      {showBucketContent && showLeaderboard && (
+        <div className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-3.5 sm:p-4">
+          <CommunityMiniLeaderboard
+            gamification={gamification}
+            entries={gamification.leaderboard}
+            limit={5}
           />
         </div>
       )}
 
-      {gamification.unlocked && gamification.bucketLabel && (showLeaderboard || showWins) && (
-        <div className="mt-5 space-y-5">
-          {showLeaderboard && (
-            <LeaderboardCard gamification={gamification} embedded preview={!gamification.optedIn} />
-          )}
-          {showWins && (
-            <CommunityWinsFeed gamification={gamification} preview={!gamification.optedIn} />
-          )}
-        </div>
+      {showBucketContent && showWins && (
+        <CommunityWinsFeed
+          gamification={gamification}
+          preview={!gamification.optedIn}
+          compact
+          maxItems={2}
+        />
       )}
 
       {gamification.unlocked && gamification.optedIn && (
-        <p className="mt-4 text-[11px] text-forge-muted">
-          Community settings in{" "}
+        <p className="text-center text-[11px] text-forge-muted">
+          Crews, challenges & hall of fame on{" "}
           <Link
-            href="/profile#gamification"
-            className="text-forge-ember underline-offset-2 hover:underline"
+            href="/community"
+            className="font-medium text-forge-ember underline-offset-2 hover:underline"
           >
-            Profile
+            Community
           </Link>
-          . You can opt out anytime.
         </p>
       )}
     </section>
