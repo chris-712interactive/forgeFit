@@ -1,27 +1,11 @@
 "use client";
 
+import { buildWeeklyRecapShareText } from "@/lib/coaching/community-weekly-recap";
 import type { WeeklyCommunityRecap } from "@/lib/coaching/types";
 import { useState } from "react";
 
 interface ShareRecapButtonProps {
   recap: WeeklyCommunityRecap;
-}
-
-function buildShareText(recap: WeeklyCommunityRecap): string {
-  const parts = [
-    `I finished #${recap.lastWeekRank} in my ForgeFit bucket last week`,
-  ];
-  if (recap.lastWeekScore != null) {
-    parts.push(`with ${recap.lastWeekScore} habit points`);
-  }
-  if (recap.bucketLabel) {
-    parts.push(`(${recap.bucketLabel})`);
-  }
-  if (recap.crewName) {
-    parts.push(`— crew: ${recap.crewName}`);
-  }
-  parts.push("New week, new climb. 💪");
-  return parts.join(" ");
 }
 
 export function ShareRecapButton({ recap }: ShareRecapButtonProps) {
@@ -30,7 +14,7 @@ export function ShareRecapButton({ recap }: ShareRecapButtonProps) {
 
   async function handleShare() {
     setError(null);
-    const text = buildShareText(recap);
+    const text = buildWeeklyRecapShareText(recap);
 
     if (typeof navigator !== "undefined" && navigator.share) {
       try {

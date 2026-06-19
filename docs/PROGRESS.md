@@ -28,7 +28,7 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| — | Community expansion (Phases 1–6) | ✅ Complete | 2026-06 |
+| — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
@@ -53,6 +53,27 @@
 - `apps/web/src/lib/workouts/set-display.ts`, `apps/web/src/lib/workouts/comparison.ts`
 - `apps/web/src/components/workout/set-row.tsx`, `workout-recap.tsx`, `active-workout.tsx`
 - `apps/web/src/lib/progression/one-rep-max.ts`
+
+### 2026-06-08 — Community Phase 7 (growth & measurement)
+
+**What was done:**
+- Migration `20260610860000_community_metrics_email.sql` — action events, email prefs, send log
+- WACP instrumentation via `recordCommunityAction()` on score upsert, cheer, follow, reaction, comment, opt-in
+- Moderator ops metrics panel + `GET /api/internal/community-metrics`
+- Weekly recap email (Resend) + Monday cron; profile email toggle
+
+**Apply migration:** `20260610860000_community_metrics_email.sql`
+
+**What's next:** External analytics dashboard; Strava / Withings integrations
+
+**Files touched:**
+- `supabase/migrations/20260610860000_community_metrics_email.sql`
+- `apps/web/src/lib/coaching/community-metrics.ts`, `community-email.ts`, `community-weekly-recap.ts`, `community-week.ts`
+- `apps/web/src/app/api/cron/community-weekly-recap`, `api/internal/community-metrics`
+- `apps/web/src/components/coaching/community-ops-metrics-panel.tsx`, `profile/community-email-setting.tsx`
+- `apps/web/vercel.json`, `.env.example`, docs
+
+---
 
 ### 2026-06-08 — Community Phase 6 (scale & polish)
 

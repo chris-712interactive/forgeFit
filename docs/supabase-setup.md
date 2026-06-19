@@ -72,6 +72,7 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 35. `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
 36. `20260610840000_community_league_tiers_backfill.sql` — bronze tier rows for existing opt-in users
 37. `20260610850000_community_phase6.sql` — reactions, preset comments, score flags, moderation, opt-in A/B
+38. `20260610860000_community_metrics_email.sql` — WACP events, email prefs, send log
 
 ## 4. Auth providers
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { CommunityModerationPanel } from "@/components/coaching/community-moderation-panel";
+import { CommunityOpsMetricsPanel } from "@/components/coaching/community-ops-metrics-panel";
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
 import { CrewPanel } from "@/components/coaching/crew-panel";
 import { CrewWinsFeed } from "@/components/coaching/crew-wins-feed";
@@ -44,6 +45,7 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
     crewChallenge,
     crewWins,
     moderationQueue,
+    communityMetrics,
   } = data;
 
   const [tab, setTab] = useState<CommunityTab>("week");
@@ -167,6 +169,10 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
 
       {tab === "feed" && showFeed && (
         <div className="flex flex-col gap-4 sm:gap-5">
+          {gamification.isModerator && communityMetrics && (
+            <CommunityOpsMetricsPanel metrics={communityMetrics} />
+          )}
+
           {gamification.isModerator && moderationQueue && (
             <CommunityModerationPanel queue={moderationQueue} />
           )}

@@ -61,6 +61,8 @@ import {
   isCommunityModerator,
 } from "./community-moderation";
 import { ensureOptInVariantAssigned } from "./community-opt-in-experiment";
+import { getCommunityMetrics, recordCommunityAction } from "./community-metrics";
+import { buildWeeklyRecapForUser } from "./community-weekly-recap";
 
 function baseGamificationContext(
   overrides: Partial<GamificationContext> = {}
@@ -205,42 +207,11 @@ async function buildWeeklyRecap(
     return null;
   }
 
-  const lastWeekStart = previousWeekStartIso();
-  const supabase = await createClient();
-  const { data: rows } = await supabase
-    .from("leaderboard_entries")
-    .select("user_id, habit_score")
-    .eq("bucket_goal", goal)
-    .eq("bucket_experience", experience)
-    .eq("week_start", lastWeekStart)
-    .order("habit_score", { ascending: false });
-
-  if (!rows || rows.length === 0) {
-    return null;
-  }
-
-  const index = rows.findIndex((row) => row.user_id === userId);
-  if (index < 0) {
-    return null;
-  }
-
-  const lastWeekEnd = new Date(lastWeekStart);
-  lastWeekEnd.setDate(lastWeekEnd.getDate() + 6);
-  const weekLabel = `${new Date(lastWeekStart).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  })} – ${lastWeekEnd.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  })}`;
-
-  return {
-    showRecap: true,
-    lastWeekRank: index + 1,
-    lastWeekScore: Number(rows[index]!.habit_score),
-    weekLabel,
-    bucketLabel: formatBucketLabel(goal, experience),
-  };
+  return buildWeeklyRecapForUser({
+    userId,
+    bucketGoal: goal,
+    bucketExperience: experience,
+  });
 }
 
 function isGamificationTableMissing(error: {
@@ -412,6 +383,8 @@ export async function upsertWeeklyLeaderboardScore(
 
   if (error && !isGamificationTableMissing(error)) {
     console.error("leaderboard upsert failed:", error.message);
+  } else if (!error) {
+    void recordCommunityAction(userId, "score_upsert");
   }
 
   await ensureLeagueTier({
@@ -1058,6 +1031,7 @@ export async function getCommunityPageData(
       crewChallenge: null,
       crewWins: [],
       moderationQueue: null,
+      communityMetrics: null,
     };
   }
 
@@ -1151,16 +1125,19 @@ export async function getCommunityPageData(
     recap.crewName = crew.name;
   }
 
-  const moderationQueue =
+  const [moderationQueue, communityMetrics] =
     gamification.isModerator &&
     gamification.bucketGoal &&
     gamification.bucketExperience
-      ? await getModerationQueue({
-          bucketGoal: gamification.bucketGoal,
-          bucketExperience: gamification.bucketExperience,
-          weekStart,
-        })
-      : null;
+      ? await Promise.all([
+          getModerationQueue({
+            bucketGoal: gamification.bucketGoal,
+            bucketExperience: gamification.bucketExperience,
+            weekStart,
+          }),
+          getCommunityMetrics(),
+        ])
+      : [null, null];
 
   return {
     gamification: {
@@ -1179,5 +1156,6 @@ export async function getCommunityPageData(
     crewChallenge,
     crewWins,
     moderationQueue,
+    communityMetrics,
   };
 }

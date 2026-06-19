@@ -1,7 +1,7 @@
 # Community Expansion Plan
 
 > Adoption-focused competition layer — MapMyRun-style visible rivalry, fair buckets, and weekly urgency.  
-> **Phases 1–6** are implemented.
+> **Phases 1–7** are implemented.
 
 Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket stats before opt-in; Pro unlocks full participation.
 
@@ -50,7 +50,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 - Auto-publish `weekly_plan` and `streak` milestones
 - Pre-workout rank strip
 - Weekly in-app recap (“Last week you finished #4…”)
-- **Not yet:** weekly email recap; metrics instrumentation (WACP, opt-in funnel)
+- **Not yet:** weekly email recap ✅ (Phase 7); metrics instrumentation ✅ (Phase 7)
 
 ---
 
@@ -61,7 +61,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 - “Points to pass” callout
 - In-app notifications (passed, close to pass, rival events, cheer, mutual follow)
 - Follow model + mutual friends mini-leaderboard
-- **Not yet:** metrics targets / analytics dashboard
+- **Not yet:** metrics targets / analytics dashboard (basic ops panel shipped in Phase 7)
 
 ---
 
@@ -157,6 +157,23 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 10. `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
 11. `20260610840000_community_league_tiers_backfill.sql` — bronze tier rows for existing opt-in users
 12. `20260610850000_community_phase6.sql` — reactions, preset comments, score flags, moderation, opt-in A/B
+13. `20260610860000_community_metrics_email.sql` — WACP events, email prefs, send log
+
+---
+
+## Phase 7 — Growth & measurement ✅ Shipped
+
+- WACP event log (`community_action_events`) — score upsert, cheer, follow, reaction, comment, opt-in
+- Moderator metrics panel on Community feed (WACP, opt-in rate, A/B breakdown, action mix)
+- Internal metrics API: `GET /api/internal/community-metrics` (CRON_SECRET)
+- Weekly recap email via Resend + Monday cron (`/api/cron/community-weekly-recap`, 14:00 UTC)
+- Profile toggle for weekly recap email (on by default)
+
+**Migration:** `20260610860000_community_metrics_email.sql`
+
+**Env:**
+- `RESEND_API_KEY`, `EMAIL_FROM` — weekly recap emails
+- Existing `CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`
 
 ---
 

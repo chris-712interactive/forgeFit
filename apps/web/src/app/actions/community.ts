@@ -18,6 +18,7 @@ import {
   setCommunitySuspended,
   unhideCommunityWin,
 } from "@/lib/coaching/community-moderation";
+import { recordCommunityAction } from "@/lib/coaching/community-metrics";
 
 async function requireCommunityMember() {
   const supabase = await createClient();
@@ -127,6 +128,10 @@ export async function toggleFollowPeer(followeeId: string): Promise<{
   const result = await toggleCommunityFollow(user.id, followeeId);
   if (result.error) {
     return { ok: false, error: result.error };
+  }
+
+  if (result.following) {
+    void recordCommunityAction(user.id, "follow");
   }
 
   revalidatePath("/community");

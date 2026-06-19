@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
+import { CommunityEmailSetting } from "@/components/profile/community-email-setting";
 import { CommunityPushSetting } from "@/components/profile/community-push-setting";
+import type { CommunityEmailSettings } from "@/lib/coaching/community-email";
 import type { CommunityPushSettings } from "@/lib/coaching/community-push";
 import { EquipmentSetting } from "@/components/profile/equipment-setting";
 import { GamificationSetting } from "@/components/profile/gamification-setting";
@@ -42,6 +44,7 @@ interface ProfileSettingsHubProps {
   gamificationOptIn: boolean;
   communityOptInVariant?: import("@/lib/coaching/types").CommunityOptInVariant;
   communityPush: CommunityPushSettings;
+  communityEmail: CommunityEmailSettings;
   unit: UnitSystem;
   initialGoal: FitnessGoal | null;
   initialSessionsPerWeek: number | null;
@@ -68,6 +71,7 @@ export function ProfileSettingsHub({
   gamificationOptIn,
   communityOptInVariant = "control",
   communityPush,
+  communityEmail,
   unit,
   initialGoal,
   initialSessionsPerWeek,
@@ -123,6 +127,10 @@ export function ProfileSettingsHub({
           <CommunityPushSetting
             enabled={gamificationUnlocked && gamificationOptIn}
             push={communityPush}
+          />
+          <CommunityEmailSetting
+            enabled={gamificationUnlocked && gamificationOptIn}
+            email={communityEmail}
           />
         </div>
       </CollapsibleSection>

@@ -5,6 +5,7 @@ import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
 import { ProfileSettingsHub } from "@/components/profile/profile-settings-hub";
 import { getUserEquipmentSettings } from "@/lib/equipment/service";
 import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
+import { getCommunityEmailSettings } from "@/lib/coaching/community-email";
 import { getCommunityPushSettings } from "@/lib/coaching/community-push";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasFeature } from "@/lib/billing/gates";
@@ -60,12 +61,13 @@ export default async function ProfilePage({
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [oneRepMaxes, equipmentSettings, subscription, communityPush] = user
+  const [oneRepMaxes, equipmentSettings, subscription, communityPush, communityEmail] = user
     ? await Promise.all([
         getUserOneRepMaxes(user.id),
         getUserEquipmentSettings(user.id),
         getSubscriptionForUser(user.id),
         getCommunityPushSettings(user.id),
+        getCommunityEmailSettings(user.id),
       ])
     : [
         { rows: [], tableReady: true },
@@ -97,6 +99,7 @@ export default async function ProfilePage({
             sundayNudge: true,
           },
         },
+        { configured: false, weeklyRecap: true },
       ];
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
@@ -147,6 +150,7 @@ export default async function ProfilePage({
               : "control"
           }
           communityPush={communityPush}
+          communityEmail={communityEmail}
           unit={unit}
           initialGoal={profile?.primary_goal ?? null}
           initialSessionsPerWeek={profile?.sessions_per_week ?? null}

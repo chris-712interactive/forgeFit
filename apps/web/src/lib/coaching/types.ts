@@ -216,6 +216,8 @@ export interface ModerationQueue {
   recentWins: ModerationWinRow[];
 }
 
+import type { CommunityMetricsSnapshot } from "@/lib/coaching/community-metrics";
+
 export interface GamificationContext {
   unlocked: boolean;
   optedIn: boolean;
@@ -254,6 +256,7 @@ export interface CommunityPageData {
   crewChallenge: CrewChallengeView | null;
   crewWins: CommunityWinRow[];
   moderationQueue: ModerationQueue | null;
+  communityMetrics: CommunityMetricsSnapshot | null;
 }
 
 export interface WorkoutCoachingContext {

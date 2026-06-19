@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ensureLeagueTier } from "@/lib/coaching/community-leagues";
+import { recordCommunityAction } from "@/lib/coaching/community-metrics";
 import type {
   WinPresetCommentKey,
   WinReactionKey,
@@ -50,6 +51,7 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
       bucketGoal: profile.primary_goal,
       bucketExperience: profile.experience_level,
     });
+    void recordCommunityAction(user.id, "opt_in");
   }
 
   revalidatePath("/profile");
@@ -149,6 +151,8 @@ export async function toggleCommunityWinCheer(winId: string): Promise<{
     if (error) {
       return { ok: false, error: error.message };
     }
+
+    void recordCommunityAction(user.id, "cheer");
 
     if (win && win.user_id !== user.id) {
       const { data: cheererProfile } = await supabase
@@ -283,6 +287,8 @@ export async function toggleCommunityWinReaction(
     return { ok: false, error: error.message };
   }
 
+  void recordCommunityAction(auth.userId, "reaction");
+
   revalidatePath("/home");
   revalidatePath("/community");
   return { ok: true, active: true };
@@ -322,6 +328,8 @@ export async function setCommunityWinPresetComment(
     if (error) {
       return { ok: false, error: error.message };
     }
+
+    void recordCommunityAction(auth.userId, "comment");
   }
 
   revalidatePath("/home");
