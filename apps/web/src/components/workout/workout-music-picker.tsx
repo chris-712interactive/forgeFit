@@ -64,58 +64,47 @@ export function WorkoutMusicPicker({
 
     return (
       <div
-        className={`rounded-xl border border-[var(--border)] bg-forge-surface-raised px-3 py-2.5 ${className}`}
+        className={`rounded-2xl border border-[var(--border)] bg-forge-surface-raised px-4 py-3 ${className}`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-forge-muted">
+              Workout music
+            </p>
             {saved ? (
               <button
                 type="button"
                 disabled={offline}
                 onClick={handleReopenSaved}
-                className="w-full text-left disabled:opacity-60"
+                className="mt-1 w-full text-left disabled:opacity-60"
               >
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-forge-muted">
-                  Workout music
+                <p className="text-sm font-semibold text-forge-text">
+                  {saved.label} playlist
                 </p>
-                <p className="mt-0.5 text-sm font-medium text-forge-text">
-                  {saved.label}
-                  <span className="ml-1.5 font-normal text-forge-steel">
-                    · Open in Spotify
-                  </span>
+                <p className="mt-0.5 text-xs text-forge-steel">
+                  Tap to open in Spotify
                 </p>
               </button>
             ) : (
-              <>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-forge-muted">
-                  Workout music
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {WORKOUT_MUSIC_PLAYLISTS.map((playlist) => (
-                    <VibeChip
-                      key={playlist.vibe}
-                      label={playlist.label}
-                      selected={selectedVibe === playlist.vibe}
-                      disabled={offline}
-                      onClick={() => handleSelect(playlist.vibe)}
-                    />
-                  ))}
-                </div>
-              </>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {WORKOUT_MUSIC_PLAYLISTS.map((playlist) => (
+                  <VibeChip
+                    key={playlist.vibe}
+                    label={playlist.label}
+                    selected={selectedVibe === playlist.vibe}
+                    disabled={offline}
+                    onClick={() => handleSelect(playlist.vibe)}
+                  />
+                ))}
+              </div>
             )}
-            <p className="mt-1.5 text-[11px] text-forge-muted">
-              {offline
-                ? "Connect to open Spotify."
-                : "Opens in the Spotify app or browser."}
-            </p>
-            <SpotifyAttribution className="mt-1" />
           </div>
 
           {dismissible && onDismiss && (
             <button
               type="button"
               onClick={onDismiss}
-              className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-forge-muted transition-colors hover:text-forge-text"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-forge-muted transition-colors hover:bg-forge-surface hover:text-forge-text"
               aria-label="Dismiss workout music"
             >
               ✕

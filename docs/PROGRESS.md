@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify native app handoff from PWA |
+| **Last session focus** | Workout Spotify player UI redesign |
 
 ---
 
@@ -33,6 +33,20 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Workout Spotify player UI
+
+**What was done:**
+- Single Spotify card when connected (hides redundant vibe strip)
+- Full track title (2-line clamp), artist on second line
+- Large centered controls: 56px skip buttons + 64px ember play/pause
+- Simplified header with playlist name + “Open app” link
+
+**Files touched:**
+- `apps/web/src/components/workout/workout-music-transport.tsx`
+- `apps/web/src/components/workout/workout-music-picker.tsx`
+- `apps/web/src/components/workout/active-workout.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify native app handoff from PWA
 

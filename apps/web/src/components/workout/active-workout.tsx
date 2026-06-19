@@ -835,7 +835,7 @@ export function ActiveWorkout({
         totalSets={totalCount}
       />
 
-      {!musicStripDismissed && (
+      {!musicStripDismissed && !spotifyConnected && (
         <div className="mb-4">
           <WorkoutMusicPicker
             variant="compact"
