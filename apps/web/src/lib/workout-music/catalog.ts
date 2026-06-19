@@ -9,33 +9,34 @@ export interface WorkoutMusicPlaylist {
 }
 
 /**
- * Interim Spotify editorial playlists — swap IDs when ForgeRep brand playlists exist.
+ * Verified public Spotify playlists — swap for ForgeRep-owned playlists before launch.
+ * Editorial playlists (37i9dQZF1…) are often unavailable outside the Spotify app.
  * @see docs/spotify-integration-plan.md
  */
 export const WORKOUT_MUSIC_PLAYLISTS: readonly WorkoutMusicPlaylist[] = [
   {
     vibe: "focus",
     label: "Focus",
-    description: "Steady tempo for heavy sets and concentration",
-    spotifyPlaylistId: "37i9dQZF1DWZeKCadgRd",
+    description: "Instrumental beats for heavy sets and concentration",
+    spotifyPlaylistId: "4jSmTgJDyORqXulIacZhhu",
   },
   {
     vibe: "pump",
     label: "Pump",
     description: "High energy for strength and hypertrophy",
-    spotifyPlaylistId: "37i9dQZF1DX76Wl510nF78",
+    spotifyPlaylistId: "57GAUprXFP9XIZaupQzIsS",
   },
   {
     vibe: "cardio",
     label: "Cardio",
     description: "Upbeat tracks for intervals and conditioning",
-    spotifyPlaylistId: "37i9dQZF1DXa2SPUUp9DKK",
+    spotifyPlaylistId: "07QTzPiEFAthtiAeqNmzfS",
   },
   {
     vibe: "cooldown",
     label: "Cooldown",
     description: "Wind down after your session",
-    spotifyPlaylistId: "37i9dQZF1DX4sWSpwq3LiO",
+    spotifyPlaylistId: "1buPbOqsVbtpHcnp3AyqvQ",
   },
 ] as const;
 
@@ -54,8 +55,4 @@ export function getWorkoutMusicPlaylist(
 
 export function spotifyPlaylistUrl(playlistId: string): string {
   return `https://open.spotify.com/playlist/${playlistId}`;
-}
-
-export function spotifyPlaylistDeepLink(playlistId: string): string {
-  return `spotify:playlist:${playlistId}`;
 }

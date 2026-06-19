@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify workout music Phase A |
+| **Last session focus** | Spotify workout music fixes (PWA open + playlists) |
 
 ---
 
@@ -33,6 +33,22 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Spotify workout music fixes (PWA open + playlists)
+
+**What was done:**
+- Fixed PWA white-screen flash: removed `spotify:` scheme + delayed `window.open`; use single https link click (same context on iOS / installed PWA so universal links hand off to Spotify)
+- Replaced unavailable editorial playlist IDs with verified public playlists (instrumental gym, pump, running, stretch/cooldown)
+
+**What's next:**
+- QA open flow on iOS home-screen PWA + Android
+- Replace interim public playlists with ForgeRep-owned playlists before launch
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/workout-music/open-spotify.ts`, `catalog.ts`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify workout music Phase A
 

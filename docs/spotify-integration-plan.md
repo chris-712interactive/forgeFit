@@ -100,25 +100,24 @@ export interface WorkoutMusicPlaylist {
 export function spotifyPlaylistUrl(id: string): string {
   return `https://open.spotify.com/playlist/${id}`;
 }
-
-export function spotifyPlaylistDeepLink(id: string): string {
-  return `spotify:playlist:${id}`;
-}
 ```
 
 **Pre-launch task:** Create 4–6 public ForgeRep playlists on a brand Spotify account; swap placeholder IDs.
 
 ### Deep link behavior
 
+Use a single `https://open.spotify.com/playlist/{id}` link from the user tap. On iOS and installed PWAs, do **not** use `target="_blank"` or `spotify:` custom schemes — both cause a blank in-app browser flash before Spotify opens. Universal https links hand off to the native app from the same browsing context.
+
 ```ts
 function openSpotifyPlaylist(playlistId: string) {
-  const webUrl = spotifyPlaylistUrl(playlistId);
-  // Mobile: try custom scheme first, fall back to HTTPS
-  window.location.href = spotifyPlaylistDeepLink(playlistId);
-  // Fallback after short timeout if still visible (Safari)
-  setTimeout(() => window.open(webUrl, "_blank", "noopener"), 400);
+  const link = document.createElement("a");
+  link.href = spotifyPlaylistUrl(playlistId);
+  if (!isIosOrStandalonePwa()) link.target = "_blank";
+  link.click();
 }
 ```
+
+Playlist IDs must be **public user/community playlists** — Spotify editorial IDs (`37i9dQZF1…`) are often unavailable outside the Spotify app.
 
 Use a single user gesture (button click) — required for iOS.
 
