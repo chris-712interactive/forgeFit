@@ -101,16 +101,10 @@ export function PrivacyDataSetting({
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
-      <h2 className="font-display text-sm font-semibold text-forge-text">
-        Privacy & data
-      </h2>
-      <p className="mt-1 text-xs text-forge-muted">
-        Download everything ForgeRep stores about you, or permanently delete
-        your account and all associated data.
-      </p>
+    <div>
+      <h2 className="sr-only">Privacy & data</h2>
 
-      <div className="mt-4 space-y-3">
+      <div className="space-y-3">
         {canExport ? (
           <div className="grid gap-2 sm:grid-cols-2">
             <button
@@ -208,6 +202,6 @@ export function PrivacyDataSetting({
 
         {error && <p className="text-sm text-forge-coral">{error}</p>}
       </div>
-    </section>
+    </div>
   );
 }

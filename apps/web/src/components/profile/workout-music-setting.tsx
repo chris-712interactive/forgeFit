@@ -8,7 +8,7 @@ import type { SpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import { SpotifyAttribution } from "@/components/workout/spotify-attribution";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface WorkoutMusicSettingProps {
   initialStatus: SpotifyPublicStatus;
@@ -32,7 +32,6 @@ export function WorkoutMusicSetting({
   spotifyError,
 }: WorkoutMusicSettingProps) {
   const router = useRouter();
-  const sectionRef = useRef<HTMLElement>(null);
   const [status, setStatus] = useState(initialStatus);
   const [autoStart, setAutoStart] = useState(initialStatus.autoStart);
   const [defaultVibe, setDefaultVibe] = useState<WorkoutMusicVibe | null>(
@@ -55,7 +54,9 @@ export function WorkoutMusicSetting({
     const urlError = params.get("spotify_error");
     if (urlError) {
       setError(urlError);
-      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document
+        .getElementById("workout-music")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, []);
 
@@ -131,19 +132,8 @@ export function WorkoutMusicSetting({
       : null;
 
   return (
-    <section
-      ref={sectionRef}
-      id="workout-music"
-      className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5"
-    >
-      <h2 className="font-display text-sm font-semibold text-forge-text">
-        Workout music
-      </h2>
-      <p className="mt-1 text-xs text-forge-muted">
-        Connect Spotify for in-workout play/pause/skip controls. Vibe deep links
-        on the Workout tab work without connecting.
-      </p>
-      <SpotifyAttribution className="mt-2" />
+    <div>
+      <SpotifyAttribution className="mb-4" />
 
       {error && (
         <p className="mt-3 text-sm text-forge-coral" role="alert">
@@ -255,6 +245,6 @@ export function WorkoutMusicSetting({
           </p>
         </div>
       )}
-    </section>
+    </div>
   );
 }

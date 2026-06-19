@@ -16,6 +16,7 @@ import { WorkoutMusicSetting } from "@/components/profile/workout-music-setting"
 import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
 import type { SpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { hasProAccess, hasProPlusAccess } from "@/lib/billing/types";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
 import type { UserOneRepMaxRow } from "@/lib/progression/user-maxes";
@@ -91,6 +92,18 @@ export function ProfileSettingsHub({
   spotifyStatus,
   spotifyError,
 }: ProfileSettingsHubProps) {
+  const subscriptionHint = hasProPlusAccess(subscription)
+    ? "Pro+"
+    : hasProAccess(subscription)
+      ? "Pro"
+      : "Free";
+
+  const workoutMusicHint = !spotifyMusic.configured
+    ? "Not configured"
+    : spotifyMusic.connected
+      ? "Spotify connected"
+      : "Not connected";
+
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
       <div className="grid grid-cols-2 gap-2">
@@ -108,21 +121,46 @@ export function ProfileSettingsHub({
         </Link>
       </div>
 
-      <SubscriptionSetting
-        subscription={subscription}
-        stripeConfigured={stripeConfigured}
-        checkoutStatus={checkoutStatus}
-      />
+      <CollapsibleSection
+        title="Subscription"
+        hint={subscriptionHint}
+        id="subscription"
+        defaultOpen={
+          checkoutStatus === "success" || checkoutStatus === "canceled"
+        }
+      >
+        <p className="mb-4 text-xs text-forge-muted">
+          Long-horizon analytics with Pro. Device sync, eating-out quick-log, and
+          AI coaching with Pro+.
+        </p>
+        <SubscriptionSetting
+          subscription={subscription}
+          stripeConfigured={stripeConfigured}
+          checkoutStatus={checkoutStatus}
+        />
+      </CollapsibleSection>
 
-      <WorkoutMusicSetting
-        initialStatus={spotifyMusic}
-        spotifyStatus={spotifyStatus}
-        spotifyError={spotifyError}
-      />
+      <CollapsibleSection
+        title="Workout music"
+        hint={workoutMusicHint}
+        id="workout-music"
+        defaultOpen={spotifyStatus === "connected" || Boolean(spotifyError)}
+      >
+        <p className="mb-4 text-xs text-forge-muted">
+          Connect Spotify for in-workout play/pause/skip controls. Vibe deep links
+          on the Workout tab work without connecting.
+        </p>
+        <WorkoutMusicSetting
+          initialStatus={spotifyMusic}
+          spotifyStatus={spotifyStatus}
+          spotifyError={spotifyError}
+        />
+      </CollapsibleSection>
 
       <CollapsibleSection
         title="Integrations & gamification"
         hint="Devices & community"
+        anchorIds={["integrations", "gamification"]}
       >
         <div className="space-y-4">
           <IntegrationsSetting

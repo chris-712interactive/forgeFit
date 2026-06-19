@@ -1,5 +1,6 @@
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
+import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { LegalFooter } from "@/components/legal/legal-document";
 import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
 import { ProfileSettingsHub } from "@/components/profile/profile-settings-hub";
@@ -206,11 +207,17 @@ export default async function ProfilePage({
         <LegalFooter />
 
         {user?.email && (
-          <PrivacyDataSetting
-            email={user.email}
-            userId={user.id}
-            canExport={hasProAccess(subscription)}
-          />
+          <CollapsibleSection title="Privacy & data" hint="Export or delete">
+            <p className="mb-4 text-xs text-forge-muted">
+              Download everything ForgeRep stores about you, or permanently delete
+              your account and all associated data.
+            </p>
+            <PrivacyDataSetting
+              email={user.email}
+              userId={user.id}
+              canExport={hasProAccess(subscription)}
+            />
+          </CollapsibleSection>
         )}
 
         <SignOutButton />

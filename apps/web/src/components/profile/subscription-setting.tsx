@@ -348,17 +348,8 @@ export function SubscriptionSetting({
   }
 
   return (
-    <section
-      id="subscription"
-      className="scroll-mt-6 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5"
-    >
-      <h2 className="font-display text-sm font-semibold text-forge-text">
-        Subscription
-      </h2>
-      <p className="mt-1 text-xs text-forge-muted">
-        Long-horizon analytics with Pro. Device sync, eating-out quick-log, and AI
-        coaching with Pro+.
-      </p>
+    <div>
+      <h2 className="sr-only">Subscription</h2>
 
       {checkoutStatus === "success" && (
         <p className="mt-3 rounded-xl border border-forge-success/40 bg-forge-success/10 px-3 py-2 text-sm text-forge-success">
@@ -627,6 +618,6 @@ export function SubscriptionSetting({
           {error}
         </p>
       )}
-    </section>
+    </div>
   );
 }

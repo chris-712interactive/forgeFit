@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify Phase B (OAuth + playback) |
+| **Last session focus** | Profile sections collapsed by default |
 
 ---
 
@@ -33,6 +33,20 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Profile sections collapsed by default
+
+**What was done:**
+- Wrapped Subscription, Workout music, and Privacy & data in `CollapsibleSection` (all collapsed by default)
+- Collapsible sections auto-expand when linked via hash (`#subscription`, `#integrations`, `#gamification`, `#workout-music`)
+- Subscription / workout music auto-open when returning from Stripe checkout or Spotify OAuth
+
+**Files touched:**
+- `apps/web/src/components/layout/collapsible-section.tsx`
+- `apps/web/src/components/profile/profile-settings-hub.tsx`
+- `apps/web/src/components/profile/subscription-setting.tsx`, `workout-music-setting.tsx`, `privacy-data-setting.tsx`
+- `apps/web/src/app/(app)/profile/page.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify Phase B (OAuth + playback control)
 
