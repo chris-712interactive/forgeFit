@@ -3,6 +3,8 @@
 import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
 import { CrewPanel } from "@/components/coaching/crew-panel";
 import { CrewWinsFeed } from "@/components/coaching/crew-wins-feed";
+import { HallOfFameCard } from "@/components/coaching/hall-of-fame-card";
+import { LeagueStatusCard } from "@/components/coaching/league-status-card";
 import { WeeklyChallengeCard } from "@/components/coaching/weekly-challenge-card";
 import { CommunityFollowButton } from "@/components/coaching/community-follow-button";
 import { CommunityNotificationsPanel } from "@/components/coaching/community-notifications-panel";
@@ -38,8 +40,8 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
           Community
         </h1>
         <p className="mt-1 text-sm text-forge-muted">
-          Weekly competition in your goal and experience bucket — train together,
-          stay accountable.
+          Weekly competition in your goal and experience bucket — monthly Bronze,
+          Silver, and Gold leagues keep it fair.
         </p>
       </header>
 
@@ -48,6 +50,13 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
         showLeaderboard={false}
         showWins={false}
       />
+
+      {gamification.optedIn && gamification.league && (
+        <LeagueStatusCard
+          league={gamification.league}
+          userRank={gamification.userRank}
+        />
+      )}
 
       {gamification.optedIn && weeklyChallenge && (
         <WeeklyChallengeCard challenge={weeklyChallenge} />
@@ -87,7 +96,8 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
                   Full standings
                 </h2>
                 <p className="mt-1 text-xs text-forge-muted">
-                  {totalRankedThisWeek} athletes ranked this week
+                  {totalRankedThisWeek} athletes ranked this week in{" "}
+                  {gamification.league?.tierLabel ?? "your"} tier
                   {gamification.bucketLabel ? ` · ${gamification.bucketLabel}` : ""}
                   {gamification.optedIn ? " · Follow peers to build your friends board" : ""}
                 </p>
@@ -152,6 +162,13 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
             </ol>
           </section>
         )}
+
+      {gamification.optedIn && gamification.league && (
+        <HallOfFameCard
+          entries={gamification.league.hallOfFame}
+          bucketLabel={gamification.bucketLabel}
+        />
+      )}
 
       {gamification.unlocked && gamification.bucketLabel && (
         <CommunityWinsFeed gamification={gamification} />

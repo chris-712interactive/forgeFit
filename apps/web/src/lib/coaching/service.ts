@@ -8,7 +8,15 @@ import { getActiveProgram } from "@/lib/programs/service";
 import { profileFirstName } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
-import { bucketLabel as formatBucketLabel } from "./community-labels";
+import { bucketLabel as formatBucketLabel, leagueTierLabel } from "./community-labels";
+import {
+  buildSeasonRecap,
+  ensureLeagueTier,
+  fetchTierLeaderboard,
+  getHallOfFame,
+  getUserBadges,
+  getUserLeagueTier,
+} from "./community-leagues";
 import type {
   CommunityWinRow,
   GamificationContext,
@@ -18,6 +26,7 @@ import type {
   CommunityRankSnapshot,
   WeeklyCommunityRecap,
   CommunityPageData,
+  LeagueContext,
 } from "./types";
 import { computeTrainingStreakWeeks, highestNewStreakMilestone } from "./streak";
 import {
@@ -62,6 +71,7 @@ function baseGamificationContext(
     weeklyRival: null,
     unreadNotificationCount: 0,
     recentNotifications: [],
+    league: null,
     ...overrides,
   };
 }
@@ -349,6 +359,12 @@ export async function upsertWeeklyLeaderboardScore(
     console.error("leaderboard upsert failed:", error.message);
   }
 
+  await ensureLeagueTier({
+    userId,
+    bucketGoal: goal,
+    bucketExperience: experience,
+  });
+
   await upsertWeeklyChallengeStatus({
     userId,
     weekStart,
@@ -399,8 +415,12 @@ export async function getGamificationContext(
 
   const weekStart = weekStartIso();
 
+  const userTier = optedIn ? await getUserLeagueTier(userId) : null;
+  const effectiveTier = userTier ?? "bronze";
+
   const [
     leaderboardResult,
+    tierLeaderboard,
     peerCountResult,
     activeWeekCountResult,
     winsResult,
@@ -413,6 +433,16 @@ export async function getGamificationContext(
       .eq("week_start", weekStart)
       .order("habit_score", { ascending: false })
       .limit(10),
+    optedIn
+      ? fetchTierLeaderboard({
+          bucketGoal: goal,
+          bucketExperience: experience,
+          tier: effectiveTier,
+          weekStart,
+          userId,
+          limit: 50,
+        })
+      : Promise.resolve([]),
     supabase
       .from("leaderboard_entries")
       .select("user_id", { count: "exact", head: true })
@@ -451,14 +481,18 @@ export async function getGamificationContext(
   }
 
   const leaderboardRows = leaderboardResult.data ?? [];
-  const leaderboard: LeaderboardEntryRow[] = leaderboardRows.map((row) => ({
+  const previewLeaderboard: LeaderboardEntryRow[] = leaderboardRows.map((row) => ({
     userId: row.user_id as string,
     displayLabel: row.display_label as string,
     habitScore: Number(row.habit_score),
     isCurrentUser: row.user_id === userId,
   }));
 
-  const rankContext = rankContextFromLeaderboard(leaderboard, userId);
+  const rankLeaderboard = optedIn && tierLeaderboard.length > 0
+    ? tierLeaderboard
+    : previewLeaderboard.slice(0, 10);
+
+  const rankContext = rankContextFromLeaderboard(rankLeaderboard, userId);
 
   const winRows = winsResult.data ?? [];
   const winUserIds = [...new Set(winRows.map((w) => w.user_id as string))];
@@ -528,7 +562,7 @@ export async function getGamificationContext(
   const activePeerCount = activeWeekCountResult.count ?? 0;
   const bucketPeerCount = peerCountResult.count ?? activePeerCount;
 
-  const [habitBreakdown, weeklyRecap, weeklyRival, unreadNotificationCount, recentNotifications] =
+  const [habitBreakdown, weeklyRecap, weeklyRival, unreadNotificationCount, recentNotifications, seasonRecap, badges, hallOfFame] =
     optedIn
     ? await Promise.all([
         computeUserHabitBreakdown(userId, sessions),
@@ -536,12 +570,46 @@ export async function getGamificationContext(
         getWeeklyRival(
           userId,
           weekStart,
-          await fetchBucketLeaderboard(goal, experience, weekStart, userId, 100)
+          rankLeaderboard.length > 0
+            ? rankLeaderboard
+            : await fetchBucketLeaderboard(goal, experience, weekStart, userId, 100)
         ),
         getUnreadCommunityNotificationCount(userId),
         getCommunityNotifications(userId, 5),
+        buildSeasonRecap(userId, goal, experience),
+        getUserBadges(userId),
+        getHallOfFame({
+          bucketGoal: goal,
+          bucketExperience: experience,
+          userId,
+        }),
       ])
-    : [null, null, null, 0, []];
+    : [null, null, null, 0, [], null, [], []];
+
+  const league: LeagueContext | null =
+    optedIn && userTier
+      ? {
+          tier: effectiveTier,
+          tierLabel: leagueTierLabel(effectiveTier),
+          tierPeerCount: tierLeaderboard.length,
+          seasonRecap: seasonRecap
+            ? { ...seasonRecap, bucketLabel: bucketLabelValue }
+            : null,
+          badges,
+          hallOfFame,
+        }
+      : optedIn
+        ? {
+            tier: "bronze",
+            tierLabel: leagueTierLabel("bronze"),
+            tierPeerCount: tierLeaderboard.length,
+            seasonRecap: seasonRecap
+              ? { ...seasonRecap, bucketLabel: bucketLabelValue }
+              : null,
+            badges,
+            hallOfFame,
+          }
+        : null;
 
   return {
     unlocked: true,
@@ -552,7 +620,7 @@ export async function getGamificationContext(
     bucketLabel: bucketLabelValue,
     bucketPeerCount,
     activePeerCount,
-    leaderboard,
+    leaderboard: rankLeaderboard.slice(0, 10),
     communityWins,
     userRank: rankContext.userRank,
     userScore: rankContext.userScore,
@@ -563,6 +631,7 @@ export async function getGamificationContext(
     weeklyRival,
     unreadNotificationCount,
     recentNotifications,
+    league,
   };
 }
 
@@ -702,25 +771,28 @@ export async function syncLeaderboardAfterWorkout(
   }
 
   const weekStart = weekStartIso();
-  const beforeBoard = await fetchBucketLeaderboard(
-    goal,
-    experience,
-    weekStart,
-    userId,
-    100
-  );
+  const userTier = (await getUserLeagueTier(userId)) ?? "bronze";
+
+  async function loadTierBoard() {
+    const board = await fetchTierLeaderboard({
+      bucketGoal: goal,
+      bucketExperience: experience,
+      tier: userTier,
+      weekStart,
+      userId,
+      limit: 100,
+    });
+    if (board.length > 0) return board;
+    return fetchBucketLeaderboard(goal, experience, weekStart, userId, 100);
+  }
+
+  const beforeBoard = await loadTierBoard();
   const before = rankContextFromLeaderboard(beforeBoard, userId);
 
   await upsertWeeklyLeaderboardScore(userId, subscription, sessions);
   await publishCommunityMilestoneWins(userId, sessions);
 
-  const afterBoard = await fetchBucketLeaderboard(
-    goal,
-    experience,
-    weekStart,
-    userId,
-    100
-  );
+  const afterBoard = await loadTierBoard();
   const after = rankContextFromLeaderboard(afterBoard, userId);
 
   const rankChange =
@@ -800,8 +872,23 @@ export async function getCommunityRankSnapshot(
   }
 
   const weekStart = weekStartIso();
+  const userTier = (await getUserLeagueTier(userId)) ?? "bronze";
+
+  const tierBoard = profile?.gamification_opt_in
+    ? await fetchTierLeaderboard({
+        bucketGoal: goal,
+        bucketExperience: experience,
+        tier: userTier,
+        weekStart,
+        userId,
+        limit: 100,
+      })
+    : [];
+
   const [leaderboard, countResult] = await Promise.all([
-    fetchBucketLeaderboard(goal, experience, weekStart, userId, 100),
+    tierBoard.length > 0
+      ? Promise.resolve(tierBoard)
+      : fetchBucketLeaderboard(goal, experience, weekStart, userId, 100),
     supabase
       .from("leaderboard_entries")
       .select("user_id", { count: "exact", head: true })
@@ -860,13 +947,26 @@ export async function getCommunityPageData(
   }
 
   const weekStart = weekStartIso();
-  const fullLeaderboard = await fetchBucketLeaderboard(
-    gamification.bucketGoal,
-    gamification.bucketExperience,
-    weekStart,
-    userId,
-    50
-  );
+  const userTier = gamification.optedIn
+    ? (gamification.league?.tier ?? "bronze")
+    : "bronze";
+
+  const fullLeaderboard = gamification.optedIn
+    ? await fetchTierLeaderboard({
+        bucketGoal: gamification.bucketGoal,
+        bucketExperience: gamification.bucketExperience,
+        tier: userTier,
+        weekStart,
+        userId,
+        limit: 50,
+      })
+    : await fetchBucketLeaderboard(
+        gamification.bucketGoal,
+        gamification.bucketExperience,
+        weekStart,
+        userId,
+        50
+      );
 
   const plan = gamification.optedIn ? await getActiveProgram(userId) : null;
   const proteinHitDays = gamification.optedIn

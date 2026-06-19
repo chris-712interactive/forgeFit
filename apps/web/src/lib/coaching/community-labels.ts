@@ -28,3 +28,33 @@ export function winTypeLabel(
       return "Streak";
   }
 }
+
+export type LeagueTier = "bronze" | "silver" | "gold";
+
+export function leagueTierLabel(tier: LeagueTier | string): string {
+  switch (tier) {
+    case "silver":
+      return "Silver";
+    case "gold":
+      return "Gold";
+    default:
+      return "Bronze";
+  }
+}
+
+export function badgeLabel(badgeKey: string): string {
+  switch (badgeKey) {
+    case "league_silver":
+      return "Silver League";
+    case "league_gold":
+      return "Gold League";
+    case "season_champion":
+      return "Season Champion";
+    case "season_podium":
+      return "Podium Finish";
+    case "season_promoted":
+      return "Promoted";
+    default:
+      return badgeKey;
+  }
+}

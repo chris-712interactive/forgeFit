@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-18 |
-| **Last session focus** | Nutrition diary timezone fix |
+| **Last updated** | 2026-06-08 |
+| **Last session focus** | Community Phase 5 — leagues & seasons |
 
 ---
 
@@ -28,11 +28,37 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| — | Community expansion (Phases 1–4) | ✅ Complete | 2026-06 |
+| — | Community expansion (Phases 1–5) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-06-08 — Community Phase 5 (leagues & seasons)
+
+**What was done:**
+- Migration `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
+- Bronze / Silver / Gold tiers within each goal×experience bucket; weekly rank scoped to tier
+- End-of-month promotion (top 30%) and relegation (bottom 30%) via `processSeasonRollover`
+- Persistent badges + in-app notifications for promote / relegate / season champion
+- UI: `LeagueStatusCard`, `SeasonRecapCard`, `HallOfFameCard`, `LeagueTierBadge`
+- Cron `/api/cron/community-season-rollover` (07:00 UTC on the 1st)
+- Activity/sleep/recovery timezone fix (user local calendar day via `forge-timezone` cookie)
+
+**Apply migration:** `20260610830000_community_leagues.sql`
+
+**What's next:** Community Phase 6 — scale & polish (reactions, anti-gaming, moderation)
+
+**Files touched:**
+- `supabase/migrations/20260610830000_community_leagues.sql`
+- `apps/web/src/lib/coaching/community-leagues.ts`
+- `apps/web/src/lib/coaching/service.ts`, `types.ts`, `community-labels.ts`
+- `apps/web/src/components/coaching/league-*.tsx`, `season-recap-card.tsx`, `hall-of-fame-card.tsx`
+- `apps/web/src/app/api/cron/community-season-rollover/route.ts`
+- `apps/web/vercel.json`
+- `docs/community-expansion-plan.md`
+
+---
 
 ### 2026-06-18 — Nutrition diary timezone fix
 

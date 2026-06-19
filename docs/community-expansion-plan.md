@@ -1,7 +1,7 @@
 # Community Expansion Plan
 
 > Adoption-focused competition layer — MapMyRun-style visible rivalry, fair buckets, and weekly urgency.  
-> **Phases 1–4** are implemented. Phases 5–6 are planned.
+> **Phases 1–5** are implemented. Phase 6 is planned.
 
 Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket stats before opt-in; Pro unlocks full participation.
 
@@ -32,6 +32,9 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 | Weekly bucket challenge + crew squads | `weekly-challenge-card.tsx`, `crew-panel.tsx` | `20260610800000` |
 | Crew win feed + shareable recap | `crew-wins-feed.tsx`, `share-recap-button.tsx` | — |
 | Web push + preferences + Sunday nudge | `community-push-setting.tsx`, `community-push.ts` | `20260610820000` |
+| Monthly leagues (Bronze/Silver/Gold) | `league-status-card.tsx`, `community-leagues.ts` | `20260610830000` |
+| Promotion/relegation + badges + HOF | `season-recap-card.tsx`, `hall-of-fame-card.tsx` | `20260610830000` |
+| Season rollover cron (1st of month) | `/api/cron/community-season-rollover` | — |
 
 **Scoring:** Habit score 0–100 — training 40 / protein 35 / quality 25. Buckets by goal × experience.
 
@@ -100,11 +103,22 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 
 ---
 
-## Phase 5 — Leagues & seasons (planned)
+## Phase 5 — Leagues & seasons ✅ Shipped
 
-- Monthly league tiers within bucket (Bronze / Silver / Gold)
-- Promotion/relegation + persistent badges
-- Season recap + bucket hall of fame
+- Monthly league tiers within bucket: **Bronze / Silver / Gold**
+- Weekly rank scoped to your tier (fair matchmaking within bucket)
+- End-of-month promotion (top 30%) and relegation (bottom 30%) — min 2 weeks scored, min 3 peers in tier
+- Persistent badges: Silver League, Gold League, Season Champion, Podium, Promoted
+- Season recap card (first 7 days of month) + bucket hall of fame
+- In-app notifications for promote / relegate / season champion
+- Cron: `/api/cron/community-season-rollover` — 07:00 UTC on the 1st
+
+**Migration:** `20260610830000_community_leagues.sql`
+
+**Key files:**
+- `community-leagues.ts` — tier CRUD, season rollover, HOF, badges
+- `league-tier-badge.tsx`, `league-status-card.tsx`, `season-recap-card.tsx`, `hall-of-fame-card.tsx`
+- `app/api/cron/community-season-rollover`
 
 ---
 
@@ -128,6 +142,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 7. `20260610800000_community_crews_challenges.sql` — crews + weekly challenge status
 8. `20260610810000_community_crew_members_rls_fix.sql` — **required if crew create fails with RLS recursion**
 9. `20260610820000_community_push.sql` — web push subscriptions + preferences
+10. `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
 
 ---
 

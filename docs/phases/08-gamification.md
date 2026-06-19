@@ -28,6 +28,8 @@ Community expansion roadmap: [docs/community-expansion-plan.md](../community-exp
 - [x] `/community` tab, rank delta, habit breakdown, weekly recap (Community Phase 1)
 - [x] Weekly rival, follows, in-app notifications (Community Phase 2)
 - [x] Crews, bucket challenges, crew feed, share recap (Community Phase 3)
+- [x] Web push + Sunday nudge (Community Phase 4)
+- [x] Monthly leagues, promotion/relegation, badges, HOF (Community Phase 5)
 
 ## Migrations
 
@@ -39,6 +41,9 @@ Community expansion roadmap: [docs/community-expansion-plan.md](../community-exp
 | `20260610730000_community_follows_rls_leaderboard.sql` | Follow RLS fix |
 | `20260610740000_community_notifications_update_rls.sql` | Notification mark-read RLS |
 | `20260610800000_community_crews_challenges.sql` | Crews + weekly challenge tracking |
+| `20260610810000_community_crew_members_rls_fix.sql` | Crew member RLS recursion fix |
+| `20260610820000_community_push.sql` | Web push subscriptions + preferences |
+| `20260610830000_community_leagues.sql` | League tiers, season results, badges, hall of fame |
 
 ## Notes
 

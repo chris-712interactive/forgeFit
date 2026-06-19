@@ -6,6 +6,8 @@ import { CommunityWinsFeed } from "@/components/coaching/community-wins-feed";
 import { LeaderboardCard } from "@/components/coaching/leaderboard-card";
 import type { GamificationContext } from "@/lib/coaching/types";
 import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
+import { SeasonRecapCard } from "@/components/coaching/season-recap-card";
+import { LeagueTierBadge } from "@/components/coaching/league-tier-badge";
 import { WeeklyRivalCard } from "@/components/coaching/weekly-rival-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -83,8 +85,9 @@ export function CommunitySection({
             Community
           </h2>
           <p className="mt-1 max-w-prose text-sm leading-relaxed text-forge-text">
-            Train alongside {bucketCopy}. Weekly scores and wins keep everyone
-            accountable.{" "}
+            Train alongside {bucketCopy}. Weekly scores in your{" "}
+            {gamification.league?.tierLabel ?? "Bronze"} league tier keep
+            competition fair.{" "}
             {gamification.unlocked && (
               <Link
                 href="/community"
@@ -107,7 +110,22 @@ export function CommunitySection({
             </p>
           </div>
         )}
+        {gamification.unlocked && gamification.optedIn && gamification.league && (
+          <div className="mt-2">
+            <LeagueTierBadge
+              tier={gamification.league.tier}
+              label={gamification.league.tierLabel}
+              size="md"
+            />
+          </div>
+        )}
       </div>
+
+      {gamification.league?.seasonRecap && (
+        <div className="mt-4">
+          <SeasonRecapCard recap={gamification.league.seasonRecap} />
+        </div>
+      )}
 
       {gamification.weeklyRecap && (
         <div className="mt-4">

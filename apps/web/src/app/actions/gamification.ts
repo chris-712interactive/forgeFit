@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ensureLeagueTier } from "@/lib/coaching/community-leagues";
 import { recordCommunityWin as persistCommunityWin } from "@/lib/coaching/service";
 import { createClient } from "@/lib/supabase/server";
 
@@ -17,6 +18,12 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
     return { ok: false, error: "Sign in required." };
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("primary_goal, experience_level")
+    .eq("id", user.id)
+    .single();
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -27,6 +34,18 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
 
   if (error) {
     return { ok: false, error: error.message };
+  }
+
+  if (
+    optIn &&
+    profile?.primary_goal &&
+    profile?.experience_level
+  ) {
+    await ensureLeagueTier({
+      userId: user.id,
+      bucketGoal: profile.primary_goal,
+      bucketExperience: profile.experience_level,
+    });
   }
 
   revalidatePath("/profile");

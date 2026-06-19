@@ -47,6 +47,49 @@ export interface WeeklyCommunityRecap {
   crewName?: string | null;
 }
 
+export type LeagueTier = "bronze" | "silver" | "gold";
+
+export interface CommunityBadgeRow {
+  badgeKey: string;
+  seasonMonth: string | null;
+  earnedAt: string;
+}
+
+export interface SeasonRecap {
+  showRecap: boolean;
+  seasonLabel: string;
+  seasonMonth: string;
+  tierAtStart: LeagueTier;
+  tierAtEnd: LeagueTier;
+  promoted: boolean;
+  relegated: boolean;
+  avgHabitScore: number | null;
+  avgRank: number | null;
+  bestRank: number | null;
+  weeksScored: number;
+  bucketLabel?: string | null;
+  newBadges: string[];
+}
+
+export interface HallOfFameEntry {
+  seasonMonth: string;
+  seasonLabel: string;
+  rank: number;
+  userId: string;
+  displayLabel: string;
+  avgHabitScore: number;
+  isCurrentUser: boolean;
+}
+
+export interface LeagueContext {
+  tier: LeagueTier;
+  tierLabel: string;
+  tierPeerCount: number;
+  seasonRecap: SeasonRecap | null;
+  badges: CommunityBadgeRow[];
+  hallOfFame: HallOfFameEntry[];
+}
+
 export interface CrewMemberRow {
   userId: string;
   displayLabel: string;
@@ -151,6 +194,7 @@ export interface GamificationContext {
   weeklyRival: WeeklyRivalRow | null;
   unreadNotificationCount: number;
   recentNotifications: CommunityNotificationRow[];
+  league: LeagueContext | null;
 }
 
 export interface CommunityPageData {

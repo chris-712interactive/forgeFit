@@ -9,7 +9,10 @@ export type CommunityNotificationType =
   | "rival_ahead"
   | "rival_passed_you"
   | "cheer_received"
-  | "follow_mutual";
+  | "follow_mutual"
+  | "league_promoted"
+  | "league_relegated"
+  | "season_champion";
 
 export interface WeeklyRivalRow {
   userId: string;
