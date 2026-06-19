@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify workout music fixes (PWA open + playlists) |
+| **Last session focus** | ForgeRep Spotify playlists wired in |
 
 ---
 
@@ -33,6 +33,23 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — ForgeRep Spotify playlists + attribution
+
+**What was done:**
+- Swapped workout music catalog to ForgeRep-owned Spotify playlist IDs (Focus, Pump, Cardio, Cooldown)
+- Added Spotify logo attribution component on workout music picker (full + compact variants)
+
+**What's next:**
+- Phase B Spotify OAuth + in-session playback controls (optional)
+- Phase 7: Withings / Strava integrations
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/workout-music/catalog.ts`
+- `apps/web/src/components/workout/workout-music-picker.tsx`, `spotify-attribution.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify workout music fixes (PWA open + playlists)
 

@@ -4,39 +4,35 @@ export interface WorkoutMusicPlaylist {
   vibe: WorkoutMusicVibe;
   label: string;
   description: string;
-  /** Replace with ForgeRep-owned playlists before public launch. */
+  /** ForgeRep curated playlist on Spotify. */
   spotifyPlaylistId: string;
 }
 
-/**
- * Verified public Spotify playlists — swap for ForgeRep-owned playlists before launch.
- * Editorial playlists (37i9dQZF1…) are often unavailable outside the Spotify app.
- * @see docs/spotify-integration-plan.md
- */
+/** ForgeRep curated workout playlists on Spotify. */
 export const WORKOUT_MUSIC_PLAYLISTS: readonly WorkoutMusicPlaylist[] = [
   {
     vibe: "focus",
     label: "Focus",
     description: "Instrumental beats for heavy sets and concentration",
-    spotifyPlaylistId: "4jSmTgJDyORqXulIacZhhu",
+    spotifyPlaylistId: "5gW25jhAHgV9o6bPlohwkW",
   },
   {
     vibe: "pump",
     label: "Pump",
     description: "High energy for strength and hypertrophy",
-    spotifyPlaylistId: "57GAUprXFP9XIZaupQzIsS",
+    spotifyPlaylistId: "6Z6ItLq9dyeOAQoQMOSHSS",
   },
   {
     vibe: "cardio",
     label: "Cardio",
     description: "Upbeat tracks for intervals and conditioning",
-    spotifyPlaylistId: "07QTzPiEFAthtiAeqNmzfS",
+    spotifyPlaylistId: "4NVckWkqeA2hEajOG5aMlw",
   },
   {
     vibe: "cooldown",
     label: "Cooldown",
     description: "Wind down after your session",
-    spotifyPlaylistId: "1buPbOqsVbtpHcnp3AyqvQ",
+    spotifyPlaylistId: "6q2k3zsQVWM20W4gMCMSwn",
   },
 ] as const;
 

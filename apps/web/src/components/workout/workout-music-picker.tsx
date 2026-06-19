@@ -10,6 +10,7 @@ import {
   getSavedWorkoutMusicVibe,
   saveWorkoutMusicVibe,
 } from "@/lib/workout-music/preferences";
+import { SpotifyAttribution } from "./spotify-attribution";
 import { useEffect, useState } from "react";
 
 interface WorkoutMusicPickerProps {
@@ -107,6 +108,7 @@ export function WorkoutMusicPicker({
                 ? "Connect to open Spotify."
                 : "Opens in the Spotify app or browser."}
             </p>
+            <SpotifyAttribution className="mt-1" />
           </div>
 
           {dismissible && onDismiss && (
@@ -130,7 +132,7 @@ export function WorkoutMusicPicker({
         <p className="text-[11px] font-semibold uppercase tracking-wide text-forge-muted">
           Workout music
         </p>
-        <p className="text-[11px] text-forge-muted">Opens in Spotify</p>
+        <SpotifyAttribution />
       </div>
 
       <div className="mt-2 flex flex-wrap gap-2">
@@ -148,6 +150,12 @@ export function WorkoutMusicPicker({
       {offline && (
         <p className="mt-2 text-[11px] text-forge-steel">
           Your vibe is saved locally. Connect to open Spotify.
+        </p>
+      )}
+
+      {!offline && (
+        <p className="mt-2 text-[11px] text-forge-muted">
+          Tap a vibe to open in Spotify.
         </p>
       )}
     </div>
