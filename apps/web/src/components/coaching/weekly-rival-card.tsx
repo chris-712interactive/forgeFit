@@ -5,12 +5,14 @@ interface WeeklyRivalCardProps {
   rival: WeeklyRivalRow;
   userRank: number | null;
   compact?: boolean;
+  hideFooterLink?: boolean;
 }
 
 export function WeeklyRivalCard({
   rival,
   userRank,
   compact = false,
+  hideFooterLink = false,
 }: WeeklyRivalCardProps) {
   return (
     <section
@@ -57,7 +59,7 @@ export function WeeklyRivalCard({
         )}
       </p>
 
-      {!compact && (
+      {!compact && !hideFooterLink && (
         <Link
           href="/community"
           className="mt-3 inline-block text-sm font-medium text-forge-ember underline-offset-2 hover:underline"
