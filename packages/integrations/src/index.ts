@@ -18,6 +18,7 @@ export {
   spotifyTokenExpiresAtIso,
   startSpotifyPlayback,
   startSpotifyPlaybackResolved,
+  setSpotifyShuffle,
   transferSpotifyPlayback,
 } from "./spotify";
 export type {

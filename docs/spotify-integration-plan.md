@@ -208,7 +208,8 @@ RLS: users update own `profiles` columns via existing profile update policy.
 | `exchangeSpotifyAuthorizationCode(...)` | Token exchange |
 | `refreshSpotifyAccessToken(...)` | Refresh |
 | `fetchSpotifyPlaybackState(token)` | Now playing |
-| `startSpotifyPlayback(token, { contextUri \| uris })` | Start playlist |
+| `startSpotifyPlayback(token, { contextUri \| uris })` | Start playlist (+ auto-shuffle via `PUT /me/player/shuffle?state=true`) |
+| `setSpotifyShuffle(token, { state, deviceId })` | Toggle shuffle on active device |
 | `transferSpotifyPlayback(token, deviceId?)` | Connect handoff if needed |
 | `spotifyPlaybackControl(token, action)` | pause / next / previous |
 

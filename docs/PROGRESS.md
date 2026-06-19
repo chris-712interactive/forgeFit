@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Workout Spotify player UI redesign |
+| **Last session focus** | Spotify auto-shuffle on playlist start |
 
 ---
 
@@ -34,6 +34,16 @@
 
 ## Session Log
 
+### 2026-06-19 — Spotify auto-shuffle on playlist start
+
+**What was done:**
+- After `PUT /me/player/play` with a playlist context, ForgeRep calls `PUT /me/player/shuffle?state=true` on the same device
+- Applies to workout start, auto-start, and play-from-idle (not plain resume of paused session)
+
+**Files touched:**
+- `packages/integrations/src/spotify.ts`, `index.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Workout Spotify player UI
 
 **What was done:**
@@ -49,9 +59,6 @@
 - `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify native app handoff from PWA
-
-**What was done:**
-- Installed mobile PWAs now open `spotify:playlist:` (iOS) or Android intent URLs instead of https (which loaded Spotify inside the PWA webview)
 - Applies to vibe picker, wake-and-retry, and “Open playlist in Spotify” — all use `openSpotifyPlaylist()`
 
 **Files touched:**

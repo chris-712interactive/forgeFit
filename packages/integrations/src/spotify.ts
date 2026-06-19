@@ -256,8 +256,10 @@ export async function startSpotifyPlayback(params: {
   accessToken: string;
   contextUri: string;
   deviceId?: string | null;
+  /** Default true for workout playlists */
+  shuffle?: boolean;
 }): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
-  return spotifyApiFetch(
+  const result = await spotifyApiFetch(
     params.accessToken,
     spotifyPlayerPath("/me/player/play", params.deviceId),
     {
@@ -265,6 +267,31 @@ export async function startSpotifyPlayback(params: {
       body: JSON.stringify({ context_uri: params.contextUri }),
     }
   );
+
+  if (!result.ok) return result;
+
+  if (params.shuffle !== false) {
+    await setSpotifyShuffle({
+      accessToken: params.accessToken,
+      state: true,
+      deviceId: params.deviceId,
+    });
+  }
+
+  return result;
+}
+
+export async function setSpotifyShuffle(params: {
+  accessToken: string;
+  state: boolean;
+  deviceId?: string | null;
+}): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  let path = `/me/player/shuffle?state=${params.state ? "true" : "false"}`;
+  if (params.deviceId) {
+    path += `&device_id=${encodeURIComponent(params.deviceId)}`;
+  }
+
+  return spotifyApiFetch(params.accessToken, path, { method: "PUT" });
 }
 
 export type SpotifyPlaybackAction = "pause" | "next" | "previous" | "resume";
