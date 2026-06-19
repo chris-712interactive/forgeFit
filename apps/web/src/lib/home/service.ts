@@ -30,7 +30,7 @@ export async function getHomeDashboardData(
   const supabase = await createClient();
 
   const subscription = await getSubscriptionForUser(userId);
-  scheduleFitbitBackgroundSync(userId, subscription);
+  await scheduleFitbitBackgroundSync(userId, subscription);
 
   const needsProAnalytics =
     hasProAccess(subscription) &&

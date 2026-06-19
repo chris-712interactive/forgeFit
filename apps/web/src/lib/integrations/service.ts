@@ -851,7 +851,8 @@ export async function hasMissingSleepLogs(userId: string): Promise<boolean> {
 }
 
 export async function syncFitbitForUser(
-  userId: string
+  userId: string,
+  options?: { timeZone?: string }
 ): Promise<FitbitSyncResult> {
   const row = await getIntegrationRow(userId, "fitbit");
   if (!row || row.status === "revoked") {
@@ -866,7 +867,7 @@ export async function syncFitbitForUser(
       userId,
       row.last_sync_at
     );
-    const timeZone = await getUserTimeZone();
+    const timeZone = options?.timeZone ?? (await getUserTimeZone());
     const endDate = todayLocalIsoDate(new Date(), timeZone);
 
     const summaries = await fetchDailyActivitySummaries({

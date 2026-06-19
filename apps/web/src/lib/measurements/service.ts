@@ -252,7 +252,7 @@ export async function getProgressDashboardData(
   userId: string
 ): Promise<ProgressDashboardData> {
   const subscription = await getSubscriptionForUser(userId);
-  scheduleFitbitBackgroundSync(userId, subscription);
+  await scheduleFitbitBackgroundSync(userId, subscription);
 
   const [profile, measurementResult, caliperEntries, plan, activity, sleep, recovery] =
     await Promise.all([

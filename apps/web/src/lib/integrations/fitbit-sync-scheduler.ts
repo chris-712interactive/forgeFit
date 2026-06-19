@@ -1,14 +1,15 @@
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { after } from "next/server";
 import { isGoogleHealthConfigured } from "./config";
 import {
+  getIntegrationRow,
   hasIncompleteActivityLogs,
   hasMissingRecoveryLogs,
   hasMissingSleepLogs,
   IntegrationNotConnectedError,
-  listIntegrationStatuses,
   syncFitbitForUser,
   type FitbitSyncResult,
 } from "./service";
@@ -43,7 +44,7 @@ export interface FitbitBackgroundSyncOutcome {
 export async function maybeSyncFitbitForUser(
   userId: string,
   subscription: SubscriptionSnapshot,
-  options?: { force?: boolean }
+  options?: { force?: boolean; timeZone?: string }
 ): Promise<FitbitBackgroundSyncOutcome> {
   if (!isGoogleHealthConfigured()) {
     return { synced: false, skipped: true, reason: "not_configured" };
@@ -57,10 +58,10 @@ export async function maybeSyncFitbitForUser(
   let lastSyncAt: string | null = null;
 
   try {
-    const statuses = await listIntegrationStatuses(userId);
-    const fitbit = statuses.find((status) => status.provider === "fitbit");
-    fitbitConnected = fitbit?.connected ?? false;
-    lastSyncAt = fitbit?.lastSyncAt ?? null;
+    const row = await getIntegrationRow(userId, "fitbit");
+    fitbitConnected =
+      row != null && (row.status === "active" || row.status === "error");
+    lastSyncAt = row?.last_sync_at ?? null;
   } catch {
     return { synced: false, skipped: true, reason: "status_unavailable" };
   }
@@ -84,7 +85,9 @@ export async function maybeSyncFitbitForUser(
   }
 
   try {
-    const result = await syncFitbitForUser(userId);
+    const result = await syncFitbitForUser(userId, {
+      timeZone: options?.timeZone,
+    });
     return { synced: true, skipped: false, result };
   } catch (error) {
     if (error instanceof IntegrationNotConnectedError) {
@@ -101,16 +104,18 @@ export async function maybeSyncFitbitForUser(
  * Queue Fitbit sync after the page response is sent so navigation stays fast.
  * Cron and explicit Profile sync still use maybeSyncFitbitForUser directly.
  */
-export function scheduleFitbitBackgroundSync(
+export async function scheduleFitbitBackgroundSync(
   userId: string,
   subscription: SubscriptionSnapshot
-): void {
+): Promise<void> {
   if (!isGoogleHealthConfigured()) return;
   if (!hasFeature(subscription, "device_integrations")) return;
 
+  const timeZone = await getUserTimeZone();
+
   after(async () => {
     try {
-      await maybeSyncFitbitForUser(userId, subscription);
+      await maybeSyncFitbitForUser(userId, subscription, { timeZone });
     } catch {
       // Errors are persisted on the integration row by syncFitbitForUser.
     }

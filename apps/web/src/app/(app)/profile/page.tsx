@@ -101,7 +101,7 @@ export default async function ProfilePage({
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
   if (user && integrationsUnlocked) {
-    scheduleFitbitBackgroundSync(user.id, subscription);
+    await scheduleFitbitBackgroundSync(user.id, subscription);
   }
 
   let initialIntegrations = buildIntegrationsHubView([]);
