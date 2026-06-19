@@ -70,6 +70,7 @@ import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
 import { WorkoutStepHeader } from "./workout-step-header";
 import { WorkoutMusicPicker } from "./workout-music-picker";
+import { WorkoutMusicTransport } from "./workout-music-transport";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
@@ -77,6 +78,7 @@ interface ActiveWorkoutProps {
   experienceLevel?: ExperienceLevel;
   coaching?: WorkoutCoachingFeatures | null;
   readiness?: WorkoutReadinessContext | null;
+  spotifyConnected?: boolean;
   onBack?: () => void;
   onFinished?: (clientId: string) => void | Promise<void>;
 }
@@ -86,6 +88,7 @@ export function ActiveWorkout({
   experienceLevel = "beginner",
   coaching = null,
   readiness = null,
+  spotifyConnected = false,
   onBack,
   onFinished,
 }: ActiveWorkoutProps) {
@@ -842,6 +845,11 @@ export function ActiveWorkout({
           />
         </div>
       )}
+
+      <WorkoutMusicTransport
+        enabled={spotifyConnected}
+        offline={offline}
+      />
 
       {readiness && currentStepIndex === 0 && (
         <div className="mb-4">

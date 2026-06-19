@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | ForgeRep Spotify playlists wired in |
+| **Last session focus** | Spotify Phase B (OAuth + playback) |
 
 ---
 
@@ -33,6 +33,33 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Spotify Phase B (OAuth + playback control)
+
+**What was done:**
+- Migration `20260610870000_spotify_integration.sql` — `spotify` integration provider + profile workout music prefs
+- `packages/integrations/src/spotify.ts` — PKCE OAuth, token refresh, playback API
+- API routes: connect, callback, disconnect, status, preferences, playback, autostart
+- Profile → **Workout music** section (connect, default vibe, auto-start toggle) — not gated behind Pro+
+- Active workout Spotify transport bar (play/pause/skip, now playing)
+- Non-blocking auto-start on workout begin when enabled
+
+**What's next:**
+- Run migration locally/production: `supabase db push`
+- QA connect flow + playback on device with Spotify Premium + Spotify app open
+- Register redirect URI in Spotify Dashboard if not already: `{NEXT_PUBLIC_SITE_URL}/api/integrations/spotify/callback`
+
+**Blockers:** None
+
+**Files touched:**
+- `supabase/migrations/20260610870000_spotify_integration.sql`
+- `packages/integrations/src/spotify.ts`, `withings.ts`, `index.ts`
+- `apps/web/src/lib/integrations/spotify-service.ts`, `config.ts`, `oauth-state.ts`, `oauth-state-token.ts`, `types.ts`
+- `apps/web/src/app/api/integrations/spotify/**`
+- `apps/web/src/components/profile/workout-music-setting.tsx`, `profile-settings-hub.tsx`
+- `apps/web/src/components/workout/workout-music-transport.tsx`, `active-workout.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/(app)/profile/page.tsx`, `workout/page.tsx`
+- `apps/web/src/lib/legal/copy.ts`, `.env.example`, docs
 
 ### 2026-06-19 — ForgeRep Spotify playlists + attribution
 

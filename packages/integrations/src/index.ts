@@ -1,5 +1,27 @@
 export type { IntegrationProvider } from "./withings";
 export {
+  SPOTIFY_API_BASE,
+  SPOTIFY_OAUTH_AUTHORIZE_URL,
+  SPOTIFY_OAUTH_SCOPES,
+  SPOTIFY_OAUTH_TOKEN_URL,
+  buildSpotifyAuthorizeUrl,
+  exchangeSpotifyAuthorizationCode,
+  fetchSpotifyPlaybackState,
+  fetchSpotifyProfile,
+  refreshSpotifyAccessToken,
+  spotifyPlaybackControl,
+  spotifyPlaylistContextUri,
+  spotifyTokenExpiresAtIso,
+  startSpotifyPlayback,
+} from "./spotify";
+export type {
+  SpotifyPlaybackAction,
+  SpotifyPlaybackState,
+  SpotifyPlaybackTrack,
+  SpotifyProfile,
+  SpotifyTokenResponse,
+} from "./spotify";
+export {
   STRAVA_API_BASE,
   STRAVA_OAUTH_AUTHORIZE_URL,
   STRAVA_OAUTH_SCOPE,

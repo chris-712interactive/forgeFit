@@ -34,6 +34,7 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | Exercise library, GIFs, substitutions | ✓ | ✓ | ✓ |
 | Workout history (view & log) | ✓ | ✓ | ✓ |
 | Workout music — Spotify vibe deep links | ✓ | ✓ | ✓ |
+| Workout music — Spotify connect + in-session controls | ✓ | ✓ | ✓ |
 | Templated encouragement (home banner) | ✓ | ✓ | ✓ |
 | Experience promotion & consistency nudges | ✓ | ✓ | ✓ |
 

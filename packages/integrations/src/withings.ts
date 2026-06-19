@@ -1,4 +1,4 @@
-export type IntegrationProvider = "withings" | "fitbit" | "strava";
+export type IntegrationProvider = "withings" | "fitbit" | "strava" | "spotify";
 
 export interface WithingsTokenBody {
   access_token: string;

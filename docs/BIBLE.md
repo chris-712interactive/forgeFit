@@ -164,7 +164,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 14. **Fitness tech integrations** — integration hub + recommendations
 15. **Motivational UX** — coaching package, hype tone
 16. **Gamification** — opt-in leaderboards, habit-based scoring, rivals, follows (Pro). See [community-expansion-plan.md](./community-expansion-plan.md).
-17. **Workout music** — Spotify vibe picker with deep links (Phase A shipped); OAuth playback control planned (Phase B). All tiers. See [spotify-integration-plan.md](./spotify-integration-plan.md).
+17. **Workout music** — Spotify vibe deep links + OAuth playback control (Phase A & B shipped). All tiers; Spotify Premium for in-app controls. See [spotify-integration-plan.md](./spotify-integration-plan.md).
 
 ---
 

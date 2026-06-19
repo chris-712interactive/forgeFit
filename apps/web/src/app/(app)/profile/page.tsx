@@ -14,6 +14,7 @@ import {
   buildIntegrationsHubView,
   listIntegrationStatuses,
 } from "@/lib/integrations/service";
+import { getSpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import { scheduleFitbitBackgroundSync } from "@/lib/integrations/fitbit-sync-scheduler";
 import {
   isDeviceIntegrationsConfigured,
@@ -36,6 +37,8 @@ export default async function ProfilePage({
     checkout?: string;
     integration?: string;
     integration_error?: string;
+    spotify?: string;
+    spotify_error?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -45,6 +48,8 @@ export default async function ProfilePage({
       : null;
   const integrationStatus = params.integration ?? null;
   const integrationError = params.integration_error ?? null;
+  const spotifyStatus = params.spotify ?? null;
+  const spotifyError = params.spotify_error ?? null;
 
   const supabase = await createClient();
   const {
@@ -54,7 +59,9 @@ export default async function ProfilePage({
   const { data: profile } = user
     ? await supabase
         .from("profiles")
-        .select("*")
+        .select(
+          "*, workout_music_auto_start, workout_music_default_vibe"
+        )
         .eq("id", user.id)
         .single()
     : { data: null };
@@ -109,6 +116,28 @@ export default async function ProfilePage({
 
   let initialIntegrations = buildIntegrationsHubView([]);
   let integrationsLoadError: string | null = null;
+  let spotifyMusic = {
+    configured: false,
+    connected: false,
+    autoStart: false,
+    defaultVibe: null as import("@/lib/workout-music/catalog").WorkoutMusicVibe | null,
+    lastError: null as string | null,
+  };
+
+  if (user) {
+    try {
+      spotifyMusic = await getSpotifyPublicStatus(user.id, profile);
+    } catch {
+      spotifyMusic = {
+        configured: false,
+        connected: false,
+        autoStart: profile?.workout_music_auto_start ?? false,
+        defaultVibe: null,
+        lastError: null,
+      };
+    }
+  }
+
   if (user && integrationsUnlocked) {
     try {
       const statuses = await listIntegrationStatuses(user.id);
@@ -169,6 +198,9 @@ export default async function ProfilePage({
               ? formatHeight(Number(profile.height_cm), unit)
               : undefined
           }
+          spotifyMusic={spotifyMusic}
+          spotifyStatus={spotifyStatus}
+          spotifyError={spotifyError}
         />
 
         <LegalFooter />

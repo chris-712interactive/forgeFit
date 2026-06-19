@@ -36,12 +36,14 @@ export const INTEGRATION_LABELS: Record<IntegrationProvider, string> = {
   withings: "Withings",
   fitbit: "Fitbit",
   strava: "Strava",
+  spotify: "Spotify",
 };
 
 export const INTEGRATION_DESCRIPTIONS: Record<IntegrationProvider, string> = {
   withings: "Sync weight from your Withings scale to Progress. Coming soon.",
   fitbit: "Import daily steps, active calories, sleep, recovery metrics, and per-workout heart-rate intensity via Google Health (Fitbit).",
   strava: "Sync cardio workouts and training load. Coming soon.",
+  spotify: "Workout music playback control via Spotify.",
 };
 
 /** Providers with a live Connect flow in Profile → Integrations. */
@@ -49,4 +51,5 @@ export const INTEGRATION_AVAILABLE: Record<IntegrationProvider, boolean> = {
   withings: false,
   fitbit: true,
   strava: false,
+  spotify: false,
 };

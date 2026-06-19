@@ -2,6 +2,7 @@ import { WorkoutHub } from "@/components/workout/workout-hub";
 import { getWorkoutCoachingFeatures } from "@/lib/coaching/workout-features";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { listIntegrationStatuses } from "@/lib/integrations/service";
+import { getSpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import {
   getUserOneRepMaxes,
   userOneRepMaxMap,
@@ -39,7 +40,7 @@ export default async function WorkoutPage() {
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
       };
-  const [oneRepMaxes, coachingFeatures, deviceMetricsByClientId, readiness, integrationStatuses] = user
+  const [oneRepMaxes, coachingFeatures, deviceMetricsByClientId, readiness, integrationStatuses, spotifyStatus] = user
     ? await Promise.all([
         getUserOneRepMaxes(user.id),
         getWorkoutCoachingFeatures(
@@ -53,12 +54,14 @@ export default async function WorkoutPage() {
         ),
         getWorkoutReadinessContext(user.id, subscription),
         listIntegrationStatuses(user.id),
+        getSpotifyPublicStatus(user.id),
       ])
-    : [{ rows: [], tableReady: true }, null, new Map(), null, []];
+    : [{ rows: [], tableReady: true }, null, new Map(), null, [], { connected: false }];
 
   const fitbitConnected =
     integrationStatuses.find((row) => row.provider === "fitbit")?.connected ===
     true;
+  const spotifyConnected = spotifyStatus.connected;
 
   const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
 
@@ -78,6 +81,7 @@ export default async function WorkoutPage() {
       coachingFeatures={coachingFeatures}
       deviceMetricsByClientId={deviceMetricsByClientId}
       fitbitConnected={fitbitConnected}
+      spotifyConnected={spotifyConnected}
       readiness={readiness}
     />
   );

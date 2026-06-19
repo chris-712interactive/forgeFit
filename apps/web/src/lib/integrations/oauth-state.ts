@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { cookies } from "next/headers";
 
 const MAX_AGE_SECONDS = 600;
@@ -112,4 +112,28 @@ export async function readFitbitOAuthCookies(): Promise<{
 export async function clearFitbitOAuthCookies(): Promise<void> {
   await deleteIntegrationCookie(FITBIT_STATE_COOKIE);
   await deleteIntegrationCookie(FITBIT_USER_COOKIE);
+}
+
+const SPOTIFY_VERIFIER_COOKIE = "spotify_oauth_verifier";
+
+export function createSpotifyPkcePair(): { verifier: string; challenge: string } {
+  const verifier = randomBytes(64).toString("base64url");
+  const challenge = createHash("sha256").update(verifier).digest("base64url");
+  return { verifier, challenge };
+}
+
+export async function setSpotifyOAuthVerifierCookie(
+  verifier: string
+): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(SPOTIFY_VERIFIER_COOKIE, verifier, integrationCookieOptions());
+}
+
+export async function readSpotifyOAuthVerifierCookie(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SPOTIFY_VERIFIER_COOKIE)?.value ?? null;
+}
+
+export async function clearSpotifyOAuthCookies(): Promise<void> {
+  await deleteIntegrationCookie(SPOTIFY_VERIFIER_COOKIE);
 }

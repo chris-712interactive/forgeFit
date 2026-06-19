@@ -61,6 +61,7 @@ interface WorkoutHubProps {
   coachingFeatures?: WorkoutCoachingFeatures | null;
   deviceMetricsByClientId?: Map<string, WorkoutDeviceMetricsRecord>;
   fitbitConnected?: boolean;
+  spotifyConnected?: boolean;
   readiness?: WorkoutReadinessContext | null;
 }
 
@@ -114,6 +115,7 @@ export function WorkoutHub({
   coachingFeatures = null,
   deviceMetricsByClientId = new Map(),
   fitbitConnected = false,
+  spotifyConnected = false,
   readiness = null,
 }: WorkoutHubProps) {
   const router = useRouter();
@@ -341,6 +343,10 @@ export function WorkoutHub({
           setPrefills,
         });
         openWorkout(clientId);
+
+        if (navigator.onLine && spotifyConnected) {
+          void fetch("/api/integrations/spotify/autostart", { method: "POST" });
+        }
       } finally {
         setStartingDay(null);
       }
@@ -358,6 +364,7 @@ export function WorkoutHub({
       bodyweightKg,
       declaredE1rmKg,
       unit,
+      spotifyConnected,
     ]
   );
 
@@ -421,6 +428,7 @@ export function WorkoutHub({
         experienceLevel={experienceLevel}
         coaching={coachingFeatures}
         readiness={readiness}
+        spotifyConnected={spotifyConnected}
         onBack={closeToHub}
         onFinished={handleWorkoutFinished}
       />

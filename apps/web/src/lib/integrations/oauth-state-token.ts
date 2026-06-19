@@ -74,3 +74,22 @@ export function profileIntegrationsRedirectUrl(
   const qs = search.toString();
   return qs ? `${base}?${qs}#integrations` : `${base}#integrations`;
 }
+
+export function profileWorkoutMusicRedirectUrl(
+  siteUrl: string,
+  query?: Record<string, string | undefined>
+): string {
+  const base = `${siteUrl.replace(/\/$/, "")}/profile`;
+  const search = new URLSearchParams();
+
+  if (query) {
+    for (const [key, value] of Object.entries(query)) {
+      if (value != null && value !== "") {
+        search.set(key, value);
+      }
+    }
+  }
+
+  const qs = search.toString();
+  return qs ? `${base}?${qs}#workout-music` : `${base}#workout-music`;
+}

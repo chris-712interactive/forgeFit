@@ -12,7 +12,9 @@ import { IntegrationsSetting } from "@/components/profile/integrations-setting";
 import { OneRepMaxSetting } from "@/components/profile/one-rep-max-setting";
 import { ProgramPlanSetting } from "@/components/profile/program-plan-setting";
 import { SubscriptionSetting } from "@/components/profile/subscription-setting";
+import { WorkoutMusicSetting } from "@/components/profile/workout-music-setting";
 import { UnitPreferenceSetting } from "@/components/profile/unit-preference-setting";
+import type { SpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
@@ -55,6 +57,9 @@ interface ProfileSettingsHubProps {
   experienceLevel?: ExperienceLevel | null;
   weightLabel?: string;
   heightLabel?: string;
+  spotifyMusic: SpotifyPublicStatus;
+  spotifyStatus?: string | null;
+  spotifyError?: string | null;
 }
 
 export function ProfileSettingsHub({
@@ -82,6 +87,9 @@ export function ProfileSettingsHub({
   experienceLevel,
   weightLabel,
   heightLabel,
+  spotifyMusic,
+  spotifyStatus,
+  spotifyError,
 }: ProfileSettingsHubProps) {
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
@@ -104,6 +112,12 @@ export function ProfileSettingsHub({
         subscription={subscription}
         stripeConfigured={stripeConfigured}
         checkoutStatus={checkoutStatus}
+      />
+
+      <WorkoutMusicSetting
+        initialStatus={spotifyMusic}
+        spotifyStatus={spotifyStatus}
+        spotifyError={spotifyError}
       />
 
       <CollapsibleSection

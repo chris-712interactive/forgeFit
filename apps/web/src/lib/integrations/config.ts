@@ -132,3 +132,30 @@ export function isFitbitIntegrationConfigured(): boolean {
 export function isStravaIntegrationConfigured(): boolean {
   return isStravaConfigured();
 }
+
+export function isSpotifyConfigured(): boolean {
+  return Boolean(
+    process.env.SPOTIFY_CLIENT_ID?.trim() &&
+      process.env.SPOTIFY_CLIENT_SECRET?.trim() &&
+      process.env.INTEGRATIONS_TOKEN_ENCRYPTION_KEY?.trim()
+  );
+}
+
+export function getSpotifyClientConfig() {
+  const clientId = process.env.SPOTIFY_CLIENT_ID?.trim();
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim();
+
+  if (!clientId || !clientSecret) {
+    throw new Error("Spotify OAuth is not configured.");
+  }
+
+  return { clientId, clientSecret };
+}
+
+export function spotifyRedirectUri(siteUrl: string): string {
+  return `${siteUrl.replace(/\/$/, "")}/api/integrations/spotify/callback`;
+}
+
+export function spotifyOAuthRedirectUri(): string {
+  return spotifyRedirectUri(getSiteUrl());
+}

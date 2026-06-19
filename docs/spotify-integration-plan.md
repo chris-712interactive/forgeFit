@@ -1,7 +1,7 @@
 # Spotify Workout Music — Phase A & B Plan
 
 > Roadmap for adding workout music to ForgeRep without blocking offline logging.  
-> **Status:** Phase A shipped · Phase B planned
+> **Status:** Phase A + B shipped
 
 ## Goals
 
@@ -264,13 +264,13 @@ Update `apps/web/src/app/(marketing)/privacy/page.tsx` § Integrations:
 
 ### Acceptance criteria (Phase B)
 
-- [ ] User connects Spotify from Profile without Pro+ subscription
-- [ ] Disconnect removes tokens and hides transport
-- [ ] Transport play/pause/skip works when Spotify app is active on same device (Premium)
-- [ ] Auto-start optionally begins default vibe playlist on workout start (online only)
-- [ ] Playback failures never block workout session creation
-- [ ] `user_integrations.provider = 'spotify'` row with encrypted tokens; no playback history table
-- [ ] `.env.example`, privacy page, and `docs/TIER-GATES.md` updated (music row under Core training)
+- [x] User connects Spotify from Profile without Pro+ subscription
+- [x] Disconnect removes tokens and hides transport
+- [x] Transport play/pause/skip works when Spotify app is active on same device (Premium)
+- [x] Auto-start optionally begins default vibe playlist on workout start (online only)
+- [x] Playback failures never block workout session creation
+- [x] `user_integrations.provider = 'spotify'` row with encrypted tokens; no playback history table
+- [x] `.env.example`, privacy page, and `docs/TIER-GATES.md` updated (music row under Core training)
 
 ---
 
