@@ -415,6 +415,7 @@ export async function startSpotifyWorkoutPlaylist(params: {
 export async function controlSpotifyPlayback(params: {
   userId: string;
   action: SpotifyPlaybackAction | "toggle";
+  profileDefaultVibe?: WorkoutMusicVibe | null;
 }): Promise<{ ok: true; isPlaying?: boolean } | { ok: false; reason: string }> {
   const row = await getIntegrationRow(params.userId, "spotify");
   if (!row || row.status === "revoked") {
@@ -422,58 +423,78 @@ export async function controlSpotifyPlayback(params: {
   }
 
   try {
-    if (params.action === "toggle") {
-      const stateResult = await withSpotifyAccessToken(
-        params.userId,
-        async (accessToken) => fetchSpotifyPlaybackState(accessToken)
-      );
-
-      if (!stateResult.ok) {
-        if (stateResult.status === 403) {
-          return { ok: false, reason: "premium_required" };
-        }
-        if (stateResult.status === 404 || stateResult.message === "NO_ACTIVE_DEVICE") {
-          return { ok: false, reason: "no_active_device" };
-        }
-        return { ok: false, reason: stateResult.message };
-      }
-
-      const action: SpotifyPlaybackAction = stateResult.state?.isPlaying
-        ? "pause"
-        : "resume";
-      const controlResult = await withSpotifyAccessToken(
-        params.userId,
-        async (accessToken) => spotifyPlaybackControl(accessToken, action)
-      );
-
-      if (!controlResult.ok) {
-        if (controlResult.status === 403) {
-          return { ok: false, reason: "premium_required" };
-        }
-        if (controlResult.status === 404 || controlResult.message === "NO_ACTIVE_DEVICE") {
-          return { ok: false, reason: "no_active_device" };
-        }
-        return { ok: false, reason: controlResult.message };
-      }
-
-      return { ok: true, isPlaying: action === "resume" };
-    }
-
-    const playbackAction = params.action;
-    const controlResult = await withSpotifyAccessToken(
+    const result = await withSpotifyAccessToken(
       params.userId,
-      async (accessToken) =>
-        spotifyPlaybackControl(accessToken, playbackAction)
+      async (accessToken) => {
+        const stateResult = await fetchSpotifyPlaybackState(accessToken);
+        const deviceId = stateResult.ok ? stateResult.state?.deviceId : null;
+
+        let playbackAction: SpotifyPlaybackAction;
+        if (params.action === "toggle") {
+          playbackAction =
+            stateResult.ok && stateResult.state?.isPlaying ? "pause" : "resume";
+        } else {
+          playbackAction = params.action;
+        }
+
+        if (playbackAction === "resume") {
+          const resumeResult = await spotifyPlaybackControl(
+            accessToken,
+            "resume",
+            deviceId
+          );
+          if (resumeResult.ok) {
+            return { controlResult: resumeResult, playbackAction };
+          }
+
+          const vibe = resolveVibe(undefined, params.profileDefaultVibe ?? null);
+          const playlist = getWorkoutMusicPlaylist(vibe);
+          if (!playlist) {
+            return {
+              controlResult: {
+                ok: false as const,
+                status: 404,
+                message: "invalid_vibe",
+              },
+              playbackAction,
+            };
+          }
+
+          const startResult = await startSpotifyPlayback({
+            accessToken,
+            contextUri: spotifyPlaylistContextUri(playlist.spotifyPlaylistId),
+            deviceId,
+          });
+          return { controlResult: startResult, playbackAction };
+        }
+
+        const controlResult = await spotifyPlaybackControl(
+          accessToken,
+          playbackAction,
+          deviceId
+        );
+        return { controlResult, playbackAction };
+      }
     );
 
-    if (!controlResult.ok) {
-      if (controlResult.status === 403) {
+    if (!result.controlResult.ok) {
+      if (result.controlResult.status === 403) {
         return { ok: false, reason: "premium_required" };
       }
-      if (controlResult.status === 404 || controlResult.message === "NO_ACTIVE_DEVICE") {
+      if (
+        result.controlResult.status === 404 ||
+        result.controlResult.message === "NO_ACTIVE_DEVICE"
+      ) {
         return { ok: false, reason: "no_active_device" };
       }
-      return { ok: false, reason: controlResult.message };
+      return { ok: false, reason: result.controlResult.message };
+    }
+
+    if (result.playbackAction === "pause") {
+      return { ok: true, isPlaying: false };
+    }
+    if (result.playbackAction === "resume") {
+      return { ok: true, isPlaying: true };
     }
 
     return { ok: true };

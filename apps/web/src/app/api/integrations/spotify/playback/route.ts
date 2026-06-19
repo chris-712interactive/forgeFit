@@ -67,6 +67,7 @@ export async function POST(request: Request) {
     const result = await controlSpotifyPlayback({
       userId: user.id,
       action: body.action,
+      profileDefaultVibe: prefs.defaultVibe,
     });
 
     if (!result.ok) {

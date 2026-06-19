@@ -68,10 +68,23 @@ export function WorkoutMusicTransport({
     return () => window.clearInterval(interval);
   }, [enabled, offline, refreshPlayback]);
 
-  async function sendAction(action: "toggle" | "next" | "previous") {
+  async function sendAction(action: "pause" | "resume" | "next" | "previous") {
     if (offline || busy) return;
     setBusy(true);
     setError(null);
+
+    const previousPlaying = playback?.isPlaying ?? false;
+
+    if (action === "pause" || action === "resume") {
+      setPlayback((current) =>
+        current
+          ? {
+              ...current,
+              isPlaying: action === "resume",
+            }
+          : current
+      );
+    }
 
     try {
       const response = await fetch("/api/integrations/spotify/playback", {
@@ -82,12 +95,18 @@ export function WorkoutMusicTransport({
       const body = (await response.json()) as { error?: string };
 
       if (!response.ok) {
+        setPlayback((current) =>
+          current ? { ...current, isPlaying: previousPlaying } : current
+        );
         setError(formatPlaybackError(body.error ?? "Playback control failed."));
         return;
       }
 
       await refreshPlayback();
     } catch {
+      setPlayback((current) =>
+        current ? { ...current, isPlaying: previousPlaying } : current
+      );
       setError("Playback control failed.");
     } finally {
       setBusy(false);
@@ -140,9 +159,9 @@ export function WorkoutMusicTransport({
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1.5">
           <TransportButton
-            label="Previous"
+            label="Previous track"
             disabled={busy}
             onClick={() => void sendAction("previous")}
           >
@@ -151,12 +170,15 @@ export function WorkoutMusicTransport({
           <TransportButton
             label={playback.isPlaying ? "Pause" : "Play"}
             disabled={busy}
-            onClick={() => void sendAction("toggle")}
+            prominent
+            onClick={() =>
+              void sendAction(playback.isPlaying ? "pause" : "resume")
+            }
           >
             {playback.isPlaying ? "⏸" : "▶"}
           </TransportButton>
           <TransportButton
-            label="Next"
+            label="Next track"
             disabled={busy}
             onClick={() => void sendAction("next")}
           >
@@ -179,11 +201,13 @@ export function WorkoutMusicTransport({
 function TransportButton({
   label,
   disabled,
+  prominent = false,
   onClick,
   children,
 }: {
   label: string;
   disabled?: boolean;
+  prominent?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -193,7 +217,11 @@ function TransportButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] text-sm text-forge-text transition-colors hover:border-forge-ember/40 disabled:opacity-60"
+      className={`flex min-h-12 min-w-12 items-center justify-center rounded-xl border text-base text-forge-text transition-colors hover:border-forge-ember/40 active:scale-95 disabled:opacity-60 ${
+        prominent
+          ? "h-12 w-12 border-forge-ember/30 bg-forge-surface text-lg"
+          : "h-11 w-11 border-[var(--border)] bg-forge-surface/80"
+      }`}
     >
       {children}
     </button>

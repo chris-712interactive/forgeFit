@@ -158,7 +158,7 @@ export function spotifyRedirectUri(siteUrl: string): string {
 
 /**
  * Redirect URI sent to Spotify — must match the Spotify Developer Dashboard exactly.
- * Priority: SPOTIFY_OAUTH_REDIRECT_URI → request origin (dev) → NEXT_PUBLIC_SITE_URL
+ * Priority: SPOTIFY_OAUTH_REDIRECT_URI → request origin (local dev only) → NEXT_PUBLIC_SITE_URL
  */
 export function spotifyOAuthRedirectUri(request?: Request): string {
   const explicit = process.env.SPOTIFY_OAUTH_REDIRECT_URI?.trim();
@@ -166,24 +166,11 @@ export function spotifyOAuthRedirectUri(request?: Request): string {
     return explicit.replace(/\/$/, "");
   }
 
-  if (request) {
-    const requestOrigin = new URL(request.url).origin;
-
-    // Local dev: NEXT_PUBLIC_SITE_URL is often the production domain while testing on localhost
-    if (process.env.NODE_ENV !== "production") {
-      return spotifyRedirectUri(requestOrigin);
-    }
-
-    try {
-      const siteHost = new URL(getSiteUrl()).host;
-      const requestHost = new URL(requestOrigin).host;
-      if (siteHost === requestHost) {
-        return spotifyRedirectUri(requestOrigin);
-      }
-    } catch {
-      // fall through to canonical site URL
-    }
+  // Local dev: NEXT_PUBLIC_SITE_URL is often production while testing on localhost
+  if (request && process.env.NODE_ENV !== "production") {
+    return spotifyRedirectUri(new URL(request.url).origin);
   }
 
+  // Production: always canonical site URL (same pattern as fitbitOAuthRedirectUri)
   return spotifyRedirectUri(getSiteUrl());
 }

@@ -33,6 +33,7 @@ export interface SpotifyPlaybackState {
   progressMs: number | null;
   track: SpotifyPlaybackTrack | null;
   contextUri: string | null;
+  deviceId: string | null;
 }
 
 export interface SpotifyApiErrorBody {
@@ -191,6 +192,16 @@ interface SpotifyPlaybackStateApi {
   context: {
     uri: string | null;
   } | null;
+  device?: {
+    id: string;
+    is_active?: boolean;
+  } | null;
+}
+
+function spotifyPlayerPath(path: string, deviceId?: string | null): string {
+  if (!deviceId) return path;
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}device_id=${encodeURIComponent(deviceId)}`;
 }
 
 export async function fetchSpotifyPlaybackState(
@@ -228,6 +239,7 @@ export async function fetchSpotifyPlaybackState(
           }
         : null,
       contextUri: data.context?.uri ?? null,
+      deviceId: data.device?.id ?? null,
     },
   };
 }
@@ -235,31 +247,52 @@ export async function fetchSpotifyPlaybackState(
 export async function startSpotifyPlayback(params: {
   accessToken: string;
   contextUri: string;
+  deviceId?: string | null;
 }): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
-  return spotifyApiFetch(params.accessToken, "/me/player/play", {
-    method: "PUT",
-    body: JSON.stringify({ context_uri: params.contextUri }),
-  });
+  return spotifyApiFetch(
+    params.accessToken,
+    spotifyPlayerPath("/me/player/play", params.deviceId),
+    {
+      method: "PUT",
+      body: JSON.stringify({ context_uri: params.contextUri }),
+    }
+  );
 }
 
 export type SpotifyPlaybackAction = "pause" | "next" | "previous" | "resume";
 
 export async function spotifyPlaybackControl(
   accessToken: string,
-  action: SpotifyPlaybackAction
+  action: SpotifyPlaybackAction,
+  deviceId?: string | null
 ): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
   if (action === "resume") {
-    return spotifyApiFetch(accessToken, "/me/player/play", { method: "PUT" });
+    return spotifyApiFetch(
+      accessToken,
+      spotifyPlayerPath("/me/player/play", deviceId),
+      {
+        method: "PUT",
+        body: JSON.stringify({}),
+      }
+    );
+  }
+
+  if (action === "pause") {
+    return spotifyApiFetch(
+      accessToken,
+      spotifyPlayerPath("/me/player/pause", deviceId),
+      { method: "PUT" }
+    );
   }
 
   const path =
-    action === "pause"
-      ? "/me/player/pause"
-      : action === "next"
-        ? "/me/player/next"
-        : "/me/player/previous";
+    action === "next" ? "/me/player/next" : "/me/player/previous";
 
-  return spotifyApiFetch(accessToken, path, { method: "POST" });
+  return spotifyApiFetch(
+    accessToken,
+    spotifyPlayerPath(path, deviceId),
+    { method: "POST" }
+  );
 }
 
 export function spotifyPlaylistContextUri(playlistId: string): string {

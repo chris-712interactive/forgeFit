@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify OAuth redirect URI fix (local dev) |
+| **Last session focus** | Spotify play/pause transport fix + larger tap targets |
 
 ---
 
@@ -34,6 +34,24 @@
 
 ## Session Log
 
+### 2026-06-19 — Spotify play/pause transport fix
+
+**What was done:**
+- Fixed pause API call: Spotify requires `PUT /me/player/pause` (was incorrectly `POST`) — skip worked, pause did not
+- Resume/play sends `{}` body with `Content-Type: application/json`; targets active `device_id` from playback state
+- Play falls back to starting default workout playlist when resume has no active context
+- Transport sends explicit `pause`/`resume` (not server toggle re-fetch); optimistic UI + larger 48px tap targets
+
+**What's next:**
+- Deploy and QA play/pause on production with Spotify app open (Premium)
+
+**Files touched:**
+- `packages/integrations/src/spotify.ts`
+- `apps/web/src/lib/integrations/spotify-service.ts`
+- `apps/web/src/app/api/integrations/spotify/playback/route.ts`
+- `apps/web/src/components/workout/workout-music-transport.tsx`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Spotify OAuth redirect URI (local dev)
 
 **What was done:**
@@ -43,6 +61,7 @@
 - `.env.example` documents redirect URI setup
 
 **What's next:**
+- **Production:** set `NEXT_PUBLIC_SITE_URL=https://forge-rep.com` on Vercel, redeploy, register `https://forge-rep.com/api/integrations/spotify/callback` in Spotify (localhost alone is not enough)
 - User: add `http://localhost:3000/api/integrations/spotify/callback` to Spotify Developer Dashboard when testing locally (see Profile → Workout music hint)
 - Run migration `20260610870000_spotify_integration.sql` if not applied
 - QA connect + playback with Spotify Premium
