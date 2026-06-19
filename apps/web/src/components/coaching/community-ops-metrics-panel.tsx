@@ -1,7 +1,7 @@
 "use client";
 
-import type { CommunityMetricsSnapshot } from "@/lib/coaching/community-metrics";
-import { wacpDelta } from "@/lib/coaching/community-metrics";
+import type { CommunityMetricsSnapshot } from "@/lib/coaching/types";
+import { wacpDelta } from "@/lib/coaching/community-recap-share";
 
 interface CommunityOpsMetricsPanelProps {
   metrics: CommunityMetricsSnapshot;

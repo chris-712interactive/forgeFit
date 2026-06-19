@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { buildWeeklyRecapShareText } from "./community-recap-share";
 import { bucketLabel as formatBucketLabel } from "./community-labels";
 import { previousCommunityWeekStartIso } from "./community-week";
 import type { WeeklyCommunityRecap } from "./types";
@@ -8,23 +9,6 @@ type RecapSupabase = Pick<
   Awaited<ReturnType<typeof createClient>>,
   "from"
 >;
-
-export function buildWeeklyRecapShareText(recap: WeeklyCommunityRecap): string {
-  const parts = [
-    `I finished #${recap.lastWeekRank} in my ForgeFit bucket last week`,
-  ];
-  if (recap.lastWeekScore != null) {
-    parts.push(`with ${recap.lastWeekScore} habit points`);
-  }
-  if (recap.bucketLabel) {
-    parts.push(`(${recap.bucketLabel})`);
-  }
-  if (recap.crewName) {
-    parts.push(`— crew: ${recap.crewName}`);
-  }
-  parts.push("New week, new climb.");
-  return parts.join(" ");
-}
 
 async function loadWeeklyRecapRows(
   supabase: RecapSupabase,

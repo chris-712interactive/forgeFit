@@ -1,6 +1,6 @@
 "use client";
 
-import { buildWeeklyRecapShareText } from "@/lib/coaching/community-weekly-recap";
+import { buildWeeklyRecapShareText } from "@/lib/coaching/community-recap-share";
 import type { WeeklyCommunityRecap } from "@/lib/coaching/types";
 import { useState } from "react";
 

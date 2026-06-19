@@ -2,7 +2,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   communityWeekStartIso,
   previousCommunityWeekStartIso,
-  weekStartBefore,
 } from "./community-week";
 
 export type CommunityActionType =
@@ -251,8 +250,3 @@ export async function getCommunityMetrics(
   };
 }
 
-export function wacpDelta(current: number, prior: number): number {
-  return current - prior;
-}
-
-export { weekStartBefore };

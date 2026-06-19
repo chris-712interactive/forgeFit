@@ -1,3 +1,7 @@
+import type { CommunityMetricsSnapshot } from "@/lib/coaching/community-metrics";
+
+export type { CommunityMetricsSnapshot };
+
 export interface LeaderboardEntryRow {
   userId: string;
   displayLabel: string;
@@ -215,8 +219,6 @@ export interface ModerationQueue {
   flaggedScores: FlaggedScoreRow[];
   recentWins: ModerationWinRow[];
 }
-
-import type { CommunityMetricsSnapshot } from "@/lib/coaching/community-metrics";
 
 export interface GamificationContext {
   unlocked: boolean;
