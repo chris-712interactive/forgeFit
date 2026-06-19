@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify wake-and-retry when app not running |
+| **Last session focus** | Spotify native app handoff from PWA |
 
 ---
 
@@ -33,6 +33,16 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Spotify native app handoff from PWA
+
+**What was done:**
+- Installed mobile PWAs now open `spotify:playlist:` (iOS) or Android intent URLs instead of https (which loaded Spotify inside the PWA webview)
+- Applies to vibe picker, wake-and-retry, and “Open playlist in Spotify” — all use `openSpotifyPlaylist()`
+
+**Files touched:**
+- `apps/web/src/lib/workout-music/open-spotify.ts`
+- `docs/spotify-integration-plan.md`, `docs/PROGRESS.md`
 
 ### 2026-06-19 — Spotify wake-and-retry (cold start)
 

@@ -106,15 +106,15 @@ export function spotifyPlaylistUrl(id: string): string {
 
 ### Deep link behavior
 
-Use a single `https://open.spotify.com/playlist/{id}` link from the user tap. On iOS and installed PWAs, do **not** use `target="_blank"` or `spotify:` custom schemes — both cause a blank in-app browser flash before Spotify opens. Universal https links hand off to the native app from the same browsing context.
+On **installed mobile PWAs**, `https://open.spotify.com/...` loads inside the PWA webview instead of handing off to the native app. Use native URIs from a user tap:
+
+- iOS PWA: `spotify:playlist:{id}` via `window.location.assign`
+- Android PWA: `intent://open.spotify.com/playlist/{id}#Intent;...;package=com.spotify.music;...`
+
+Mobile Safari (not installed) and desktop keep `https://open.spotify.com/playlist/{id}`.
 
 ```ts
-function openSpotifyPlaylist(playlistId: string) {
-  const link = document.createElement("a");
-  link.href = spotifyPlaylistUrl(playlistId);
-  if (!isIosOrStandalonePwa()) link.target = "_blank";
-  link.click();
-}
+openSpotifyPlaylist(playlistId); // in open-spotify.ts
 ```
 
 Playlist IDs must be **public user/community playlists** — Spotify editorial IDs (`37i9dQZF1…`) are often unavailable outside the Spotify app.
