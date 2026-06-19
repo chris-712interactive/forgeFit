@@ -256,37 +256,30 @@ export async function fetchTierLeaderboard(input: {
   limit?: number;
 }): Promise<LeaderboardEntryRow[]> {
   const supabase = await createClient();
-  const { data: tierRows, error: tierError } = await supabase
-    .from("community_league_tiers")
-    .select("user_id")
-    .eq("bucket_goal", input.bucketGoal)
-    .eq("bucket_experience", input.bucketExperience)
-    .eq("tier", input.tier);
-
-  if (tierError || !tierRows || tierRows.length === 0) {
-    if (tierError && !isLeagueTableMissing(tierError)) {
-      console.error("tier peer lookup failed:", tierError.message);
-    }
-    return [];
-  }
-
-  const tierUserIds = tierRows.map((row) => row.user_id as string);
-
   const { data, error } = await supabase
     .from("leaderboard_entries")
     .select("user_id, display_label, habit_score")
     .eq("bucket_goal", input.bucketGoal)
     .eq("bucket_experience", input.bucketExperience)
     .eq("week_start", input.weekStart)
-    .in("user_id", tierUserIds)
     .order("habit_score", { ascending: false })
-    .limit(input.limit ?? 50);
+    .limit(Math.max(input.limit ?? 50, 100));
 
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
+    if (error && !isLeagueTableMissing(error)) {
+      console.error("tier leaderboard lookup failed:", error.message);
+    }
     return [];
   }
 
-  return data.map((row) => ({
+  const userIds = data.map((row) => row.user_id as string);
+  const tierMap = await getTierMapForUserIds(userIds);
+
+  const filtered = data
+    .filter((row) => (tierMap.get(row.user_id as string) ?? "bronze") === input.tier)
+    .slice(0, input.limit ?? 50);
+
+  return filtered.map((row) => ({
     userId: row.user_id as string,
     displayLabel: row.display_label as string,
     habitScore: Number(row.habit_score),

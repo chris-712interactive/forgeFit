@@ -29,6 +29,9 @@ export function LeaderboardCard({
           )}
           <p className={`text-xs text-forge-muted ${embedded ? "" : "mt-1"}`}>
             Habit score — {bucketCopy}
+            {gamification.league
+              ? ` · ${gamification.league.tierLabel} league`
+              : ""}
             {preview ? " · preview" : ""}
           </p>
         </div>

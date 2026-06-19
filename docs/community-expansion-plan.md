@@ -143,6 +143,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 8. `20260610810000_community_crew_members_rls_fix.sql` — **required if crew create fails with RLS recursion**
 9. `20260610820000_community_push.sql` — web push subscriptions + preferences
 10. `20260610830000_community_leagues.sql` — league tiers, season results, badges, hall of fame
+11. `20260610840000_community_league_tiers_backfill.sql` — bronze tier rows for existing opt-in users
 
 ---
 
