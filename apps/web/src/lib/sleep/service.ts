@@ -1,5 +1,7 @@
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { addDaysIso, todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { listIntegrationStatuses } from "@/lib/integrations/service";
 import { createClient } from "@/lib/supabase/server";
 import { integrationHasSleepScope } from "@forgefit/integrations";
@@ -8,20 +10,6 @@ import { SLEEP_TARGET_MIN_MINUTES } from "./types";
 
 const CHART_DAYS = 14;
 const WEEK_DAYS = 7;
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function addDays(isoDate: string, days: number): string {
-  const date = new Date(`${isoDate}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function subtractDays(isoDate: string, days: number): string {
-  return addDays(isoDate, -days);
-}
 
 function mapSleepRow(row: Record<string, unknown>): DailySleepLog {
   return {
@@ -68,7 +56,7 @@ function fillDateSeries(
         source: "fitbit",
       }
     );
-    cursor = addDays(cursor, 1);
+    cursor = addDaysIso(cursor, 1);
   }
 
   return series;
@@ -101,11 +89,11 @@ function computeStats(logs: DailySleepLog[]): DailySleepStats | null {
 
 function formatSleepDayLabel(
   isoDate: string | undefined,
-  utcToday: string
+  localToday: string
 ): string {
   if (!isoDate) return "Last night";
-  if (isoDate === utcToday) return "Last night";
-  if (isoDate === subtractDays(utcToday, 1)) return "Previous night";
+  if (isoDate === localToday) return "Last night";
+  if (isoDate === addDaysIso(localToday, -1)) return "Previous night";
   return new Date(`${isoDate}T12:00:00`).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -114,16 +102,16 @@ function formatSleepDayLabel(
 
 function resolveDisplayNight(
   logs: DailySleepLog[],
-  utcToday: string
+  localToday: string
 ): DailySleepLog | null {
   const byDate = new Map(logs.map((log) => [log.sleepDate, log]));
-  const todayLog = byDate.get(utcToday) ?? null;
+  const todayLog = byDate.get(localToday) ?? null;
 
   if (todayLog && hasSleepMetrics(todayLog)) {
     return todayLog;
   }
 
-  const yesterdayLog = byDate.get(subtractDays(utcToday, 1)) ?? null;
+  const yesterdayLog = byDate.get(addDaysIso(localToday, -1)) ?? null;
   if (yesterdayLog && hasSleepMetrics(yesterdayLog)) {
     return yesterdayLog;
   }
@@ -169,10 +157,11 @@ export async function getSleepContext(
   const fitbitConnected = fitbit?.connected ?? false;
   const sleepScopeGranted = integrationHasSleepScope(fitbit?.scopes ?? null);
 
-  const utcToday = todayIsoDate();
-  const chartStart = subtractDays(utcToday, CHART_DAYS - 1);
-  const chartEnd = addDays(utcToday, 1);
-  const weekStart = subtractDays(utcToday, WEEK_DAYS - 1);
+  const timeZone = await getUserTimeZone();
+  const localToday = todayLocalIsoDate(new Date(), timeZone);
+  const chartStart = addDaysIso(localToday, -(CHART_DAYS - 1));
+  const chartEnd = addDaysIso(localToday, 1);
+  const weekStart = addDaysIso(localToday, -(WEEK_DAYS - 1));
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -198,8 +187,8 @@ export async function getSleepContext(
 
   const logs = (data ?? []).map(mapSleepRow);
   const hasSleepData = logs.some(hasSleepMetrics);
-  const displayNight = resolveDisplayNight(logs, utcToday);
-  const series = fillDateSeries(logs, chartStart, utcToday);
+  const displayNight = resolveDisplayNight(logs, localToday);
+  const series = fillDateSeries(logs, chartStart, localToday);
   const weekLogs = series.filter((log) => log.sleepDate >= weekStart);
 
   return {
@@ -210,7 +199,7 @@ export async function getSleepContext(
     lastSyncError: fitbit?.lastSyncError ?? null,
     tableReady: true,
     lastNight: displayNight,
-    sleepDayLabel: formatSleepDayLabel(displayNight?.sleepDate, utcToday),
+    sleepDayLabel: formatSleepDayLabel(displayNight?.sleepDate, localToday),
     hasSleepData,
     series,
     weekStats: computeStats(weekLogs),

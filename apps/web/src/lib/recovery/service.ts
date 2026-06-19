@@ -1,5 +1,7 @@
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { addDaysIso, todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { listIntegrationStatuses } from "@/lib/integrations/service";
 import { createClient } from "@/lib/supabase/server";
 import { integrationHasRecoveryScope } from "@forgefit/integrations";
@@ -13,20 +15,6 @@ import type {
 const CHART_DAYS = 14;
 const WEEK_DAYS = 7;
 const BASELINE_DAYS = 21;
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function addDays(isoDate: string, days: number): string {
-  const date = new Date(`${isoDate}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function subtractDays(isoDate: string, days: number): string {
-  return addDays(isoDate, -days);
-}
 
 function mapRecoveryRow(row: Record<string, unknown>): DailyRecoveryLog {
   return {
@@ -90,7 +78,7 @@ function fillDateSeries(
         source: "fitbit",
       }
     );
-    cursor = addDays(cursor, 1);
+    cursor = addDaysIso(cursor, 1);
   }
 
   return series;
@@ -152,11 +140,11 @@ function computeStats(
 
 function formatRecoveryDayLabel(
   isoDate: string | undefined,
-  utcToday: string
+  localToday: string
 ): string {
   if (!isoDate) return "Today";
-  if (isoDate === utcToday) return "Today";
-  if (isoDate === subtractDays(utcToday, 1)) return "Yesterday";
+  if (isoDate === localToday) return "Today";
+  if (isoDate === addDaysIso(localToday, -1)) return "Yesterday";
   return new Date(`${isoDate}T12:00:00`).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -165,16 +153,16 @@ function formatRecoveryDayLabel(
 
 function resolveDisplayDay(
   logs: DailyRecoveryLog[],
-  utcToday: string
+  localToday: string
 ): DailyRecoveryLog | null {
   const byDate = new Map(logs.map((log) => [log.recoveryDate, log]));
-  const todayLog = byDate.get(utcToday) ?? null;
+  const todayLog = byDate.get(localToday) ?? null;
 
   if (todayLog && hasRecoveryMetrics(todayLog)) {
     return todayLog;
   }
 
-  const yesterdayLog = byDate.get(subtractDays(utcToday, 1)) ?? null;
+  const yesterdayLog = byDate.get(addDaysIso(localToday, -1)) ?? null;
   if (yesterdayLog && hasRecoveryMetrics(yesterdayLog)) {
     return yesterdayLog;
   }
@@ -223,11 +211,12 @@ export async function getRecoveryContext(
     fitbit?.scopes ?? null
   );
 
-  const utcToday = todayIsoDate();
-  const chartStart = subtractDays(utcToday, CHART_DAYS - 1);
-  const chartEnd = addDays(utcToday, 1);
-  const weekStart = subtractDays(utcToday, WEEK_DAYS - 1);
-  const baselineStart = subtractDays(utcToday, BASELINE_DAYS);
+  const timeZone = await getUserTimeZone();
+  const localToday = todayLocalIsoDate(new Date(), timeZone);
+  const chartStart = addDaysIso(localToday, -(CHART_DAYS - 1));
+  const chartEnd = addDaysIso(localToday, 1);
+  const weekStart = addDaysIso(localToday, -(WEEK_DAYS - 1));
+  const baselineStart = addDaysIso(localToday, -BASELINE_DAYS);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -253,8 +242,8 @@ export async function getRecoveryContext(
 
   const logs = (data ?? []).map(mapRecoveryRow);
   const hasRecoveryData = logs.some(hasRecoveryMetrics);
-  const displayDay = resolveDisplayDay(logs, utcToday);
-  const series = fillDateSeries(logs, chartStart, utcToday);
+  const displayDay = resolveDisplayDay(logs, localToday);
+  const series = fillDateSeries(logs, chartStart, localToday);
   const weekLogs = series.filter((log) => log.recoveryDate >= weekStart);
   const baselineLogs = series.filter(
     (log) =>
@@ -271,7 +260,7 @@ export async function getRecoveryContext(
     latest: displayDay,
     recoveryDayLabel: formatRecoveryDayLabel(
       displayDay?.recoveryDate,
-      utcToday
+      localToday
     ),
     hasRecoveryData,
     series,

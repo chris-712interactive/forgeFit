@@ -22,11 +22,12 @@ import {
   refreshWithingsAccessToken,
   resolveSleepSyncStartDate,
   stravaTokenExpiresAtIso,
-  todayIsoDate,
   WITHINGS_MEASURE_TYPE_WEIGHT,
 } from "@forgefit/integrations";
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -865,7 +866,8 @@ export async function syncFitbitForUser(
       userId,
       row.last_sync_at
     );
-    const endDate = todayIsoDate();
+    const timeZone = await getUserTimeZone();
+    const endDate = todayLocalIsoDate(new Date(), timeZone);
 
     const summaries = await fetchDailyActivitySummaries({
       accessToken,

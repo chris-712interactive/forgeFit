@@ -1,5 +1,7 @@
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { addDaysIso, todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { listIntegrationStatuses } from "@/lib/integrations/service";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -15,20 +17,6 @@ import {
 
 const CHART_DAYS = 14;
 const WEEK_DAYS = 7;
-
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function addDays(isoDate: string, days: number): string {
-  const date = new Date(`${isoDate}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function subtractDays(isoDate: string, days: number): string {
-  return addDays(isoDate, -days);
-}
 
 function mapActivityRow(row: Record<string, unknown>): DailyActivityLog {
   return {
@@ -79,7 +67,7 @@ function fillDateSeries(
         source: "fitbit",
       }
     );
-    cursor = addDays(cursor, 1);
+    cursor = addDaysIso(cursor, 1);
   }
 
   return series;
@@ -177,11 +165,11 @@ function hasExtendedActivityMetrics(log: DailyActivityLog): boolean {
 
 function formatActivityDayLabel(
   isoDate: string | undefined,
-  utcToday: string
+  localToday: string
 ): string {
   if (!isoDate) return "Today";
-  if (isoDate === utcToday) return "Today";
-  if (isoDate === subtractDays(utcToday, 1)) return "Yesterday";
+  if (isoDate === localToday) return "Today";
+  if (isoDate === addDaysIso(localToday, -1)) return "Yesterday";
   return new Date(`${isoDate}T12:00:00`).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -191,16 +179,16 @@ function formatActivityDayLabel(
 /** Prefer today's log; fall back for timezone gaps or partial syncs. */
 function resolveDisplayDay(
   logs: DailyActivityLog[],
-  utcToday: string
+  localToday: string
 ): DailyActivityLog | null {
   const byDate = new Map(logs.map((log) => [log.activityDate, log]));
-  const todayLog = byDate.get(utcToday) ?? null;
+  const todayLog = byDate.get(localToday) ?? null;
 
   if (todayLog && hasActivityMetrics(todayLog)) {
     return todayLog;
   }
 
-  const yesterdayLog = byDate.get(subtractDays(utcToday, 1)) ?? null;
+  const yesterdayLog = byDate.get(addDaysIso(localToday, -1)) ?? null;
   if (yesterdayLog && hasActivityMetrics(yesterdayLog)) {
     return yesterdayLog;
   }
@@ -245,10 +233,11 @@ export async function getActivityContext(
   const fitbit = statuses.find((status) => status.provider === "fitbit");
   const fitbitConnected = fitbit?.connected ?? false;
 
-  const utcToday = todayIsoDate();
-  const chartStart = subtractDays(utcToday, CHART_DAYS - 1);
-  const chartEnd = addDays(utcToday, 1);
-  const weekStart = subtractDays(utcToday, WEEK_DAYS - 1);
+  const timeZone = await getUserTimeZone();
+  const localToday = todayLocalIsoDate(new Date(), timeZone);
+  const chartStart = addDaysIso(localToday, -(CHART_DAYS - 1));
+  const chartEnd = addDaysIso(localToday, 1);
+  const weekStart = addDaysIso(localToday, -(WEEK_DAYS - 1));
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -274,8 +263,8 @@ export async function getActivityContext(
   const logs = (data ?? []).map(mapActivityRow);
   const hasActivityData = logs.some(hasActivityMetrics);
   const hasExtendedActivityData = logs.some(hasExtendedActivityMetrics);
-  const displayDay = resolveDisplayDay(logs, utcToday);
-  const series = fillDateSeries(logs, chartStart, utcToday);
+  const displayDay = resolveDisplayDay(logs, localToday);
+  const series = fillDateSeries(logs, chartStart, localToday);
   const weekLogs = series.filter((log) => log.activityDate >= weekStart);
 
   return {
@@ -287,7 +276,7 @@ export async function getActivityContext(
     today: displayDay,
     activityDayLabel: formatActivityDayLabel(
       displayDay?.activityDate,
-      utcToday
+      localToday
     ),
     hasActivityData,
     hasExtendedActivityData,
