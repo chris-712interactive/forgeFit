@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Bodyweight exercise logging fix |
+| **Last session focus** | Spotify workout music Phase A |
 
 ---
 
@@ -33,6 +33,44 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Spotify workout music Phase A
+
+**What was done:**
+- Implemented curated workout music picker — Focus, Pump, Cardio, Cooldown vibes with Spotify deep links
+- `WorkoutMusicPicker` on workout hub (`WeekPlanCard`) for upcoming/in-progress days; compact dismissible strip in `ActiveWorkout`
+- Last-selected vibe persisted in `localStorage`; offline-safe (saves vibe, defers Spotify open until online)
+- Interim Spotify editorial playlist IDs in `catalog.ts` — swap for ForgeRep-owned playlists before launch
+
+**What's next:**
+- Replace placeholder playlist IDs with ForgeRep brand playlists
+- Phase B: Spotify Developer app, OAuth PKCE, playback transport + auto-start (see `docs/spotify-integration-plan.md`)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/workout-music/catalog.ts`, `preferences.ts`, `open-spotify.ts`
+- `apps/web/src/components/workout/workout-music-picker.tsx`
+- `apps/web/src/components/workout/week-plan-card.tsx`, `active-workout.tsx`
+- `docs/spotify-integration-plan.md`, `docs/PROGRESS.md`, `docs/BIBLE.md`, `README.md`
+
+### 2026-06-19 — Spotify workout music plan (Phase A & B)
+
+**What was done:**
+- Authored `docs/spotify-integration-plan.md` — Phase A (curated playlist deep links, all tiers, no backend) and Phase B (Spotify OAuth PKCE, playback API, transport bar, auto-start toggle)
+- Defined tier placement: free for all ForgeRep tiers; Spotify Premium is the external paywall
+- Scoped Spotify out of Pro+ device integrations UI — dedicated Profile → Workout music section
+- Explicit non-goals: Web Playback SDK, rest-timer sync, in-PWA streaming
+
+**What's next:**
+- Phase A: create brand Spotify playlists, implement `workout-music-picker` on workout hub + active workout
+- Phase B: Spotify Developer app, migration (`spotify` provider + profile prefs), OAuth routes, transport bar
+
+**Blockers:** None (Phase A needs ForgeRep-owned playlist IDs before launch)
+
+**Files touched:**
+- `docs/spotify-integration-plan.md`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Bodyweight exercise logging & recap fix
 

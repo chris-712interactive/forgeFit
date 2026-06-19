@@ -9,6 +9,7 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 - 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
 - **Personalized programs** — evidence-based plans for fat loss, bodybuilding, powerlifting, strength, recomposition
 - **Offline workouts** — log sets, reps, and RIR in the gym; syncs when back online
+- **Workout music** — curated Spotify vibe playlists (Focus, Pump, Cardio, Cooldown) from the workout hub
 - **Nutrition diary** — USDA + Open Food Facts, restaurant quick-log (Pro+), macro tracking vs program targets
 - **Progress tracking** — 30/90-day projections (Pro), strength/volume analytics, caliper BF%, progress photos
 - **Exercise library** — 800+ demos, muscle heatmaps, equipment substitution preview
@@ -59,6 +60,7 @@ Copy `.env.example` to `apps/web/.env.local` and follow [docs/supabase-setup.md]
 - **[TIER-GATES.md](./docs/TIER-GATES.md)** — Free / Pro / Pro+ feature matrix
 - **[community-expansion-plan.md](./docs/community-expansion-plan.md)** — community roadmap
 - **[fitbit-expansion-plan.md](./docs/fitbit-expansion-plan.md)** — device sync roadmap
+- **[spotify-integration-plan.md](./docs/spotify-integration-plan.md)** — workout music roadmap
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** — developer reference
 - **[DESIGN.md](./docs/DESIGN.md)** — Forge Ember design system
 

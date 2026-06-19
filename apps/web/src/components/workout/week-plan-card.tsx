@@ -1,9 +1,11 @@
 "use client";
 
 import type { WorkoutSession } from "@forgefit/program-engine";
+import { useOfflineStatus } from "@/hooks/use-online-status";
 import { formatShortDate } from "@/lib/workouts/comparison";
 import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
 import type { DayPlanStatus } from "@/lib/workouts/sessions";
+import { WorkoutMusicPicker } from "./workout-music-picker";
 import { WorkoutPhaseCards } from "./workout-phase-cards";
 
 interface WeekPlanCardProps {
@@ -27,6 +29,7 @@ export function WeekPlanCard({
   onDiscard,
   onViewResults,
 }: WeekPlanCardProps) {
+  const offline = useOfflineStatus();
   const inProgress = dayStatus?.inProgress ?? null;
   const completed = dayStatus?.latestCompleted ?? null;
   const isDone = Boolean(completed) && !inProgress;
@@ -96,6 +99,12 @@ export function WeekPlanCard({
           )}
         </div>
       </div>
+
+      {!isDone && (
+        <div className="mt-3.5 border-t border-[var(--border)] pt-3.5">
+          <WorkoutMusicPicker offline={offline} />
+        </div>
+      )}
 
       <div className="mt-3.5">
         <WorkoutPhaseCards session={session} />

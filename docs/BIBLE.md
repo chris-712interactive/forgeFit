@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-08 · **Current phase:** Phase 8 complete · Community Phases 1–2 shipped
+**Last updated:** 2026-06-19 · **Current phase:** Phase 8 complete · Community Phases 1–2 shipped
 
 ---
 
@@ -164,6 +164,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 14. **Fitness tech integrations** — integration hub + recommendations
 15. **Motivational UX** — coaching package, hype tone
 16. **Gamification** — opt-in leaderboards, habit-based scoring, rivals, follows (Pro). See [community-expansion-plan.md](./community-expansion-plan.md).
+17. **Workout music** — Spotify vibe picker with deep links (Phase A shipped); OAuth playback control planned (Phase B). All tiers. See [spotify-integration-plan.md](./spotify-integration-plan.md).
 
 ---
 

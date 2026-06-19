@@ -3,7 +3,7 @@
 > **Authoritative feature matrix** for Free, Pro, and Pro+.
 > Code gates live in `apps/web/src/lib/billing/gates.ts` — keep in sync with this doc.
 
-**Last updated:** 2026-06-08
+**Last updated:** 2026-06-19
 
 ---
 
@@ -33,6 +33,7 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | Body measurements & caliper BF% | ✓ | ✓ | ✓ |
 | Exercise library, GIFs, substitutions | ✓ | ✓ | ✓ |
 | Workout history (view & log) | ✓ | ✓ | ✓ |
+| Workout music — Spotify vibe deep links | ✓ | ✓ | ✓ |
 | Templated encouragement (home banner) | ✓ | ✓ | ✓ |
 | Experience promotion & consistency nudges | ✓ | ✓ | ✓ |
 

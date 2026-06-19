@@ -69,6 +69,7 @@ import { WarmupBlockCard } from "./warmup-block-card";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
 import { WorkoutStepHeader } from "./workout-step-header";
+import { WorkoutMusicPicker } from "./workout-music-picker";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
@@ -122,6 +123,7 @@ export function ActiveWorkout({
     setClientId: string;
     suggestion: EasySetSuggestion;
   } | null>(null);
+  const [musicStripDismissed, setMusicStripDismissed] = useState(false);
 
   const goBack = useCallback(() => {
     onBack?.();
@@ -829,6 +831,17 @@ export function ActiveWorkout({
         completedSets={completedCount}
         totalSets={totalCount}
       />
+
+      {!musicStripDismissed && (
+        <div className="mb-4">
+          <WorkoutMusicPicker
+            variant="compact"
+            offline={offline}
+            dismissible
+            onDismiss={() => setMusicStripDismissed(true)}
+          />
+        </div>
+      )}
 
       {readiness && currentStepIndex === 0 && (
         <div className="mb-4">
