@@ -4,6 +4,7 @@ import {
   isDurationHoldExercise,
   isTimedCardioExercise,
   isTimedExercise,
+  exerciseTracksWeight,
   resolveTimedPrescription,
   timedSetFieldsFromElapsed,
   timedTargetSeconds,
@@ -634,7 +635,9 @@ export function ActiveWorkout({
                       !set.completed &&
                       (isTimed
                         ? set.durationMs != null || set.reps != null
-                        : set.weightKg != null || set.reps != null)
+                        : exerciseTracksWeight(exercise.exerciseId)
+                          ? set.weightKg != null || set.reps != null
+                          : set.reps != null)
                   )}
                   onStartTimer={
                     isTimed && targetTimerSeconds

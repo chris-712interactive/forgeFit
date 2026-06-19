@@ -2,6 +2,7 @@
 
 import {
   formatTimedDurationFromMs,
+  isBodyweightOnlyExercise,
   isTimedExercise,
   timedSetTotalMs,
 } from "@forgefit/exercise-db";
@@ -12,6 +13,9 @@ import {
   weightUnitLabel,
 } from "@/lib/units/measurements";
 import { compareSessions, formatShortDate } from "@/lib/workouts/comparison";
+import {
+  formatLoggedSetValue,
+} from "@/lib/workouts/set-display";
 import {
   formatRecoveryDuration,
   recoveryEquipmentLabel,
@@ -160,6 +164,7 @@ export function WorkoutRecap({
                 {exercise.exerciseName}
               </h2>
               {!isTimedExercise(exercise.exerciseId) &&
+                !isBodyweightOnlyExercise(exercise.exerciseId) &&
                 exercise.weightDeltaKg != null &&
                 exercise.weightDeltaKg !== 0 && (
                 <span
@@ -192,18 +197,8 @@ export function WorkoutRecap({
                 >
                   <span>Set {set.setNumber}</span>
                   <span>
-                    {set.completed &&
-                    (timedSetTotalMs(set, exercise.exerciseId) != null ||
-                      (set.reps != null && set.weightKg != null))
-                      ? isTimedExercise(exercise.exerciseId)
-                        ? formatTimedDurationFromMs(
-                            exercise.exerciseId,
-                            timedSetTotalMs(set, exercise.exerciseId) ?? 0
-                          )
-                        : set.weightKg != null && set.reps != null
-                          ? `${formatWeight(set.weightKg, unit)} × ${set.reps}`
-                          : "—"
-                      : "—"}
+                    {formatLoggedSetValue(set, exercise.exerciseId, unit) ??
+                      "—"}
                   </span>
                 </div>
               ))}
@@ -224,6 +219,10 @@ export function WorkoutRecap({
                       ) ?? 0
                     )}
                   </>
+                ) : isBodyweightOnlyExercise(exercise.exerciseId) ? (
+                  <>
+                    {exercise.priorBest.reps} reps
+                  </>
                 ) : (
                   <>
                     {formatWeight(exercise.priorBest.weightKg, unit)} ×{" "}
@@ -242,6 +241,8 @@ export function WorkoutRecap({
                           exercise.exerciseId
                         ) ?? 0
                       )
+                    ) : isBodyweightOnlyExercise(exercise.exerciseId) ? (
+                      <>{exercise.currentBest.reps} reps</>
                     ) : (
                       <>
                         {formatWeight(exercise.currentBest.weightKg, unit)} ×{" "}

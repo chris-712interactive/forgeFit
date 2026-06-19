@@ -23,6 +23,10 @@ export {
 export { resolveExerciseDetail } from "./resolve";
 export { isExerciseAvailable } from "./availability";
 export {
+  exerciseTracksWeight,
+  isBodyweightOnlyExercise,
+} from "./tracking";
+export {
   CARDIO_EQUIPMENT_TYPES,
   expandUserEquipment,
   hasCardioEquipment,

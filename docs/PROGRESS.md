@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-08 |
-| **Last session focus** | Community Phase 5 — leagues & seasons |
+| **Last updated** | 2026-06-19 |
+| **Last session focus** | Bodyweight exercise logging fix |
 
 ---
 
@@ -33,6 +33,26 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Bodyweight exercise logging & recap fix
+
+**What was done:**
+- Added `@forgefit/exercise-db` helpers `isBodyweightOnlyExercise` and `exerciseTracksWeight` (push-ups, bodyweight squats, planks, band-only work skip weight)
+- Workout logger (`set-row`) hides the weight field for bodyweight-only exercises — reps only
+- Workout recap shows reps-only sets (e.g. `12 reps`) instead of `—` when weight is absent
+- Session comparison treats bodyweight best sets by rep count, not weight delta
+
+**What's next:**
+- Consider a separate `weighted_push_up` exercise if users need to log added load
+- Pull-ups/chin-ups may deserve the same reps-only treatment (equipment is `pull_up_bar`, not `bodyweight_only`)
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/exercise-db/src/tracking.ts`, `packages/exercise-db/src/index.ts`
+- `apps/web/src/lib/workouts/set-display.ts`, `apps/web/src/lib/workouts/comparison.ts`
+- `apps/web/src/components/workout/set-row.tsx`, `workout-recap.tsx`, `active-workout.tsx`
+- `apps/web/src/lib/progression/one-rep-max.ts`
 
 ### 2026-06-08 — Community Phase 5 (leagues & seasons)
 

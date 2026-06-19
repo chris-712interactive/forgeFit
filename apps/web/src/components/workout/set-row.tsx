@@ -11,6 +11,7 @@ import {
   weightUnitLabel,
 } from "@/lib/units/measurements";
 import {
+  exerciseTracksWeight,
   isTimedCardioExercise,
   isTimedExercise,
   parseTimedTargetValue,
@@ -95,6 +96,7 @@ export function SetRow({
 }: SetRowProps) {
   const isTimed = isTimedExercise(exerciseId);
   const isCardio = isTimedCardioExercise(exerciseId);
+  const tracksWeight = exerciseTracksWeight(exerciseId);
   const targetLogValue = parseTimedTargetValue(targetReps);
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
@@ -274,7 +276,7 @@ export function SetRow({
             />
           </label>
         )
-      ) : (
+      ) : tracksWeight ? (
         <div className="grid grid-cols-2 gap-3">
           <label className="min-w-0">
             <span className="mb-1 block text-xs font-medium text-forge-muted">
@@ -330,6 +332,31 @@ export function SetRow({
             />
           </label>
         </div>
+      ) : (
+        <label className="min-w-0">
+          <span className="mb-1 block text-xs font-medium text-forge-muted">
+            Reps
+            {showProgressionHint && set.reps != null && (
+              <span className="ml-1 font-normal text-forge-steel">
+                · suggested
+              </span>
+            )}
+          </span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder={targetReps}
+            value={set.reps ?? ""}
+            onChange={(e) =>
+              onUpdate(set.clientId, {
+                reps:
+                  e.target.value === "" ? undefined : Number(e.target.value),
+              })
+            }
+            className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+          />
+        </label>
       )}
 
       <div className="mt-3">

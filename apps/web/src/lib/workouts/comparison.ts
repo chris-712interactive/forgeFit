@@ -1,3 +1,9 @@
+import {
+  exerciseTracksWeight,
+  isBodyweightOnlyExercise,
+  isTimedExercise,
+  timedSetTotalMs,
+} from "@forgefit/exercise-db";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "./sessions";
 
 export interface ExerciseComparison {
@@ -11,13 +17,48 @@ export interface ExerciseComparison {
   weightDeltaKg: number | null;
 }
 
-function completedSets(sets: WorkoutSetRecord[]): WorkoutSetRecord[] {
-  return sets.filter((s) => s.completed && s.weightKg != null && s.reps != null);
+function isCompletedSet(
+  set: WorkoutSetRecord,
+  exerciseId: string
+): boolean {
+  if (!set.completed) return false;
+
+  if (isTimedExercise(exerciseId)) {
+    return timedSetTotalMs(set, exerciseId) != null;
+  }
+
+  if (set.reps == null) return false;
+
+  if (exerciseTracksWeight(exerciseId)) {
+    return set.weightKg != null;
+  }
+
+  return true;
 }
 
-function bestSet(sets: WorkoutSetRecord[]): { weightKg: number; reps: number } | null {
-  const done = completedSets(sets);
+function completedSets(
+  sets: WorkoutSetRecord[],
+  exerciseId: string
+): WorkoutSetRecord[] {
+  return sets.filter((set) => isCompletedSet(set, exerciseId));
+}
+
+function bestSet(
+  sets: WorkoutSetRecord[],
+  exerciseId: string
+): { weightKg: number; reps: number } | null {
+  const done = completedSets(sets, exerciseId);
   if (done.length === 0) return null;
+
+  if (isBodyweightOnlyExercise(exerciseId)) {
+    return done.reduce(
+      (best, set) => {
+        const reps = set.reps ?? 0;
+        return reps > best.reps ? { weightKg: 0, reps } : best;
+      },
+      { weightKg: 0, reps: done[0].reps ?? 0 }
+    );
+  }
 
   return done.reduce(
     (best, set) => {
@@ -32,8 +73,10 @@ function bestSet(sets: WorkoutSetRecord[]): { weightKg: number; reps: number } |
   );
 }
 
-function volumeKg(sets: WorkoutSetRecord[]): number {
-  return completedSets(sets).reduce(
+function volumeKg(sets: WorkoutSetRecord[], exerciseId: string): number {
+  if (!exerciseTracksWeight(exerciseId)) return 0;
+
+  return completedSets(sets, exerciseId).reduce(
     (sum, set) => sum + (set.weightKg ?? 0) * (set.reps ?? 0),
     0
   );
@@ -54,10 +97,11 @@ export function compareSessions(
   return [...exerciseIds].map((exerciseId) => {
     const currentSets = currentByExercise.get(exerciseId) ?? [];
     const priorSets = priorByExercise.get(exerciseId) ?? [];
-    const currentBest = bestSet(currentSets);
-    const priorBest = bestSet(priorSets);
-    const currentVolume = volumeKg(currentSets);
-    const priorVolume = volumeKg(priorSets);
+    const currentBest = bestSet(currentSets, exerciseId);
+    const priorBest = bestSet(priorSets, exerciseId);
+    const currentVolume = volumeKg(currentSets, exerciseId);
+    const priorVolume = volumeKg(priorSets, exerciseId);
+    const tracksWeight = exerciseTracksWeight(exerciseId);
 
     return {
       exerciseId,
@@ -68,9 +112,13 @@ export function compareSessions(
       currentBest,
       priorBest,
       volumeDeltaKg:
-        prior && priorVolume > 0 ? currentVolume - priorVolume : null,
+        prior && priorVolume > 0 && tracksWeight
+          ? currentVolume - priorVolume
+          : null,
       weightDeltaKg:
-        currentBest && priorBest ? currentBest.weightKg - priorBest.weightKg : null,
+        tracksWeight && currentBest && priorBest
+          ? currentBest.weightKg - priorBest.weightKg
+          : null,
     };
   });
 }

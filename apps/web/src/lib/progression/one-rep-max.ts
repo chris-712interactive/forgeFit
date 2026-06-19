@@ -1,4 +1,5 @@
 import {
+  isBodyweightOnlyExercise,
   isTimedExercise,
   resolveExerciseDetail,
 } from "@forgefit/exercise-db";
@@ -177,20 +178,6 @@ export function buildExerciseE1rmMap(
   }
 
   return map;
-}
-
-function isBodyweightOnlyExercise(exerciseId: string): boolean {
-  const detail = resolveExerciseDetail(exerciseId);
-  if (!detail) return false;
-  const equipment = new Set(detail.equipment);
-  return (
-    equipment.has("bodyweight_only") &&
-    !equipment.has("dumbbells") &&
-    !equipment.has("barbell") &&
-    !equipment.has("kettlebells") &&
-    !equipment.has("cables") &&
-    !equipment.has("machines")
-  );
 }
 
 function usesCableStack(exerciseId: string): boolean {
