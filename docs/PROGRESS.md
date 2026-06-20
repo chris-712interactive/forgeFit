@@ -98,6 +98,21 @@
 - `apps/web/src/components/workout/workout-music-transport.tsx`
 - `docs/PROGRESS.md`
 
+### 2026-06-19 — Withings integration UI enabled
+
+**What was done:**
+- Flipped `INTEGRATION_AVAILABLE.withings` so Profile → Integrations shows Connect (was hardcoded "Coming soon" while OAuth code was already built)
+- Updated Withings description and privacy copy
+
+**What's next:**
+- Add to `apps/web/.env.local` (and Vercel): `WITHINGS_CLIENT_ID`, `WITHINGS_CLIENT_SECRET`, `INTEGRATIONS_TOKEN_ENCRYPTION_KEY` (`openssl rand -base64 32`)
+- Register redirect URI in Withings Partner Hub: `{NEXT_PUBLIC_SITE_URL}/api/integrations/withings/callback`
+- Restart dev server; Pro+ account → Profile → Integrations → Connect Withings; QA weight import
+
+**Files touched:**
+- `apps/web/src/lib/integrations/types.ts`, `apps/web/src/lib/legal/copy.ts`
+- `docs/phases/07-integrations.md`, `docs/TIER-GATES.md`, `docs/PROGRESS.md`
+
 ### 2026-06-19 — Spotify OAuth redirect URI (local dev)
 
 **What was done:**

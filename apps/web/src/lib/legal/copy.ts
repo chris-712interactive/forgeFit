@@ -32,7 +32,7 @@ export const PRIVACY_POLICY = {
       heading: "Third-party integrations (Pro+)",
       paragraphs: [
         "Connecting a device or app is optional. When you choose to connect, you are redirected to that provider to sign in and approve access. We only receive the data needed for the integration you enable.",
-        "Withings (coming soon): we will store encrypted OAuth tokens and import weight readings into your ForgeRep Progress log when this integration is enabled.",
+        "Withings (Pro+): we store encrypted OAuth tokens and import weight readings into your ForgeRep Progress log. Disconnecting removes our stored tokens; previously imported weigh-ins remain until you delete them or delete your account.",
         "Fitbit (available when enabled): you sign in with Google and authorize the Google Health API. We store encrypted OAuth tokens and import daily activity summaries (steps, active calories, and active minutes) into your account. We do not receive your Google or Fitbit password. Disconnecting removes our stored tokens; previously imported activity remains until you delete it or delete your account.",
         "Spotify (optional, all tiers): if you connect Spotify for in-workout playback controls, we store encrypted OAuth tokens and may read current playback state (track title and artist) to show transport controls. We do not store your listening history. Disconnecting removes our stored tokens. Workout vibe deep links work without connecting.",
         "Strava (coming soon): we will import cardio workouts from your Strava account when this integration is enabled.",
