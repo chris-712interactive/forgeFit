@@ -18,30 +18,53 @@ const VERDICT_STYLES = {
   inconclusive: "bg-forge-steel/15 text-forge-steel",
 } as const;
 
+const ZONE_SEGMENTS = [
+  { key: "light", label: "Out of range", secondsKey: "zoneLightSeconds" as const, className: "bg-forge-steel/40" },
+  { key: "fat", label: "Fat burn", secondsKey: "zoneFatBurnSeconds" as const, className: "bg-forge-gold/60" },
+  { key: "cardio", label: "Cardio", secondsKey: "zoneCardioSeconds" as const, className: "bg-forge-ember/60" },
+  { key: "peak", label: "Peak", secondsKey: "zonePeakSeconds" as const, className: "bg-forge-coral/70" },
+] as const;
+
+function formatZoneMinutes(seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 1) return "<1 min";
+  return `${minutes} min`;
+}
+
 function zoneBar(metrics: WorkoutDeviceMetricsRecord) {
-  const segments = [
-    { key: "light", seconds: metrics.zoneLightSeconds ?? 0, className: "bg-forge-steel/40" },
-    { key: "fat", seconds: metrics.zoneFatBurnSeconds ?? 0, className: "bg-forge-gold/60" },
-    { key: "cardio", seconds: metrics.zoneCardioSeconds ?? 0, className: "bg-forge-ember/60" },
-    { key: "peak", seconds: metrics.zonePeakSeconds ?? 0, className: "bg-forge-coral/70" },
-  ];
+  const segments = ZONE_SEGMENTS.map((segment) => ({
+    ...segment,
+    seconds: metrics[segment.secondsKey] ?? 0,
+  }));
   const total = segments.reduce((sum, segment) => sum + segment.seconds, 0);
   if (total <= 0) return null;
+
+  const active = segments.filter((segment) => segment.seconds > 0);
 
   return (
     <div className="mt-3">
       <p className="text-xs font-medium text-forge-muted">Heart-rate zones</p>
       <div className="mt-1 flex h-2 overflow-hidden rounded-full bg-forge-surface">
-        {segments
-          .filter((segment) => segment.seconds > 0)
-          .map((segment) => (
-            <div
-              key={segment.key}
-              className={segment.className}
-              style={{ width: `${(segment.seconds / total) * 100}%` }}
-            />
-          ))}
+        {active.map((segment) => (
+          <div
+            key={segment.key}
+            className={segment.className}
+            style={{ width: `${(segment.seconds / total) * 100}%` }}
+            title={`${segment.label}: ${formatZoneMinutes(segment.seconds)}`}
+          />
+        ))}
       </div>
+      <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-forge-muted">
+        {active.map((segment) => (
+          <li key={segment.key} className="inline-flex items-center gap-1.5">
+            <span
+              className={`inline-block h-2 w-2 rounded-full ${segment.className}`}
+              aria-hidden
+            />
+            {segment.label} · {formatZoneMinutes(segment.seconds)}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

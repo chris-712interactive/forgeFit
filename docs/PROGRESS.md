@@ -98,6 +98,20 @@
 - `apps/web/src/components/workout/workout-music-transport.tsx`
 - `docs/PROGRESS.md`
 
+### 2026-06-19 — Fitbit HR zone bar fix (moderateTime / vigorousTime)
+
+**What was done:**
+- Google Health exercise zones use `moderateTime` / `vigorousTime`, not `fatBurnTime` / `cardioTime` — parser now maps both; fixes single-color zone bar on workout recap
+- Watch intensity card shows zone legend with minutes per band
+
+**What's next:**
+- Re-sync Fitbit (Profile → Integrations → Sync) to refresh past workout zone breakdowns
+
+**Files touched:**
+- `packages/integrations/src/google-health.ts`, `google-health-exercise.test.ts`
+- `apps/web/src/components/workout/workout-device-intensity-card.tsx`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Program regenerate: forward-only weekdays
 
 **What was done:**

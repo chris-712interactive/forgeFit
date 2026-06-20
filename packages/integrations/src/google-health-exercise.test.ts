@@ -6,6 +6,34 @@ import {
 } from "./google-health";
 
 describe("parseExerciseDataPoint", () => {
+  it("parses Google Health moderateTime and vigorousTime zone fields", () => {
+    const parsed = parseExerciseDataPoint({
+      exercise: {
+        interval: {
+          startTime: "2026-06-01T10:00:00Z",
+          endTime: "2026-06-01T11:00:00Z",
+        },
+        exerciseType: "WEIGHT_TRAINING",
+        metricsSummary: {
+          averageHeartRateBeatsPerMinute: "128",
+          activeZoneMinutes: "12",
+          heartRateZoneDurations: {
+            lightTime: "600s",
+            moderateTime: "900s",
+            vigorousTime: "300s",
+            peakTime: "120s",
+          },
+        },
+      },
+    });
+
+    assert.ok(parsed);
+    assert.equal(parsed.zoneDurations.lightSeconds, 600);
+    assert.equal(parsed.zoneDurations.fatBurnSeconds, 900);
+    assert.equal(parsed.zoneDurations.cardioSeconds, 300);
+    assert.equal(parsed.zoneDurations.peakSeconds, 120);
+  });
+
   it("parses metrics summary and zone durations", () => {
     const parsed = parseExerciseDataPoint({
       name: "users/me/dataTypes/exercise/dataPoints/abc123",

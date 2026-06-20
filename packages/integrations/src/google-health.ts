@@ -956,6 +956,11 @@ interface ExerciseMetricsSummary {
   caloriesKcal?: string | number;
   heartRateZoneDurations?: {
     lightTime?: string;
+    /** Google Health API */
+    moderateTime?: string;
+    /** Google Health API */
+    vigorousTime?: string;
+    /** Legacy / Fitbit-style aliases (not in official Google schema) */
     fatBurnTime?: string;
     cardioTime?: string;
     peakTime?: string;
@@ -990,11 +995,25 @@ function parseDurationSeconds(value: string | undefined): number | null {
 function parseHeartRateZoneDurations(
   zones: ExerciseMetricsSummary["heartRateZoneDurations"]
 ): ExerciseHeartRateZoneDurations {
+  if (!zones) {
+    return {
+      lightSeconds: null,
+      fatBurnSeconds: null,
+      cardioSeconds: null,
+      peakSeconds: null,
+    };
+  }
+
+  // Google Health: lightTime, moderateTime, vigorousTime, peakTime
+  // Fitbit app labels: Out of Range, Fat Burn, Cardio, Peak
+  const fatBurnRaw = zones.fatBurnTime ?? zones.moderateTime;
+  const cardioRaw = zones.cardioTime ?? zones.vigorousTime;
+
   return {
-    lightSeconds: parseDurationSeconds(zones?.lightTime),
-    fatBurnSeconds: parseDurationSeconds(zones?.fatBurnTime),
-    cardioSeconds: parseDurationSeconds(zones?.cardioTime),
-    peakSeconds: parseDurationSeconds(zones?.peakTime),
+    lightSeconds: parseDurationSeconds(zones.lightTime),
+    fatBurnSeconds: parseDurationSeconds(fatBurnRaw),
+    cardioSeconds: parseDurationSeconds(cardioRaw),
+    peakSeconds: parseDurationSeconds(zones.peakTime),
   };
 }
 
