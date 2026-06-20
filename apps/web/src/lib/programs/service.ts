@@ -99,6 +99,7 @@ export async function generateAndSaveProgram(
     startDate: new Date(),
     isDeloadWeek,
     deloadVolumeReductionPct: 40,
+    scheduleFromTodayOnly: priorPlan != null,
   });
 
   const supabase = await createClient();

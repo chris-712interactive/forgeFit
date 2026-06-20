@@ -6,13 +6,22 @@ export function isoWeekdayFromDate(date: Date): number {
   return day === 0 ? 6 : day - 1;
 }
 
+export interface AssignSessionWeekdaysOptions {
+  /**
+   * Regenerate path: prefer today through Sunday before wrapping to earlier weekdays.
+   * Avoids scheduling "new" sessions on days that already passed this week when possible.
+   */
+  scheduleFromTodayOnly?: boolean;
+}
+
 /**
  * Spread sessions across the week starting on the anchor day (signup / program start).
  * Fills the rest of the current week first, then wraps to Mon+ if needed.
  */
 export function assignSessionWeekdays(
   sessionCount: number,
-  anchorWeekday: number
+  anchorWeekday: number,
+  options?: AssignSessionWeekdaysOptions
 ): number[] {
   if (sessionCount <= 0) return [];
   if (sessionCount === 1) return [anchorWeekday];
@@ -21,8 +30,14 @@ export function assignSessionWeekdays(
   for (let day = anchorWeekday; day < 7; day += 1) {
     pool.push(day);
   }
-  for (let day = 0; day < anchorWeekday && pool.length < sessionCount; day += 1) {
-    pool.push(day);
+
+  const needsEarlierDays =
+    !options?.scheduleFromTodayOnly || pool.length < sessionCount;
+
+  if (needsEarlierDays) {
+    for (let day = 0; day < anchorWeekday && pool.length < sessionCount; day += 1) {
+      pool.push(day);
+    }
   }
 
   const picked: number[] = [];

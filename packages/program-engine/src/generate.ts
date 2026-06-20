@@ -549,7 +549,9 @@ export function generateProgram(
   const split = getWeeklySplit(profile.goal, profile.sessionsPerWeek);
   const startDate = options.startDate ?? new Date();
   const anchorWeekday = isoWeekdayFromDate(startDate);
-  const sessionWeekdays = assignSessionWeekdays(split.length, anchorWeekday);
+  const sessionWeekdays = assignSessionWeekdays(split.length, anchorWeekday, {
+    scheduleFromTodayOnly: options.scheduleFromTodayOnly,
+  });
 
   const week = split
     .map((template, i) =>

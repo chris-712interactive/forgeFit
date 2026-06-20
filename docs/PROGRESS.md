@@ -98,6 +98,21 @@
 - `apps/web/src/components/workout/workout-music-transport.tsx`
 - `docs/PROGRESS.md`
 
+### 2026-06-19 — Program regenerate: forward-only weekdays
+
+**What was done:**
+- Regenerating a plan now schedules from today through Sunday before wrapping to earlier weekdays (avoids new sessions on past days mid-week when possible)
+- Completed workout logs are unchanged — still matched by weekday slot (Mon=0 … Sun=6)
+
+**What's next:**
+- User can rebuild plan again from Profile → Program plan to pick up scheduling fix
+- Consider week-scoped session history so regen never reuses past calendar labels
+
+**Files touched:**
+- `packages/program-engine/src/schedule.ts`, `generate.ts`, `types.ts`, `schedule.test.ts`
+- `apps/web/src/lib/programs/service.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Withings callback URL probe (307 fix)
 
 **What was done:**

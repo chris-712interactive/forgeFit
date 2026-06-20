@@ -111,4 +111,6 @@ export interface GenerateProgramOptions {
   startDate?: Date;
   isDeloadWeek?: boolean;
   deloadVolumeReductionPct?: number;
+  /** Regenerate: avoid placing sessions on weekdays before startDate when possible */
+  scheduleFromTodayOnly?: boolean;
 }
