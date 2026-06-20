@@ -98,6 +98,23 @@
 - `apps/web/src/components/workout/workout-music-transport.tsx`
 - `docs/PROGRESS.md`
 
+### 2026-06-19 — Bodyweight-only equipment filter fix
+
+**What was done:**
+- Fixed `isExerciseAvailable` — bodyweight-only users no longer inherit machine exercises tagged with `bodyweight_only` (Back Extension / hyperextension bench)
+- Removed incorrect `bodyweight_only` tag from `hip_hinge_machine`; added `bodyweight_hip_hinge` (Glute Bridge) for hinge work without gym gear
+- Curated exercise aliases now preserve program-engine equipment metadata; catalog hyperextension entry tagged `machines`
+- Tests: `packages/program-engine/src/equipment-filter.test.ts`
+
+**What's next:**
+- User with existing program: Profile → Equipment or Program → regenerate so lower-body hinge slot picks Glute Bridge instead of Back Extension
+- Consider defaulting “Regenerate program” on equipment save to true
+
+**Files touched:**
+- `packages/exercise-db/src/availability.ts`, `exercises.ts`, `resolve.ts`, `index.ts`, `data/catalog.json`
+- `packages/program-engine/src/equipment-filter.test.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Withings integration UI enabled
 
 **What was done:**

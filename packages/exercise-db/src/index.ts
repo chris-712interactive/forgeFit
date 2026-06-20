@@ -21,7 +21,7 @@ export {
   getUnavailableReason,
 } from "./substitutions";
 export { resolveExerciseDetail } from "./resolve";
-export { isExerciseAvailable } from "./availability";
+export { isExerciseAvailable, isBodyweightOnlyMode } from "./availability";
 export {
   exerciseTracksWeight,
   isBodyweightOnlyExercise,

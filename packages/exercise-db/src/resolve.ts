@@ -6,6 +6,7 @@ import type { CatalogExercise, Exercise } from "./types";
 /** Program-engine curated ids → best catalog match for demos. */
 const CURATED_CATALOG_ALIASES: Record<string, string> = {
   hip_hinge_machine: "hyperextensions_back_extensions",
+  bodyweight_hip_hinge: "butt_lift_bridge",
   barbell_bench: "barbell_bench_press_medium_grip",
   dumbbell_bench: "dumbbell_bench_press",
   push_up: "pushups",
@@ -48,6 +49,10 @@ export function resolveExerciseDetail(id: string): CatalogExercise | undefined {
   const aliasId = CURATED_CATALOG_ALIASES[id];
   if (aliasId) {
     const aliased = getCatalogExerciseById(aliasId);
+    const curated = EXERCISES.find((exercise) => exercise.id === id);
+    if (aliased && curated) {
+      return { ...aliased, id, equipment: curated.equipment };
+    }
     if (aliased) return { ...aliased, id };
   }
 
