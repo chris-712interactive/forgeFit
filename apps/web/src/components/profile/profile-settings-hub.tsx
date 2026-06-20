@@ -40,6 +40,7 @@ interface ProfileSettingsHubProps {
   integrationsUnlocked: boolean;
   integrationsConfigured: boolean;
   providerConfigured: Partial<Record<IntegrationProvider, boolean>>;
+  providerOAuthRedirectUris?: Partial<Record<IntegrationProvider, string>>;
   initialIntegrations: HubIntegration[];
   integrationStatus: string | null;
   integrationError: string | null;
@@ -70,6 +71,7 @@ export function ProfileSettingsHub({
   integrationsUnlocked,
   integrationsConfigured,
   providerConfigured,
+  providerOAuthRedirectUris,
   initialIntegrations,
   integrationStatus,
   integrationError,
@@ -167,6 +169,7 @@ export function ProfileSettingsHub({
             unlocked={integrationsUnlocked}
             configured={integrationsConfigured}
             providerConfigured={providerConfigured}
+            providerOAuthRedirectUris={providerOAuthRedirectUris}
             initialIntegrations={initialIntegrations}
             integrationStatus={integrationStatus}
             integrationError={integrationError}

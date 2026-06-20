@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 interface MacroPresetsProps {
   loggedDate: string;
   recentEntries: MacroQuickEntry[];
+  onEditPreset?: (preset: MacroPreset) => void;
 }
 
 function toPreset(entry: MacroQuickEntry, id: string): MacroPreset {
@@ -27,7 +28,21 @@ function toPreset(entry: MacroQuickEntry, id: string): MacroPreset {
   };
 }
 
-export function MacroPresets({ loggedDate, recentEntries }: MacroPresetsProps) {
+function formatMacroLine(preset: MacroPreset): string {
+  const parts = [
+    `${Math.round(preset.calories)} kcal`,
+    `${preset.proteinG}g P`,
+  ];
+  if (preset.carbsG > 0) parts.push(`${preset.carbsG}g C`);
+  if (preset.fatG > 0) parts.push(`${preset.fatG}g F`);
+  return parts.join(" · ");
+}
+
+export function MacroPresets({
+  loggedDate,
+  recentEntries,
+  onEditPreset,
+}: MacroPresetsProps) {
   const router = useRouter();
   const [saved, setSaved] = useState<MacroPreset[]>([]);
   const [loggingId, setLoggingId] = useState<string | null>(null);
@@ -65,87 +80,157 @@ export function MacroPresets({ loggedDate, recentEntries }: MacroPresetsProps) {
     toPreset(entry, `recent-${index}`)
   );
 
+  const hasQuickAdd =
+    BUILTIN_MACRO_PRESETS.length > 0 ||
+    recentPresets.length > 0 ||
+    saved.length > 0;
+
+  if (!hasQuickAdd) return null;
+
   return (
-    <section className="space-y-4">
-      <PresetGroup
-        title="Quick add"
-        presets={BUILTIN_MACRO_PRESETS}
-        loggingId={loggingId}
-        onLog={logPreset}
-      />
+    <div className="space-y-4">
+      {BUILTIN_MACRO_PRESETS.length > 0 && (
+        <QuickAddStrip title="Common meals">
+          {BUILTIN_MACRO_PRESETS.map((preset) => (
+            <BuiltinChip
+              key={preset.id}
+              preset={preset}
+              disabled={loggingId === preset.id}
+              onLog={() => void logPreset(preset)}
+            />
+          ))}
+        </QuickAddStrip>
+      )}
 
       {recentPresets.length > 0 && (
-        <PresetGroup
-          title="Recent"
-          presets={recentPresets}
-          loggingId={loggingId}
-          onLog={logPreset}
-        />
+        <QuickAddStrip title="Recent">
+          {recentPresets.map((preset) => (
+            <QuickAddCard
+              key={preset.id}
+              preset={preset}
+              disabled={loggingId === preset.id}
+              onLog={() => void logPreset(preset)}
+              onEdit={onEditPreset ? () => onEditPreset(preset) : undefined}
+            />
+          ))}
+        </QuickAddStrip>
       )}
 
       {saved.length > 0 && (
-        <PresetGroup
-          title="My meals"
-          presets={saved}
-          loggingId={loggingId}
-          onLog={logPreset}
-          onRemove={(id) => {
-            removeMacroPreset(id);
-            refreshSaved();
-          }}
-        />
+        <QuickAddStrip title="Saved meals">
+          {saved.map((preset) => (
+            <QuickAddCard
+              key={preset.id}
+              preset={preset}
+              disabled={loggingId === preset.id}
+              onLog={() => void logPreset(preset)}
+              onEdit={onEditPreset ? () => onEditPreset(preset) : undefined}
+              onRemove={() => {
+                removeMacroPreset(preset.id);
+                refreshSaved();
+              }}
+            />
+          ))}
+        </QuickAddStrip>
       )}
 
       {error && <p className="text-sm text-forge-coral">{error}</p>}
-    </section>
+    </div>
   );
 }
 
-function PresetGroup({
+function QuickAddStrip({
   title,
-  presets,
-  loggingId,
-  onLog,
-  onRemove,
+  children,
 }: {
   title: string;
-  presets: MacroPreset[];
-  loggingId: string | null;
-  onLog: (preset: MacroPreset) => void;
-  onRemove?: (id: string) => void;
+  children: React.ReactNode;
 }) {
   return (
     <div>
       <h3 className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
         {title}
       </h3>
-      <ul className="mt-2 flex flex-wrap gap-2">
-        {presets.map((preset) => (
-          <li key={preset.id} className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled={loggingId === preset.id}
-              onClick={() => void onLog(preset)}
-              className="rounded-full border border-[var(--border)] bg-forge-surface px-3 py-2 text-left text-sm transition-colors hover:border-forge-ember/50 disabled:opacity-50"
-            >
-              <span className="font-medium text-forge-text">{preset.name}</span>
-              <span className="mt-0.5 block text-xs text-forge-muted">
-                {Math.round(preset.calories)} kcal · {preset.proteinG}g protein
-              </span>
-            </button>
-            {onRemove && preset.id.startsWith("saved-") && (
-              <button
-                type="button"
-                aria-label={`Remove ${preset.name}`}
-                onClick={() => onRemove(preset.id)}
-                className="rounded-lg px-2 py-1 text-xs text-forge-muted hover:text-forge-coral"
-              >
-                ×
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function BuiltinChip({
+  preset,
+  disabled,
+  onLog,
+}: {
+  preset: MacroPreset;
+  disabled: boolean;
+  onLog: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onLog}
+      className="shrink-0 snap-start rounded-full border border-[var(--border)] bg-forge-surface px-3.5 py-2.5 text-left transition-colors hover:border-forge-ember/50 disabled:opacity-50"
+    >
+      <span className="whitespace-nowrap text-sm font-medium text-forge-text">
+        {preset.name}
+      </span>
+      <span className="mt-0.5 block whitespace-nowrap text-xs text-forge-muted">
+        {Math.round(preset.calories)} · {preset.proteinG}g P
+      </span>
+    </button>
+  );
+}
+
+function QuickAddCard({
+  preset,
+  disabled,
+  onLog,
+  onEdit,
+  onRemove,
+}: {
+  preset: MacroPreset;
+  disabled: boolean;
+  onLog: () => void;
+  onEdit?: () => void;
+  onRemove?: () => void;
+}) {
+  return (
+    <div className="relative shrink-0 snap-start w-[152px] rounded-xl border border-[var(--border)] bg-forge-surface p-3">
+      {onRemove && (
+        <button
+          type="button"
+          aria-label={`Remove ${preset.name}`}
+          onClick={onRemove}
+          className="absolute right-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-xs text-forge-muted hover:text-forge-coral"
+        >
+          ×
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onEdit}
+        disabled={!onEdit}
+        className="block w-full text-left disabled:cursor-default"
+      >
+        <p className="truncate pr-4 font-medium text-sm text-forge-text">
+          {preset.name}
+        </p>
+        <p className="mt-1 truncate text-xs text-forge-muted">
+          {formatMacroLine(preset)}
+        </p>
+      </button>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onLog}
+        aria-label={`Log ${preset.name}`}
+        className="mt-2.5 flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-forge-surface-raised text-sm font-semibold text-forge-ember transition-colors hover:bg-forge-ember/10 disabled:opacity-50"
+      >
+        {disabled ? "…" : "+ Log"}
+      </button>
     </div>
   );
 }

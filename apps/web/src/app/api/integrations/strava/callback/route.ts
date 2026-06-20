@@ -5,10 +5,23 @@ import {
   verifySignedIntegrationOAuthState,
 } from "@/lib/integrations/oauth-state-token";
 import { formatIntegrationErrorForUser } from "@/lib/integrations/user-errors";
+import {
+  integrationOAuthCallbackProbeResponse,
+  isIntegrationOAuthCallbackProbe,
+} from "@/lib/integrations/oauth-callback-probe";
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { NextResponse } from "next/server";
 
+export async function HEAD(request: Request) {
+  return integrationOAuthCallbackProbeResponse(request);
+}
+
 export async function GET(request: Request) {
+  const url = new URL(request.url);
+  if (isIntegrationOAuthCallbackProbe(request, url.searchParams)) {
+    return integrationOAuthCallbackProbeResponse(request);
+  }
+
   const siteUrl = getSiteUrl();
   const redirectToProfile = (query?: Record<string, string | undefined>) =>
     NextResponse.redirect(profileIntegrationsRedirectUrl(siteUrl, query));
@@ -21,7 +34,6 @@ export async function GET(request: Request) {
     return redirectWithError("Strava integration is not configured.");
   }
 
-  const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const oauthError = url.searchParams.get("error");

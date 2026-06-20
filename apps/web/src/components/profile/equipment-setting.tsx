@@ -30,7 +30,7 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [regenerateProgram, setRegenerateProgram] = useState(false);
+  const [regenerateProgram, setRegenerateProgram] = useState(true);
 
   const [equipment, setEquipment] = useState(initialSettings.equipment);
   const [recoveryEquipment, setRecoveryEquipment] = useState(
@@ -229,8 +229,8 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
             Regenerate program with this equipment
           </span>
           <span className="mt-1 block text-xs text-forge-muted">
-            Rebuilds workouts and recovery blocks to match your current gear.
-            Leave off if you only want exercise swaps updated.
+            Rebuilds workouts to match your current gear. Turn off to save
+            equipment without changing this week&apos;s plan layout.
           </span>
         </span>
       </label>

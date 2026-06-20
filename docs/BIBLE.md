@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-19 · **Current phase:** Phase 8 complete · Community Phases 1–2 shipped
+**Last updated:** 2026-06-19 · **Current phase:** Phase 8 complete · Phase 7 billing/infra on production
 
 ---
 
@@ -201,7 +201,7 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 4 | Nutrition diary | Complete |
 | 5 | Measurements + projections | Complete |
 | 6 | Exercise library UI | Complete |
-| 7 | Pro integrations (Stripe, OAuth) | Partial — Fitbit live; vendors pending |
+| 7 | Pro integrations (Stripe, OAuth) | Partial — billing + DB on prod; Withings QA + Strava launch |
 | 8 | Motivation + gamification + community (Phases 1–2) | Complete |
 
 See `docs/phases/` for per-phase acceptance criteria. Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).

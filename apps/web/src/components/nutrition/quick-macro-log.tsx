@@ -1,32 +1,50 @@
 "use client";
 
+import type { MacroTotals } from "@forgefit/nutrition-core";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import {
   createPresetId,
   saveMacroPreset,
   type MacroPreset,
 } from "@/lib/nutrition/presets";
+import type { NutritionTargets } from "@forgefit/program-engine";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 interface QuickMacroLogProps {
   loggedDate: string;
+  totals: MacroTotals;
+  targets: NutritionTargets | null;
   onApplied?: (preset: MacroPreset) => void;
   initialValues?: Partial<MacroPreset>;
-  /** Omit outer card shell when nested inside the log hub */
-  embedded?: boolean;
 }
 
 const inputClass =
-  "min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-base text-forge-text outline-none focus:border-forge-ember";
+  "min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-3 text-base tabular-nums text-forge-text outline-none focus:border-forge-ember";
+
+const MACRO_FIELDS = [
+  { key: "calories" as const, label: "Cal", unit: "", step: "1", color: "text-forge-ember" },
+  { key: "proteinG" as const, label: "Protein", unit: "g", step: "0.1", color: "text-forge-coral" },
+  { key: "carbsG" as const, label: "Carbs", unit: "g", step: "0.1", color: "text-forge-gold" },
+  { key: "fatG" as const, label: "Fat", unit: "g", step: "0.1", color: "text-forge-steel" },
+];
+
+function formatRemaining(current: number, target: number | null): string | null {
+  if (target == null || target <= 0) return null;
+  const left = Math.round(target - current);
+  if (left <= 0) return "At target";
+  return `${left} left`;
+}
 
 export function QuickMacroLog({
   loggedDate,
+  totals,
+  targets,
   onApplied,
   initialValues,
-  embedded = false,
 }: QuickMacroLogProps) {
   const router = useRouter();
+  const formId = useId();
   const [name, setName] = useState(initialValues?.name ?? "");
   const [calories, setCalories] = useState(
     initialValues?.calories != null ? String(initialValues.calories) : ""
@@ -40,39 +58,49 @@ export function QuickMacroLog({
   const [fatG, setFatG] = useState(
     initialValues?.fatG != null ? String(initialValues.fatG) : ""
   );
-  const [showOptional, setShowOptional] = useState(
-    Boolean(initialValues?.carbsG || initialValues?.fatG)
-  );
   const [saveAsPreset, setSaveAsPreset] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const setters = {
+    calories: setCalories,
+    proteinG: setProteinG,
+    carbsG: setCarbsG,
+    fatG: setFatG,
+  };
+  const values = { calories, proteinG, carbsG, fatG };
+
+  const targetMap = {
+    calories: targets?.calories ?? null,
+    proteinG: targets?.proteinG ?? null,
+    carbsG: targets?.carbsG ?? null,
+    fatG: targets?.fatG ?? null,
+  };
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
 
-    const caloriesNum = Number(calories);
-    const proteinNum = Number(proteinG);
+    const caloriesNum = calories === "" ? 0 : Number(calories);
+    const proteinNum = proteinG === "" ? 0 : Number(proteinG);
     const carbsNum = carbsG === "" ? 0 : Number(carbsG);
     const fatNum = fatG === "" ? 0 : Number(fatG);
 
-    if (!Number.isFinite(caloriesNum) || caloriesNum < 0) {
-      setError("Enter calories (0 or more).");
-      return;
-    }
-    if (!Number.isFinite(proteinNum) || proteinNum < 0) {
-      setError("Enter protein in grams (0 or more).");
-      return;
-    }
-    if (caloriesNum === 0 && proteinNum === 0) {
-      setError("Add at least calories or protein.");
-      return;
-    }
     if (
-      (carbsG !== "" && !Number.isFinite(carbsNum)) ||
-      (fatG !== "" && !Number.isFinite(fatNum))
+      !Number.isFinite(caloriesNum) ||
+      !Number.isFinite(proteinNum) ||
+      !Number.isFinite(carbsNum) ||
+      !Number.isFinite(fatNum) ||
+      caloriesNum < 0 ||
+      proteinNum < 0 ||
+      carbsNum < 0 ||
+      fatNum < 0
     ) {
-      setError("Carbs and fat must be valid numbers.");
+      setError("Enter valid numbers (0 or more).");
+      return;
+    }
+    if (caloriesNum === 0 && proteinNum === 0 && carbsNum === 0 && fatNum === 0) {
+      setError("Enter at least one macro value.");
       return;
     }
 
@@ -116,108 +144,56 @@ export function QuickMacroLog({
     }
   }
 
-  const content = (
-    <>
-      {!embedded && (
-        <>
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-            Quick log
-          </h2>
-          <p className="mt-1 text-xs text-forge-muted">
-            Hit your targets — name optional, calories + protein required
-          </p>
-        </>
-      )}
+  return (
+    <form
+      id={formId}
+      onSubmit={(e) => void handleSubmit(e)}
+      className="space-y-4"
+    >
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+        {MACRO_FIELDS.map((field) => {
+          const currentTotal = totals[field.key];
+          const target = targetMap[field.key];
+          const remaining = formatRemaining(currentTotal, target);
 
-      <form
-        onSubmit={(e) => void handleSubmit(e)}
-        className={embedded ? "space-y-3" : "mt-4 space-y-3"}
-      >
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Label (e.g. Lunch, Shake)"
-          className={inputClass}
-        />
-
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-forge-muted">
-              Calories *
-            </span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={calories}
-              onChange={(e) => setCalories(e.target.value)}
-              placeholder="0"
-              className={inputClass}
-              required
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-forge-muted">
-              Protein (g) *
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step="0.1"
-              value={proteinG}
-              onChange={(e) => setProteinG(e.target.value)}
-              placeholder="0"
-              className={inputClass}
-              required
-            />
-          </label>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowOptional((open) => !open)}
-          className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
-        >
-          {showOptional ? "Hide carbs & fat" : "Add carbs & fat (optional)"}
-        </button>
-
-        {showOptional && (
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium text-forge-muted">
-                Carbs (g)
-              </span>
+          return (
+            <label key={field.key} className="block">
+              <div className="mb-1 flex items-baseline justify-between gap-1">
+                <span className={`text-xs font-semibold ${field.color}`}>
+                  {field.label}
+                  {field.unit ? ` (${field.unit})` : ""}
+                </span>
+                {remaining && (
+                  <span className="text-[10px] font-medium text-forge-muted">
+                    {remaining}
+                  </span>
+                )}
+              </div>
               <input
                 type="number"
-                inputMode="decimal"
+                inputMode={field.key === "calories" ? "numeric" : "decimal"}
                 min={0}
-                step="0.1"
-                value={carbsG}
-                onChange={(e) => setCarbsG(e.target.value)}
+                step={field.step}
+                value={values[field.key]}
+                onChange={(e) => setters[field.key](e.target.value)}
                 placeholder="0"
                 className={inputClass}
+                aria-label={field.label}
               />
             </label>
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium text-forge-muted">
-                Fat (g)
-              </span>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="0.1"
-                value={fatG}
-                onChange={(e) => setFatG(e.target.value)}
-                placeholder="0"
-                className={inputClass}
-              />
-            </label>
-          </div>
-        )}
+          );
+        })}
+      </div>
 
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Label optional (e.g. Lunch, Shake)"
+        className={inputClass}
+      />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-forge-muted">
           <input
             type="checkbox"
@@ -225,33 +201,23 @@ export function QuickMacroLog({
             onChange={(e) => setSaveAsPreset(e.target.checked)}
             className="h-4 w-4 rounded border-[var(--border)]"
           />
-          Save as my preset
+          Save as meal
         </label>
+      </div>
 
-        {error && (
-          <p className="text-sm text-forge-coral" role="alert">
-            {error}
-          </p>
-        )}
+      {error && (
+        <p className="text-sm text-forge-coral" role="alert">
+          {error}
+        </p>
+      )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white disabled:opacity-60"
-        >
-          {submitting ? "Logging…" : "Log macros"}
-        </button>
-      </form>
-    </>
-  );
-
-  if (embedded) {
-    return content;
-  }
-
-  return (
-    <section className="rounded-2xl border border-forge-ember/25 bg-forge-surface-raised p-4 sm:p-5">
-      {content}
-    </section>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white disabled:opacity-60"
+      >
+        {submitting ? "Logging…" : "Log macros"}
+      </button>
+    </form>
   );
 }

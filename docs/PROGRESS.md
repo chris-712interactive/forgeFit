@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Spotify auto-shuffle on playlist start |
+| **Last session focus** | Nutrition Log tab macro-entry UX redesign |
 
 ---
 
@@ -33,6 +33,69 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Nutrition Log tab macro-entry UX
+
+**What was done:**
+- Merged today's macro summary + manual log form into one primary card on the Log tab
+- Quick macro form: all four macros always visible (no hidden carbs/fat toggle), color-coded labels, "X left" hints vs targets
+- Relaxed validation — any macro field can be logged (not calories + protein required together)
+- Quick add: horizontal scroll strips — common meals as chips, recent/saved as compact cards with **+ Log** one-tap
+- Tap recent/saved name to prefill the form for edits before logging
+
+**What's next:**
+- Deploy recent fixes to production (Withings probe, bodyweight filter, regen scheduling, HR zones)
+- User QA on nutrition Log tab at 375px — confirm scroll strips and one-tap logging feel right
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/nutrition/quick-macro-log.tsx`
+- `apps/web/src/components/nutrition/macro-presets.tsx`
+- `apps/web/src/components/nutrition/nutrition-diary.tsx`
+- `apps/web/src/components/nutrition/logged-entries.tsx`
+- `apps/web/src/app/(app)/nutrition/page.tsx`
+- `docs/PROGRESS.md`
+
+### 2026-06-19 — Withings polish + integration QA
+
+**What was done:**
+- Profile → Integrations shows Withings Partner Hub callback URL when configured (same pattern as Spotify)
+- Wired `providerOAuthRedirectUris` through profile page → settings hub → integrations card
+- OAuth callback probe (200 on HEAD/GET) extended to Fitbit and Strava callbacks
+- Equipment save: “Regenerate program” defaults to **checked**
+- Added `docs/integrations/withings-setup.md` — env, Partner Hub, connect/sync QA checklist
+
+**What's next:**
+- **Deploy** recent fixes to production (Withings probe, bodyweight filter, regen scheduling, HR zones)
+- **Vercel:** confirm `WITHINGS_*` + `INTEGRATIONS_TOKEN_ENCRYPTION_KEY` on Production; redeploy
+- **Withings Partner Hub:** register callback, pass URL test, Connect from Pro+ account, verify weight on Progress
+- User QA: regen program after bodyweight-only fix; Fitbit re-sync for zone bars
+
+**Blockers:** None in code — production Withings QA depends on env + Partner Hub registration.
+
+**Files touched:**
+- `apps/web/src/app/(app)/profile/page.tsx`
+- `apps/web/src/components/profile/profile-settings-hub.tsx`
+- `apps/web/src/components/profile/integrations-setting.tsx`
+- `apps/web/src/components/profile/equipment-setting.tsx`
+- `apps/web/src/app/api/integrations/fitbit/callback/route.ts`
+- `apps/web/src/app/api/integrations/strava/callback/route.ts`
+- `docs/integrations/withings-setup.md`
+- `docs/PROGRESS.md`
+
+### 2026-06-19 — Production ops complete (Stripe + Supabase)
+
+**What was done:**
+- Confirmed production: all Supabase migrations applied
+- Confirmed production: Stripe Pro / Pro+ products, prices, and webhook configured
+
+**What's next:**
+- Withings: Vercel env + Partner Hub QA + Connect / weight sync
+- Strava: enable integration when prioritized
+
+**Files touched:**
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/TIER-GATES.md`, `docs/phases/07-integrations.md`
 
 ### 2026-06-19 — Spotify auto-shuffle on playlist start
 

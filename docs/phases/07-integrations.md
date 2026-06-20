@@ -1,7 +1,13 @@
 # Phase 7 — Pro Integrations
 
-**Status:** Partial (2026-06-08)  
+**Status:** Partial (2026-06-19)  
 **Depends on:** Phase 6
+
+## Production ops ✅
+
+- [x] Supabase migrations applied on production (full stack through community + Spotify)
+- [x] Stripe Pro / Pro+ products and prices configured
+- [x] Stripe webhook live on production (`/api/stripe/webhook`)
 
 ## Goal
 
@@ -16,7 +22,7 @@ Tier matrix: [docs/TIER-GATES.md](../TIER-GATES.md)
 - [x] Profile upgrade UI (`subscription-setting.tsx`)
 - [x] Pro gates: 90-day projections, confidence bands, goal date, 90-day history cap
 - [x] Data export gated to Pro
-- [ ] Withings OAuth + weight sync (Pro+) — UI enabled; finish Withings Partner Hub OAuth + env, then QA
+- [ ] Withings OAuth + weight sync (Pro+) — UI enabled; finish Partner Hub + production env, then QA ([setup guide](../integrations/withings-setup.md))
 - [x] Fitbit activity sync via Google Health API — steps, active calories, active minutes (Pro+)
 - [x] Fitbit activity depth — AZM, sedentary time, total calories (Pro+)
 - [x] Fitbit sleep sync — duration + stages via Google Health sleep scope (Pro+)

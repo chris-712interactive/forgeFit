@@ -19,6 +19,7 @@ interface IntegrationsSettingProps {
   unlocked: boolean;
   configured: boolean;
   providerConfigured: Partial<Record<IntegrationProvider, boolean>>;
+  providerOAuthRedirectUris?: Partial<Record<IntegrationProvider, string>>;
   initialIntegrations: HubIntegration[];
   integrationStatus?: string | null;
   integrationError?: string | null;
@@ -87,6 +88,7 @@ export function IntegrationsSetting({
   unlocked,
   configured,
   providerConfigured,
+  providerOAuthRedirectUris,
   initialIntegrations,
   integrationStatus,
   integrationError,
@@ -302,6 +304,13 @@ export function IntegrationsSetting({
                 ? `/api/integrations/${integration.provider}/connect`
                 : null;
             const disclosure = connectDisclosure(integration.provider);
+            const oauthRedirectUri =
+              providerOAuthRedirectUris?.[integration.provider];
+            const showOAuthHint =
+              integration.provider === "withings" &&
+              isConfigured &&
+              !integration.connected &&
+              oauthRedirectUri;
 
             return (
               <li
@@ -399,6 +408,15 @@ export function IntegrationsSetting({
                       </>
                     ) : connectHref ? (
                       <div className="w-full space-y-2">
+                        {showOAuthHint && (
+                          <p className="rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-2 text-[11px] leading-relaxed text-forge-muted">
+                            Register this callback URL in the Withings Partner
+                            Hub (Registered URLs):{" "}
+                            <code className="break-all text-forge-steel">
+                              {oauthRedirectUri}
+                            </code>
+                          </p>
+                        )}
                         {disclosure && (
                           <p className="text-[11px] leading-relaxed text-forge-muted">
                             {disclosure} You can disconnect anytime.{" "}

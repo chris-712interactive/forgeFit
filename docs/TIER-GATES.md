@@ -188,8 +188,8 @@ The 35% Pro annual discount is a **retention trade**, not a margin problem — a
 | Step | Status | Scope |
 |------|--------|-------|
 | 1. Tier matrix + billing lib | ✅ Done | `gates.ts`, Stripe checkout/webhook |
-| 2. DB migrations | ⏳ User action | `20260609300000`, `20260609400000` |
-| 3. Stripe Dashboard products | ⏳ User action | 4 prices + webhook endpoint |
+| 2. DB migrations | ✅ Done (production) | All migrations applied via `supabase db push` |
+| 3. Stripe Dashboard products | ✅ Done (production) | Pro / Pro+ prices + webhook → `forge-rep.com` |
 | 4. Profile upgrade UI | ✅ Done | `subscription-setting.tsx` |
 | 5. Progress projection gates | ✅ Done | 30d/90d horizon, confidence bands, 90d history cap |
 | 6. Export gate (Pro) | ✅ Done | `/api/account/export` + Profile |

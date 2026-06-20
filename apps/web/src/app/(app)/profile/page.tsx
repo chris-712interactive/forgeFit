@@ -22,6 +22,7 @@ import {
   isFitbitIntegrationConfigured,
   isStravaConfigured,
   isWithingsConfigured,
+  withingsOAuthRedirectUri,
 } from "@/lib/integrations/config";
 import { hasProAccess } from "@/lib/billing/types";
 import { createClient } from "@/lib/supabase/server";
@@ -169,6 +170,11 @@ export default async function ProfilePage({
             fitbit: isFitbitIntegrationConfigured(),
             strava: isStravaConfigured(),
           }}
+          providerOAuthRedirectUris={
+            isWithingsConfigured()
+              ? { withings: withingsOAuthRedirectUri() }
+              : undefined
+          }
           initialIntegrations={initialIntegrations}
           integrationStatus={integrationStatus}
           integrationError={integrationError ?? integrationsLoadError}

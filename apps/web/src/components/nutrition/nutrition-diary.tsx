@@ -3,6 +3,7 @@
 import type { FoodSearchResult } from "@forgefit/nutrition-core";
 import { browserTodayIsoDate } from "@/lib/datetime/local-date";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
+import type { MacroPreset } from "@/lib/nutrition/presets";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { appSectionStack } from "@/components/layout/page-layout";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,20 @@ export function NutritionDiary({
   const [copying, setCopying] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
   const [presetVersion, setPresetVersion] = useState(0);
+  const [formPrefill, setFormPrefill] = useState<Partial<MacroPreset> | undefined>();
+  const [formKey, setFormKey] = useState(0);
+
+  function handleEditPreset(preset: MacroPreset) {
+    setFormPrefill({
+      name: preset.name,
+      calories: preset.calories,
+      proteinG: preset.proteinG,
+      carbsG: preset.carbsG,
+      fatG: preset.fatG,
+    });
+    setFormKey((k) => k + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   async function handleFoodAdd(
     food: FoodSearchResult,
@@ -140,31 +155,20 @@ export function NutritionDiary({
 
       {tab === "log" && (
         <div className="flex flex-col gap-4 sm:gap-5">
-          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              Today
-            </h2>
-            <div className="mt-4">
-              <MacroSummary
+          <section className="rounded-2xl border border-forge-ember/25 bg-forge-surface-raised p-4 sm:p-5">
+            <MacroSummary
+              totals={initialSummary.totals}
+              targets={initialSummary.targets}
+              variant="compact"
+              embedded
+            />
+            <div className="mt-5 border-t border-[var(--border)] pt-5">
+              <QuickMacroLog
+                key={formKey}
+                loggedDate={initialSummary.date}
                 totals={initialSummary.totals}
                 targets={initialSummary.targets}
-                variant="compact"
-                embedded
-              />
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              Quick log
-            </h2>
-            <p className="mt-1 text-xs text-forge-muted">
-              Name optional — calories + protein required
-            </p>
-            <div className="mt-4">
-              <QuickMacroLog
-                loggedDate={initialSummary.date}
-                embedded
+                initialValues={formPrefill}
                 onApplied={() => setPresetVersion((v) => v + 1)}
               />
             </div>
@@ -172,13 +176,17 @@ export function NutritionDiary({
 
           <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              Presets
+              Quick add
             </h2>
+            <p className="mt-1 text-xs text-forge-muted">
+              Tap + to log instantly, or tap the name to edit before logging
+            </p>
             <div className="mt-4">
               <MacroPresets
                 key={presetVersion}
                 loggedDate={initialSummary.date}
                 recentEntries={recentEntries}
+                onEditPreset={handleEditPreset}
               />
             </div>
           </section>
@@ -197,17 +205,12 @@ export function NutritionDiary({
       {tab === "browse" && (
         <div className="flex flex-col gap-4 sm:gap-5">
           <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              Today
-            </h2>
-            <div className="mt-4">
-              <MacroSummary
-                totals={initialSummary.totals}
-                targets={initialSummary.targets}
-                variant="compact"
-                embedded
-              />
-            </div>
+            <MacroSummary
+              totals={initialSummary.totals}
+              targets={initialSummary.targets}
+              variant="compact"
+              embedded
+            />
           </section>
 
           <RestaurantSearchPanel

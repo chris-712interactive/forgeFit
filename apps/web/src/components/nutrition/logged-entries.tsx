@@ -24,7 +24,7 @@ export function LoggedEntries({
       {entries.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
           <p className="text-forge-muted">
-            Log a quick entry or tap a preset to start closing your macro gap.
+            Enter macros above or tap + on a recent meal to start tracking.
           </p>
         </div>
       ) : (
