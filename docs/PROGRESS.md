@@ -98,6 +98,21 @@
 - `apps/web/src/components/workout/workout-music-transport.tsx`
 - `docs/PROGRESS.md`
 
+### 2026-06-19 — Withings callback URL probe (307 fix)
+
+**What was done:**
+- Withings Partner Hub URL test sends HEAD/GET without OAuth params; callback now returns 200 instead of 307 redirect
+- Production still needs Vercel env: `WITHINGS_CLIENT_ID`, `WITHINGS_CLIENT_SECRET`, `INTEGRATIONS_TOKEN_ENCRYPTION_KEY`
+
+**What's next:**
+- Add Withings env vars to Vercel Production and redeploy
+- Re-test callback URL in Withings dashboard; then Connect from Profile
+
+**Files touched:**
+- `apps/web/src/lib/integrations/oauth-callback-probe.ts`
+- `apps/web/src/app/api/integrations/withings/callback/route.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Bodyweight-only equipment filter fix
 
 **What was done:**
