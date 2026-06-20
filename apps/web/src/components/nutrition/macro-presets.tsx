@@ -1,25 +1,24 @@
 "use client";
 
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
-import {
-  BUILTIN_MACRO_PRESETS,
-  loadSavedMacroPresets,
-  removeMacroPreset,
-  type MacroPreset,
-} from "@/lib/nutrition/presets";
+import { BUILTIN_MACRO_PRESETS } from "@/lib/nutrition/presets";
+import { formatMacroLine, loadSavedMeals } from "@/lib/nutrition/saved-meals";
 import type { MacroQuickEntry } from "@/lib/nutrition/types";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { SaveMealDraft } from "./save-meal-sheet";
 
 interface MacroPresetsProps {
   loggedDate: string;
   recentEntries: MacroQuickEntry[];
-  onEditPreset?: (preset: MacroPreset) => void;
+  refreshKey?: number;
+  onEditPreset?: (draft: SaveMealDraft) => void;
+  onSaveMeal?: (draft: SaveMealDraft) => void;
+  onOpenMyMeals?: () => void;
 }
 
-function toPreset(entry: MacroQuickEntry, id: string): MacroPreset {
+function toDraft(entry: MacroQuickEntry): SaveMealDraft {
   return {
-    id,
     name: entry.foodName,
     calories: entry.calories,
     proteinG: entry.proteinG,
@@ -28,107 +27,108 @@ function toPreset(entry: MacroQuickEntry, id: string): MacroPreset {
   };
 }
 
-function formatMacroLine(preset: MacroPreset): string {
-  const parts = [
-    `${Math.round(preset.calories)} kcal`,
-    `${preset.proteinG}g P`,
-  ];
-  if (preset.carbsG > 0) parts.push(`${preset.carbsG}g C`);
-  if (preset.fatG > 0) parts.push(`${preset.fatG}g F`);
-  return parts.join(" · ");
-}
-
 export function MacroPresets({
   loggedDate,
   recentEntries,
+  refreshKey = 0,
   onEditPreset,
+  onSaveMeal,
+  onOpenMyMeals,
 }: MacroPresetsProps) {
   const router = useRouter();
-  const [saved, setSaved] = useState<MacroPreset[]>([]);
+  const [savedCount, setSavedCount] = useState(0);
   const [loggingId, setLoggingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSaved(loadSavedMacroPresets());
-  }, []);
+    setSavedCount(loadSavedMeals().length);
+  }, [refreshKey]);
 
-  const refreshSaved = useCallback(() => {
-    setSaved(loadSavedMacroPresets());
-  }, []);
-
-  async function logPreset(preset: MacroPreset) {
-    setLoggingId(preset.id);
+  async function logDraft(draft: SaveMealDraft, logId: string) {
+    setLoggingId(logId);
     setError(null);
     try {
       await postMacroLogEntry({
-        foodName: preset.name,
-        calories: preset.calories,
-        proteinG: preset.proteinG,
-        carbsG: preset.carbsG,
-        fatG: preset.fatG,
+        foodName: draft.name,
+        calories: draft.calories,
+        proteinG: draft.proteinG,
+        carbsG: draft.carbsG,
+        fatG: draft.fatG,
         loggedDate,
       });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not log preset.");
+      setError(err instanceof Error ? err.message : "Could not log entry.");
     } finally {
       setLoggingId(null);
     }
   }
 
-  const recentPresets = recentEntries.map((entry, index) =>
-    toPreset(entry, `recent-${index}`)
-  );
+  const recentDrafts = recentEntries.map((entry, index) => ({
+    id: `recent-${index}`,
+    draft: toDraft(entry),
+  }));
 
   const hasQuickAdd =
-    BUILTIN_MACRO_PRESETS.length > 0 ||
-    recentPresets.length > 0 ||
-    saved.length > 0;
+    BUILTIN_MACRO_PRESETS.length > 0 || recentDrafts.length > 0 || savedCount > 0;
 
   if (!hasQuickAdd) return null;
 
   return (
     <div className="space-y-4">
+      {savedCount > 0 && onOpenMyMeals && (
+        <button
+          type="button"
+          onClick={onOpenMyMeals}
+          className="flex w-full items-center justify-between gap-3 rounded-xl border border-forge-ember/25 bg-forge-ember/5 px-4 py-3 text-left transition-colors hover:border-forge-ember/40 hover:bg-forge-ember/10"
+        >
+          <div>
+            <p className="font-display text-sm font-semibold text-forge-text">
+              My Meals
+            </p>
+            <p className="text-xs text-forge-muted">
+              {savedCount} saved {savedCount === 1 ? "meal" : "meals"} · organized by category
+            </p>
+          </div>
+          <span className="text-sm font-semibold text-forge-ember">Open →</span>
+        </button>
+      )}
+
       {BUILTIN_MACRO_PRESETS.length > 0 && (
         <QuickAddStrip title="Common meals">
           {BUILTIN_MACRO_PRESETS.map((preset) => (
             <BuiltinChip
               key={preset.id}
-              preset={preset}
+              name={preset.name}
+              summary={`${Math.round(preset.calories)} · ${preset.proteinG}g P`}
               disabled={loggingId === preset.id}
-              onLog={() => void logPreset(preset)}
+              onLog={() =>
+                void logDraft(
+                  {
+                    name: preset.name,
+                    calories: preset.calories,
+                    proteinG: preset.proteinG,
+                    carbsG: preset.carbsG,
+                    fatG: preset.fatG,
+                  },
+                  preset.id
+                )
+              }
             />
           ))}
         </QuickAddStrip>
       )}
 
-      {recentPresets.length > 0 && (
+      {recentDrafts.length > 0 && (
         <QuickAddStrip title="Recent">
-          {recentPresets.map((preset) => (
-            <QuickAddCard
-              key={preset.id}
-              preset={preset}
-              disabled={loggingId === preset.id}
-              onLog={() => void logPreset(preset)}
-              onEdit={onEditPreset ? () => onEditPreset(preset) : undefined}
-            />
-          ))}
-        </QuickAddStrip>
-      )}
-
-      {saved.length > 0 && (
-        <QuickAddStrip title="Saved meals">
-          {saved.map((preset) => (
-            <QuickAddCard
-              key={preset.id}
-              preset={preset}
-              disabled={loggingId === preset.id}
-              onLog={() => void logPreset(preset)}
-              onEdit={onEditPreset ? () => onEditPreset(preset) : undefined}
-              onRemove={() => {
-                removeMacroPreset(preset.id);
-                refreshSaved();
-              }}
+          {recentDrafts.map(({ id, draft }) => (
+            <RecentCard
+              key={id}
+              draft={draft}
+              disabled={loggingId === id}
+              onLog={() => void logDraft(draft, id)}
+              onEdit={onEditPreset ? () => onEditPreset(draft) : undefined}
+              onSave={onSaveMeal ? () => onSaveMeal(draft) : undefined}
             />
           ))}
         </QuickAddStrip>
@@ -159,11 +159,13 @@ function QuickAddStrip({
 }
 
 function BuiltinChip({
-  preset,
+  name,
+  summary,
   disabled,
   onLog,
 }: {
-  preset: MacroPreset;
+  name: string;
+  summary: string;
   disabled: boolean;
   onLog: () => void;
 }) {
@@ -175,62 +177,67 @@ function BuiltinChip({
       className="shrink-0 snap-start rounded-full border border-[var(--border)] bg-forge-surface px-3.5 py-2.5 text-left transition-colors hover:border-forge-ember/50 disabled:opacity-50"
     >
       <span className="whitespace-nowrap text-sm font-medium text-forge-text">
-        {preset.name}
+        {name}
       </span>
       <span className="mt-0.5 block whitespace-nowrap text-xs text-forge-muted">
-        {Math.round(preset.calories)} · {preset.proteinG}g P
+        {summary}
       </span>
     </button>
   );
 }
 
-function QuickAddCard({
-  preset,
+function RecentCard({
+  draft,
   disabled,
   onLog,
   onEdit,
-  onRemove,
+  onSave,
 }: {
-  preset: MacroPreset;
+  draft: SaveMealDraft;
   disabled: boolean;
   onLog: () => void;
   onEdit?: () => void;
-  onRemove?: () => void;
+  onSave?: () => void;
 }) {
   return (
-    <div className="relative shrink-0 snap-start w-[152px] rounded-xl border border-[var(--border)] bg-forge-surface p-3">
-      {onRemove && (
+    <div className="relative shrink-0 snap-start w-[168px] rounded-xl border border-[var(--border)] bg-forge-surface p-3">
+      {onSave && (
         <button
           type="button"
-          aria-label={`Remove ${preset.name}`}
-          onClick={onRemove}
-          className="absolute right-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-xs text-forge-muted hover:text-forge-coral"
+          aria-label={`Save ${draft.name} to My Meals`}
+          onClick={onSave}
+          className="absolute right-2 top-2 rounded-lg p-1.5 text-forge-muted transition-colors hover:bg-forge-surface-raised hover:text-forge-ember"
         >
-          ×
+          <BookmarkIcon />
         </button>
       )}
       <button
         type="button"
         onClick={onEdit}
         disabled={!onEdit}
-        className="block w-full text-left disabled:cursor-default"
+        className="block w-full pr-7 text-left disabled:cursor-default"
       >
-        <p className="truncate pr-4 font-medium text-sm text-forge-text">
-          {preset.name}
-        </p>
+        <p className="truncate font-medium text-sm text-forge-text">{draft.name}</p>
         <p className="mt-1 truncate text-xs text-forge-muted">
-          {formatMacroLine(preset)}
+          {formatMacroLine(draft)}
         </p>
       </button>
       <button
         type="button"
         disabled={disabled}
         onClick={onLog}
-        aria-label={`Log ${preset.name}`}
-        className="mt-2.5 flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-forge-surface-raised text-sm font-semibold text-forge-ember transition-colors hover:bg-forge-ember/10 disabled:opacity-50"
+        className="mt-2.5 flex min-h-[40px] w-full items-center justify-center rounded-lg bg-forge-surface-raised text-sm font-semibold text-forge-ember transition-colors hover:bg-forge-ember/10 disabled:opacity-50"
       >
         {disabled ? "…" : "+ Log"}
       </button>
     </div>
+  );
+}
+
+function BookmarkIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+    </svg>
   );
 }

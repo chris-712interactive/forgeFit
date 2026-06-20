@@ -3,27 +3,24 @@
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import {
-  createPresetId,
-  saveMacroPreset,
-} from "@/lib/nutrition/presets";
-import {
   listRestaurantChains,
   searchRestaurantMenu,
   type RestaurantSearchHit,
 } from "@/lib/nutrition/restaurant-chains";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import type { SaveMealDraft } from "./save-meal-sheet";
 
 interface RestaurantSearchPanelProps {
   loggedDate: string;
   unlocked: boolean;
-  onSavedMeal?: () => void;
+  onSaveMeal?: (draft: SaveMealDraft) => void;
 }
 
 export function RestaurantSearchPanel({
   loggedDate,
   unlocked,
-  onSavedMeal,
+  onSaveMeal,
 }: RestaurantSearchPanelProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -54,15 +51,14 @@ export function RestaurantSearchPanel({
       });
 
       if (saveMeal) {
-        saveMacroPreset({
-          id: createPresetId(),
+        onSaveMeal?.({
           name: label,
           calories: hit.item.calories,
           proteinG: hit.item.proteinG,
           carbsG: hit.item.carbsG,
           fatG: hit.item.fatG,
+          categoryId: "favorites",
         });
-        onSavedMeal?.();
       }
 
       router.refresh();
@@ -118,7 +114,7 @@ export function RestaurantSearchPanel({
               onChange={(e) => setSaveAfterLog(e.target.checked)}
               className="size-4 rounded border-[var(--border)]"
             />
-            Save logged meals to My meals
+            Save logged meals to My Meals (pick a category)
           </label>
 
           {query.trim().length >= 2 && results.length === 0 && (

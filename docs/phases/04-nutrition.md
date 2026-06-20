@@ -15,6 +15,7 @@ USDA + Open Food Facts search, daily macro diary, targets from evidence engine.
 - [x] `GET/POST /api/nutrition/logs` — daily diary CRUD
 - [x] `DELETE /api/nutrition/logs/[id]` — remove entry
 - [x] Nutrition tab UI — macro progress vs program targets, search, log list; Log tab optimized for fast manual macro entry (2026-06-19)
+- [x] **My Meals** library — saved meals with user-defined categories, search, one-tap log (localStorage; 2026-06-19)
 
 ## Done When
 

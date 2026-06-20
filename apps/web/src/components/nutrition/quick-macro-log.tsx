@@ -2,21 +2,17 @@
 
 import type { MacroTotals } from "@forgefit/nutrition-core";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
-import {
-  createPresetId,
-  saveMacroPreset,
-  type MacroPreset,
-} from "@/lib/nutrition/presets";
 import type { NutritionTargets } from "@forgefit/program-engine";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
+import type { SaveMealDraft } from "./save-meal-sheet";
 
 interface QuickMacroLogProps {
   loggedDate: string;
   totals: MacroTotals;
   targets: NutritionTargets | null;
-  onApplied?: (preset: MacroPreset) => void;
-  initialValues?: Partial<MacroPreset>;
+  initialValues?: Partial<SaveMealDraft>;
+  onSaveMeal?: (draft: SaveMealDraft) => void;
 }
 
 const inputClass =
@@ -36,12 +32,46 @@ function formatRemaining(current: number, target: number | null): string | null 
   return `${left} left`;
 }
 
+function buildDraft(
+  name: string,
+  calories: string,
+  proteinG: string,
+  carbsG: string,
+  fatG: string
+): SaveMealDraft | null {
+  const caloriesNum = calories === "" ? 0 : Number(calories);
+  const proteinNum = proteinG === "" ? 0 : Number(proteinG);
+  const carbsNum = carbsG === "" ? 0 : Number(carbsG);
+  const fatNum = fatG === "" ? 0 : Number(fatG);
+
+  if (
+    !Number.isFinite(caloriesNum) ||
+    !Number.isFinite(proteinNum) ||
+    !Number.isFinite(carbsNum) ||
+    !Number.isFinite(fatNum)
+  ) {
+    return null;
+  }
+
+  if (caloriesNum === 0 && proteinNum === 0 && carbsNum === 0 && fatNum === 0) {
+    return null;
+  }
+
+  return {
+    name: name.trim() || "Quick entry",
+    calories: caloriesNum,
+    proteinG: proteinNum,
+    carbsG: carbsNum,
+    fatG: fatNum,
+  };
+}
+
 export function QuickMacroLog({
   loggedDate,
   totals,
   targets,
-  onApplied,
   initialValues,
+  onSaveMeal,
 }: QuickMacroLogProps) {
   const router = useRouter();
   const formId = useId();
@@ -58,7 +88,6 @@ export function QuickMacroLog({
   const [fatG, setFatG] = useState(
     initialValues?.fatG != null ? String(initialValues.fatG) : ""
   );
-  const [saveAsPreset, setSaveAsPreset] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,67 +110,44 @@ export function QuickMacroLog({
     event.preventDefault();
     setError(null);
 
-    const caloriesNum = calories === "" ? 0 : Number(calories);
-    const proteinNum = proteinG === "" ? 0 : Number(proteinG);
-    const carbsNum = carbsG === "" ? 0 : Number(carbsG);
-    const fatNum = fatG === "" ? 0 : Number(fatG);
-
-    if (
-      !Number.isFinite(caloriesNum) ||
-      !Number.isFinite(proteinNum) ||
-      !Number.isFinite(carbsNum) ||
-      !Number.isFinite(fatNum) ||
-      caloriesNum < 0 ||
-      proteinNum < 0 ||
-      carbsNum < 0 ||
-      fatNum < 0
-    ) {
-      setError("Enter valid numbers (0 or more).");
-      return;
-    }
-    if (caloriesNum === 0 && proteinNum === 0 && carbsNum === 0 && fatNum === 0) {
+    const draft = buildDraft(name, calories, proteinG, carbsG, fatG);
+    if (!draft) {
       setError("Enter at least one macro value.");
       return;
     }
 
-    const label = name.trim() || "Quick entry";
-
     setSubmitting(true);
     try {
       await postMacroLogEntry({
-        foodName: label,
-        calories: caloriesNum,
-        proteinG: proteinNum,
-        carbsG: carbsNum,
-        fatG: fatNum,
+        foodName: draft.name,
+        calories: draft.calories,
+        proteinG: draft.proteinG,
+        carbsG: draft.carbsG,
+        fatG: draft.fatG,
         loggedDate,
       });
-
-      if (saveAsPreset) {
-        const preset: MacroPreset = {
-          id: createPresetId(),
-          name: label,
-          calories: caloriesNum,
-          proteinG: proteinNum,
-          carbsG: carbsNum,
-          fatG: fatNum,
-        };
-        saveMacroPreset(preset);
-        onApplied?.(preset);
-      }
 
       setName("");
       setCalories("");
       setProteinG("");
       setCarbsG("");
       setFatG("");
-      setSaveAsPreset(false);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not log entry.");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleSaveMeal() {
+    const draft = buildDraft(name, calories, proteinG, carbsG, fatG);
+    if (!draft) {
+      setError("Enter macros before saving to My Meals.");
+      return;
+    }
+    setError(null);
+    onSaveMeal?.(draft);
   }
 
   return (
@@ -193,31 +199,39 @@ export function QuickMacroLog({
         className={inputClass}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <label className="flex items-center gap-2 text-sm text-forge-muted">
-          <input
-            type="checkbox"
-            checked={saveAsPreset}
-            onChange={(e) => setSaveAsPreset(e.target.checked)}
-            className="h-4 w-4 rounded border-[var(--border)]"
-          />
-          Save as meal
-        </label>
-      </div>
-
       {error && (
         <p className="text-sm text-forge-coral" role="alert">
           {error}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="flex min-h-[52px] w-full items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white disabled:opacity-60"
-      >
-        {submitting ? "Logging…" : "Log macros"}
-      </button>
+      <div className="flex flex-col gap-2.5 sm:flex-row">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex min-h-[52px] flex-1 items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white disabled:opacity-60"
+        >
+          {submitting ? "Logging…" : "Log macros"}
+        </button>
+        {onSaveMeal && (
+          <button
+            type="button"
+            onClick={handleSaveMeal}
+            className="flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-forge-surface font-display text-sm font-semibold text-forge-text transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
+          >
+            <BookmarkIcon />
+            Save meal
+          </button>
+        )}
+      </div>
     </form>
+  );
+}
+
+function BookmarkIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+    </svg>
   );
 }

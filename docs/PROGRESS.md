@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Nutrition Log tab macro-entry UX redesign |
+| **Last session focus** | Saved Meals library with custom categories |
 
 ---
 
@@ -33,6 +33,35 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Saved Meals library + custom categories
+
+**What was done:**
+- New **My Meals** tab — full library view with search, category filters, grouped meal cards, one-tap log
+- **Save meal sheet** (bottom sheet) — name, category picker, inline “+ New category”, macro preview or editable fields for create-from-scratch
+- Custom categories stored in localStorage alongside meals; default set: Breakfast, Lunch, Dinner, Snacks, Favorites
+- Save from **quick log**, **recent items** (bookmark icon), and **restaurant quick-log** — all route through category picker
+- Migrated legacy `macro-presets` localStorage to new saved-meals format
+- Example plates moved to collapsible section on Browse tab
+
+**What's next:**
+- User QA on My Meals at 375px — category creation, save-from-recent, library search
+- Consider syncing saved meals to Supabase for cross-device (Pro+?) if users request it
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/nutrition/saved-meals.ts` (new)
+- `apps/web/src/lib/nutrition/presets.ts`
+- `apps/web/src/components/nutrition/save-meal-sheet.tsx` (new)
+- `apps/web/src/components/nutrition/saved-meals-library.tsx` (new)
+- `apps/web/src/components/nutrition/nutrition-diary.tsx`
+- `apps/web/src/components/nutrition/macro-presets.tsx`
+- `apps/web/src/components/nutrition/quick-macro-log.tsx`
+- `apps/web/src/components/nutrition/restaurant-search-panel.tsx`
+- `apps/web/src/app/(app)/nutrition/page.tsx`
+- `docs/PROGRESS.md`
+- `docs/phases/04-nutrition.md`
 
 ### 2026-06-19 — Nutrition Log tab macro-entry UX
 

@@ -1,13 +1,17 @@
-export interface MacroPreset {
-  id: string;
-  name: string;
-  calories: number;
-  proteinG: number;
-  carbsG: number;
-  fatG: number;
-}
+import {
+  createSavedMealId,
+  loadSavedMeals,
+  removeSavedMeal,
+  saveSavedMeal,
+  type SavedMeal,
+} from "./saved-meals";
 
-export const BUILTIN_MACRO_PRESETS: MacroPreset[] = [
+/** @deprecated Use SavedMeal from saved-meals.ts */
+export type MacroPreset = SavedMeal;
+
+export const BUILTIN_MACRO_PRESETS: Array<
+  Pick<SavedMeal, "id" | "name" | "calories" | "proteinG" | "carbsG" | "fatG">
+> = [
   {
     id: "protein-shake",
     name: "Protein shake",
@@ -42,34 +46,18 @@ export const BUILTIN_MACRO_PRESETS: MacroPreset[] = [
   },
 ];
 
-const STORAGE_KEY = "forgefit:macro-presets";
-
-export function loadSavedMacroPresets(): MacroPreset[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as MacroPreset[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+export function loadSavedMacroPresets(): SavedMeal[] {
+  return loadSavedMeals();
 }
 
-export function saveMacroPreset(preset: MacroPreset): void {
-  const existing = loadSavedMacroPresets();
-  const withoutDup = existing.filter((item) => item.id !== preset.id);
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify([preset, ...withoutDup].slice(0, 12))
-  );
+export function saveMacroPreset(preset: SavedMeal): void {
+  saveSavedMeal(preset);
 }
 
 export function removeMacroPreset(id: string): void {
-  const existing = loadSavedMacroPresets().filter((item) => item.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+  removeSavedMeal(id);
 }
 
 export function createPresetId(): string {
-  return `saved-${crypto.randomUUID()}`;
+  return createSavedMealId();
 }

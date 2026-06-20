@@ -50,7 +50,7 @@ export default async function NutritionPage() {
         Nutrition
       </h1>
       <p className="mt-1 text-sm text-forge-muted">
-        Enter macros fast — search foods and meal ideas under Browse when you need them.
+        Log macros fast — save favorites to My Meals, or search foods under Browse.
       </p>
 
       {summary ? (
