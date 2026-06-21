@@ -34,6 +34,22 @@
 
 ## Session Log
 
+### 2026-06-19 — Whole-foods library expansion (~50 → ~90 items)
+
+**What was done:**
+- Added **Condiments & sauces** category (mayo, mustard, ketchup, salsa, ranch, vinaigrette, marinara, BBQ, honey, etc.)
+- Expanded protein (bacon, rotisserie chicken, roast beef deli, sausage, jerky), dairy (cream cheese, parmesan, feta, almond milk, more cheeses), grains (bagel, English muffin, white bread, corn, rice cakes), produce (orange, romaine, cucumber, mushrooms, onion)
+- **searchTerms** on foods for easier lookup (e.g. "mayo" → Mayonnaise, "wrap" → tortilla)
+- Meal builder: ordered category filters, better search placeholder, empty-state hints
+
+**What's next:**
+- User feedback on portions/macros; expand based on most-built meals
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `apps/web/src/components/nutrition/meal-builder.tsx`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Curated whole-foods DB + meal builder
 
 **What was done:**

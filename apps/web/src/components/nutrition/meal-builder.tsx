@@ -5,6 +5,7 @@ import {
   rescaleLineItem,
   searchWholeFoods,
   sumLineItems,
+  WHOLE_FOOD_GROUPS,
   WHOLE_FOOD_GROUP_LABELS,
   type MealLineItem,
   type WholeFood,
@@ -35,7 +36,7 @@ interface MealBuilderProps {
 const inputClass =
   "min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-base text-forge-text outline-none focus:border-forge-ember";
 
-const GROUPS = Object.keys(WHOLE_FOOD_GROUP_LABELS) as WholeFoodGroup[];
+const GROUPS = WHOLE_FOOD_GROUPS;
 
 export function MealBuilder({
   open,
@@ -87,7 +88,7 @@ export function MealBuilder({
       searchWholeFoods(
         query,
         groupFilter === "all" ? undefined : groupFilter
-      ).slice(0, 24),
+      ).slice(0, 32),
     [query, groupFilter]
   );
 
@@ -266,7 +267,7 @@ export function MealBuilder({
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search eggs, chicken, rice…"
+              placeholder="Search eggs, mayo, bagel, rotisserie chicken…"
               className={`${inputClass} mt-2`}
             />
             <div className="-mx-1 mt-2 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -302,6 +303,16 @@ export function MealBuilder({
                 </li>
               ))}
             </ul>
+            {foods.length === 0 && query.trim().length > 0 && (
+              <p className="mt-3 text-sm text-forge-muted">
+                No matches — try a shorter term or pick a category above.
+              </p>
+            )}
+            {!query.trim() && groupFilter === "all" && (
+              <p className="mt-3 text-xs text-forge-muted">
+                Tip: search &quot;mayo&quot;, &quot;wrap&quot;, or &quot;sandwich&quot; for shortcuts.
+              </p>
+            )}
           </section>
 
           {/* Name + category */}
