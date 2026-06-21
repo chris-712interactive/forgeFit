@@ -45,12 +45,22 @@
 **What's next:**
 - User feedback on portions/macros; expand based on most-built meals
 
-**Files touched:**
+**Files touched (expansion):**
 - `packages/nutrition-core/src/whole-foods.ts`
+- `apps/web/src/components/nutrition/meal-builder.tsx`
+
+### 2026-06-19 — Meal builder 3-step wizard
+
+**What was done:**
+- Build meal flow split into steps: (1) Name, (2) Ingredients, (3) Category & save
+- Step progress bar + labels in header; meal name chip visible on steps 2–3
+- Ingredient search in bounded scroll panel; added items in compact list above
+
+**Files touched:**
 - `apps/web/src/components/nutrition/meal-builder.tsx`
 - `docs/PROGRESS.md`
 
-### 2026-06-19 — Curated whole-foods DB + meal builder
+### 2026-06-19 — Whole-foods library expansion (~50 → ~90 items)
 
 **What was done:**
 - Removed USDA / Open Food Facts search from Nutrition Browse tab (API route retained but unused in UI)
