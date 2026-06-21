@@ -27,7 +27,7 @@
 | **Charts** | Recharts or Tremor | Projections, measurement trends |
 | **Muscle Maps** | body-highlighter or body-muscles | Free, 70+ muscles, intensity heatmaps |
 | **Exercise GIFs** | Self-hosted open GIF dataset + optional WorkoutX API ($0–25/mo) at scale | Avoid $499 RapidAPI lock-in at launch |
-| **Nutrition DB** | USDA FoodData Central + Open Food Facts (free, self-hosted cache) | $0 operating cost; Pro+ restaurant quick-log uses curated chain data (no paid API at launch) |
+| **Nutrition DB** | Curated forgeFit whole-foods library (in-repo) + Pro+ restaurant quick-log | Replaced USDA/OFF search (2026-06-19); $0 operating cost |
 | **Wearable Integrations** | Direct OAuth for Withings, Fitbit, Strava → Terra API at ~1,000+ paying users | Keeps MVP infra under ~$50/mo |
 | **AI Coaching Copy** | Claude Haiku / GPT-4o-mini via structured prompts | ~$0.01–0.05/user/month for hype messages only; **never** for program logic |
 | **Hosting** | Vercel (Hobby → Pro $20/mo) | Zero-config Next.js deploy |

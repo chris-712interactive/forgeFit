@@ -152,6 +152,7 @@ export function SaveMealSheet({
           carbsG: carbsNum,
           fatG: fatNum,
           categoryId,
+          lineItems: [],
         }),
         id: draft.id,
       });

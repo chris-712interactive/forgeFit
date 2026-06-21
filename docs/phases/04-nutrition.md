@@ -9,13 +9,13 @@ USDA + Open Food Facts search, daily macro diary, targets from evidence engine.
 
 ## Delivered
 
-- [x] `@forgefit/nutrition-core` — parallel USDA + OFF search, macro scaling helpers
+- [x] `@forgefit/nutrition-core` — curated whole-foods library + macro scaling helpers (USDA/OFF search deprecated in UI, 2026-06-19)
 - [x] Migration `20260608300000_phase4_nutrition.sql` — `nutrition_logs` + RLS
-- [x] `GET /api/nutrition/search?q=` — food lookup (< 1s with 300ms debounce + parallel fetch)
+- [x] `GET /api/nutrition/search?q=` — legacy USDA + OFF lookup (removed from UI; whole-foods in-repo)
 - [x] `GET/POST /api/nutrition/logs` — daily diary CRUD
 - [x] `DELETE /api/nutrition/logs/[id]` — remove entry
 - [x] Nutrition tab UI — macro progress vs program targets, search, log list; Log tab optimized for fast manual macro entry (2026-06-19)
-- [x] **My Meals** library — saved meals with user-defined categories, search, one-tap log (localStorage; 2026-06-19)
+- [x] **My Meals** library — saved meals with user-defined categories, ingredient line items, one-time log adjustments (localStorage; 2026-06-19)
 
 ## Done When
 

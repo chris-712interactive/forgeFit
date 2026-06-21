@@ -1,26 +1,30 @@
 "use client";
 
-import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import {
   formatMacroLine,
   getCategoryById,
   getCategoryColor,
   loadSavedMealCategories,
   loadSavedMeals,
+  mealHasLineItems,
   removeSavedMeal,
   removeSavedMealCategory,
   renameSavedMealCategory,
   type SavedMeal,
   type SavedMealCategory,
 } from "@/lib/nutrition/saved-meals";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { LogMealSheet } from "./log-meal-sheet";
+import { MealBuilder } from "./meal-builder";
 import { SaveMealSheet, type SaveMealDraft } from "./save-meal-sheet";
 
 interface SavedMealsLibraryProps {
   loggedDate: string;
   refreshKey?: number;
   onMealsChanged?: () => void;
+  /** When set, opens the meal builder (e.g. from Log tab) */
+  openBuilder?: boolean;
+  onBuilderClose?: () => void;
 }
 
 type CategoryFilter = "all" | string;
@@ -29,18 +33,28 @@ export function SavedMealsLibrary({
   loggedDate,
   refreshKey = 0,
   onMealsChanged,
+  openBuilder = false,
+  onBuilderClose,
 }: SavedMealsLibraryProps) {
-  const router = useRouter();
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [categories, setCategories] = useState<SavedMealCategory[]>([]);
   const [filter, setFilter] = useState<CategoryFilter>("all");
   const [query, setQuery] = useState("");
-  const [loggingId, setLoggingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveDraft, setSaveDraft] = useState<SaveMealDraft | null>(null);
+  const [builderMeal, setBuilderMeal] = useState<SavedMeal | null | undefined>(
+    undefined
+  );
+  const [logMeal, setLogMeal] = useState<SavedMeal | null>(null);
   const [managingCategories, setManagingCategories] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+
+  useEffect(() => {
+    if (openBuilder) {
+      setBuilderMeal(null);
+    }
+  }, [openBuilder]);
 
   const reload = useCallback(() => {
     setMeals(loadSavedMeals());
@@ -81,29 +95,29 @@ export function SavedMealsLibrary({
       .filter((group) => group.meals.length > 0);
   }, [filteredMeals, filter, categories]);
 
-  async function logMeal(meal: SavedMeal) {
-    setLoggingId(meal.id);
-    setError(null);
-    try {
-      await postMacroLogEntry({
-        foodName: meal.name,
+  function handleSaved() {
+    reload();
+    onMealsChanged?.();
+  }
+
+  function openCreateBuilder() {
+    setBuilderMeal(null);
+  }
+
+  function handleEdit(meal: SavedMeal) {
+    if (mealHasLineItems(meal)) {
+      setBuilderMeal(meal);
+    } else {
+      setSaveDraft({
+        id: meal.id,
+        name: meal.name,
         calories: meal.calories,
         proteinG: meal.proteinG,
         carbsG: meal.carbsG,
         fatG: meal.fatG,
-        loggedDate,
+        categoryId: meal.categoryId,
       });
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not log meal.");
-    } finally {
-      setLoggingId(null);
     }
-  }
-
-  function handleSaved() {
-    reload();
-    onMealsChanged?.();
   }
 
   function handleDelete(meal: SavedMeal) {
@@ -137,7 +151,7 @@ export function SavedMealsLibrary({
             My Meals
           </h2>
           <p className="mt-1 text-sm text-forge-muted">
-            Your personal library — organized by category, ready to log in one tap.
+            Build meals from whole ingredients — adjust portions when logging without changing your saved template.
           </p>
         </div>
 
@@ -176,19 +190,10 @@ export function SavedMealsLibrary({
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={() =>
-              setSaveDraft({
-                name: "",
-                calories: 0,
-                proteinG: 0,
-                carbsG: 0,
-                fatG: 0,
-                categoryId: filter === "all" ? "favorites" : filter,
-              })
-            }
+            onClick={openCreateBuilder}
             className="text-sm font-semibold text-forge-ember hover:text-forge-glow"
           >
-            + Create meal
+            + Build meal
           </button>
           <button
             type="button"
@@ -280,15 +285,7 @@ export function SavedMealsLibrary({
         )}
 
         {meals.length === 0 ? (
-          <EmptyLibrary onCreate={() =>
-            setSaveDraft({
-              name: "",
-              calories: 0,
-              proteinG: 0,
-              carbsG: 0,
-              fatG: 0,
-            })
-          } />
+          <EmptyLibrary onCreate={openCreateBuilder} />
         ) : filteredMeals.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
             <p className="text-forge-muted">No meals match your search.</p>
@@ -315,19 +312,8 @@ export function SavedMealsLibrary({
                         meal={meal}
                         category={category}
                         categoryColor={getCategoryColor(meal.categoryId, categories)}
-                        logging={loggingId === meal.id}
-                        onLog={() => void logMeal(meal)}
-                        onEdit={() =>
-                          setSaveDraft({
-                            id: meal.id,
-                            name: meal.name,
-                            calories: meal.calories,
-                            proteinG: meal.proteinG,
-                            carbsG: meal.carbsG,
-                            fatG: meal.fatG,
-                            categoryId: meal.categoryId,
-                          })
-                        }
+                        onLog={() => setLogMeal(meal)}
+                        onEdit={() => handleEdit(meal)}
                         onDelete={() => handleDelete(meal)}
                       />
                     ))}
@@ -347,6 +333,24 @@ export function SavedMealsLibrary({
         onClose={() => setSaveDraft(null)}
         onSaved={handleSaved}
       />
+
+      <MealBuilder
+        open={builderMeal !== undefined || openBuilder}
+        initialMeal={builderMeal ?? undefined}
+        loggedDate={loggedDate}
+        onClose={() => {
+          setBuilderMeal(undefined);
+          onBuilderClose?.();
+        }}
+        onSaved={handleSaved}
+      />
+
+      <LogMealSheet
+        open={logMeal != null}
+        meal={logMeal}
+        loggedDate={loggedDate}
+        onClose={() => setLogMeal(null)}
+      />
     </>
   );
 }
@@ -355,7 +359,6 @@ function MealCard({
   meal,
   category,
   categoryColor,
-  logging,
   onLog,
   onEdit,
   onDelete,
@@ -363,7 +366,6 @@ function MealCard({
   meal: SavedMeal;
   category: SavedMealCategory;
   categoryColor: string;
-  logging: boolean;
   onLog: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -381,6 +383,11 @@ function MealCard({
             {meal.name}
           </h4>
           <p className="mt-1.5 text-sm text-forge-muted">{formatMacroLine(meal)}</p>
+          {meal.lineItems.length > 0 && (
+            <p className="mt-1 text-xs text-forge-steel">
+              {meal.lineItems.length} ingredients
+            </p>
+          )}
         </div>
         <div className="flex shrink-0 gap-0.5">
           <button
@@ -404,11 +411,10 @@ function MealCard({
 
       <button
         type="button"
-        disabled={logging}
         onClick={onLog}
-        className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-forge-ember/10 font-display text-sm font-bold text-forge-ember transition-colors hover:bg-forge-ember hover:text-white disabled:opacity-50"
+        className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-forge-ember/10 font-display text-sm font-bold text-forge-ember transition-colors hover:bg-forge-ember hover:text-white"
       >
-        {logging ? "Logging…" : "+ Log today"}
+        + Log today
       </button>
     </article>
   );
@@ -455,14 +461,14 @@ function EmptyLibrary({ onCreate }: { onCreate: () => void }) {
         Build your meal library
       </h3>
       <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-forge-muted">
-        Save meals from your log, recent items, or create them here. Assign categories so logging takes one tap.
+        Build meals from whole ingredients like eggs, chicken, and rice. Each saved meal keeps its ingredient list — tweak portions when logging without changing the template.
       </p>
       <button
         type="button"
         onClick={onCreate}
         className="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-forge-ember px-5 font-display text-sm font-bold text-white"
       >
-        Create your first meal
+        Build your first meal
       </button>
     </div>
   );

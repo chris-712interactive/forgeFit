@@ -1,6 +1,5 @@
 "use client";
 
-import type { FoodSearchResult } from "@forgefit/nutrition-core";
 import { browserTodayIsoDate } from "@/lib/datetime/local-date";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 import { SectionTabs } from "@/components/layout/section-tabs";
@@ -8,7 +7,6 @@ import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { appSectionStack } from "@/components/layout/page-layout";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FoodSearchPanel } from "./food-search-panel";
 import { LoggedEntries } from "./logged-entries";
 import { MacroPresets } from "./macro-presets";
 import { MealPlateExamples } from "./meal-plate-examples";
@@ -37,7 +35,6 @@ export function NutritionDiary({
 }: NutritionDiaryProps) {
   const router = useRouter();
   const [tab, setTab] = useState<DiaryTab>("log");
-  const [adding, setAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -45,6 +42,7 @@ export function NutritionDiary({
   const [formPrefill, setFormPrefill] = useState<SaveMealDraft | undefined>();
   const [formKey, setFormKey] = useState(0);
   const [saveDraft, setSaveDraft] = useState<SaveMealDraft | null>(null);
+  const [openBuilder, setOpenBuilder] = useState(false);
 
   function bumpMealsVersion() {
     setMealsVersion((v) => v + 1);
@@ -59,46 +57,6 @@ export function NutritionDiary({
     setFormKey((k) => k + 1);
     setTab("log");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  async function handleFoodAdd(
-    food: FoodSearchResult,
-    quantity: number,
-    servingGrams: number
-  ) {
-    setAdding(true);
-    const loggedDate = browserTodayIsoDate();
-    try {
-      const response = await fetch("/api/nutrition/logs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientId: crypto.randomUUID(),
-          loggedDate,
-          foodName: food.name,
-          foodSource: food.source,
-          externalFoodId: food.id,
-          brand: food.brand,
-          servingDescription: food.servingDescription,
-          quantity,
-          servingGrams,
-          per100g: food.per100g,
-        }),
-      });
-
-      if (!response.ok) {
-        const err = (await response.json()) as { error?: string };
-        throw new Error(err.error ?? "Could not log food");
-      }
-
-      router.refresh();
-    } catch (error) {
-      window.alert(
-        error instanceof Error ? error.message : "Could not log food."
-      );
-    } finally {
-      setAdding(false);
-    }
   }
 
   async function handleDelete(id: string) {
@@ -182,6 +140,29 @@ export function NutritionDiary({
             </section>
 
             <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+                    Build from ingredients
+                  </h2>
+                  <p className="mt-1 text-xs text-forge-muted">
+                    Pick whole foods — eggs, chicken, rice — and save as a reusable meal
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab("my-meals");
+                    setOpenBuilder(true);
+                  }}
+                  className="shrink-0 rounded-xl bg-forge-ember/10 px-3 py-2 text-sm font-semibold text-forge-ember hover:bg-forge-ember/20"
+                >
+                  Build meal
+                </button>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
                 Quick add
               </h2>
@@ -229,8 +210,6 @@ export function NutritionDiary({
               onSaveMeal={openSaveSheet}
             />
 
-            <FoodSearchPanel onAdd={handleFoodAdd} adding={adding} />
-
             <CollapsibleSection title="Example plates" hint="Scaled to your targets">
               <MealPlateExamples
                 targets={initialSummary.targets}
@@ -267,6 +246,8 @@ export function NutritionDiary({
               loggedDate={initialSummary.date}
               refreshKey={mealsVersion}
               onMealsChanged={bumpMealsVersion}
+              openBuilder={openBuilder}
+              onBuilderClose={() => setOpenBuilder(false)}
             />
           </section>
         )}

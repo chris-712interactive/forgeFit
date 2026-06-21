@@ -13,6 +13,18 @@ export function scaleMacrosFrom100g(
   };
 }
 
+export function scaleMacrosFromServing(
+  perServing: MacroTotals,
+  quantity: number
+): MacroTotals {
+  return {
+    calories: Math.round(perServing.calories * quantity),
+    proteinG: round1(perServing.proteinG * quantity),
+    carbsG: round1(perServing.carbsG * quantity),
+    fatG: round1(perServing.fatG * quantity),
+  };
+}
+
 export function sumMacros(entries: MacroTotals[]): MacroTotals {
   return entries.reduce(
     (acc, entry) => ({

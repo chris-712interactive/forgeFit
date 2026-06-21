@@ -1,3 +1,6 @@
+import type { MealLineItem } from "@forgefit/nutrition-core";
+import { sumLineItems } from "@forgefit/nutrition-core";
+
 export interface SavedMealCategory {
   id: string;
   name: string;
@@ -7,6 +10,7 @@ export interface SavedMeal {
   id: string;
   name: string;
   categoryId: string;
+  lineItems: MealLineItem[];
   calories: number;
   proteinG: number;
   carbsG: number;
@@ -55,6 +59,31 @@ function writeJson(key: string, value: unknown): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function normalizeMeal(raw: Partial<SavedMeal> & Pick<SavedMeal, "id" | "name" | "categoryId">): SavedMeal {
+  const lineItems = Array.isArray(raw.lineItems) ? raw.lineItems : [];
+  const totals =
+    lineItems.length > 0
+      ? sumLineItems(lineItems)
+      : {
+          calories: raw.calories ?? 0,
+          proteinG: raw.proteinG ?? 0,
+          carbsG: raw.carbsG ?? 0,
+          fatG: raw.fatG ?? 0,
+        };
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    categoryId: raw.categoryId,
+    lineItems,
+    calories: totals.calories,
+    proteinG: totals.proteinG,
+    carbsG: totals.carbsG,
+    fatG: totals.fatG,
+    createdAt: raw.createdAt ?? new Date().toISOString(),
+  };
+}
+
 function migrateLegacyPresets(): SavedMeal[] {
   const legacy = readJson<
     Array<{
@@ -69,16 +98,19 @@ function migrateLegacyPresets(): SavedMeal[] {
 
   if (!legacy?.length) return [];
 
-  const migrated = legacy.map((item) => ({
-    id: item.id.startsWith("saved-") ? item.id : `saved-${item.id}`,
-    name: item.name,
-    categoryId: "favorites",
-    calories: item.calories,
-    proteinG: item.proteinG,
-    carbsG: item.carbsG,
-    fatG: item.fatG,
-    createdAt: new Date().toISOString(),
-  }));
+  const migrated = legacy.map((item) =>
+    normalizeMeal({
+      id: item.id.startsWith("saved-") ? item.id : `saved-${item.id}`,
+      name: item.name,
+      categoryId: "favorites",
+      lineItems: [],
+      calories: item.calories,
+      proteinG: item.proteinG,
+      carbsG: item.carbsG,
+      fatG: item.fatG,
+      createdAt: new Date().toISOString(),
+    })
+  );
 
   writeJson(MEALS_KEY, migrated);
   localStorage.removeItem(LEGACY_PRESETS_KEY);
@@ -119,7 +151,7 @@ export function removeSavedMealCategory(id: string): void {
 
   const meals = loadSavedMeals().map((meal) =>
     meal.categoryId === id
-      ? { ...meal, categoryId: UNCATEGORIZED_CATEGORY_ID }
+      ? normalizeMeal({ ...meal, categoryId: UNCATEGORIZED_CATEGORY_ID })
       : meal
   );
   writeJson(MEALS_KEY, meals);
@@ -142,23 +174,18 @@ export function loadSavedMeals(): SavedMeal[] {
   if (!meals) {
     meals = migrateLegacyPresets();
   }
-  return Array.isArray(meals) ? meals : [];
+  return Array.isArray(meals) ? meals.map((meal) => normalizeMeal(meal)) : [];
 }
 
 export function saveSavedMeal(input: SavedMealInput): SavedMeal {
   const existing = loadSavedMeals();
-  const meal: SavedMeal = {
+  const meal = normalizeMeal({
+    ...input,
     id: input.id ?? createSavedMealId(),
-    name: input.name.trim(),
-    categoryId: input.categoryId,
-    calories: input.calories,
-    proteinG: input.proteinG,
-    carbsG: input.carbsG,
-    fatG: input.fatG,
     createdAt:
       existing.find((item) => item.id === input.id)?.createdAt ??
       new Date().toISOString(),
-  };
+  });
 
   const withoutDup = existing.filter((item) => item.id !== meal.id);
   writeJson(MEALS_KEY, [meal, ...withoutDup].slice(0, 48));
@@ -212,13 +239,19 @@ export function mealFromMacros(input: {
   carbsG: number;
   fatG: number;
   categoryId?: string;
+  lineItems?: MealLineItem[];
 }): SavedMealInput {
   return {
     name: input.name,
     categoryId: input.categoryId ?? "favorites",
+    lineItems: input.lineItems ?? [],
     calories: input.calories,
     proteinG: input.proteinG,
     carbsG: input.carbsG,
     fatG: input.fatG,
   };
+}
+
+export function mealHasLineItems(meal: SavedMeal): boolean {
+  return meal.lineItems.length > 0;
 }

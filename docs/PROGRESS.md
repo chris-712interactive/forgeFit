@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Saved Meals library with custom categories |
+| **Last session focus** | Curated whole-foods DB + meal builder with line items |
 
 ---
 
@@ -33,6 +33,35 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Curated whole-foods DB + meal builder
+
+**What was done:**
+- Removed USDA / Open Food Facts search from Nutrition Browse tab (API route retained but unused in UI)
+- Added `@forgefit/nutrition-core` **whole-foods** database (~50 common ingredients with clear portions, e.g. "2 large eggs", "4 oz chicken")
+- **Meal builder** — multi-ingredient meals with quantity steppers, category, save & log
+- Saved meals now store **line items** (ingredient list + quantities); totals derived from lines
+- **Log meal sheet** — one-time portion adjustments when logging a saved template; saved meal unchanged
+- Legacy macro-only saved meals still work (adjust macros at log time)
+
+**What's next:**
+- Expand whole-foods list based on user feedback (more cuts, brands, portions)
+- Consider Supabase sync for saved meals cross-device
+- User QA: build breakfast from eggs + oatmeal + berries, save, log with tweaked portions
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts` (new)
+- `packages/nutrition-core/src/macros.ts`
+- `packages/nutrition-core/src/index.ts`
+- `apps/web/src/lib/nutrition/saved-meals.ts`
+- `apps/web/src/components/nutrition/meal-builder.tsx` (new)
+- `apps/web/src/components/nutrition/log-meal-sheet.tsx` (new)
+- `apps/web/src/components/nutrition/saved-meals-library.tsx`
+- `apps/web/src/components/nutrition/nutrition-diary.tsx`
+- `apps/web/src/app/(app)/nutrition/page.tsx`
+- `docs/BIBLE.md`, `docs/PROGRESS.md`, `docs/phases/04-nutrition.md`
 
 ### 2026-06-19 — Saved Meals library + custom categories
 
