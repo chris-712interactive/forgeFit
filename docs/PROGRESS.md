@@ -34,6 +34,15 @@
 
 ## Session Log
 
+### 2026-06-19 — GF all-purpose flour
+
+**What was done:**
+- Added **Gluten-free all-purpose flour** (1 tbsp) to pantry — searchable as `gf flour`, `1 to 1`, `gluten free`
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Whole-foods cooking pantry expansion (~90 → ~220 items)
 
 **What was done:**

@@ -251,6 +251,7 @@ export const WHOLE_FOODS: WholeFood[] = [
   { id: "flour-all-purpose", name: "All-purpose flour", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 28, proteinG: 1, carbsG: 6, fatG: 0 }, searchTerms: ["flour", "baking"] },
   { id: "flour-whole-wheat", name: "Whole wheat flour", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 25, proteinG: 1, carbsG: 5, fatG: 0 }, searchTerms: ["flour", "baking"] },
   { id: "flour-almond", name: "Almond flour", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 35, proteinG: 1, carbsG: 1, fatG: 3 }, searchTerms: ["flour", "baking", "gluten free"] },
+  { id: "flour-gf-ap", name: "Gluten-free all-purpose flour", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 28, proteinG: 0.5, carbsG: 6, fatG: 0 }, searchTerms: ["flour", "baking", "gluten free", "gf flour", "1 to 1 flour", "measure for measure"] },
   { id: "cornstarch", name: "Cornstarch", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 30, proteinG: 0, carbsG: 7, fatG: 0 }, searchTerms: ["thickener"] },
   { id: "breadcrumbs", name: "Breadcrumbs", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 14, proteinG: 0.5, carbsG: 2.5, fatG: 0 }, searchTerms: ["panko", "bread crumbs"] },
   { id: "panko", name: "Panko breadcrumbs", group: "pantry", servingLabel: "1 tbsp", macros: { calories: 12, proteinG: 0.5, carbsG: 2, fatG: 0 } },
