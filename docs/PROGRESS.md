@@ -49,6 +49,15 @@
 - `packages/nutrition-core/src/whole-foods.ts`
 - `apps/web/src/components/nutrition/meal-builder.tsx`
 
+### 2026-06-19 — Whole-foods: sourdough + whole milk
+
+**What was done:**
+- Added **Whole milk** (1 cup) and **Sourdough bread** (1 slice) to curated ingredient list
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Meal builder 3-step wizard
 
 **What was done:**
