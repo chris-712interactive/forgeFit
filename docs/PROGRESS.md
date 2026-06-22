@@ -34,6 +34,15 @@
 
 ## Session Log
 
+### 2026-06-19 — Ground beef 80/20 and 75/25
+
+**What was done:**
+- Added **Ground beef (80% lean)** and **Ground beef (75% lean)** — 4 oz cooked; searchable as `80/20`, `75/25`, `hamburger`
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Ingredient suggestion submissions
 
 **What was done:**

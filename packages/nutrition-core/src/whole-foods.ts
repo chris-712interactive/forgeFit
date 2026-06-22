@@ -75,6 +75,8 @@ export const WHOLE_FOODS: WholeFood[] = [
   { id: "rotisserie-chicken", name: "Rotisserie chicken", group: "protein", servingLabel: "4 oz meat", macros: { calories: 190, proteinG: 25, carbsG: 0, fatG: 9 }, searchTerms: ["store chicken", "deli chicken"] },
   { id: "ground-turkey-93", name: "Ground turkey (93% lean)", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 170, proteinG: 23, carbsG: 0, fatG: 8 } },
   { id: "ground-beef-90", name: "Ground beef (90% lean)", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 200, proteinG: 23, carbsG: 0, fatG: 11 } },
+  { id: "ground-beef-80", name: "Ground beef (80% lean)", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 287, proteinG: 22, carbsG: 0, fatG: 19 }, searchTerms: ["80/20", "8020", "hamburger"] },
+  { id: "ground-beef-75", name: "Ground beef (75% lean)", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 331, proteinG: 21, carbsG: 0, fatG: 24 }, searchTerms: ["75/25", "7525", "hamburger"] },
   { id: "steak-sirloin", name: "Sirloin steak", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 210, proteinG: 26, carbsG: 0, fatG: 11 }, searchTerms: ["beef steak"] },
   { id: "salmon", name: "Salmon", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 235, proteinG: 25, carbsG: 0, fatG: 14 } },
   { id: "tilapia", name: "Tilapia", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 145, proteinG: 30, carbsG: 0, fatG: 3 }, searchTerms: ["white fish"] },
