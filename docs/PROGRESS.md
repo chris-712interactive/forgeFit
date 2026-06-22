@@ -34,6 +34,15 @@
 
 ## Session Log
 
+### 2026-06-19 — Shredded cheese blends
+
+**What was done:**
+- Added shredded cheese options (1 oz): cheddar, mozzarella, **Mexican blend**, Colby Jack, pepper Jack, Italian, pizza, triple cheddar, Monterey Jack, four cheese blend
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Almond & cassava flour tortillas
 
 **What was done:**
