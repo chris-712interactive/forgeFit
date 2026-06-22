@@ -529,7 +529,7 @@ function StepIngredients({
           type="search"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Search eggs, mayo, bagel…"
+          placeholder="Search sugar, chicken, garlic, flour…"
           className={`${inputClass} mt-2 shrink-0 text-sm`}
         />
         <div className="-mx-1 mt-2 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Universal fractional quantities for whole-foods meal builder |
+| **Last session focus** | Whole-foods expansion — pantry, sugars, cooking staples (~220 items) |
 
 ---
 
@@ -33,6 +33,24 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Whole-foods cooking pantry expansion (~90 → ~220 items)
+
+**What was done:**
+- New **Pantry & baking** category: granulated/brown/powdered/coconut sugar, honey, maple, agave, molasses, flours, cornstarch, breadcrumbs, oats, broths, vinegars, canned tomatoes/coconut milk, tomato paste, olives, pickles
+- Expanded **protein** (turkey breast, pork, lamb, cod, scallops, deli meats, smoked salmon)
+- Expanded **produce** (garlic, ginger, lemon/lime, celery, zucchini, cauliflower, kale, squash, more fruit)
+- Expanded **grains** (couscous, barley, bulgur, pita, naan, granola, pancakes/waffles)
+- Expanded **dairy** (ricotta, sour cream, heavy cream, more cheeses, oat/soy milk)
+- Expanded **legumes**, **fats/nuts/seeds**, **condiments** (teriyaki, hoisin, tahini, pesto, Caesar, etc.)
+- Honey/maple moved to Pantry; search terms on sugars (`"sugar"`) for easy lookup
+
+**What's next:**
+- User feedback on gaps; consider Supabase sync for saved meals
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Universal fractional quantities
 
