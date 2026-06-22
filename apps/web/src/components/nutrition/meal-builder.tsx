@@ -25,6 +25,7 @@ import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { MealQuantityStepper } from "./meal-quantity-stepper";
+import { IngredientSuggestionPanel } from "./ingredient-suggestion-panel";
 
 interface MealBuilderProps {
   open: boolean;
@@ -570,9 +571,18 @@ function StepIngredients({
               </button>
             </li>
           ))}
-          {foods.length === 0 && query.trim().length > 0 && (
+          {foods.length === 0 && query.trim().length >= 2 && (
+            <IngredientSuggestionPanel
+              key={query.trim().toLowerCase()}
+              searchQuery={query.trim()}
+              inputClass={inputClass}
+            />
+          )}
+          {foods.length === 0 &&
+            query.trim().length > 0 &&
+            query.trim().length < 2 && (
             <li className="py-4 text-center text-sm text-forge-muted">
-              No matches — try another term or category.
+              Keep typing to search, or try another term.
             </li>
           )}
         </ul>

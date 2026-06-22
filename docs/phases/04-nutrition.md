@@ -16,6 +16,7 @@ USDA + Open Food Facts search, daily macro diary, targets from evidence engine.
 - [x] `DELETE /api/nutrition/logs/[id]` — remove entry
 - [x] Nutrition tab UI — macro progress vs program targets, search, log list; Log tab optimized for fast manual macro entry (2026-06-19)
 - [x] **My Meals** library — saved meals with user-defined categories, ingredient line items, one-time log adjustments (localStorage; 2026-06-19)
+- [x] Ingredient suggestion flow — users submit missing items from meal builder; stored in Supabase + optional email alert (2026-06-19)
 
 ## Done When
 

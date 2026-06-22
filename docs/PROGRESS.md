@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Whole-foods expansion — pantry, sugars, cooking staples (~220 items) |
+| **Last session focus** | Ingredient suggestion flow (meal builder → Supabase + email) |
 
 ---
 
@@ -33,6 +33,28 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Ingredient suggestion submissions
+
+**What was done:**
+- Meal builder **no-results** state (2+ char search): form to suggest missing ingredients (name, optional category, notes)
+- `POST /api/nutrition/ingredient-suggestions` — authenticated insert to Supabase
+- Migration `20260610880000_nutrition_ingredient_suggestions.sql`
+- Optional **Resend email** to `NUTRITION_INGREDIENT_FEEDBACK_TO` on each submission
+- `GET /api/internal/nutrition-ingredient-suggestions` — review queue (CRON_SECRET + service role)
+
+**What's next:**
+- Apply migration in Supabase; set `NUTRITION_INGREDIENT_FEEDBACK_TO` in prod
+- Periodically review internal API or Supabase table; add popular items to `whole-foods.ts`
+
+**Files touched:**
+- `supabase/migrations/20260610880000_nutrition_ingredient_suggestions.sql`
+- `apps/web/src/app/api/nutrition/ingredient-suggestions/route.ts`
+- `apps/web/src/app/api/internal/nutrition-ingredient-suggestions/route.ts`
+- `apps/web/src/lib/nutrition/ingredient-suggestion-email.ts`
+- `apps/web/src/components/nutrition/ingredient-suggestion-panel.tsx`
+- `apps/web/src/components/nutrition/meal-builder.tsx`
+- `.env.example`, `docs/phases/04-nutrition.md`, `docs/PROGRESS.md`
 
 ### 2026-06-19 — Shredded cheese blends
 
