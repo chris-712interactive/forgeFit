@@ -2,6 +2,7 @@
 
 import {
   cloneLineItems,
+  formatLineItemPortion,
   rescaleLineItem,
   sumLineItems,
   type MealLineItem,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/nutrition/saved-meals";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { MealQuantityStepper } from "./meal-quantity-stepper";
 
 interface LogMealSheetProps {
   open: boolean;
@@ -159,10 +161,12 @@ export function LogMealSheet({
                         {item.foodName}
                       </p>
                       <p className="text-xs text-forge-muted">
-                        {item.servingLabel} · {item.calories} kcal
+                        {formatLineItemPortion(item.foodId, item.quantity)} ·{" "}
+                        {item.calories} kcal
                       </p>
                     </div>
-                    <QuantityStepper
+                    <MealQuantityStepper
+                      foodId={item.foodId}
                       value={item.quantity}
                       onChange={(q) => updateQuantity(item.id, q)}
                     />
@@ -209,38 +213,6 @@ export function LogMealSheet({
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function QuantityStepper({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <div className="flex shrink-0 items-center gap-1 rounded-lg border border-[var(--border)] bg-forge-surface-raised">
-      <button
-        type="button"
-        onClick={() => onChange(Math.round((value - 0.5) * 10) / 10)}
-        className="flex h-9 w-9 items-center justify-center text-lg text-forge-muted"
-        aria-label="Decrease"
-      >
-        −
-      </button>
-      <span className="min-w-[2rem] text-center text-sm font-semibold tabular-nums">
-        {Number.isInteger(value) ? value : value.toFixed(1)}
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.round((value + 0.5) * 10) / 10)}
-        className="flex h-9 w-9 items-center justify-center text-lg text-forge-muted"
-        aria-label="Increase"
-      >
-        +
-      </button>
     </div>
   );
 }

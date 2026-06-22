@@ -2,6 +2,7 @@
 
 import {
   buildLineItem,
+  formatLineItemPortion,
   rescaleLineItem,
   searchWholeFoods,
   sumLineItems,
@@ -23,6 +24,7 @@ import {
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { MealQuantityStepper } from "./meal-quantity-stepper";
 
 interface MealBuilderProps {
   open: boolean;
@@ -503,10 +505,12 @@ function StepIngredients({
                     {item.foodName}
                   </p>
                   <p className="text-xs text-forge-muted">
+                    {formatLineItemPortion(item.foodId, item.quantity)} ·{" "}
                     {item.calories} kcal
                   </p>
                 </div>
-                <QuantityStepper
+                <MealQuantityStepper
+                  foodId={item.foodId}
                   value={item.quantity}
                   onChange={(q) => onUpdateQuantity(item.id, q)}
                   compact
@@ -626,9 +630,10 @@ function StepSave({
             >
               <span className="truncate text-forge-text">
                 {item.foodName}
-                {item.quantity !== 1 && (
-                  <span className="text-forge-muted"> × {item.quantity}</span>
-                )}
+                <span className="text-forge-muted">
+                  {" "}
+                  · {formatLineItemPortion(item.foodId, item.quantity)}
+                </span>
               </span>
               <span className="shrink-0 tabular-nums">{item.calories} kcal</span>
             </li>
@@ -688,41 +693,6 @@ function StepSave({
           </p>
         )}
       </section>
-    </div>
-  );
-}
-
-function QuantityStepper({
-  value,
-  onChange,
-  compact = false,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-  compact?: boolean;
-}) {
-  const btnClass = compact ? "h-8 w-8 text-base" : "h-9 w-9 text-lg";
-  return (
-    <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-[var(--border)] bg-forge-surface">
-      <button
-        type="button"
-        onClick={() => onChange(Math.round((value - 0.5) * 10) / 10)}
-        className={`flex items-center justify-center text-forge-muted hover:text-forge-text ${btnClass}`}
-        aria-label="Decrease quantity"
-      >
-        −
-      </button>
-      <span className="min-w-[1.75rem] text-center text-sm font-semibold tabular-nums text-forge-text">
-        {Number.isInteger(value) ? value : value.toFixed(1)}
-      </span>
-      <button
-        type="button"
-        onClick={() => onChange(Math.round((value + 0.5) * 10) / 10)}
-        className={`flex items-center justify-center text-forge-muted hover:text-forge-text ${btnClass}`}
-        aria-label="Increase quantity"
-      >
-        +
-      </button>
     </div>
   );
 }

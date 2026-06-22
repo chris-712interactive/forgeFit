@@ -25,11 +25,16 @@ export interface WholeFood {
   id: string;
   name: string;
   group: WholeFoodGroup;
-  /** Human-readable default portion at quantity 1, e.g. "2 large eggs" */
+  /** Human-readable default portion at quantity 1, e.g. "1 large egg" */
   servingLabel: string;
   macros: MacroTotals;
   /** Extra search keywords (e.g. "mayo" → Mayonnaise) */
   searchTerms?: string[];
+  /**
+   * Step for +/- in meal builder. Default 0.5.
+   * Use 1/12 for count foods (eggs) to support ¼, ⅓, ½ increments.
+   */
+  quantityStep?: number;
 }
 
 export interface MealLineItem {
@@ -60,8 +65,8 @@ export const WHOLE_FOOD_GROUP_LABELS: Record<WholeFoodGroup, string> = {
  */
 export const WHOLE_FOODS: WholeFood[] = [
   // ── Protein ──────────────────────────────────────────────────────────────
-  { id: "eggs-large", name: "Eggs", group: "protein", servingLabel: "2 large", macros: { calories: 140, proteinG: 12, carbsG: 1, fatG: 10 } },
-  { id: "egg-whites", name: "Egg whites", group: "protein", servingLabel: "4 large", macros: { calories: 68, proteinG: 14, carbsG: 1, fatG: 0 } },
+  { id: "eggs-large", name: "Eggs", group: "protein", servingLabel: "1 large", macros: { calories: 70, proteinG: 6, carbsG: 0, fatG: 5 }, quantityStep: 1 / 12 },
+  { id: "egg-whites", name: "Egg whites", group: "protein", servingLabel: "1 large white", macros: { calories: 17, proteinG: 4, carbsG: 0, fatG: 0 }, quantityStep: 1 / 12 },
   { id: "chicken-breast", name: "Chicken breast", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 185, proteinG: 35, carbsG: 0, fatG: 4 }, searchTerms: ["grilled chicken"] },
   { id: "chicken-thigh", name: "Chicken thigh", group: "protein", servingLabel: "4 oz cooked", macros: { calories: 230, proteinG: 28, carbsG: 0, fatG: 13 } },
   { id: "rotisserie-chicken", name: "Rotisserie chicken", group: "protein", servingLabel: "4 oz meat", macros: { calories: 190, proteinG: 25, carbsG: 0, fatG: 9 }, searchTerms: ["store chicken", "deli chicken"] },
@@ -172,6 +177,112 @@ export const WHOLE_FOODS: WholeFood[] = [
 
 export function getWholeFoodById(id: string): WholeFood | undefined {
   return WHOLE_FOODS.find((food) => food.id === id);
+}
+
+export const DEFAULT_QUANTITY_STEP = 0.5;
+/** Twelfth increments — supports ¼, ⅓, ½, ⅔, ¾ per unit */
+export const FRACTIONAL_QUANTITY_STEP = 1 / 12;
+
+export function getQuantityStep(foodId: string): number {
+  return getWholeFoodById(foodId)?.quantityStep ?? DEFAULT_QUANTITY_STEP;
+}
+
+export function adjustQuantity(
+  current: number,
+  foodId: string,
+  direction: 1 | -1
+): number {
+  const ladder = getQuantityLadder(foodId);
+  if (ladder) {
+    let idx = ladder.findIndex((v) => v >= current - 0.01);
+    if (idx === -1) idx = ladder.length - 1;
+    if (direction === 1) {
+      return ladder[Math.min(idx + 1, ladder.length - 1)] ?? current;
+    }
+    const prevIdx = ladder[idx]! > current + 0.01 ? idx - 1 : idx - 1;
+    return ladder[Math.max(prevIdx, 0)] ?? 0;
+  }
+
+  const step = getQuantityStep(foodId);
+  const units = Math.round(current / step);
+  const next = Math.max(0, units + direction) * step;
+  return snapQuantity(next, step);
+}
+
+/** Quarter / third / half ladder for count-based foods (eggs, etc.) */
+function buildCountFoodLadder(maxWhole: number): number[] {
+  const fracs = [0.25, 1 / 3, 0.5, 2 / 3, 0.75];
+  const values = new Set<number>();
+  for (let whole = 0; whole <= maxWhole; whole++) {
+    if (whole > 0) values.add(whole);
+    for (const frac of fracs) {
+      const v = snapQuantity(whole + frac, FRACTIONAL_QUANTITY_STEP);
+      if (v > 0 && v <= maxWhole) values.add(v);
+    }
+  }
+  return [...values].sort((a, b) => a - b);
+}
+
+function getQuantityLadder(foodId: string): number[] | null {
+  if (Math.abs(getQuantityStep(foodId) - FRACTIONAL_QUANTITY_STEP) < 0.001) {
+    return buildCountFoodLadder(12);
+  }
+  return null;
+}
+
+function snapQuantity(value: number, step: number): number {
+  if (step === FRACTIONAL_QUANTITY_STEP) {
+    return Math.round(value * 12) / 12;
+  }
+  return Math.round(value * 10) / 10;
+}
+
+/** Display quantity — shows ¼, ⅓, ½, 1, 1½ for twelfth-step foods */
+export function formatQuantity(quantity: number, foodId?: string): string {
+  const step = foodId ? getQuantityStep(foodId) : DEFAULT_QUANTITY_STEP;
+  if (Math.abs(step - FRACTIONAL_QUANTITY_STEP) < 0.001) {
+    return formatTwelfthQuantity(quantity);
+  }
+  return Number.isInteger(quantity) ? String(quantity) : quantity.toFixed(1);
+}
+
+function formatTwelfthQuantity(quantity: number): string {
+  const twelfths = Math.round(quantity * 12);
+  if (twelfths <= 0) return "0";
+
+  const whole = Math.floor(twelfths / 12);
+  const rem = twelfths % 12;
+  const frac: Record<number, string> = {
+    3: "¼",
+    4: "⅓",
+    6: "½",
+    8: "⅔",
+    9: "¾",
+  };
+
+  if (whole === 0) {
+    return frac[rem] ?? String(round1(quantity));
+  }
+  if (rem === 0) {
+    return String(whole);
+  }
+  return `${whole}${frac[rem] ?? ""}`;
+}
+
+/** Portion line for a line item, e.g. "2 large" or "½ large" */
+export function formatLineItemPortion(foodId: string, quantity: number): string {
+  const food = getWholeFoodById(foodId);
+  if (!food) return `× ${formatQuantity(quantity)}`;
+
+  const qLabel = formatQuantity(quantity, foodId);
+
+  if (Math.abs(getQuantityStep(foodId) - FRACTIONAL_QUANTITY_STEP) < 0.001) {
+    const unit = food.servingLabel.replace(/^1\s+/, "");
+    return `${qLabel} ${unit}`;
+  }
+
+  if (quantity === 1) return food.servingLabel;
+  return `${qLabel} × ${food.servingLabel}`;
 }
 
 export function searchWholeFoods(query: string, group?: WholeFoodGroup): WholeFood[] {
