@@ -1,4 +1,6 @@
+import { formatIngredientSuggestionError } from "@/lib/nutrition/ingredient-suggestion-errors";
 import { sendIngredientSuggestionEmail } from "@/lib/nutrition/ingredient-suggestion-email";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -9,6 +11,14 @@ const createSuggestionSchema = z.object({
   categoryHint: z.string().trim().max(80).optional(),
   notes: z.string().trim().max(500).optional(),
 });
+
+function tryAdminClient() {
+  try {
+    return createAdminClient();
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -35,25 +45,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from("nutrition_ingredient_suggestions")
-    .insert({
-      user_id: user.id,
-      search_query: body.searchQuery,
-      suggested_name: body.suggestedName,
-      category_hint: body.categoryHint ?? null,
-      notes: body.notes ?? null,
-    })
-    .select("id")
-    .single();
+  const row = {
+    user_id: user.id,
+    search_query: body.searchQuery,
+    suggested_name: body.suggestedName,
+    category_hint: body.categoryHint ?? null,
+    notes: body.notes ?? null,
+  };
+
+  const admin = tryAdminClient();
+  const { data, error } = admin
+    ? await admin
+        .from("nutrition_ingredient_suggestions")
+        .insert(row)
+        .select("id")
+        .single()
+    : await supabase
+        .from("nutrition_ingredient_suggestions")
+        .insert(row)
+        .select("id")
+        .single();
 
   if (error) {
+    console.error("[ingredient-suggestion]", error.code, error.message, error.details);
     return NextResponse.json(
-      {
-        error: error.message.includes("nutrition_ingredient_suggestions")
-          ? "Apply the nutrition ingredient suggestions migration."
-          : error.message,
-      },
+      { error: formatIngredientSuggestionError(error) },
       { status: 500 }
     );
   }

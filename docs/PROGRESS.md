@@ -44,8 +44,13 @@
 - `GET /api/internal/nutrition-ingredient-suggestions` — review queue (CRON_SECRET + service role)
 
 **What's next:**
-- Apply migration in Supabase; set `NUTRITION_INGREDIENT_FEEDBACK_TO` in prod
-- Periodically review internal API or Supabase table; add popular items to `whole-foods.ts`
+- Apply migration `20260610890000_nutrition_ingredient_suggestions_fix.sql` if suggestions fail after 880000
+- Set `NUTRITION_INGREDIENT_FEEDBACK_TO` in prod; reload Supabase API schema after migrations
+
+**Files touched (fix):**
+- `supabase/migrations/20260610890000_nutrition_ingredient_suggestions_fix.sql`
+- `apps/web/src/app/api/nutrition/ingredient-suggestions/route.ts`
+- `apps/web/src/lib/nutrition/ingredient-suggestion-errors.ts`
 
 **Files touched:**
 - `supabase/migrations/20260610880000_nutrition_ingredient_suggestions.sql`
