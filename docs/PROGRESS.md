@@ -34,6 +34,15 @@
 
 ## Session Log
 
+### 2026-06-19 — Almond & cassava flour tortillas
+
+**What was done:**
+- Added **Almond flour tortilla** and **Cassava flour tortilla** (1 tortilla each) under Grains & starches
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — GF all-purpose flour
 
 **What was done:**

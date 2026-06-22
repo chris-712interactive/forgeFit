@@ -146,6 +146,8 @@ export const WHOLE_FOODS: WholeFood[] = [
   { id: "english-muffin", name: "English muffin", group: "grains", servingLabel: "1 muffin", macros: { calories: 130, proteinG: 5, carbsG: 26, fatG: 1 }, searchTerms: ["breakfast bread"] },
   { id: "tortilla-flour", name: "Flour tortilla (8 in)", group: "grains", servingLabel: "1 tortilla", macros: { calories: 140, proteinG: 4, carbsG: 24, fatG: 3 }, searchTerms: ["wrap"] },
   { id: "tortilla-corn", name: "Corn tortilla", group: "grains", servingLabel: "1 small", macros: { calories: 50, proteinG: 1, carbsG: 11, fatG: 0.5 }, searchTerms: ["taco"] },
+  { id: "tortilla-almond", name: "Almond flour tortilla", group: "grains", servingLabel: "1 tortilla", macros: { calories: 45, proteinG: 1, carbsG: 6, fatG: 2 }, searchTerms: ["wrap", "taco", "gluten free", "gf", "siete"] },
+  { id: "tortilla-cassava", name: "Cassava flour tortilla", group: "grains", servingLabel: "1 tortilla", macros: { calories: 70, proteinG: 1, carbsG: 15, fatG: 0.5 }, searchTerms: ["wrap", "taco", "gluten free", "gf", "casava", "yuca", "siete"] },
   { id: "pasta-cooked", name: "Pasta", group: "grains", servingLabel: "1 cup cooked", macros: { calories: 220, proteinG: 8, carbsG: 43, fatG: 1 } },
   { id: "rice-cakes", name: "Rice cakes", group: "grains", servingLabel: "1 cake", macros: { calories: 35, proteinG: 1, carbsG: 7, fatG: 0 }, searchTerms: ["snack"] },
   { id: "cream-of-rice", name: "Cream of rice", group: "grains", servingLabel: "1 cup cooked", macros: { calories: 130, proteinG: 2, carbsG: 28, fatG: 0 } },
