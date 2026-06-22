@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Curated whole-foods DB + meal builder with line items |
+| **Last session focus** | Universal fractional quantities for whole-foods meal builder |
 
 ---
 
@@ -33,6 +33,21 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Universal fractional quantities
+
+**What was done:**
+- **Fractional stepping is now the default** for all whole-foods (¼, ⅓, ½, ¾, whole) via shared ladder in `nutrition-core`
+- Normalized multi-unit serving labels to per-1-unit bases (bacon slice, rice cake, corn tortilla, avocado, legumes, deli meats, 2 tbsp condiments → 1 tbsp, etc.) so fractions map to real portions
+- `formatLineItemPortion` shows intuitive labels: "2 slice", "½ × 4 oz cooked", "1 cup" at qty 1
+- Ladder max raised to 24 for count foods (bread slices, eggs, etc.)
+
+**What's next:**
+- User feedback on portions/macros; expand whole-foods from most-built meals
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Whole-foods library expansion (~50 → ~90 items)
 
