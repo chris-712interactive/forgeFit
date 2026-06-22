@@ -27,7 +27,7 @@ Supabase Auth, multi-step onboarding wizard, mobile bottom nav shell.
 - [x] User can sign up / sign in (email + Google)
 - [x] Onboarding collects first name, last name, and date of birth (age derived)
 - [x] Onboarding saves complete profile
-- [x] Bottom nav: Home, Workout, Nutrition, Progress, Profile
+- [x] Bottom nav: Home, Workout, Nutrition, Progress, Community, Profile (Progress restored 2026-06-19)
 - [x] Mobile layout at 375px passes visual review
 
 ## Routes Added

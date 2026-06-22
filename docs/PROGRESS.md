@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-19 |
-| **Last session focus** | Ingredient suggestion flow (meal builder → Supabase + email) |
+| **Last session focus** | Progress tab restored to bottom nav + home shortcut |
 
 ---
 
@@ -33,6 +33,20 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Progress discoverability
+
+**What was done:**
+- Restored **Progress** to bottom nav (6 tabs: Home, Workout, Nutrition, Progress, Community, Profile)
+- Always-visible **Progress** shortcut card on Home dashboard
+- **Progress →** link in Today snapshot header (alongside Log food)
+
+**Files touched:**
+- `apps/web/src/components/layout/bottom-nav.tsx`
+- `apps/web/src/components/home/home-progress-shortcut.tsx`
+- `apps/web/src/components/home/home-dashboard.tsx`
+- `apps/web/src/components/home/home-today-snapshot.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Ground beef 80/20 and 75/25
 

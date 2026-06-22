@@ -1,5 +1,6 @@
 "use client";
 
+import { HomeProgressShortcut } from "@/components/home/home-progress-shortcut";
 import { CommunitySection } from "@/components/home/community-section";
 import { HomeNotificationsStrip } from "@/components/home/home-notifications-strip";
 import { BirthdayBanner } from "@/components/home/birthday-banner";
@@ -50,6 +51,8 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         activity={data.activity}
         sleep={data.sleep}
       />
+
+      <HomeProgressShortcut />
 
       {data.weeklyScorecard && (
         <WeeklyScorecardStrip scorecard={data.weeklyScorecard} compact />

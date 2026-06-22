@@ -31,12 +31,20 @@ export function HomeTodaySnapshot({
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Today
         </h2>
-        <Link
-          href="/nutrition"
-          className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
-        >
-          Log food →
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/progress"
+            className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
+          >
+            Progress →
+          </Link>
+          <Link
+            href="/nutrition"
+            className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
+          >
+            Log food →
+          </Link>
+        </div>
       </div>
 
       <MacroSummary

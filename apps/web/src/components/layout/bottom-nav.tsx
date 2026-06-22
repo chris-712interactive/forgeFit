@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: HomeIcon },
   { href: "/workout", label: "Workout", icon: WorkoutIcon },
   { href: "/nutrition", label: "Nutrition", icon: NutritionIcon },
+  { href: "/progress", label: "Progress", icon: ProgressIcon },
   { href: "/community", label: "Community", icon: CommunityIcon },
   { href: "/profile", label: "Profile", icon: ProfileIcon },
 ] as const;
@@ -46,14 +47,14 @@ export function BottomNav({ unreadCommunityCount = 0 }: BottomNavProps) {
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] bg-forge-surface/95 backdrop-blur-md"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="mx-auto flex max-w-lg items-stretch justify-around px-2 py-2">
+      <div className="mx-auto flex max-w-lg items-stretch justify-between px-1 py-1.5 sm:justify-around sm:px-2 sm:py-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href ||
             pathname.startsWith(`${href}/`) ||
             (href === "/workout" && pathname === "/workout");
           const showBadge = href === "/community" && unreadCommunityCount > 0;
-          const className = `relative flex min-h-[52px] min-w-[56px] flex-col items-center justify-center gap-0.5 rounded-lg px-2 text-xs font-medium transition-colors ${
+          const className = `relative flex min-h-[52px] min-w-0 flex-1 max-w-[4.25rem] flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 text-[10px] font-medium transition-colors sm:min-w-[56px] sm:max-w-none sm:px-2 sm:text-xs ${
             active
               ? "text-forge-ember"
               : "text-forge-muted hover:text-forge-text"
@@ -134,6 +135,27 @@ function NutritionIcon({ active }: { active: boolean }) {
       strokeWidth="2"
     >
       <path d="M12 2C9 6 8 10 8 14a4 4 0 008 0c0-4-1-8-4-12z" />
+    </svg>
+  );
+}
+
+function ProgressIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M4 19V5" />
+      <path d="M4 19h16" />
+      <path
+        d="M8 17V11M12 17V7M16 17v-4"
+        strokeLinecap="round"
+        fill={active ? "currentColor" : "none"}
+      />
     </svg>
   );
 }
