@@ -1,5 +1,6 @@
 "use client";
 
+import { GenericInstallGuide } from "@/components/pwa/generic-install-guide";
 import { IosInstallGuide } from "@/components/pwa/ios-install-guide";
 import { useEffect, useState } from "react";
 
@@ -16,43 +17,59 @@ interface PwaInstallPromptProps {
   showAfterOnboarding?: boolean;
 }
 
+function detectIos(): boolean {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent.toLowerCase();
+  return (
+    /iphone|ipad|ipod/.test(ua) ||
+    (window.navigator.platform === "MacIntel" &&
+      window.navigator.maxTouchPoints > 1)
+  );
+}
+
 export function PwaInstallPrompt({
   showAfterOnboarding = false,
 }: PwaInstallPromptProps) {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [active, setActive] = useState(showAfterOnboarding);
   const [isIos, setIsIos] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    if (localStorage.getItem(DISMISS_KEY) === "1") return;
+
+    const standalone = window.matchMedia("(display-mode: standalone)").matches;
+    setIsStandalone(standalone);
+    if (standalone) return;
+
+    if (
+      !showAfterOnboarding &&
+      localStorage.getItem(DISMISS_KEY) === "1"
+    ) {
+      setDismissed(true);
+      setActive(false);
+      return;
+    }
+
     if (
       !showAfterOnboarding &&
       localStorage.getItem(FIRST_WORKOUT_KEY) !== "1"
     ) {
+      setActive(false);
       return;
     }
 
-    const ua = window.navigator.userAgent.toLowerCase();
-    const ios =
-      /iphone|ipad|ipod/.test(ua) ||
-      (window.navigator.platform === "MacIntel" &&
-        window.navigator.maxTouchPoints > 1);
-    setIsIos(ios);
+    setActive(true);
+    setIsIos(detectIos());
 
     function handleBeforeInstall(event: Event) {
       event.preventDefault();
       setDeferredPrompt(event as BeforeInstallPromptEvent);
-      setVisible(true);
     }
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
-
-    if (ios) {
-      setVisible(true);
-    }
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
@@ -61,7 +78,7 @@ export function PwaInstallPrompt({
 
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, "1");
-    setVisible(false);
+    setDismissed(true);
   }
 
   async function install() {
@@ -71,11 +88,39 @@ export function PwaInstallPrompt({
     if (choice.outcome === "accepted") {
       localStorage.setItem(DISMISS_KEY, "1");
     }
-    setVisible(false);
+    setDismissed(true);
     setDeferredPrompt(null);
   }
 
-  if (!visible) return null;
+  if (!active && !isStandalone) {
+    return null;
+  }
+
+  if (isStandalone) {
+    return (
+      <section className="rounded-2xl border border-forge-success/30 bg-forge-success/5 p-4">
+        <p className="text-sm text-forge-text">
+          You&apos;re already using ForgeRep as an installed app.
+        </p>
+      </section>
+    );
+  }
+
+  if (dismissed && !showAfterOnboarding) {
+    return null;
+  }
+
+  if (dismissed && showAfterOnboarding) {
+    return (
+      <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+        <p className="text-sm text-forge-muted">
+          No problem — you can install anytime from Home or Workout.
+        </p>
+      </section>
+    );
+  }
+
+  const showInstallButton = !isIos && deferredPrompt != null;
 
   return (
     <section className="rounded-2xl border border-forge-steel/30 bg-forge-steel/5 p-4">
@@ -84,14 +129,16 @@ export function PwaInstallPrompt({
       </p>
       {isIos ? (
         <IosInstallGuide />
-      ) : (
+      ) : showInstallButton ? (
         <p className="mt-1 text-sm text-forge-muted">
-          Install the app on your device for faster access and reliable offline
-          logging.
+          Tap Install below, or use your browser menu to add ForgeRep to your
+          device.
         </p>
+      ) : (
+        <GenericInstallGuide />
       )}
-      <div className={`flex gap-2 ${isIos ? "mt-4" : "mt-3"}`}>
-        {!isIos && deferredPrompt && (
+      <div className={`flex gap-2 ${isIos || !showInstallButton ? "mt-4" : "mt-3"}`}>
+        {showInstallButton && (
           <button
             type="button"
             onClick={() => void install()}
@@ -104,10 +151,10 @@ export function PwaInstallPrompt({
           type="button"
           onClick={dismiss}
           className={`rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted ${
-            isIos ? "w-full" : ""
+            isIos || !showInstallButton ? "w-full" : ""
           }`}
         >
-          {isIos ? "Got it — maybe later" : "Not now"}
+          {isIos || !showInstallButton ? "Got it — maybe later" : "Not now"}
         </button>
       </div>
     </section>

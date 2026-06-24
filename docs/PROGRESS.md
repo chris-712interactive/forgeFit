@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-19 |
-| **Last session focus** | Progress tab restored to bottom nav + home shortcut |
+| **Last updated** | 2026-06-23 |
+| **Last session focus** | @forgerep Instagram 31-day content calendar doc |
 
 ---
 
@@ -33,6 +33,41 @@
 ---
 
 ## Session Log
+
+### 2026-06-23 — @forgerep Instagram content calendar + Canva templates
+
+**What was done:**
+- Added **31-day Instagram content calendar** for @forgerep — profile setup, batch production guide, daily Reel/carousel/story instructions, hooks, hashtags, metrics
+- Added **Myth vs Fact carousel template** — cover + content slide mockups, Canva build steps, ready-to-use copy from evidence-kb
+- Reference PNGs in `docs/marketing/assets/`
+
+**What's next:**
+- Build five Canva brand templates using `docs/marketing/canva-template-guide.md` (include Myth vs Fact set for Day 3)
+- Execute Day 0 batch recordings (app screen captures) before first post
+- Set bio + link (`forge-rep.com/signup?utm_source=instagram&utm_medium=bio`) on @forgerep
+- Publish Day 1 content per calendar; schedule Week 1 in Meta Business Suite
+
+**Blockers:** None
+
+**Files touched:**
+- `docs/marketing/canva-template-guide.md` — Canva font substitutes (Montserrat / Open Sans)
+- `docs/marketing/instagram-31-day-calendar.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-06-19 — Onboarding PWA step visual fix
+
+**What was done:**
+- Onboarding step 10 always shows install guide (was blank on desktop/non-iOS when `beforeinstallprompt` never fired)
+- Added `GenericInstallGuide` with address-bar mock + app icon for Chrome/Android/desktop
+- Dismiss key no longer hides onboarding step; iOS guide shows app icon in browser mock
+
+**Files touched:**
+- `apps/web/src/components/pwa/install-prompt.tsx`
+- `apps/web/src/components/pwa/generic-install-guide.tsx`
+- `apps/web/src/components/pwa/ios-install-guide.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-19 — Progress discoverability
 

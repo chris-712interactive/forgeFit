@@ -57,6 +57,15 @@ export function IosInstallGuide() {
       >
         <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] bg-forge-surface-raised px-3 py-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-forge-ember/15">
+              <img
+                src="/logo-icon.svg"
+                alt=""
+                className="h-3.5 w-3.5"
+                width={14}
+                height={14}
+              />
+            </span>
             <span className="text-forge-muted" aria-hidden>
               ‹
             </span>
