@@ -1,4 +1,5 @@
 import type { MacroTotals } from "@forgefit/nutrition-core";
+import type { MealLineItem } from "@forgefit/nutrition-core";
 import type { NutritionTargets } from "@forgefit/program-engine";
 
 export interface NutritionLogRow {
@@ -16,6 +17,8 @@ export interface NutritionLogRow {
   proteinG: number;
   fatG: number;
   carbsG: number;
+  lineItems: MealLineItem[] | null;
+  servingsLogged: number | null;
 }
 
 export interface DailyNutritionSummary {

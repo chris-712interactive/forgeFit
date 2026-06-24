@@ -14,6 +14,7 @@ import { MacroSummary } from "./macro-summary";
 import { QuickMacroLog } from "./quick-macro-log";
 import { RestaurantSearchPanel } from "./restaurant-search-panel";
 import { SavedMealsLibrary } from "./saved-meals-library";
+import { SavedMealsQuickLog } from "./saved-meals-quick-log";
 import { SaveMealSheet, type SaveMealDraft } from "./save-meal-sheet";
 
 type DiaryTab = "log" | "browse" | "my-meals";
@@ -163,6 +164,20 @@ export function NutritionDiary({
             </section>
 
             <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+              <LoggedEntries
+                entries={initialSummary.entries}
+                deletingId={deletingId}
+                onDelete={(id) => void handleDelete(id)}
+                embedded
+              />
+            </section>
+
+            <SavedMealsQuickLog
+              loggedDate={initialSummary.date}
+              refreshKey={mealsVersion}
+            />
+
+            <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
                 Quick add
               </h2>
@@ -180,15 +195,6 @@ export function NutritionDiary({
                   onOpenMyMeals={() => setTab("my-meals")}
                 />
               </div>
-            </section>
-
-            <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-              <LoggedEntries
-                entries={initialSummary.entries}
-                deletingId={deletingId}
-                onDelete={(id) => void handleDelete(id)}
-                embedded
-              />
             </section>
           </div>
         )}

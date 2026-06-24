@@ -1,5 +1,5 @@
 import type { MealLineItem } from "@forgefit/nutrition-core";
-import { sumLineItems } from "@forgefit/nutrition-core";
+import { perServingLineItems, sumLineItems } from "@forgefit/nutrition-core";
 
 export interface SavedMealCategory {
   id: string;
@@ -10,7 +10,10 @@ export interface SavedMeal {
   id: string;
   name: string;
   categoryId: string;
+  /** Full recipe ingredient list (entire batch). */
   lineItems: MealLineItem[];
+  /** How many servings the recipe yields (default 1). */
+  servings: number;
   calories: number;
   proteinG: number;
   carbsG: number;
@@ -76,6 +79,7 @@ function normalizeMeal(raw: Partial<SavedMeal> & Pick<SavedMeal, "id" | "name" |
     name: raw.name,
     categoryId: raw.categoryId,
     lineItems,
+    servings: Math.max(raw.servings ?? 1, 1),
     calories: totals.calories,
     proteinG: totals.proteinG,
     carbsG: totals.carbsG,
@@ -104,6 +108,7 @@ function migrateLegacyPresets(): SavedMeal[] {
       name: item.name,
       categoryId: "favorites",
       lineItems: [],
+      servings: 1,
       calories: item.calories,
       proteinG: item.proteinG,
       carbsG: item.carbsG,
@@ -245,6 +250,7 @@ export function mealFromMacros(input: {
     name: input.name,
     categoryId: input.categoryId ?? "favorites",
     lineItems: input.lineItems ?? [],
+    servings: 1,
     calories: input.calories,
     proteinG: input.proteinG,
     carbsG: input.carbsG,
@@ -254,4 +260,26 @@ export function mealFromMacros(input: {
 
 export function mealHasLineItems(meal: SavedMeal): boolean {
   return meal.lineItems.length > 0;
+}
+
+/** Per-serving line items and macros for a saved recipe. */
+export function getPerServingLineItems(meal: SavedMeal): MealLineItem[] {
+  return perServingLineItems(meal.lineItems, meal.servings);
+}
+
+export function getPerServingTotals(meal: SavedMeal) {
+  if (meal.lineItems.length === 0) {
+    return {
+      calories: meal.calories,
+      proteinG: meal.proteinG,
+      carbsG: meal.carbsG,
+      fatG: meal.fatG,
+    };
+  }
+  return sumLineItems(getPerServingLineItems(meal));
+}
+
+export function formatServingsLabel(servings: number): string {
+  if (servings === 1) return "1 serving";
+  return `${servings} servings`;
 }

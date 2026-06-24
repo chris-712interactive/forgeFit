@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-23 |
-| **Last session focus** | @forgerep Instagram 31-day content calendar doc |
+| **Last updated** | 2026-06-19 |
+| **Last session focus** | Nutrition recipe servings + adjust-before-log UX |
 
 ---
 
@@ -33,6 +33,33 @@
 ---
 
 ## Session Log
+
+### 2026-06-19 — Nutrition recipe servings + adjust-before-log UX
+
+**What was done:**
+- **Recipe mode:** Meal builder step 3 — set how many servings a full ingredient batch yields; per-serving macro preview
+- **Adjust before log:** Saved meals on Log tab open `LogMealSheet` with servings stepper + per-ingredient quantity tweaks before posting
+- **Logged meal details:** Expandable ingredient breakdown on diary entries; `line_items` + `servings_logged` persisted on `nutrition_logs`
+- **My Meals library:** Cards show per-serving macros when recipe has multiple servings
+- **Log tab order:** Today's logged entries moved above quick-add for easier review
+
+**What's next:**
+- Apply migration `supabase/migrations/20260610900000_nutrition_log_line_items.sql` in Supabase if not yet applied
+- Manual QA: build 4-serving recipe → log 1 serving with tweaked ingredient → expand logged entry
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts` — `scaleLineItems`, `perServingLineItems`, `adjustServingCount`
+- `apps/web/src/lib/nutrition/saved-meals.ts` — `servings`, `getPerServingTotals`, `formatServingsLabel`
+- `apps/web/src/lib/nutrition/log-entry.ts`, `types.ts`, `service.ts`
+- `apps/web/src/app/api/nutrition/logs/route.ts`
+- `apps/web/src/components/nutrition/meal-builder.tsx`, `log-meal-sheet.tsx`, `logged-entries.tsx`
+- `apps/web/src/components/nutrition/saved-meals-quick-log.tsx`, `saved-meals-library.tsx`, `nutrition-diary.tsx`
+- `supabase/migrations/20260610900000_nutrition_log_line_items.sql`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-06-23 — @forgerep Instagram content calendar + Canva templates
 

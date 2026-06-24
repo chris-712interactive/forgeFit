@@ -1,15 +1,21 @@
 "use client";
 
 import {
+  adjustServingCount,
   cloneLineItems,
   formatLineItemPortion,
+  formatQuantity,
+  perServingLineItems,
   rescaleLineItem,
+  scaleLineItems,
   sumLineItems,
   type MealLineItem,
 } from "@forgefit/nutrition-core";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import {
   formatMacroLine,
+  formatServingsLabel,
+  getPerServingLineItems,
   mealHasLineItems,
   type SavedMeal,
 } from "@/lib/nutrition/saved-meals";
@@ -32,6 +38,7 @@ export function LogMealSheet({
 }: LogMealSheetProps) {
   const router = useRouter();
   const [lineItems, setLineItems] = useState<MealLineItem[]>([]);
+  const [servingsEating, setServingsEating] = useState(1);
   const [calories, setCalories] = useState("");
   const [proteinG, setProteinG] = useState("");
   const [carbsG, setCarbsG] = useState("");
@@ -41,12 +48,19 @@ export function LogMealSheet({
 
   const hasItems = meal != null && mealHasLineItems(meal);
 
+  const perServingBase = useMemo(() => {
+    if (!meal || !hasItems) return [];
+    return getPerServingLineItems(meal);
+  }, [meal, hasItems]);
+
   useEffect(() => {
     if (!open || !meal) return;
     if (mealHasLineItems(meal)) {
-      setLineItems(cloneLineItems(meal.lineItems));
+      setServingsEating(1);
+      setLineItems(cloneLineItems(getPerServingLineItems(meal)));
     } else {
       setLineItems([]);
+      setServingsEating(1);
       setCalories(String(meal.calories));
       setProteinG(String(meal.proteinG));
       setCarbsG(String(meal.carbsG));
@@ -76,6 +90,12 @@ export function LogMealSheet({
 
   if (!open || !meal) return null;
 
+  function applyServingsEating(next: number) {
+    if (next <= 0 || perServingBase.length === 0) return;
+    setServingsEating(next);
+    setLineItems(cloneLineItems(scaleLineItems(perServingBase, next)));
+  }
+
   function updateQuantity(id: string, quantity: number) {
     if (quantity <= 0) {
       setLineItems((items) => items.filter((item) => item.id !== id));
@@ -98,6 +118,13 @@ export function LogMealSheet({
     setSubmitting(true);
     setError(null);
     try {
+      const servingDesc =
+        hasItems && meal.servings > 1
+          ? `${formatQuantity(servingsEating)} serving${servingsEating === 1 ? "" : "s"} (recipe: ${formatServingsLabel(meal.servings)})`
+          : hasItems
+            ? `${formatQuantity(servingsEating)} serving`
+            : "1 serving";
+
       await postMacroLogEntry({
         foodName: meal.name,
         calories: totals.calories,
@@ -105,6 +132,9 @@ export function LogMealSheet({
         carbsG: totals.carbsG,
         fatG: totals.fatG,
         loggedDate,
+        servingDescription: servingDesc,
+        lineItems: hasItems ? lineItems : undefined,
+        servingsLogged: hasItems ? servingsEating : undefined,
       });
       router.refresh();
       onClose();
@@ -136,8 +166,22 @@ export function LogMealSheet({
             Log {meal.name}
           </h2>
           <p className="mt-1 text-sm text-forge-muted">
-            Adjust portions for today only — your saved meal stays unchanged.
+            Adjust servings or individual ingredients — your saved recipe stays
+            unchanged.
           </p>
+
+          {hasItems && meal.servings > 1 && (
+            <p className="mt-2 text-xs text-forge-steel">
+              Recipe makes {formatServingsLabel(meal.servings)} · per serving:{" "}
+              {formatMacroLine({
+                ...sumLineItems(perServingBase),
+                calories: sumLineItems(perServingBase).calories,
+                proteinG: sumLineItems(perServingBase).proteinG,
+                carbsG: sumLineItems(perServingBase).carbsG,
+                fatG: sumLineItems(perServingBase).fatG,
+              })}
+            </p>
+          )}
 
           <div className="mt-4 rounded-xl border border-forge-ember/25 bg-forge-ember/5 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
@@ -148,6 +192,44 @@ export function LogMealSheet({
             </p>
           </div>
 
+          {hasItems && (
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-2.5">
+              <div>
+                <p className="text-sm font-medium text-forge-text">
+                  Servings to log
+                </p>
+                <p className="text-xs text-forge-muted">
+                  Scales all ingredients together
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-[var(--border)] bg-forge-surface-raised">
+                <button
+                  type="button"
+                  onClick={() =>
+                    applyServingsEating(adjustServingCount(servingsEating, -1))
+                  }
+                  className="flex h-9 w-9 items-center justify-center text-forge-muted hover:text-forge-text"
+                  aria-label="Decrease servings"
+                >
+                  −
+                </button>
+                <span className="min-w-[2rem] text-center text-sm font-semibold tabular-nums text-forge-text">
+                  {formatQuantity(servingsEating)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    applyServingsEating(adjustServingCount(servingsEating, 1))
+                  }
+                  className="flex h-9 w-9 items-center justify-center text-forge-muted hover:text-forge-text"
+                  aria-label="Increase servings"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
+
           {hasItems ? (
             <ul className="mt-4 space-y-2">
               {lineItems.map((item) => (
@@ -157,7 +239,7 @@ export function LogMealSheet({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-medium text-sm text-forge-text">
+                      <p className="text-sm font-medium text-forge-text">
                         {item.foodName}
                       </p>
                       <p className="text-xs text-forge-muted">
@@ -182,7 +264,11 @@ export function LogMealSheet({
           ) : (
             <div className="mt-4 grid grid-cols-2 gap-2.5">
               <MacroField label="Cal" value={calories} onChange={setCalories} />
-              <MacroField label="Protein (g)" value={proteinG} onChange={setProteinG} />
+              <MacroField
+                label="Protein (g)"
+                value={proteinG}
+                onChange={setProteinG}
+              />
               <MacroField label="Carbs (g)" value={carbsG} onChange={setCarbsG} />
               <MacroField label="Fat (g)" value={fatG} onChange={setFatG} />
             </div>

@@ -28,6 +28,22 @@ const createLogSchema = z.object({
   proteinG: z.number().min(0).optional(),
   fatG: z.number().min(0).optional(),
   carbsG: z.number().min(0).optional(),
+  lineItems: z
+    .array(
+      z.object({
+        id: z.string(),
+        foodId: z.string(),
+        foodName: z.string(),
+        servingLabel: z.string(),
+        quantity: z.number(),
+        calories: z.number(),
+        proteinG: z.number(),
+        carbsG: z.number(),
+        fatG: z.number(),
+      })
+    )
+    .optional(),
+  servingsLogged: z.number().positive().optional(),
 });
 
 export async function GET(request: Request) {
@@ -113,6 +129,8 @@ export async function POST(request: Request) {
       protein_g: scaled.proteinG,
       fat_g: scaled.fatG,
       carbs_g: scaled.carbsG,
+      line_items: body.lineItems ?? null,
+      servings_logged: body.servingsLogged ?? null,
       updated_at: new Date().toISOString(),
     })
     .select("*")

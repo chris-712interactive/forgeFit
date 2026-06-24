@@ -14,7 +14,10 @@ import {
 } from "@forgefit/nutrition-core";
 import {
   createCategoryId,
+  formatServingsLabel,
   getCategoryById,
+  getPerServingLineItems,
+  getPerServingTotals,
   loadSavedMealCategories,
   saveSavedMeal,
   saveSavedMealCategory,
@@ -76,6 +79,7 @@ export function MealBuilder({
   const [categoryId, setCategoryId] = useState("favorites");
   const [categories, setCategories] = useState<SavedMealCategory[]>([]);
   const [lineItems, setLineItems] = useState<MealLineItem[]>([]);
+  const [servings, setServings] = useState(1);
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState<WholeFoodGroup | "all">("all");
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -93,10 +97,12 @@ export function MealBuilder({
       setName(initialMeal.name);
       setCategoryId(initialMeal.categoryId);
       setLineItems(initialMeal.lineItems.map((item) => ({ ...item })));
+      setServings(initialMeal.servings);
     } else {
       setName("");
       setCategoryId("favorites");
       setLineItems([]);
+      setServings(1);
     }
     setQuery("");
     setGroupFilter("all");
@@ -223,18 +229,26 @@ export function MealBuilder({
         name: trimmedName,
         categoryId,
         lineItems,
+        servings: Math.max(Math.round(servings), 1),
         ...totals,
       });
       onSaved?.(meal);
 
       if (andLog) {
+        const perServing = getPerServingTotals(meal);
         await postMacroLogEntry({
           foodName: trimmedName,
-          calories: totals.calories,
-          proteinG: totals.proteinG,
-          carbsG: totals.carbsG,
-          fatG: totals.fatG,
+          calories: perServing.calories,
+          proteinG: perServing.proteinG,
+          carbsG: perServing.carbsG,
+          fatG: perServing.fatG,
           loggedDate,
+          servingDescription:
+            meal.servings > 1
+              ? `1 serving (${formatServingsLabel(meal.servings)} recipe)`
+              : "1 serving",
+          lineItems: getPerServingLineItems(meal),
+          servingsLogged: 1,
         });
         router.refresh();
       }
@@ -329,6 +343,8 @@ export function MealBuilder({
               name={name.trim()}
               lineItems={lineItems}
               totals={totals}
+              servings={servings}
+              onServingsChange={setServings}
               categories={categories}
               categoryId={categoryId}
               selectedCategory={selectedCategory}
@@ -480,6 +496,10 @@ function StepIngredients({
 }) {
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col gap-3">
+      <p className="shrink-0 text-xs text-forge-muted">
+        Add the full batch of ingredients for your recipe. On the next step you can
+        set how many servings it makes.
+      </p>
       {lineItems.length > 0 && (
         <div className="shrink-0 rounded-xl border border-forge-ember/25 bg-forge-ember/5 px-3 py-2.5">
           <div className="flex items-baseline justify-between gap-2">
@@ -601,6 +621,8 @@ function StepSave({
   name,
   lineItems,
   totals,
+  servings,
+  onServingsChange,
   categories,
   categoryId,
   selectedCategory,
@@ -614,6 +636,8 @@ function StepSave({
   name: string;
   lineItems: MealLineItem[];
   totals: ReturnType<typeof sumLineItems>;
+  servings: number;
+  onServingsChange: (value: number) => void;
   categories: SavedMealCategory[];
   categoryId: string;
   selectedCategory: SavedMealCategory | null;
@@ -624,14 +648,30 @@ function StepSave({
   onNewCategoryNameChange: (value: string) => void;
   onAddCategory: () => void;
 }) {
+  const previewMeal = {
+    name,
+    categoryId,
+    lineItems,
+    servings: Math.max(Math.round(servings), 1),
+    ...totals,
+    id: "preview",
+    createdAt: "",
+  };
+  const perServing = getPerServingTotals(previewMeal);
+
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
       <section className="rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4">
         <h4 className="font-display text-lg font-bold text-forge-text">{name}</h4>
         <p className="mt-1 text-sm text-forge-muted">
-          {totals.calories} kcal · {totals.proteinG}g P · {totals.carbsG}g C ·{" "}
-          {totals.fatG}g F
+          Full recipe: {totals.calories} kcal · {totals.proteinG}g P
         </p>
+        {servings > 1 && (
+          <p className="mt-1 text-sm font-medium text-forge-ember">
+            Per serving ({formatServingsLabel(Math.max(Math.round(servings), 1))}):{" "}
+            {perServing.calories} kcal · {perServing.proteinG}g P
+          </p>
+        )}
         <ul className="mt-3 space-y-1 border-t border-[var(--border)] pt-3">
           {lineItems.map((item) => (
             <li
@@ -649,6 +689,29 @@ function StepSave({
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
+        <label className="block">
+          <span className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
+            Recipe makes how many servings?
+          </span>
+          <p className="mt-1 text-xs text-forge-muted">
+            Enter the full ingredient list for the whole batch, then set how many
+            portions it yields.
+          </p>
+          <input
+            type="number"
+            min={1}
+            max={99}
+            step={1}
+            value={servings}
+            onChange={(e) =>
+              onServingsChange(Math.max(1, Number(e.target.value) || 1))
+            }
+            className={`${inputClass} mt-2 text-sm`}
+          />
+        </label>
       </section>
 
       <section>

@@ -24,6 +24,11 @@ export async function yesterdayIsoDate(reference = new Date()): Promise<string> 
   return yesterdayLocalIsoDate(reference, timeZone);
 }
 
+function mapLineItems(raw: unknown): NutritionLogRow["lineItems"] {
+  if (!Array.isArray(raw)) return null;
+  return raw as NutritionLogRow["lineItems"];
+}
+
 function mapRow(row: Record<string, unknown>): NutritionLogRow {
   return {
     id: row.id as string,
@@ -40,6 +45,9 @@ function mapRow(row: Record<string, unknown>): NutritionLogRow {
     proteinG: Number(row.protein_g),
     fatG: Number(row.fat_g),
     carbsG: Number(row.carbs_g),
+    lineItems: mapLineItems(row.line_items),
+    servingsLogged:
+      row.servings_logged != null ? Number(row.servings_logged) : null,
   };
 }
 

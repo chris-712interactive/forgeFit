@@ -496,6 +496,29 @@ export function cloneLineItems(items: MealLineItem[]): MealLineItem[] {
   return items.map((item) => ({ ...item, id: createLineItemId() }));
 }
 
+/** Scale every line item quantity by factor (e.g. 2 servings → factor 2). */
+export function scaleLineItems(items: MealLineItem[], factor: number): MealLineItem[] {
+  if (factor === 1) return items.map((item) => ({ ...item }));
+  return items.map((item) => rescaleLineItem(item, item.quantity * factor));
+}
+
+/** Split a full-recipe ingredient list into one serving. */
+export function perServingLineItems(
+  items: MealLineItem[],
+  servings: number
+): MealLineItem[] {
+  if (servings <= 1) return items.map((item) => ({ ...item }));
+  return scaleLineItems(items, 1 / servings);
+}
+
+/** Fractional serving stepper for meal-level portion (uses same ladder as foods). */
+export function adjustServingCount(
+  current: number,
+  direction: 1 | -1
+): number {
+  return adjustQuantity(current, "eggs-large", direction);
+}
+
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
 }

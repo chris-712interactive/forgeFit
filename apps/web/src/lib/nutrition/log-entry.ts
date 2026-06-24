@@ -1,4 +1,5 @@
 import { browserTodayIsoDate } from "@/lib/datetime/local-date";
+import type { MealLineItem } from "@forgefit/nutrition-core";
 
 export interface MacroLogInput {
   foodName: string;
@@ -9,6 +10,9 @@ export interface MacroLogInput {
   /** Defaults to the browser's local calendar day. */
   loggedDate?: string;
   mealType?: "breakfast" | "lunch" | "dinner" | "snack";
+  servingDescription?: string;
+  lineItems?: MealLineItem[];
+  servingsLogged?: number;
 }
 
 export async function postMacroLogEntry(
@@ -24,13 +28,15 @@ export async function postMacroLogEntry(
       mealType: input.mealType,
       foodName: input.foodName.trim(),
       foodSource: "custom",
-      servingDescription: "1 serving",
-      quantity: 1,
+      servingDescription: input.servingDescription ?? "1 serving",
+      quantity: input.servingsLogged ?? 1,
       servingGrams: 1,
       calories: input.calories,
       proteinG: input.proteinG,
       carbsG: input.carbsG ?? 0,
       fatG: input.fatG ?? 0,
+      lineItems: input.lineItems,
+      servingsLogged: input.servingsLogged,
     }),
   });
 

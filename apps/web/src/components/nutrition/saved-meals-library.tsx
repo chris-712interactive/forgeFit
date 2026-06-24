@@ -2,8 +2,10 @@
 
 import {
   formatMacroLine,
+  formatServingsLabel,
   getCategoryById,
   getCategoryColor,
+  getPerServingTotals,
   loadSavedMealCategories,
   loadSavedMeals,
   mealHasLineItems,
@@ -382,10 +384,20 @@ function MealCard({
           <h4 className="mt-1 truncate font-display text-base font-semibold text-forge-text">
             {meal.name}
           </h4>
-          <p className="mt-1.5 text-sm text-forge-muted">{formatMacroLine(meal)}</p>
+          <p className="mt-1.5 text-sm text-forge-muted">
+            {formatMacroLine(
+              meal.lineItems.length > 0 ? getPerServingTotals(meal) : meal
+            )}
+            {meal.servings > 1 && meal.lineItems.length > 0 && (
+              <span className="text-forge-steel"> / serving</span>
+            )}
+          </p>
           {meal.lineItems.length > 0 && (
             <p className="mt-1 text-xs text-forge-steel">
               {meal.lineItems.length} ingredients
+              {meal.servings > 1
+                ? ` · recipe: ${formatServingsLabel(meal.servings)}`
+                : ""}
             </p>
           )}
         </div>
