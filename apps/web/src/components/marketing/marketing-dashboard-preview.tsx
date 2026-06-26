@@ -26,7 +26,9 @@ export function MarketingDashboardPreview() {
           </div>
         </div>
 
-        <MarketingAppPreview variant="inline" />
+        <div className="flex justify-center lg:justify-end">
+          <MarketingAppPreview variant="inline" />
+        </div>
       </div>
     </MarketingPageSection>
   );
