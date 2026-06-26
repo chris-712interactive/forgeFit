@@ -109,9 +109,15 @@ function mergeMeasurementRows(
 }
 
 function profileBaseline(
-  profile: Record<string, unknown> | null
+  profile: Record<string, unknown> | null,
+  existingRows: BodyMeasurementRow[]
 ): BodyMeasurementRow | null {
   if (!profile?.weight_kg) return null;
+
+  const hasLoggedWeight = existingRows.some(
+    (row) => row.weightKg != null && row.weightKg > 0
+  );
+  if (hasLoggedWeight) return null;
 
   const createdAt = profile.created_at as string | undefined;
   return {
@@ -173,7 +179,21 @@ function filterMeasurementsForAnalytics(
   cutoff.setHours(0, 0, 0, 0);
   const iso = cutoff.toISOString().slice(0, 10);
 
-  return measurements.filter((row) => row.measuredDate >= iso);
+  const filtered = measurements.filter((row) => row.measuredDate >= iso);
+  const earliestWeight = measurements.find(
+    (row) => row.weightKg != null && row.weightKg > 0
+  );
+
+  if (
+    earliestWeight &&
+    !filtered.some((row) => row.measuredDate === earliestWeight.measuredDate)
+  ) {
+    return [...filtered, earliestWeight].sort((a, b) =>
+      a.measuredDate.localeCompare(b.measuredDate)
+    );
+  }
+
+  return filtered;
 }
 
 function buildProjection(
@@ -281,7 +301,7 @@ export async function getProgressDashboardData(
 
   const gates = buildGateContext(subscription);
 
-  const baseline = profileBaseline(profile);
+  const baseline = profileBaseline(profile, measurementResult.rows);
   const measurements = mergeMeasurementRows(baseline, measurementResult.rows);
   const analyticsMeasurements = filterMeasurementsForAnalytics(
     measurements,

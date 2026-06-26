@@ -34,6 +34,47 @@
 
 ## Session Log
 
+### 2026-06-26 — Weight trend includes full history + onboarding anchor
+
+**What was done:**
+- Onboarding now persists starting weight (and optional measurements) to `body_measurements` so the true onboarding value is kept even after later weigh-ins update `profiles.weight_kg`
+- Weight trend chart always pins the earliest logged weight (starting point) even on Free tier’s 90-day window
+- Removed synthetic profile baseline when real weight logs exist — it was reusing current profile weight at account `created_at`, which could show the wrong value
+- Progress UI copy clarifies that starting weight is always shown on Free
+
+**What's next:**
+- Apply migration `supabase/migrations/20260610910000_backfill_onboarding_body_measurements.sql` in Supabase for existing accounts
+- Manual QA: complete onboarding → log 2+ weigh-ins → confirm weight trend shows onboarding + all entries in window
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/app/actions/onboarding.ts`
+- `apps/web/src/lib/measurements/service.ts`
+- `apps/web/src/lib/analytics/service.ts`
+- `apps/web/src/components/progress/progress-dashboard.tsx`
+- `supabase/migrations/20260610910000_backfill_onboarding_body_measurements.sql`
+- `docs/PROGRESS.md`
+
+### 2026-06-25 — ForgeRep 5-year business plan
+
+**What was done:**
+- Authored `docs/business/forgeRep-5-year-business-plan.md` — 5-year path to ~$11.4M ARR / 80K paying subs, grounded in BIBLE, TIER-GATES, ADR 001, Instagram calendar, and community WACP north star
+- Exported PDF via Chrome headless (`docs/business/forgeRep-5-year-business-plan.pdf`) + HTML source for re-print
+
+**What's next:**
+- Founder review of Y1–Y5 assumptions; adjust hiring/paid-acquisition gates if bootstrap-only
+- Execute 90-day action plan (Phase 7 ship, Instagram calendar, funnel instrumentation)
+
+**Blockers:** None
+
+**Files touched:**
+- `docs/business/forgeRep-5-year-business-plan.md`
+- `docs/business/forgeRep-5-year-business-plan.pdf`
+- `docs/business/forgeRep-5-year-business-plan.html`
+- `docs/business/generate-pdf.mjs`
+- `docs/PROGRESS.md`
+
 ### 2026-06-19 — Nutrition recipe servings + adjust-before-log UX
 
 **What was done:**

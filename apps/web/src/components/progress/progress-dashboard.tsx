@@ -97,7 +97,8 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
             </h2>
             {gates.analyticsHistoryDays != null && (
               <p className="mt-1 text-xs text-forge-muted">
-                Showing last {gates.analyticsHistoryDays} days on Free.{" "}
+                Showing last {gates.analyticsHistoryDays} days on Free (starting
+                weight always included).{" "}
                 <UpgradePrompt
                   compact
                   title=""

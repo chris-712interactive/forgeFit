@@ -89,25 +89,26 @@ async function loadWeightMeasurements(userId: string) {
     notes: null,
   }));
 
-  if (profile?.weight_kg) {
+  const hasLoggedWeight = measurements.some(
+    (row) => row.weightKg != null && row.weightKg > 0
+  );
+  if (profile?.weight_kg && !hasLoggedWeight) {
     const baselineDate =
       (profile.created_at as string | undefined)?.slice(0, 10) ??
       new Date().toISOString().slice(0, 10);
-    if (!measurements.some((row) => row.measuredDate === baselineDate)) {
-      measurements.unshift({
-        id: "profile-baseline",
-        measuredDate: baselineDate,
-        weightKg: Number(profile.weight_kg),
-        waistCm: null,
-        chestCm: null,
-        armsCm: null,
-        legsCm: null,
-        neckCm: null,
-        hipsCm: null,
-        bodyFatPct: null,
-        notes: null,
-      });
-    }
+    measurements.unshift({
+      id: "profile-baseline",
+      measuredDate: baselineDate,
+      weightKg: Number(profile.weight_kg),
+      waistCm: null,
+      chestCm: null,
+      armsCm: null,
+      legsCm: null,
+      neckCm: null,
+      hipsCm: null,
+      bodyFatPct: null,
+      notes: null,
+    });
   }
 
   return measurements;

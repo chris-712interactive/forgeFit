@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ForgeRep — 5-Year Business Plan</title>
+<style>
+  @page { margin: 18mm 16mm; size: letter; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.45;
+    color: #1c1917;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  h1 { font-size: 22pt; color: #ff6b35; margin: 0 0 12pt; page-break-after: avoid; }
+  h2 { font-size: 14pt; color: #ff6b35; margin: 20pt 0 8pt; border-bottom: 1px solid #e7e5e4; padding-bottom: 4pt; page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 14pt 0 6pt; page-break-after: avoid; }
+  h4 { font-size: 11pt; margin: 10pt 0 4pt; page-break-after: avoid; }
+  p { margin: 0 0 8pt; }
+  ul, ol { margin: 0 0 10pt 18pt; padding: 0; }
+  li { margin-bottom: 3pt; }
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 14pt; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #d6d3d1; padding: 5pt 6pt; text-align: left; vertical-align: top; }
+  th { background: #292524; color: #fafaf9; font-weight: 600; }
+  tr:nth-child(even) td { background: #fafaf9; }
+  hr { border: none; border-top: 1px solid #e7e5e4; margin: 16pt 0; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9pt; background: #f5f5f4; padding: 1pt 3pt; border-radius: 3pt; }
+  a { color: #ff6b35; text-decoration: none; }
+  strong { font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>ForgeRep — 5-Year Business Plan</h1>
+<p><strong>Prepared:</strong> June 25, 2026  </p>
+<p><strong>Horizon:</strong> July 2026 – June 2031  </p>
+<p><strong>Product:</strong> <a href="https://forge-rep.com">ForgeRep</a> — evidence-based fitness &amp; nutrition PWA  </p>
+<p><strong>Status:</strong> Product largely built (Phases 0–6, 8 complete; Phase 7 billing/integrations partial)</p>
+<hr />
+<h2>Executive summary</h2>
+<p>ForgeRep is a mobile-first, offline-capable fitness platform that connects <strong>evidence-based programming</strong>, <strong>macro tracking</strong>, <strong>progress projections</strong>, and <strong>accountability</strong> in one app. Unlike generic workout generators or calorie counters, ForgeRep’s program logic is deterministic and citation-backed — a defensible moat in a market saturated with hype-driven tools.</p>
+<p>This plan translates the goals in our authoritative product docs (<code>docs/BIBLE.md</code>, <code>docs/TIER-GATES.md</code>, <code>docs/ADRs/001-tier-pricing-margins.md</code>, <code>docs/marketing/instagram-31-day-calendar.md</code>, <code>docs/community-expansion-plan.md</code>) into a <strong>five-year path to ~$11M ARR</strong>, <strong>80,000 paying subscribers</strong>, and <strong>sustainable profitability</strong> — without venture-scale burn.</p>
+<p><strong>North-star outcomes by Year 5:</strong></p>
+<table>
+<tr><th>Metric</th><th>Target</th></tr>
+<tr><td>Registered users</td><td>500,000</td></tr>
+<tr><td>Paying subscribers</td><td>80,000 (16% of registered)</td></tr>
+<tr><td>Monthly recurring revenue (MRR)</td><td>~$950,000</td></tr>
+<tr><td>Annual recurring revenue (ARR)</td><td>~$11.4M</td></tr>
+<tr><td>Blended ARPU (paying)</td><td>~$11.90/mo</td></tr>
+<tr><td>Gross margin (blended)</td><td>≥85%</td></tr>
+<tr><td>EBITDA margin</td><td>≥15%</td></tr>
+</table>
+<p><strong>Strategic thesis:</strong> Win on <strong>trust + retention</strong>, not feature breadth. Free tier delivers a complete training loop; Pro/Pro+ monetize long-horizon intelligence, community accountability, and device automation — all with 82–94% contribution margins per ADR 001.</p>
+<hr />
+<h2>1. Company overview</h2>
+<h3>1.1 Mission</h3>
+<p>Help people train with intention — programs, nutrition, and progress grounded in peer-reviewed evidence, not Instagram trends.</p>
+<h3>1.2 Vision (2031)</h3>
+<p>ForgeRep is the default <strong>accountability layer</strong> for serious recreational lifters: the app you open before every set, that works when the gym has no signal, and that shows you — with data — whether you’re on pace for your goal.</p>
+<h3>1.3 What exists today</h3>
+<table>
+<tr><th>Area</th><th>Status</th></tr>
+<tr><td>Auth, onboarding, evidence-based programs</td><td>Shipped</td></tr>
+<tr><td>Offline workout logging (PWA + Dexie)</td><td>Shipped</td></tr>
+<tr><td>Nutrition diary + saved meals</td><td>Shipped</td></tr>
+<tr><td>Projections, analytics, caliper BF%</td><td>Shipped</td></tr>
+<tr><td>Stripe billing (Free / Pro / Pro+)</td><td>Shipped</td></tr>
+<tr><td>Fitbit/Google Health sync</td><td>Shipped (Pro+)</td></tr>
+<tr><td>Community (leaderboards, rivals, crews, leagues)</td><td>Shipped (Pro)</td></tr>
+<tr><td>Spotify workout music</td><td>Shipped (all tiers)</td></tr>
+<tr><td>Withings, Strava</td><td>Code ready; launch prioritized in Phase 7</td></tr>
+</table>
+<p><strong>MVP success criteria (from BIBLE):</strong> onboarding → first workout &amp;lt;10 min; offline sync integrity; Lighthouse PWA ≥90; evidence KB ≥30 citations — all met or on track.</p>
+<h3>1.4 Business model</h3>
+<p>Three-tier freemium (see <code>docs/TIER-GATES.md</code>):</p>
+<table>
+<tr><th>Tier</th><th>Price</th><th>Role in funnel</th></tr>
+<tr><td><strong>Free</strong></td><td>$0</td><td>Acquisition — full training loop, 30-day projections</td></tr>
+<tr><td><strong>Pro</strong></td><td>$8.99/mo · $69.99/yr</td><td>Core monetization — analytics, community, 90-day projections</td></tr>
+<tr><td><strong>Pro+</strong></td><td>$14.99/mo · $119.99/yr</td><td>Premium — integrations, AI coaching, restaurant quick-log</td></tr>
+</table>
+<p><strong>Target mix (steady state):</strong> 55% Pro annual · 25% Pro monthly · 12% Pro+ annual · 8% Pro+ monthly → <strong>blended ~$11.90/mo ARPU</strong>.</p>
+<hr />
+<h2>2. Market opportunity</h2>
+<h3>2.1 TAM / SAM / SOM</h3>
+<table>
+<tr><th>Layer</th><th>Definition</th><th>Estimate</th></tr>
+<tr><td><strong>TAM</strong></td><td>Global fitness app market</td><td>~$10B+ (2026)</td></tr>
+<tr><td><strong>SAM</strong></td><td>English-speaking serious lifters who track macros + programs</td><td>~25M</td></tr>
+<tr><td><strong>SOM (Year 5)</strong></td><td>Achievable share via organic + paid + community loops</td><td>500K registered · 80K paying</td></tr>
+</table>
+<h3>2.2 Target customer (ICP)</h3>
+<p><strong>Primary:</strong> 25–45, gym-goer, intermediate experience, trains 3–5×/week, has tried MyFitnessPal or Strong but wants <strong>one integrated system</strong> with offline reliability.</p>
+<p><strong>Secondary:</strong> Returning lifters after a break who need structure without shame-based UX.</p>
+<p><strong>Not targeting (Year 1–3):</strong> CrossFit boxes, enterprise corporate wellness, clinical/medical weight management.</p>
+<h3>2.3 Competitive positioning</h3>
+<table>
+<tr><th>Competitor</th><th>Weakness ForgeRep exploits</th></tr>
+<tr><td>MyFitnessPal</td><td>Nutrition-only; no evidence-based programming</td></tr>
+<tr><td>Strong / Hevy</td><td>Logging-only; no macro/program integration</td></tr>
+<tr><td>Fitbod / AI generators</td><td>Opaque “AI workouts”; no citations</td></tr>
+<tr><td>MacroFactor</td><td>Strong nutrition science; weaker offline gym UX &amp; community</td></tr>
+</table>
+<p><strong>ForgeRep differentiators:</strong> offline-first PWA · evidence KB · program + macros + projections unified · Pro community accountability (WACP north star) · warm “Forge Ember” brand that encourages without shaming.</p>
+<hr />
+<h2>3. Five-year financial model</h2>
+<h3>3.1 Revenue trajectory</h3>
+<p>Assumptions: 8–12% free→paid conversion ramp; 4–6% monthly churn on monthly plans; 2–3× longer retention on annual (per ADR 001); 65→80% annual billing mix over 5 years.</p>
+<table>
+<tr><th>Year</th><th>Period</th><th>Registered</th><th>Paying</th><th>MRR</th><th>ARR</th></tr>
+<tr><td><strong>Y1</strong></td><td>Jul 2026 – Jun 2027</td><td>5,000</td><td>500</td><td>$6,000</td><td>$72K</td></tr>
+<tr><td><strong>Y2</strong></td><td>Jul 2027 – Jun 2028</td><td>25,000</td><td>3,000</td><td>$36,000</td><td>$432K</td></tr>
+<tr><td><strong>Y3</strong></td><td>Jul 2028 – Jun 2029</td><td>80,000</td><td>12,000</td><td>$130,000</td><td>$1.56M</td></tr>
+<tr><td><strong>Y4</strong></td><td>Jul 2029 – Jun 2030</td><td>200,000</td><td>35,000</td><td>$400,000</td><td>$4.8M</td></tr>
+<tr><td><strong>Y5</strong></td><td>Jul 2030 – Jun 2031</td><td>500,000</td><td>80,000</td><td>$950,000</td><td>$11.4M</td></tr>
+</table>
+<p><strong>Bible reference checkpoint:</strong> 1,000 paying users at ~$12/mo = ~$12K MRR — targeted <strong>mid–Year 2 (Q1 2028)</strong>.</p>
+<h3>3.2 Unit economics (steady state)</h3>
+<p>From ADR 001:</p>
+<table>
+<tr><th>Tier</th><th>Contribution margin</th><th>Notes</th></tr>
+<tr><td>Pro (annual)</td><td>~94%</td><td>No paid APIs; lead with annual in upgrade UI</td></tr>
+<tr><td>Pro (monthly)</td><td>~92%</td><td>Higher Stripe fee drag</td></tr>
+<tr><td>Pro+ (annual)</td><td>~82%</td><td>Device APIs + AI coaching ~$1.50/mo variable</td></tr>
+</table>
+<p><strong>LTV targets (blended paying user):</strong></p>
+<table>
+<tr><th>Scenario</th><th>Monthly churn</th><th>Avg life</th><th>LTV</th></tr>
+<tr><td>Monthly-heavy</td><td>5%</td><td>20 mo</td><td>~$200</td></tr>
+<tr><td>Annual-heavy (goal)</td><td>2.5% effective</td><td>40 mo</td><td>~$420</td></tr>
+</table>
+<p><strong>CAC guardrails:</strong></p>
+<table>
+<tr><th>Channel</th><th>Target CAC</th><th>Max CAC (LTV/3)</th></tr>
+<tr><td>Organic / content</td><td>$0–15</td><td>—</td></tr>
+<tr><td>Influencer / affiliate</td><td>$25–40</td><td>$140</td></tr>
+<tr><td>Paid social (Y3+)</td><td>$45–65</td><td>$140</td></tr>
+</table>
+<p>Do not scale paid until <strong>90-day retention ≥40%</strong> and <strong>free→paid ≥8%</strong>.</p>
+<h3>3.3 Cost structure</h3>
+<table>
+<tr><th>Category</th><th>Y1</th><th>Y3</th><th>Y5</th></tr>
+<tr><td>Infra (Vercel, Supabase, APIs)</td><td>$3K/yr</td><td>$45K/yr</td><td>$180K/yr</td></tr>
+<tr><td>AI coaching (Pro+ only)</td><td>$500/yr</td><td>$18K/yr</td><td>$60K/yr</td></tr>
+<tr><td>Marketing</td><td>$12K/yr</td><td>$180K/yr</td><td>$850K/yr</td></tr>
+<tr><td>Contractor / part-time</td><td>$24K/yr</td><td>$120K/yr</td><td>$400K/yr</td></tr>
+<tr><td>Full-time team</td><td>$0</td><td>$180K/yr</td><td>$1.2M/yr</td></tr>
+<tr><td><strong>Total opex</strong></td><td><strong>~$40K</strong></td><td><strong>~$543K</strong></td><td><strong>~$2.69M</strong></td></tr>
+<tr><td><strong>EBITDA</strong></td><td><strong>~$32K</strong></td><td><strong>~$1.0M</strong></td><td><strong>~$1.7M (~15%)</strong></td></tr>
+</table>
+<p>Infra scales per BIBLE: ~$25–50/mo at 0–500 users → ~$800/mo at 1,000 paying → Terra/unified integrations at 1,000+ paying users.</p>
+<hr />
+<h2>4. Year-by-year operating plan</h2>
+<h3>Year 1 — Launch &amp; prove product–market fit (Jul 2026 – Jun 2027)</h3>
+<p><strong>Goal:</strong> 5,000 registered · 500 paying · $6K MRR · validate retention loops.</p>
+<h4>Q3 2026 (Launch quarter)</h4>
+<table>
+<tr><th>Initiative</th><th>Specific actions</th><th>Success metric</th></tr>
+<tr><td><strong>Public launch</strong></td><td>Ship production billing; finish Withings QA; launch Strava sync</td><td>Checkout success ≥98%</td></tr>
+<tr><td><strong>Instagram 31-day calendar</strong></td><td>Execute <code>docs/marketing/instagram-31-day-calendar.md</code> end-to-end</td><td>5–10 signups/week by Week 4</td></tr>
+<tr><td><strong>Content factory</strong></td><td>Batch screen recordings (Day 0); 15-min Reel factory; cross-post TikTok/Shorts</td><td>2K+ Reel views Week 4</td></tr>
+<tr><td><strong>Onboarding funnel</strong></td><td>Hit BIBLE metric: first workout &amp;lt;10 min; PWA install prompt post-onboarding</td><td>≥60% D1 activation</td></tr>
+<tr><td><strong>ForgeRep Spotify playlists</strong></td><td>Replace interim playlist IDs with brand-owned lists</td><td>Music picker engagement ≥30% of sessions</td></tr>
+</table>
+<h4>Q4 2026</h4>
+<table>
+<tr><th>Initiative</th><th>Specific actions</th><th>Success metric</th></tr>
+<tr><td><strong>Community activation</strong></td><td>Default-on A/B (<code>COMMUNITY_OPT_IN_AB_ENABLED</code>); weekly recap emails via Resend</td><td>WACP ≥25% of Pro users</td></tr>
+<tr><td><strong>Annual plan push</strong></td><td>Default upgrade UI to annual (ADR 001); “2 months free” messaging</td><td>≥50% new subs on annual</td></tr>
+<tr><td><strong>Micro-influencer collabs</strong></td><td>DM 5 accounts/week (1–10K followers); free Pro for honest Reel</td><td>2 collab posts/month</td></tr>
+<tr><td><strong>Referral v1</strong></td><td>“Give a month, get a month” Pro credit (Stripe coupon)</td><td>10% of signups referred</td></tr>
+</table>
+<h4>H1 2027</h4>
+<table>
+<tr><th>Initiative</th><th>Specific actions</th><th>Success metric</th></tr>
+<tr><td><strong>Retention instrumentation</strong></td><td>Cohort dashboards: D7/D30/D90, workout frequency, macro adherence</td><td>D30 retention ≥35%</td></tr>
+<tr><td><strong>SEO foundation</strong></td><td>Landing pages per goal type (fat loss, powerlifting, etc.)</td><td>500 organic visits/mo</td></tr>
+<tr><td><strong>App Store narrative</strong></td><td>“Add to Home Screen” guides; iOS PWA install content</td><td>PWA install rate ≥20% mobile</td></tr>
+<tr><td><strong>Support loop</strong></td><td>In-app feedback → weekly fix batch</td><td>NPS ≥40</td></tr>
+</table>
+<h4>H2 2027</h4>
+<table>
+<tr><th>Initiative</th><th>Specific actions</th><th>Success metric</th></tr>
+<tr><td><strong>Pro+ integration bundle</strong></td><td>Market Fitbit + Withings + Strava as “autopilot progress”</td><td>Pro+ ≥25% of paid base</td></tr>
+<tr><td><strong>Saved meals &amp; restaurant log</strong></td><td>Ship line-item logging; curated restaurant quick-log (Pro+)</td><td>Pro+ upgrade +15%</td></tr>
+<tr><td><strong>First revenue milestone</strong></td><td>—</td><td><strong>500 paying · $6K MRR</strong></td></tr>
+</table>
+<p><strong>Y1 marketing budget:</strong> $12K (tools, Canva Pro, modest boosted posts, giveaway prizes).</p>
+<hr />
+<h3>Year 2 — Scale acquisition &amp; deepen retention (Jul 2027 – Jun 2028)</h3>
+<p><strong>Goal:</strong> 25,000 registered · 3,000 paying · $36K MRR · <strong>hit Bible 1,000-paying / $12K MRR milestone in Q1</strong>.</p>
+<h4>Growth engine</h4>
+<table>
+<tr><th>Channel</th><th>Tactics</th><th>Y2 contribution</th></tr>
+<tr><td><strong>Organic social</strong></td><td>2 Reels/day cadence; myth-vs-fact carousels; hook bank rotation</td><td>40% of signups</td></tr>
+<tr><td><strong>YouTube</strong></td><td>“Evidence explained” 8-min videos; link to goal-specific landing pages</td><td>15%</td></tr>
+<tr><td><strong>Reddit / forums</strong></td><td>Value-first posts in r/fitness, r/weightroom (no spam)</td><td>10%</td></tr>
+<tr><td><strong>Affiliate / creators</strong></td><td>20% rev-share for fitness YouTubers 10K–100K subs</td><td>20%</td></tr>
+<tr><td><strong>Paid test</strong></td><td>$2K/mo Meta/TikTok once LTV proven</td><td>15%</td></tr>
+</table>
+<h4>Product priorities</h4>
+<ol>
+<li><strong>Community as retention:</strong> Crew challenges, league promotions, Sunday push nudges — target <strong>WACP ≥40%</strong> of Pro opt-in users.</li>
+<li><strong>Upgrade triggers:</strong> Gate 90-day projections behind Pro at moment of insight (“See your goal date → upgrade”).</li>
+<li><strong>Email lifecycle:</strong> Onboarding drip (days 1, 3, 7, 14); win-back at day 30 inactive.</li>
+<li><strong>Nutritionix-class menu search</strong> — defer until MAU × margin supports ~$6K/yr vendor minimum (ADR 001).</li>
+</ol>
+<h4>Org</h4>
+<ul>
+<li>Hire <strong>part-time content creator</strong> (contract, $2K/mo).</li>
+<li>Hire <strong>customer success / community mod</strong> (contract, 10 hrs/wk).</li>
+</ul>
+<p><strong>Y2 checkpoint:</strong> 3,000 paying · $36K MRR · D90 retention ≥30% · CAC &amp;lt;$40 blended.</p>
+<hr />
+<h3>Year 3 — Paid scale &amp; partnership channel (Jul 2028 – Jun 2029)</h3>
+<p><strong>Goal:</strong> 80,000 registered · 12,000 paying · $130K MRR (~$1.56M ARR).</p>
+<h4>Scale paid acquisition</h4>
+<table>
+<tr><th>Rule</th><th>Threshold</th></tr>
+<tr><td>Turn on paid</td><td>LTV/CAC ≥3 over 90-day cohort</td></tr>
+<tr><td>Budget ramp</td><td>Start $5K/mo → $15K/mo by Q4</td></tr>
+<tr><td>Creative</td><td>UGC-style gym demos; offline hook; projection reveal</td></tr>
+<tr><td>Landing</td><td>Goal-specific pages with social proof</td></tr>
+</table>
+<h4>B2B2C pilot — “ForgeRep for Coaches”</h4>
+<table>
+<tr><th>Element</th><th>Detail</th></tr>
+<tr><td>Offer</td><td>Coach dashboard: client adherence, macro compliance, volume trends</td></tr>
+<tr><td>Pricing</td><td>$29/mo per coach + 5 clients; $5/additional client</td></tr>
+<tr><td>Pilot</td><td>25 coaches × 8 clients avg = 200 incremental users</td></tr>
+<tr><td>Distribution</td><td>Instagram DMs to online coaches; r/personaltraining</td></tr>
+</table>
+<h4>Infrastructure</h4>
+<ul>
+<li>Migrate wearables to <strong>Terra API</strong> at 1,000+ paying (per BIBLE cost model).</li>
+<li>Launch <strong>full restaurant menu search</strong> (Pro+) when revenue supports API minimum.</li>
+<li><strong>Apple Sign-In</strong> polish for iOS PWA retention.</li>
+</ul>
+<h4>Team</h4>
+<ul>
+<li>First <strong>full-time engineer</strong> (integrations + mobile PWA polish).</li>
+<li><strong>Growth marketer</strong> (paid + SEO).</li>
+</ul>
+<p><strong>Y3 checkpoint:</strong> $130K MRR · paid channel ≤35% of CAC · coach pilot ≥100 paying coach seats.</p>
+<hr />
+<h3>Year 4 — Category leadership &amp; geo expansion (Jul 2029 – Jun 2030)</h3>
+<p><strong>Goal:</strong> 200,000 registered · 35,000 paying · $400K MRR (~$4.8M ARR).</p>
+<h4>Product expansion</h4>
+<table>
+<tr><th>Initiative</th><th>Rationale</th></tr>
+<tr><td><strong>Coach white-label tier</strong></td><td>Gyms and influencers want branded experience</td></tr>
+<tr><td><strong>Advanced periodization</strong></td><td>Powerlifting peaking blocks; bodybuilding mesocycles</td></tr>
+<tr><td><strong>Apple Music / MusicKit</strong></td><td>Only if user demand warrants (spotify-integration-plan ADR path)</td></tr>
+<tr><td><strong>Native app evaluation</strong></td><td>Build iOS/Android only if PWA install rate caps growth at &amp;lt;25%</td></tr>
+</table>
+<h4>Geographic expansion</h4>
+<ol>
+<li><strong>UK, Canada, Australia</strong> — metric/imperial already supported; localize currency in Stripe.</li>
+<li><strong>Compliance</strong> — GDPR export/delete already built; add cookie banner for EU traffic.</li>
+</ol>
+<h4>Brand &amp; PR</h4>
+<ul>
+<li>Podcast tour (10 appearances): evidence-based fitness angle.</li>
+<li><strong>Case study program:</strong> 50 users, 12-week transformation, cited methodology.</li>
+<li>App Store / Product Hunt relaunch when native or PWA install flow improves.</li>
+</ul>
+<h4>Team (8–12 FTE)</h4>
+<p>Engineering (3) · Growth (2) · Content (2) · Support/Community (1) · Founder/PM (1) · Part-time finance/legal.</p>
+<p><strong>Y4 checkpoint:</strong> $400K MRR · coach channel ≥15% of new subs · international ≥20% of registered.</p>
+<hr />
+<h3>Year 5 — Profitability &amp; strategic optionality (Jul 2030 – Jun 2031)</h3>
+<p><strong>Goal:</strong> 500,000 registered · 80,000 paying · $950K MRR (~$11.4M ARR) · <strong>EBITDA ≥15%</strong>.</p>
+<h4>Maturity moves</h4>
+<table>
+<tr><th>Pillar</th><th>Actions</th></tr>
+<tr><td><strong>Retention</strong></td><td>Annual plan ≥75%; loyalty pricing for 2-year commits; churn prediction model</td></tr>
+<tr><td><strong>Expansion revenue</strong></td><td>Pro+ upsell from integration attach; AI coaching personalization</td></tr>
+<tr><td><strong>Enterprise</strong></td><td>Corporate wellness pilot (50–500 employees); SSO</td></tr>
+<tr><td><strong>Data moat</strong></td><td>Anonymized adherence benchmarks (“lifters like you hit protein 73% of days”)</td></tr>
+</table>
+<h4>Strategic options</h4>
+<ol>
+<li><strong>Independent growth</strong> — reinvest EBITDA into content + product; target $20M ARR Y6.</li>
+<li><strong>Strategic acquisition</strong> — fitness media, supplement brands, or wearable companies seeking software layer.</li>
+<li><strong>Raise growth round</strong> — only if paid channels at scale with proven unit economics.</li>
+</ol>
+<p><strong>Y5 checkpoint:</strong> $950K MRR · EBITDA positive · gross margin ≥85% · NPS ≥50.</p>
+<hr />
+<h2>5. Go-to-market playbook (how we hit the numbers)</h2>
+<h3>5.1 Acquisition funnel</h3>
+<p>```</p>
+<p>Awareness (Reels, SEO, collabs)</p>
+<p>    ↓</p>
+<p>Signup (free — forge-rep.com/signup?utm_*)</p>
+<p>    ↓</p>
+<p>Activation (first workout &lt;10 min — BIBLE metric)</p>
+<p>    ↓</p>
+<p>Habit (3 workouts in 14 days)</p>
+<p>    ↓</p>
+<p>Conversion (projection insight, community preview, 90-day lock)</p>
+<p>    ↓</p>
+<p>Retention (community WACP, annual plan, integrations)</p>
+<p>    ↓</p>
+<p>Expansion (Pro → Pro+, coach seats, referrals)</p>
+<p>```</p>
+<h3>5.2 Conversion triggers (product-led growth)</h3>
+<table>
+<tr><th>Moment</th><th>Upgrade prompt</th></tr>
+<tr><td>Day 30 projection ends</td><td>“Unlock 90-day forecast + goal date” → Pro</td></tr>
+<tr><td>4th workout in a week</td><td>Community opt-in preview → Pro</td></tr>
+<tr><td>Manual weight log ×7</td><td>“Auto-sync Withings/Fitbit” → Pro+</td></tr>
+<tr><td>Macro streak 7 days</td><td>Nutrition adherence dashboard → Pro</td></tr>
+<tr><td>PR logged</td><td>Celebration modal + export → Pro / Pro+</td></tr>
+</table>
+<h3>5.3 Content strategy (from Instagram calendar)</h3>
+<table>
+<tr><th>Content pillar</th><th>% of feed</th><th>Purpose</th></tr>
+<tr><td>Education (myth vs fact)</td><td>30%</td><td>Saves, authority, SEO snippets</td></tr>
+<tr><td>App demo / feature</td><td>30%</td><td>Conversion</td></tr>
+<tr><td>Motivation / accountability</td><td>25%</td><td>Shares, community identity</td></tr>
+<tr><td>Social proof / wins</td><td>15%</td><td>Trust</td></tr>
+</table>
+<p><strong>Weekly metrics (new account targets from calendar):</strong></p>
+<table>
+<tr><th>Metric</th><th>Week 2</th><th>Week 4</th></tr>
+<tr><td>Reel views</td><td>500+</td><td>2,000+</td></tr>
+<tr><td>Signups</td><td>5–10/week</td><td>20–40/week (Y1 avg)</td></tr>
+</table>
+<h3>5.4 Community as growth loop (WACP north star)</h3>
+<p>From <code>docs/community-expansion-plan.md</code>:</p>
+<p><strong>WACP</strong> = Pro users who opt in *and* take ≥1 community action/week.</p>
+<table>
+<tr><th>Year</th><th>Pro opt-in rate</th><th>WACP / opt-in</th><th>Why it matters</th></tr>
+<tr><td>Y1</td><td>30%</td><td>50%</td><td>Prove accountability reduces churn</td></tr>
+<tr><td>Y3</td><td>45%</td><td>60%</td><td>Viral wins feed + crew invites</td></tr>
+<tr><td>Y5</td><td>55%</td><td>70%</td><td>Community-driven referrals ≥25% of signups</td></tr>
+</table>
+<p><strong>Tactics:</strong> weekly recap email (shipped); Sunday push nudge (shipped); crew invite links; shareable weekly recap card; league promotion notifications.</p>
+<hr />
+<h2>6. Key metrics dashboard</h2>
+<h3>6.1 Weekly operating metrics</h3>
+<table>
+<tr><th>Metric</th><th>Y1 target</th><th>Y5 target</th></tr>
+<tr><td>New signups</td><td>100/wk → 200/wk</td><td>2,000/wk</td></tr>
+<tr><td>Free → paid conversion (30d)</td><td>8%</td><td>12%</td></tr>
+<tr><td>Monthly churn (paying)</td><td>&amp;lt;6%</td><td>&amp;lt;4%</td></tr>
+<tr><td>Annual plan mix</td><td>50%</td><td>75%</td></tr>
+<tr><td>D30 retention (registered)</td><td>35%</td><td>45%</td></tr>
+<tr><td>Workouts logged / WAU</td><td>2.5</td><td>3.2</td></tr>
+<tr><td>WACP / Pro opt-in</td><td>50%</td><td>70%</td></tr>
+<tr><td>NPS</td><td>40</td><td>50</td></tr>
+<tr><td>App store / PWA install rate</td><td>20%</td><td>35%</td></tr>
+</table>
+<h3>6.2 Milestone gates (kill or scale decisions)</h3>
+<table>
+<tr><th>Gate</th><th>Pass</th><th>Fail action</th></tr>
+<tr><td>Month 6</td><td>≥200 paying</td><td>Revise ICP messaging; double content cadence</td></tr>
+<tr><td>Month 12</td><td>≥500 paying, D30 ≥35%</td><td>Pause paid; fix activation funnel</td></tr>
+<tr><td>Month 18</td><td>≥1,000 paying (Bible ref)</td><td>Evaluate niche pivot (powerlifting-only?)</td></tr>
+<tr><td>Month 24</td><td>≥3,000 paying, LTV/CAC ≥3</td><td>Do not raise; stay lean</td></tr>
+<tr><td>Month 36</td><td>≥$100K MRR</td><td>Hire growth lead; open paid channels</td></tr>
+</table>
+<hr />
+<h2>7. Product roadmap alignment</h2>
+<p>Maps to <code>docs/BIBLE.md</code> phases + post-MVP initiatives:</p>
+<table>
+<tr><th>Timeline</th><th>Product</th><th>Business impact</th></tr>
+<tr><td>Y1 Q3</td><td>Complete Phase 7 (Withings, Strava, billing hardening)</td><td>Pro+ differentiation</td></tr>
+<tr><td>Y1 Q4</td><td>Nutrition line items + saved meals quick-log</td><td>Pro+ retention</td></tr>
+<tr><td>Y2 H1</td><td>Coach dashboard MVP</td><td>New B2B2C revenue</td></tr>
+<tr><td>Y2 H2</td><td>Nutritionix menu search (when MAU supports)</td><td>Pro+ upsell</td></tr>
+<tr><td>Y3</td><td>Terra unified integrations</td><td>Lower eng cost at scale</td></tr>
+<tr><td>Y3</td><td>Referral program v2 (crew-based invites)</td><td>Viral coefficient ≥0.15</td></tr>
+<tr><td>Y4</td><td>White-label coach tier</td><td>$29–99/mo ARPU expansion</td></tr>
+<tr><td>Y4–5</td><td>Native app (if data supports)</td><td>iOS discovery, push reliability</td></tr>
+<tr><td>Y5</td><td>Enterprise wellness</td><td>$5–15/employee/mo</td></tr>
+</table>
+<p><strong>Non-negotiables (BIBLE AI rules):</strong> program logic never LLM-generated; evidence KB citations required; offline workout logging mandatory; Forge Ember design tokens only.</p>
+<hr />
+<h2>8. Team &amp; organization</h2>
+<h3>8.1 Hiring plan</h3>
+<table>
+<tr><th>Year</th><th>Headcount</th><th>Key roles</th></tr>
+<tr><td>Y1</td><td>1 FTE (founder) + 2 contractors</td><td>Founder builds; content + mod contract</td></tr>
+<tr><td>Y2</td><td>1 FTE + 4 contractors</td><td>+ content creator, CS, designer</td></tr>
+<tr><td>Y3</td><td>4 FTE + 3 contractors</td><td>+ engineer, growth marketer</td></tr>
+<tr><td>Y4</td><td>10 FTE</td><td>+ eng (2), content (2), support</td></tr>
+<tr><td>Y5</td><td>14 FTE</td><td>+ finance, BD for enterprise</td></tr>
+</table>
+<h3>8.2 Founder focus by year</h3>
+<table>
+<tr><th>Year</th><th>Founder time allocation</th></tr>
+<tr><td>Y1</td><td>60% product · 30% marketing · 10% ops</td></tr>
+<tr><td>Y2</td><td>40% product · 40% marketing · 20% hiring</td></tr>
+<tr><td>Y3</td><td>25% product · 35% growth · 40% team</td></tr>
+<tr><td>Y4–5</td><td>15% product vision · 50% growth/BD · 35% team/culture</td></tr>
+</table>
+<hr />
+<h2>9. Risk register &amp; mitigation</h2>
+<table>
+<tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+<tr><td>Low free→paid conversion</td><td>Medium</td><td>High</td><td>Strong upgrade moments; annual default; 14-day Pro trial at projection lock</td></tr>
+<tr><td>Monthly churn &amp;gt;8%</td><td>Medium</td><td>High</td><td>Community WACP; annual push; workout streak mechanics</td></tr>
+<tr><td>PWA discovery limits on iOS</td><td>High</td><td>Medium</td><td>Install guides Y1; native app decision gate Y3</td></tr>
+<tr><td>Paid API costs erode Pro+ margin</td><td>Low</td><td>Medium</td><td>Defer Nutritionix until scale; monitor per-user API cost monthly</td></tr>
+<tr><td>Competitor copies evidence positioning</td><td>Medium</td><td>Low</td><td>Depth of KB + community moat; speed of iteration</td></tr>
+<tr><td>Stripe / Supabase price increases</td><td>Low</td><td>Medium</td><td>94% margins absorb; multi-year contracts at scale</td></tr>
+<tr><td>Influencer brand risk</td><td>Medium</td><td>Low</td><td>Micro-influencers only; no controversial affiliations</td></tr>
+<tr><td>Regulatory (health claims)</td><td>Low</td><td>High</td><td>“Informational only” disclaimer (shipped); no medical advice</td></tr>
+</table>
+<hr />
+<h2>10. Capital &amp; funding</h2>
+<h3>10.1 Bootstrap path (recommended)</h3>
+<table>
+<tr><th>Year</th><th>Revenue</th><th>Opex</th><th>Net</th></tr>
+<tr><td>Y1</td><td>$72K</td><td>$40K</td><td>+$32K</td></tr>
+<tr><td>Y2</td><td>$432K</td><td>$180K</td><td>+$252K</td></tr>
+<tr><td>Y3</td><td>$1.56M</td><td>$543K</td><td>+$1.0M</td></tr>
+<tr><td>Y4</td><td>$4.8M</td><td>$1.8M</td><td>+$3.0M</td></tr>
+<tr><td>Y5</td><td>$11.4M</td><td>$2.7M</td><td>+$8.7M cumulative</td></tr>
+</table>
+<p>ForgeRep can reach profitability <strong>without external funding</strong> given existing product completion and 82–94% margins.</p>
+<h3>10.2 Optional raise (Y3)</h3>
+<p>If paid acquisition scales with LTV/CAC ≥3: raise <strong>$1–2M seed</strong> to accelerate to $5M ARR 12 months faster. Use of funds: 60% growth, 25% eng, 15% ops.</p>
+<hr />
+<h2>11. 90-day action plan (starting July 2026)</h2>
+<p>Priority order for the next quarter:</p>
+<ol>
+<li><strong>Ship Phase 7 gaps</strong> — Withings production QA, Strava launch, billing edge cases.</li>
+<li><strong>Execute Instagram Day 0–31 calendar</strong> — batch content, daily posting, UTM tracking.</li>
+<li><strong>Instrument funnel</strong> — signup → onboarding step → first workout → D7 workout → upgrade.</li>
+<li><strong>Enable community A/B</strong> — measure opt-in rate and WACP weekly via ops metrics panel.</li>
+<li><strong>Default to annual</strong> in upgrade flows with clear savings callout ($37.89/yr saved on Pro).</li>
+<li><strong>Launch referral v1</strong> — Stripe coupon “give/get month”.</li>
+<li><strong>SEO</strong> — publish 5 goal landing pages with structured data.</li>
+<li><strong>ForgeRep-owned Spotify playlists</strong> — swap placeholder IDs before marketing push.</li>
+</ol>
+<p><strong>Day 90 success criteria:</strong></p>
+<ul>
+<li>≥150 paying subscribers</li>
+<li>≥1,500 registered users</li>
+<li>D30 retention ≥30%</li>
+<li>Instagram ≥1,000 followers</li>
+<li>WACP baseline established</li>
+</ul>
+<hr />
+<h2>12. Summary — how we hit $11M ARR in five years</h2>
+<table>
+<tr><th>Lever</th><th>Mechanism</th></tr>
+<tr><td><strong>Generous free tier</strong></td><td>Complete training loop drives top-of-funnel; no credit card required</td></tr>
+<tr><td><strong>Evidence trust</strong></td><td>Differentiates in crowded market; fuels content marketing</td></tr>
+<tr><td><strong>Offline reliability</strong></td><td>Converts gym-goers frustrated with signal-dependent apps</td></tr>
+<tr><td><strong>Community accountability</strong></td><td>WACP reduces churn; crews drive invites</td></tr>
+<tr><td><strong>Tier economics</strong></td><td>82–94% margins fund reinvestment without dilution</td></tr>
+<tr><td><strong>Annual billing</strong></td><td>2–3× retention vs monthly; improves cash flow</td></tr>
+<tr><td><strong>Product-led upgrades</strong></td><td>Projection lock, analytics, integrations at moment of need</td></tr>
+<tr><td><strong>Channel diversification</strong></td><td>Organic → affiliate → paid → coach B2B2C → enterprise</td></tr>
+</table>
+<p>ForgeRep is not betting on becoming the next billion-dollar unicorn on hype. It is building a <strong>durable, profitable fitness business</strong> by owning the intersection of <strong>science, accountability, and offline reliability</strong> — and executing the playbooks already documented in our product Bible, tier strategy, and launch calendar with discipline over five years.</p>
+<hr />
+<h2>Appendix A — Source documents</h2>
+<table>
+<tr><th>Document</th><th>Path</th><th>Used for</th></tr>
+<tr><td>Product Bible</td><td><code>docs/BIBLE.md</code></td><td>Architecture, tiers, success metrics, infra costs</td></tr>
+<tr><td>Tier gates</td><td><code>docs/TIER-GATES.md</code></td><td>Pricing, feature matrix, conversion triggers</td></tr>
+<tr><td>Pricing ADR</td><td><code>docs/ADRs/001-tier-pricing-margins.md</code></td><td>Unit economics, annual strategy</td></tr>
+<tr><td>Instagram calendar</td><td><code>docs/marketing/instagram-31-day-calendar.md</code></td><td>Launch content, weekly targets</td></tr>
+<tr><td>Community plan</td><td><code>docs/community-expansion-plan.md</code></td><td>WACP north star, retention loops</td></tr>
+<tr><td>Progress log</td><td><code>docs/PROGRESS.md</code></td><td>Current build status</td></tr>
+</table>
+<h2>Appendix B — Pricing reference</h2>
+<table>
+<tr><th>Product</th><th>Monthly</th><th>Annual</th><th>Effective monthly (annual)</th></tr>
+<tr><td>ForgeRep Pro</td><td>$8.99</td><td>$69.99</td><td>$5.83</td></tr>
+<tr><td>ForgeRep Pro+</td><td>$14.99</td><td>$119.99</td><td>$10.00</td></tr>
+</table>
+<hr />
+<p>*Confidential — ForgeRep / forgeFit. For internal planning and investor review.*</p>
+</body>
+</html>

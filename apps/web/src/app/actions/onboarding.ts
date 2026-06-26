@@ -97,6 +97,29 @@ export async function completeOnboarding(data: OnboardingData) {
     return { error: profileError.message };
   }
 
+  const measuredDate = new Date().toISOString().slice(0, 10);
+  const { error: measurementError } = await supabase
+    .from("body_measurements")
+    .upsert(
+      {
+        user_id: user.id,
+        measured_date: measuredDate,
+        weight_kg: profileFields.weight_kg,
+        waist_cm: profileFields.waist_cm ?? null,
+        chest_cm: profileFields.chest_cm ?? null,
+        arms_cm: profileFields.arms_cm ?? null,
+        legs_cm: profileFields.legs_cm ?? null,
+        neck_cm: profileFields.neck_cm ?? null,
+        hips_cm: profileFields.hips_cm ?? null,
+        notes: "From onboarding",
+      },
+      { onConflict: "user_id,measured_date" }
+    );
+
+  if (measurementError && !measurementError.message.includes("body_measurements")) {
+    return { error: measurementError.message };
+  }
+
   const equipmentResult = await replaceUserEquipment(
     supabase,
     user.id,
