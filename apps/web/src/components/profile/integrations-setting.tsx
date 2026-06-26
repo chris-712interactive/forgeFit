@@ -355,7 +355,7 @@ export function IntegrationsSetting({
 
                 {integration.connected && integration.lastSyncError && (
                   <p className="mt-2 text-xs text-red-300">
-                    {integration.lastSyncError}
+                    {formatIntegrationErrorForUser(integration.lastSyncError)}
                   </p>
                 )}
 

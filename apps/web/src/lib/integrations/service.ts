@@ -49,6 +49,11 @@ import {
   type IntegrationPublicStatus,
   type UserIntegrationRow,
 } from "./types";
+import {
+  isGoogleHealthAuthError,
+  isPermanentGoogleAuthError,
+} from "./oauth-errors";
+import { formatIntegrationErrorForUser } from "./user-errors";
 
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const INITIAL_SYNC_LOOKBACK_DAYS = 90;
@@ -483,26 +488,40 @@ export async function completeFitbitOAuth(params: {
 }
 
 export async function getValidFitbitAccessToken(
-  row: UserIntegrationRow
+  row: UserIntegrationRow,
+  options?: { forceRefresh?: boolean }
 ): Promise<string> {
   const expiresAt = row.token_expires_at
     ? new Date(row.token_expires_at).getTime()
     : 0;
 
-  if (expiresAt - Date.now() > TOKEN_REFRESH_BUFFER_MS) {
+  if (
+    !options?.forceRefresh &&
+    expiresAt - Date.now() > TOKEN_REFRESH_BUFFER_MS
+  ) {
     return decryptIntegrationSecret(row.access_token_encrypted);
   }
 
   if (!row.refresh_token_encrypted) {
-    throw new Error("Fitbit refresh token is missing.");
+    return failFitbitAuth(row.id, "Fitbit refresh token is missing.");
   }
 
   const { clientId, clientSecret } = getGoogleHealthClientConfig();
-  const refreshed = await refreshGoogleHealthAccessToken({
-    clientId,
-    clientSecret,
-    refreshToken: decryptIntegrationSecret(row.refresh_token_encrypted),
-  });
+  let refreshed;
+  try {
+    refreshed = await refreshGoogleHealthAccessToken({
+      clientId,
+      clientSecret,
+      refreshToken: decryptIntegrationSecret(row.refresh_token_encrypted),
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Google token refresh failed.";
+    if (isPermanentGoogleAuthError(message)) {
+      return failFitbitAuth(row.id, message);
+    }
+    throw error;
+  }
 
   const admin = createAdminClient();
   const newExpiresAt = new Date(
@@ -528,6 +547,40 @@ export async function getValidFitbitAccessToken(
   }
 
   return refreshed.access_token;
+}
+
+async function failFitbitAuth(
+  integrationId: string,
+  rawMessage: string
+): Promise<never> {
+  const userMessage = formatIntegrationErrorForUser(rawMessage);
+  const admin = createAdminClient();
+  await admin
+    .from("user_integrations")
+    .update({
+      status: "error",
+      last_sync_error: userMessage,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", integrationId);
+  throw new Error(userMessage);
+}
+
+async function withFitbitAccessToken<T>(
+  row: UserIntegrationRow,
+  fn: (accessToken: string) => Promise<T>
+): Promise<T> {
+  let accessToken = await getValidFitbitAccessToken(row);
+  try {
+    return await fn(accessToken);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!isGoogleHealthAuthError(message)) {
+      throw error;
+    }
+    accessToken = await getValidFitbitAccessToken(row, { forceRefresh: true });
+    return fn(accessToken);
+  }
 }
 
 function syncFromIsoDate(lastSyncAt: string | null): string {
@@ -862,19 +915,19 @@ export async function syncFitbitForUser(
   const admin = createAdminClient();
 
   try {
-    const accessToken = await getValidFitbitAccessToken(row);
-    const startDate = await resolveFitbitSyncStartDate(
-      userId,
-      row.last_sync_at
-    );
-    const timeZone = options?.timeZone ?? (await getUserTimeZone());
-    const endDate = todayLocalIsoDate(new Date(), timeZone);
+    return await withFitbitAccessToken(row, async (accessToken) => {
+      const startDate = await resolveFitbitSyncStartDate(
+        userId,
+        row.last_sync_at
+      );
+      const timeZone = options?.timeZone ?? (await getUserTimeZone());
+      const endDate = todayLocalIsoDate(new Date(), timeZone);
 
-    const summaries = await fetchDailyActivitySummaries({
-      accessToken,
-      startDate,
-      endDate,
-    });
+      const summaries = await fetchDailyActivitySummaries({
+        accessToken,
+        startDate,
+        endDate,
+      });
 
     let imported = 0;
     let skipped = 0;
@@ -1046,9 +1099,11 @@ export async function syncFitbitForUser(
       exerciseCorrelated,
       exerciseUnmatchedCardio,
     };
+    });
   } catch (error) {
-    const message =
+    const rawMessage =
       error instanceof Error ? error.message : "Fitbit sync failed.";
+    const message = formatIntegrationErrorForUser(rawMessage);
     await admin
       .from("user_integrations")
       .update({
@@ -1057,7 +1112,7 @@ export async function syncFitbitForUser(
         updated_at: new Date().toISOString(),
       })
       .eq("id", row.id);
-    throw error;
+    throw new Error(message);
   }
 }
 

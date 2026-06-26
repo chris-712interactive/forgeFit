@@ -14,10 +14,32 @@ export function formatIntegrationErrorForUser(raw: string): string {
     );
   }
 
+  if (
+    lower.includes("invalid_grant") ||
+    (lower.includes("expired") && lower.includes("revoked")) ||
+    lower.includes("token has been expired")
+  ) {
+    return (
+      "Google revoked ForgeRep’s access to your Fitbit data. Tap Disconnect, then Connect again " +
+      "and approve all requested permissions. If it still fails, remove ForgeRep under Google Account " +
+      "→ Security → Third-party access, then reconnect."
+    );
+  }
+
   if (lower.includes("refresh token")) {
     return (
-      "Google did not grant ongoing access. Remove ForgeRep from your Google Account " +
-      "permissions (Security → Third-party access), then try Connect again."
+      "Google did not grant ongoing access. Disconnect here, remove ForgeRep from your Google Account " +
+      "(Security → Third-party access), then tap Connect again."
+    );
+  }
+
+  if (
+    lower.includes("invalid authentication credentials") ||
+    lower.includes("invalid credentials")
+  ) {
+    return (
+      "Your Fitbit connection needs a fresh sign-in. Tap Sync now once more; if this message persists, " +
+      "Disconnect and Connect again."
     );
   }
 

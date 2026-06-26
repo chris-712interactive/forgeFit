@@ -34,6 +34,26 @@
 
 ## Session Log
 
+### 2026-06-26 — Fitbit token refresh hardening
+
+**What was done:**
+- Auto-retry Fitbit sync once with a forced token refresh when Google returns auth errors (stale access token)
+- Detect permanently revoked refresh tokens (`invalid_grant`) and surface reconnect instructions instead of raw API text
+- Format stored sync errors and Profile integration error display through `formatIntegrationErrorForUser`
+
+**What's next:**
+- Confirm production `CRON_SECRET` is set so `/api/cron/sync-fitbit` refreshes tokens daily for connected users
+- Manual QA: connect Fitbit → Sync now; revoke Google access → verify reconnect copy
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/integrations/oauth-errors.ts`
+- `apps/web/src/lib/integrations/user-errors.ts`
+- `apps/web/src/lib/integrations/service.ts`
+- `apps/web/src/components/profile/integrations-setting.tsx`
+- `docs/PROGRESS.md`
+
 ### 2026-06-26 — Consolidate weight trend into projection chart
 
 **What was done:**
