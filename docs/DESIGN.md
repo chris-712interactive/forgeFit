@@ -70,3 +70,14 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 | Use CSS variables from `@forgefit/ui` | Hardcode `#FF6B35` in JSX |
 | Use gradients on hero/hype surfaces only | Gradient everything |
 | Pulse `forge-gold` on rest timer | Flash red on missed day |
+
+## Marketing landing page
+
+Public homepage (`apps/web/src/components/marketing/`):
+
+- **Layout:** `marketingWideClass` (max-w-6xl) for grids/hero; `marketingContentClass` (max-w-3xl) for prose
+- **Hero:** Split grid with CSS phone mockup (`marketing-app-preview.tsx`), ambient glow, gradient headline accent
+- **Sections:** `#features`, `#how-it-works`, `#pricing`, `#faq` anchor IDs for sticky header nav
+- **Pricing:** Three tier cards from `marketing-data.ts` + `lib/billing/pricing.ts`; all CTAs → `/signup`
+- **SEO:** FAQ accordion + long-form `seoContentSections`; JSON-LD in `landing-json-ld.tsx`
+- **Motion:** `marketing-float` / `marketing-pulse-dot` — disabled when `prefers-reduced-motion`

@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-19 |
-| **Last session focus** | Nutrition recipe servings + adjust-before-log UX |
+| **Last updated** | 2026-06-26 |
+| **Last session focus** | Marketing homepage redesign (SEO + conversion) |
 
 ---
 
@@ -33,6 +33,28 @@
 ---
 
 ## Session Log
+
+### 2026-06-26 — Marketing homepage redesign
+
+**What was done:**
+- Redesigned public landing page (`/`) with sticky header, split hero + phone mockup, stats bar, bento feature grid, pricing cards (Free / Pro / Pro+), FAQ accordion, long-form SEO content, and rich footer
+- Expanded SEO metadata (title, description, keywords, OG image) and JSON-LD (`FAQPage`, multi-tier `SoftwareApplication` offers)
+- Added marketing animations (`marketing-float`, hero glow) with `prefers-reduced-motion` respect
+- Centralized marketing copy in `marketing-data.ts` (FAQ, pricing tiers, SEO sections)
+
+**What's next:**
+- Manual QA: review landing page at 375px / desktop; verify anchor nav and signup CTAs
+- Consider dedicated `/pricing` route if SEO needs a standalone URL
+- Replace phone mockup with real app screenshots when marketing assets are ready
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/marketing/*` (hero, header, footer, pricing, FAQ, SEO content, app preview, icons, data, section layout)
+- `apps/web/src/lib/seo/landing-metadata.ts`
+- `apps/web/src/app/globals.css`
+- `docs/PROGRESS.md`
+- `docs/DESIGN.md`
 
 ### 2026-06-26 — Fitbit token refresh hardening
 

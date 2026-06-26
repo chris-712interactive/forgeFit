@@ -54,6 +54,55 @@ body {
   animation: forge-ember-pulse 1.5s ease-in-out infinite;
 }
 
+@keyframes marketing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes marketing-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.marketing-float {
+  animation: marketing-float 5s ease-in-out infinite;
+}
+
+.marketing-pulse-dot {
+  animation: marketing-pulse-dot 2s ease-in-out infinite;
+}
+
+.marketing-hero-glow {
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% -20%,
+      rgb(255 107 53 / 0.18),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 100% 50%,
+      rgb(251 191 36 / 0.08),
+      transparent
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-float,
+  .marketing-pulse-dot {
+    animation: none;
+  }
+}
+
 /* Keep react-body-highlighter inside its card on small screens */
 .rbh-wrapper {
   width: 100%;

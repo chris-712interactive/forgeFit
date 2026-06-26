@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
 import { getSiteUrl } from "./site-url";
 
-const title = "ForgeRep — Evidence-Based Fitness That Keeps You Accountable";
+const title =
+  "ForgeRep — Personalized Workout & Macro Tracker App | Free to Start";
 const description =
-  "Personalized workout programs, macro tracking, and weekly progress at a glance. Mobile-first fitness app built for the gym — works offline when signal doesn't.";
+  "ForgeRep is an evidence-based fitness app with personalized workout programs, offline gym logging, and macro tracking. See weekly progress at a glance. Free tier includes programs, nutrition diary, and 30-day projections — no credit card required.";
 
 const keywords = [
   "fitness app",
-  "workout tracker",
-  "macro tracker",
-  "evidence-based training",
+  "workout tracker app",
+  "macro tracker app",
+  "workout log app",
   "offline gym app",
   "personalized workout plan",
-  "nutrition tracking",
-  "progressive overload",
-  "bodybuilding program",
+  "evidence-based training",
+  "progressive overload tracker",
+  "nutrition tracking app",
+  "bodybuilding program app",
   "strength training app",
-  "PWA fitness",
+  "fat loss workout plan",
+  "hypertrophy program",
+  "PWA fitness app",
+  "free workout tracker",
+  "macro counting app",
+  "weight loss fitness app",
+  "muscle building app",
+  "gym workout planner",
   "ForgeRep",
 ];
 
@@ -38,11 +47,20 @@ export function buildLandingMetadata(): Metadata {
       siteName: "ForgeRep",
       title,
       description,
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "ForgeRep — evidence-based fitness and nutrition app",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ["/og-image.png"],
     },
     robots: {
       index: true,

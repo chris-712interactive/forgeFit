@@ -1,13 +1,18 @@
 import type { ReactNode } from "react";
 
-/** Shared horizontal padding + max width for all marketing sections */
+/** Standard content width for text-heavy marketing sections */
 export const marketingContentClass =
   "mx-auto w-full max-w-3xl px-5 sm:px-8 md:px-10 lg:px-12";
+
+/** Wide layout for grids, hero, pricing, and footer */
+export const marketingWideClass =
+  "mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10";
 
 interface MarketingSectionProps {
   children: ReactNode;
   className?: string;
   variant?: "plain" | "card" | "highlight";
+  id?: string;
 }
 
 const variantClass: Record<NonNullable<MarketingSectionProps["variant"]>, string> =
@@ -22,9 +27,10 @@ export function MarketingSection({
   children,
   className = "",
   variant = "plain",
+  id,
 }: MarketingSectionProps) {
   return (
-    <section className={`${variantClass[variant]} ${className}`.trim()}>
+    <section id={id} className={`${variantClass[variant]} ${className}`.trim()}>
       {children}
     </section>
   );
@@ -35,6 +41,9 @@ interface MarketingSectionIntroProps {
   title: string;
   description?: string;
   eyebrowClassName?: string;
+  align?: "left" | "center";
+  titleAs?: "h2" | "h3";
+  headingId?: string;
 }
 
 export function MarketingSectionIntro({
@@ -42,9 +51,14 @@ export function MarketingSectionIntro({
   title,
   description,
   eyebrowClassName = "text-forge-muted",
+  align = "left",
+  titleAs: TitleTag = "h2",
+  headingId,
 }: MarketingSectionIntroProps) {
+  const alignClass = align === "center" ? "text-center mx-auto" : "";
+
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className={`space-y-3 sm:space-y-4 ${alignClass}`}>
       {eyebrow ? (
         <p
           className={`font-display text-xs font-semibold uppercase tracking-wider sm:text-sm ${eyebrowClassName}`}
@@ -52,14 +66,44 @@ export function MarketingSectionIntro({
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="font-display text-xl font-bold leading-snug text-forge-text sm:text-2xl">
+      <TitleTag
+        id={headingId}
+        className={`font-display text-2xl font-bold leading-snug text-forge-text sm:text-3xl md:text-[2rem] ${align === "center" ? "max-w-2xl" : "max-w-prose"}`}
+      >
         {title}
-      </h2>
+      </TitleTag>
       {description ? (
-        <p className="max-w-prose text-sm leading-relaxed text-forge-muted sm:text-base">
+        <p
+          className={`max-w-prose text-sm leading-relaxed text-forge-muted sm:text-base ${align === "center" ? "mx-auto" : ""}`}
+        >
           {description}
         </p>
       ) : null}
     </div>
+  );
+}
+
+interface MarketingPageSectionProps {
+  children: ReactNode;
+  id?: string;
+  className?: string;
+  ariaLabelledBy?: string;
+}
+
+/** Full-width section wrapper with consistent vertical rhythm */
+export function MarketingPageSection({
+  children,
+  id,
+  className = "",
+  ariaLabelledBy,
+}: MarketingPageSectionProps) {
+  return (
+    <section
+      id={id}
+      aria-labelledby={ariaLabelledBy}
+      className={`${marketingWideClass} ${className}`.trim()}
+    >
+      {children}
+    </section>
   );
 }
