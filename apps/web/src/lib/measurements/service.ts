@@ -1,5 +1,4 @@
 import {
-  buildTrendSeries,
   projectWaist,
   projectWeight,
   type WaistProjectionResult,
@@ -168,34 +167,6 @@ async function loadCaliperEntries(
   return (data ?? []).map(mapCaliperRow);
 }
 
-function filterMeasurementsForAnalytics(
-  measurements: BodyMeasurementRow[],
-  historyDays: number | null
-): BodyMeasurementRow[] {
-  if (historyDays === null) return measurements;
-
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - historyDays);
-  cutoff.setHours(0, 0, 0, 0);
-  const iso = cutoff.toISOString().slice(0, 10);
-
-  const filtered = measurements.filter((row) => row.measuredDate >= iso);
-  const earliestWeight = measurements.find(
-    (row) => row.weightKg != null && row.weightKg > 0
-  );
-
-  if (
-    earliestWeight &&
-    !filtered.some((row) => row.measuredDate === earliestWeight.measuredDate)
-  ) {
-    return [...filtered, earliestWeight].sort((a, b) =>
-      a.measuredDate.localeCompare(b.measuredDate)
-    );
-  }
-
-  return filtered;
-}
-
 function buildProjection(
   measurements: BodyMeasurementRow[],
   goal: FitnessGoal,
@@ -303,10 +274,6 @@ export async function getProgressDashboardData(
 
   const baseline = profileBaseline(profile, measurementResult.rows);
   const measurements = mergeMeasurementRows(baseline, measurementResult.rows);
-  const analyticsMeasurements = filterMeasurementsForAnalytics(
-    measurements,
-    gates.analyticsHistoryDays
-  );
 
   const goal = (profile?.primary_goal as FitnessGoal | null) ?? null;
   const age = profile ? resolveProfileAge(profile) : null;
@@ -336,21 +303,6 @@ export async function getProgressDashboardData(
       )
     : null;
 
-  const trends = buildTrendSeries(
-    analyticsMeasurements.map((row) => ({
-      measuredDate: row.measuredDate,
-      weightKg: row.weightKg,
-      waistCm: row.waistCm,
-      chestCm: row.chestCm,
-      armsCm: row.armsCm,
-      legsCm: row.legsCm,
-      neckCm: row.neckCm,
-      hipsCm: row.hipsCm,
-      bodyFatPct: row.bodyFatPct,
-    })),
-    ["weightKg", "waistCm", "bodyFatPct"]
-  );
-
   if (projection && measurementResult.tableReady) {
     void cacheProjection(userId, projection, gates.horizonDays);
   }
@@ -361,7 +313,6 @@ export async function getProgressDashboardData(
     sex: (profile?.sex as string | null) ?? null,
     measurements,
     caliperEntries,
-    trends,
     projection,
     waistProjection,
     hasWaistHistory: waistHistoryCount >= 2,

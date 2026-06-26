@@ -34,6 +34,24 @@
 
 ## Session Log
 
+### 2026-06-26 — Consolidate weight trend into projection chart
+
+**What was done:**
+- Removed redundant standalone “Weight trend” section from Progress → Trends
+- Renamed remaining chart to “Weight trend & {horizon}-day projection” with solid/dashed line legend
+- Deleted `measurement-trend-chart.tsx` and dropped unused `trends` payload from progress dashboard data
+
+**What's next:**
+- Manual QA: Progress → Trends shows one weight chart with logged history + forecast
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/progress/progress-dashboard.tsx`
+- `apps/web/src/lib/measurements/service.ts`
+- `apps/web/src/lib/measurements/types.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-26 — Weight trend includes full history + onboarding anchor
 
 **What was done:**

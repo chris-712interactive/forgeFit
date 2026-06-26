@@ -1,5 +1,4 @@
 import type {
-  TrendSeries,
   WaistProjectionResult,
   WeightProjectionResult,
 } from "@forgefit/projection-engine";
@@ -48,7 +47,6 @@ export interface ProgressDashboardData {
   sex: string | null;
   measurements: BodyMeasurementRow[];
   caliperEntries: CaliperMeasurementRow[];
-  trends: TrendSeries[];
   projection: WeightProjectionResult | null;
   waistProjection: WaistProjectionResult | null;
   hasWaistHistory: boolean;

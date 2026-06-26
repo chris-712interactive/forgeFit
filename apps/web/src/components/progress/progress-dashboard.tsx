@@ -15,7 +15,6 @@ import { buildEvidenceHref } from "@/lib/evidence/present";
 import { useEffect, useState } from "react";
 import { CaliperCalculator } from "./caliper-calculator";
 import { LogMeasurementForm } from "./log-measurement-form";
-import { MeasurementTrendChart } from "./measurement-trend-chart";
 import { WeightProjectionChart } from "./weight-projection-chart";
 import { WaistProjectionChart } from "./waist-projection-chart";
 import { StrengthProgressionChart } from "./strength-progression-chart";
@@ -93,32 +92,12 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
 
           <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              Weight trend
-            </h2>
-            {gates.analyticsHistoryDays != null && (
-              <p className="mt-1 text-xs text-forge-muted">
-                Showing last {gates.analyticsHistoryDays} days on Free (starting
-                weight always included).{" "}
-                <UpgradePrompt
-                  compact
-                  title=""
-                  description="Unlimited history is included with"
-                  suggestedTier="pro"
-                />
-              </p>
-            )}
-            <div className="mt-4">
-              <MeasurementTrendChart series={data.trends} />
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              {horizonLabel} weight projection
+              Weight trend &amp; {horizonLabel} projection
             </h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-forge-muted">
+              <span>Solid line = logged weigh-ins · dashed = forecast</span>
               <span>
-                {isPro ? "Pro" : "Free"} tier · evidence-capped trend
+                {isPro ? "Pro" : "Free"} tier · evidence-capped
                 {data.goal ? ` (${data.goal.replace(/_/g, " ")})` : ""}
               </span>
               <EvidenceExplainerLink
