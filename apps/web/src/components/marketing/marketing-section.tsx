@@ -55,7 +55,8 @@ export function MarketingSectionIntro({
   titleAs: TitleTag = "h2",
   headingId,
 }: MarketingSectionIntroProps) {
-  const alignClass = align === "center" ? "text-center mx-auto" : "";
+  const isCenter = align === "center";
+  const alignClass = isCenter ? "text-center" : "";
 
   return (
     <div className={`space-y-3 sm:space-y-4 ${alignClass}`}>
@@ -68,13 +69,17 @@ export function MarketingSectionIntro({
       ) : null}
       <TitleTag
         id={headingId}
-        className={`font-display text-2xl font-bold leading-snug text-forge-text sm:text-3xl md:text-[2rem] ${align === "center" ? "max-w-2xl" : "max-w-prose"}`}
+        className={`font-display text-2xl font-bold leading-snug text-forge-text sm:text-3xl md:text-[2rem] ${
+          isCenter ? "mx-auto max-w-2xl" : "max-w-prose"
+        }`}
       >
         {title}
       </TitleTag>
       {description ? (
         <p
-          className={`max-w-prose text-sm leading-relaxed text-forge-muted sm:text-base ${align === "center" ? "mx-auto" : ""}`}
+          className={`max-w-prose text-sm leading-relaxed text-forge-muted sm:text-base ${
+            isCenter ? "mx-auto" : ""
+          }`}
         >
           {description}
         </p>
