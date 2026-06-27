@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-26 |
-| **Last session focus** | Marketing homepage redesign (SEO + conversion) |
+| **Last updated** | 2026-06-27 |
+| **Last session focus** | Google Analytics site tag |
 
 ---
 
@@ -33,6 +33,24 @@
 ---
 
 ## Session Log
+
+### 2026-06-27 — Google Analytics
+
+**What was done:**
+- Installed GA4 tag (`G-VDVFTLJ0NF`) site-wide via `GoogleAnalytics` component in root layout (`next/script`, `afterInteractive`)
+- Production loads by default; local dev skips unless `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set (use `false` to disable in prod)
+
+**What's next:**
+- Confirm Realtime events in GA after next production deploy
+- Add conversion events (signup, checkout) when marketing funnels are defined
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/analytics/google-analytics.tsx`
+- `apps/web/src/app/layout.tsx`
+- `.env.example`
+- `docs/PROGRESS.md`
 
 ### 2026-06-26 — Marketing homepage redesign
 
@@ -167,11 +185,12 @@
 **What was done:**
 - Added **31-day Instagram content calendar** for @forgerep — profile setup, batch production guide, daily Reel/carousel/story instructions, hooks, hashtags, metrics
 - Added **Myth vs Fact carousel template** — cover + content slide mockups, Canva build steps, ready-to-use copy from evidence-kb
+- Expanded **Batch Day 0 screen recording playbook** — 10 clips, routes (`/home`, `/workout`, etc.), tap-by-tap actions, offline demo flow, file naming; onboarding corrected to 10 steps
 - Reference PNGs in `docs/marketing/assets/`
 
 **What's next:**
+- Run **Batch Day 0** screen recordings using the playbook in `instagram-31-day-calendar.md`
 - Build five Canva brand templates using `docs/marketing/canva-template-guide.md` (include Myth vs Fact set for Day 3)
-- Execute Day 0 batch recordings (app screen captures) before first post
 - Set bio + link (`forge-rep.com/signup?utm_source=instagram&utm_medium=bio`) on @forgerep
 - Publish Day 1 content per calendar; schedule Week 1 in Meta Business Suite
 

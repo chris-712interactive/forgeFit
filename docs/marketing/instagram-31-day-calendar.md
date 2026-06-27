@@ -5,7 +5,7 @@
 > **Cadence:** 1 Reel + 1 Carousel/static daily + 5–8 Stories (~2 feed touchpoints/day)  
 > **Time budget:** ~45–60 min/day after batch setup; ~4 hours on batch days (Days 0, 7, 14, 21)
 
-**Last updated:** 2026-06-23
+**Last updated:** 2026-06-26
 
 ---
 
@@ -13,6 +13,8 @@
 
 1. [Profile setup](#profile-setup)
 2. [Pre-launch setup (Day 0)](#pre-launch-setup-day-0)
+   - [Batch Day 0 screen recording playbook](#batch-day-0--screen-recording-playbook-4-hours)
+   - [Demo account tier](#demo-account-tier-free-vs-pro-vs-pro)
 3. [Content system](#content-system)
 4. [Daily rhythm](#daily-rhythm)
 5. [Week themes](#week-themes)
@@ -91,20 +93,337 @@ Reference images: `docs/marketing/assets/template-*.png`
 4. **Story** — 1080×1920, big text + link sticker area bottom
 5. **Quote card** — 1080×1080, raised card panel, myth-bust or stat line
 
-### Batch Day 0 — Film everything (~4 hours)
+### Batch Day 0 — Screen recording playbook (~4 hours)
 
-| Batch asset | How | Used on |
-|-------------|-----|---------|
-| App home screen | Screen record PWA | Days 1, 8, 15, 22, 29 |
-| Active workout logging | Sets/reps/RIR flow | Days 2, 9, 16 |
-| Offline mode | Airplane mode → log → sync | Days 3, 10, 17 |
-| Nutrition diary | Log food + macro bars | Days 4, 11, 18 |
-| Onboarding | 7 steps (speed 2× in edit) | Days 5, 12 |
-| Exercise library | GIF + muscle map | Days 6, 13 |
-| Evidence page | Scroll rules/citations | Days 7, 14 |
-| Community tab | Leaderboard/rivals | Days 20, 27 |
+Record everything in **one sitting** using a **demo account** (not your personal account). You will cut these long recordings into Reels, carousels, and Stories later — do not worry about perfection on the first take.
 
-**Recording settings:** Dark mode ON, Do Not Disturb, demo account, hide personal data.
+#### Demo account tier (Free vs Pro vs Pro+)
+
+**Use two accounts, not one** — so your “Start free” content shows the real free experience.
+
+| Account | Tier | Purpose |
+|---------|------|---------|
+| **`demo+free@…`** (primary) | **Free** | Recordings **1–7**, onboarding, and any clip that sells the free tier |
+| **`demo+pro@…`** (secondary) | **Pro+** recommended (or **Pro** if you only need community) | Recordings **8–10** — community, pro analytics, integrations |
+
+**Why Free for the main account**
+
+Your CTAs say “Start free.” Most Batch Day 0 clips should show what a new signup actually gets:
+
+- Home, workout logging, offline sync, nutrition, onboarding, exercise library, evidence — **all Free**
+- **30-day** weight projection on Progress — **Free**
+
+**When you need a paid demo account**
+
+| Recording | Minimum tier | Why |
+|-----------|--------------|-----|
+| **8 — Progress** (Training tab) | **Pro** | Strength/volume charts, PR history — gated on Pro |
+| **9 — Community** | **Pro** + **opt-in** | Leaderboards, rivals, habit score require `gamification` (Pro). Free users only see upgrade/opt-in surfaces |
+| **10 — Integrations B-roll** | **Pro+** | Full Fitbit / Withings connect cards; Free/Pro see “Pro+ integrations” upgrade prompt |
+
+**Pro vs Pro+ for the secondary account**
+
+- Choose **Pro** if you only need Recording **9** (community) and can skip full integrations UI.
+- Choose **Pro+** if you also want Recording **10** and Day **27** content without upgrade prompts — Pro+ includes all Pro features.
+
+**How to set tier on demo accounts (dev/staging)**
+
+1. **Stripe test mode** — sign in as `demo+pro@…` → Profile → Subscription → checkout with [Stripe test card](https://docs.stripe.com/testing) (`4242…`). Pick Pro or Pro+ price.
+2. **Supabase dashboard** (local/staging only) — `profiles` table → set `subscription_tier` to `pro` or `pro_plus` and `subscription_status` to `active` for the demo user UUID.
+
+Do **not** fake a paid tier on production marketing screenshots without labeling posts “Pro” or “Pro+” in caption or on-screen text.
+
+**Posting rule:** If a Reel uses the **paid** demo account, add one line in caption or on-screen text: e.g. “Community — Pro feature” or “Integrations — Pro+”. Core training clips should always come from the **Free** account.
+
+#### Before you record (30 min setup)
+
+1. **Create demo accounts** — e.g. `demo+free@yourdomain.com` (Free) and optionally `demo+pro@yourdomain.com` (Pro+).
+2. **Use a realistic but fake profile** on the **Free** account — first name only visible in community (e.g. “Alex”), generic goal like **General strength** or **Fat loss**, **Intermediate** experience, **Commercial gym**, common equipment (barbell, dumbbells, cables, bench).
+3. **Complete full onboarding** (10 steps) so Home, Workout, and Nutrition are populated.
+4. **Log at least one partial workout** and **one nutrition entry** ahead of time — makes Home and Progress look alive when you film those screens.
+5. **Install as PWA** (optional but best for “real app” feel): Safari → Share → Add to Home Screen, then record from the home-screen icon.
+6. **Phone settings:**
+   - Dark mode ON (matches Forge Ember default)
+   - Do Not Disturb ON
+   - Battery ≥ 50%, Low Power Mode OFF
+   - Hide notifications (or use Focus)
+   - Screen recording ON (include mic only if you plan voiceover later — silent is fine)
+   - **Portrait orientation**, 375px-width feel (standard iPhone — don’t record landscape)
+
+#### How to record (all clips)
+
+| Setting | Value |
+|---------|--------|
+| Tool | iOS: Control Center → Screen Recording · Android: built-in recorder |
+| Tap highlights | Enable “Show touches” if your OS supports it — helps viewers follow |
+| Pace | Slow, deliberate taps — 1–2 sec pause on key UI |
+| Length | Record **long continuous takes** per section below; trim in CapCut |
+| File naming | `batch-01-home.mov`, `batch-02-workout.mov`, etc. |
+
+---
+
+#### Recording 1 — Home dashboard (~5 min) → Days 1, 8, 15, 22, 29
+
+**Route:** Open app → `/home` (Home tab in bottom nav)
+
+**What to capture on screen:**
+
+| Step | Action | Why / what viewers should see |
+|------|--------|-------------------------------|
+| 1 | Land on Home — pause 2s on greeting (“Hey, Alex”) | Human, personalized feel |
+| 2 | Scroll slowly past **encouragement banner** (orange-tinted card) | “Accountability” messaging |
+| 3 | Pause on **This week** card — workouts completed X/Y + gold % bar | Weekly accountability hook |
+| 4 | Pause on **Today** card — **macro progress bars** (Protein / Carbs / Fat) | Nutrition tied to plan |
+| 5 | Tap **Log food →** briefly, then back — optional | Shows macro link |
+| 6 | Scroll to **Body of work** — expand if collapsed | Volume / training stats |
+| 7 | Scroll past **Community** preview section if visible | Teaser for Day 20 |
+| 8 | Slow scroll back to top | B-roll for montages |
+
+**Do not show:** Profile email, real weight if sensitive, notification content with private info.
+
+**Target clips to cut later:** 3s greeting · 5s This week · 5s Today macros · 3s Body of work
+
+---
+
+#### Recording 2 — Workout hub + active logging (~15 min) → Days 2, 9, 16
+
+**Route:** Bottom nav → **Workout** → `/workout`
+
+**Part A — Week plan (hub view)**
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | Pause on **week plan card** — session name, day label (e.g. “Day 2 — Upper”) | Structured program, not random list |
+| 2 | Scroll through **Workout phase cards** (warm-up / main / finisher if shown) | Program detail |
+| 3 | Tap **Start** (or **Continue** if session in progress) on today’s session | Transition to active mode |
+
+**Part B — Active workout (`ActiveWorkout` screen)**
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 4 | Pause on first exercise name + set rows | “Log every rep” hook |
+| 5 | Tap into **weight** field — enter a value (e.g. 135 / 60 kg) | Prescription logging |
+| 6 | Tap into **reps** field — enter reps | |
+| 7 | Tap **Easy / Good / Hard** effort buttons (RIR-based) — select **Good** | RIR without jargon — “1–2 reps left” |
+| 8 | Mark set **complete** (checkmark / complete control) | Completion feedback |
+| 9 | If **rest timer** appears — let it run 3–5 seconds | Gym-realistic |
+| 10 | Log **one more set** on same exercise OR skip to next exercise | Shows flow |
+| 11 | Scroll to show **progression note** (blue-tinted hint) if visible | Evidence-based progression |
+| 12 | **Do not finish workout yet** — leave in progress for offline clip OR finish and use recap for bonus B-roll | |
+
+**Optional Part C — Workout recap**
+
+If you complete the session: pause on recap / rank delta card if community is enabled.
+
+**Target clips:** Start button · set row close-up · effort picker · rest timer · progression hint
+
+---
+
+#### Recording 3 — Offline mode (~10 min) → Days 3, 10, 17
+
+**This is your highest-value differentiator clip — record carefully.**
+
+**Prerequisites:** Active workout **in progress** (from Recording 2) OR start a new session and log one set first.
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | With active workout open, **enable Airplane Mode** (or turn off WiFi + cellular) | “No signal” hook |
+| 2 | Show status bar / control center briefly with no connectivity | Visual proof |
+| 3 | Return to ForgeRep — app should still respond | Offline still works |
+| 4 | Log **another set** (weight + reps + effort) while offline | Core demo |
+| 5 | Navigate to **Workout** hub while still offline — week plan should load from cache | Offline PWA |
+| 6 | **Disable Airplane Mode** — wait for connection | |
+| 7 | If **sync banner** appears (“X items waiting to sync” gold banner) — pause on it | Pending sync UI |
+| 8 | Tap **Sync now** if shown — or wait for auto-sync | Success state |
+| 9 | Confirm set still visible after sync | Data preserved |
+
+**Fallback if sync banner doesn’t appear:** Pull to refresh or reopen app — show workout history with logged sets.
+
+**Target clips:** Airplane mode ON · logging offline · sync banner · synced confirmation
+
+---
+
+#### Recording 4 — Nutrition diary (~12 min) → Days 4, 11, 18
+
+**Route:** Bottom nav → **Nutrition** → `/nutrition`
+
+**Part A — Log tab (default)**
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | Pause on **macro summary bars** at top (calories + protein/carbs/fat vs targets) | Targets from YOUR plan |
+| 2 | Scroll to **Quick macro log** — enter a simple entry: Name “Chicken & rice”, protein/carbs/calories | Fast logging |
+| 3 | Tap **Add / Log** — watch bars update | Instant feedback |
+| 4 | Pause on updated **macro bars** | Before/after for split-screen edits |
+
+**Part B — Browse tab**
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 5 | Tap **Browse** tab | |
+| 6 | Expand **Example plates** — scroll one breakfast/lunch example with whole foods + portions | Curated nutrition (not generic calculator) |
+| 7 | Optional: scroll **Food search** (USDA / Open Food Facts) — search “eggs”, tap a result | Search flow if enabled |
+
+**Part C — My Meals (optional, 30s)**
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 8 | Tap **My Meals** → show saved meal or **Build meal** from ingredients | Power-user feature |
+
+**Target clips:** Macro bars · log entry · bars updating · example plate scroll
+
+---
+
+#### Recording 5 — Onboarding (~20 min raw → ~60s edited) → Days 5, 12
+
+**Use a second fresh demo account OR reset onboarding account** so the progress bar fills from 0%.
+
+**Route:** Sign out → `/signup` → create account → auto-redirect to `/onboarding`
+
+**Record all 10 steps** — tap through at steady pace; speed up 2× in CapCut later:
+
+| Step | Screen title | What to tap / show |
+|------|--------------|-------------------|
+| 1 | Health disclaimer | Check acknowledge box → Continue |
+| 2 | What’s your main goal? | Select one goal (e.g. **Fat loss**) |
+| 3 | How experienced are you? | Select **Intermediate** |
+| 4 | About you | Enter demo first/last name + DOB |
+| 5 | Your measurements | Toggle unit system once · enter height + weight |
+| 6 | What equipment do you have? | Location: **Commercial gym** · select 4–6 equipment chips |
+| 7 | Recovery tools | Select 1–2 optional items (foam roller, etc.) |
+| 8 | How much time do you have? | **3×** sessions · **45 min** |
+| 9 | Why did you start? | Type 1–2 sentences (generic motivation) |
+| 10 | Almost done | PWA install prompt — scroll → **Finish** / generate program |
+
+**After finish:** Pause 3s on Home or Workout loading with **new program visible**.
+
+**Do not show:** Real email, real DOB, real body measurements you’re uncomfortable sharing.
+
+**Target clip:** 45–60s fast-cut montage of all 10 steps + “program ready” landing
+
+---
+
+#### Recording 6 — Exercise library (~8 min) → Days 6, 13
+
+**Route:** Navigate to `/exercises` (from workout exercise link, search, or type URL if logged in on desktop)
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | Pause on **Exercise Library** header + count | “800+ exercises” claim |
+| 2 | Use **search** — type “bench press” or “squat” | Search UX |
+| 3 | Tap an exercise from results list | |
+| 4 | On detail page — pause on **animated demo / GIF** playing | Visual demos |
+| 5 | Scroll to **muscle heatmap** (body diagram highlighted) | Muscle map |
+| 6 | Scroll to **Equipment swaps** — show 1–2 substitutions | Substitution feature |
+| 7 | Tap a substitution link — show alternate exercise | |
+
+**Good exercises to film:** Barbell bench press, Back squat, Romanian deadlift — widely recognized.
+
+**Target clips:** Search · GIF · muscle map · substitution list
+
+---
+
+#### Recording 7 — Evidence page (~5 min) → Days 7, 14, 21
+
+**Route:** `/evidence` (link from Workout hub “See your evidence basis” or Profile, or type URL)
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | Pause on page header: **Evidence behind your plan** | Trust / not-AI hook |
+| 2 | Read subtitle area — “never guesses in a chatbot” copy visible | |
+| 3 | Tap **Your plan (N)** filter chip | Personalized rules |
+| 4 | Slow scroll through **2–3 rule cards** — pause on confidence badge + citation line | Citable science |
+| 5 | Tap **Full library** — scroll 2–3 more rules | Depth of knowledge base |
+| 6 | Optional: tap domain filter (Protein, Volume, etc.) | Organization |
+
+**Target clips:** Header · rule card close-up with citation · scroll of multiple rules
+
+---
+
+#### Recording 8 — Progress / projections (~8 min) → Days 17, 18
+
+**Route:** Bottom nav → **Progress** → `/progress`
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | **Trends** tab (default) — pause on **weight projection chart** (30-day line) | Projections feature |
+| 2 | Scroll to measurement / waist trends if present | Not just scale |
+| 3 | Tap **Training** tab — strength progression or volume chart if Pro demo account; otherwise show free-tier view | |
+| 4 | Tap **Log** tab — show **log measurement** form briefly (don’t need to submit) | Body tracking |
+
+**Note:** If charts are empty, log a weight measurement first in **Log** tab, then return to **Trends**.
+
+**Target clips:** Projection chart · strength/volume chart · log form
+
+---
+
+#### Recording 9 — Community (~8 min) → Days 20, 27
+
+**Route:** Bottom nav → **Community** → `/community`
+
+**Requires:** Pro-tier demo account with **gamification opt-in** for full experience. Free account still films opt-in hero + preview.
+
+| Step | Action | What to show |
+|------|--------|--------------|
+| 1 | Pause on **Community** header + hero (opt-in state) | Accountability layer |
+| 2 | If opted in: **This week** tab — leaderboard standings, your rank | Competition |
+| 3 | Scroll to **Weekly rival** card — “points to pass” | Rival feature |
+| 4 | Scroll to **Habit score breakdown** (training / protein / quality) | Transparent scoring |
+| 5 | Optional: **Squad** tab — crew panel · **Feed** tab — win feed | Phase 3 content |
+
+**If not opted in:** Record opt-in CTA hero — still usable for “train with accountability” messaging with caption “Pro feature”.
+
+**Target clips:** Leaderboard scroll · rival card · habit score
+
+---
+
+#### Recording 10 — Bonus B-roll (~15 min) → montages, relatable Reels
+
+Record these **short 5–10s clips** for Week 2–4 editing:
+
+| Clip | How |
+|------|-----|
+| Bottom nav tap through all 6 tabs | Home → Workout → Nutrition → Progress → Community → Profile |
+| **Profile → Integrations** | Fitbit / Spotify / Withings cards (don’t connect — just show UI) |
+| Workout **music picker** | Spotify vibe selection (Focus / Pump / Cardio / Cooldown) |
+| **Sync status** on Workout tab when online | Clean state (no banner) vs pending banner from Recording 3 |
+| PWA **Add to Home Screen** prompt | From onboarding step 10 or Home install card |
+| Phone **lock screen → tap ForgeRep icon** | “Real app” open |
+
+---
+
+#### After recording — organize files
+
+```
+batch/
+├── 01-home.mp4
+├── 02-workout-active.mp4
+├── 03-offline-sync.mp4
+├── 04-nutrition.mp4
+├── 05-onboarding.mp4
+├── 06-exercises.mp4
+├── 07-evidence.mp4
+├── 08-progress.mp4
+├── 09-community.mp4
+└── 10-broll.mp4
+```
+
+Upload to iCloud/Google Drive. Import into CapCut project **ForgeRep Batch Day 0** for the month.
+
+#### Quick reference — calendar mapping
+
+| Batch recording | Used on calendar days |
+|-----------------|----------------------|
+| Home dashboard | 1, 8, 15, 22, 29 |
+| Workout + active logging | 2, 9, 16 |
+| Offline + sync | 3, 10, 17 |
+| Nutrition diary | 4, 11, 18 |
+| Onboarding | 5, 12 |
+| Exercise library | 6, 13 |
+| Evidence page | 7, 14, 21 |
+| Progress / projections | 17, 18 |
+| Community | 20, 27 |
+| Bonus B-roll | 8, 10, 14, 22, 26, 29 |
 
 ### Tools
 
