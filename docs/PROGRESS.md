@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-27 |
-| **Last session focus** | Google Analytics site tag |
+| **Last session focus** | Google Tag Manager + GA analytics |
 
 ---
 
@@ -34,20 +34,28 @@
 
 ## Session Log
 
-### 2026-06-27 — Google Analytics
+### 2026-06-27 — Google Tag Manager + Analytics
 
 **What was done:**
-- Installed GA4 tag (`G-VDVFTLJ0NF`) site-wide via `GoogleAnalytics` component in root layout (`next/script`, `afterInteractive`)
-- Production loads by default; local dev skips unless `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set (use `false` to disable in prod)
+- Installed GA4 tag (`G-VDVFTLJ0NF`) site-wide via `GoogleAnalytics` when GTM is not configured
+- Added Google Tag Manager container support (`GoogleTagManager` + noscript fallback) for MNTN and other pixels
+- When `NEXT_PUBLIC_GTM_CONTAINER_ID` is set, direct GA4 is disabled to avoid double-counting — configure GA4 as a tag inside GTM
+- Shared env parsing in `lib/analytics/config.ts`; local dev requires explicit env vars for GTM/GA
 
 **What's next:**
-- Confirm Realtime events in GA after next production deploy
-- Add conversion events (signup, checkout) when marketing funnels are defined
+- In GTM: add GA4 Configuration tag (`G-VDVFTLJ0NF`), MNTN community template + pixel ID, publish container
+- Set `NEXT_PUBLIC_GTM_CONTAINER_ID=GTM-57PG354W` on Vercel (optional — production default is baked in)
+- Confirm Realtime in GA + MNTN pixel verification after deploy
 
 **Blockers:** None
 
+**Follow-up (2026-06-27):** GTM container ID `GTM-57PG354W` added to `.env.local`, production default in `config.ts`, and `.env.example`.
+
 **Files touched:**
+- `apps/web/src/lib/analytics/config.ts`
 - `apps/web/src/components/analytics/google-analytics.tsx`
+- `apps/web/src/components/analytics/google-tag-manager.tsx`
+- `apps/web/src/components/analytics/site-analytics.tsx`
 - `apps/web/src/app/layout.tsx`
 - `.env.example`
 - `docs/PROGRESS.md`

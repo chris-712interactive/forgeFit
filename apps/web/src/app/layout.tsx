@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
-import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import {
+  GoogleTagManagerNoscript,
+  SiteAnalytics,
+} from "@/components/analytics/site-analytics";
 import { SerwistProvider } from "@/components/serwist-provider";
 import "./globals.css";
 
@@ -53,7 +56,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${plusJakarta.variable} antialiased`}>
-        <GoogleAnalytics />
+        <GoogleTagManagerNoscript />
+        <SiteAnalytics />
         <SerwistProvider swUrl="/serwist/sw.js">{children}</SerwistProvider>
       </body>
     </html>

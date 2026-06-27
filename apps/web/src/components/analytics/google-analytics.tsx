@@ -1,26 +1,8 @@
 import Script from "next/script";
-
-const DEFAULT_MEASUREMENT_ID = "G-VDVFTLJ0NF";
-
-function getMeasurementId(): string | null {
-  const configured = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
-  if (configured === "false" || configured === "0") {
-    return null;
-  }
-
-  if (configured) {
-    return configured;
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    return DEFAULT_MEASUREMENT_ID;
-  }
-
-  return null;
-}
+import { getGaMeasurementId } from "@/lib/analytics/config";
 
 export function GoogleAnalytics() {
-  const measurementId = getMeasurementId();
+  const measurementId = getGaMeasurementId();
 
   if (!measurementId) {
     return null;
