@@ -19,14 +19,6 @@ const SEGMENT_COLORS: Record<string, string> = {
 };
 
 export function TdeeEnergyPanel({ dashboard }: TdeeEnergyPanelProps) {
-  if (!dashboard.plan && !dashboard.daily) {
-    return (
-      <section className="rounded-2xl border border-dashed border-[var(--border)] p-5 text-sm text-forge-muted">
-        Generate a program to see how your calorie target is built.
-      </section>
-    );
-  }
-
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
       <div>
@@ -40,15 +32,32 @@ export function TdeeEnergyPanel({ dashboard }: TdeeEnergyPanelProps) {
       </div>
 
       <div className="mt-5 space-y-6">
-        {dashboard.plan && <PlanBreakdownSection breakdown={dashboard.plan} />}
-        {dashboard.daily && <DailyEnergySection daily={dashboard.daily} />}
+        {dashboard.plan ? (
+          <PlanBreakdownSection
+            breakdown={dashboard.plan}
+            enrichedFromProgram={dashboard.enrichedFromProgram}
+          />
+        ) : (
+          <PlanBreakdownPlaceholder />
+        )}
+        {dashboard.daily ? (
+          <DailyEnergySection daily={dashboard.daily} />
+        ) : (
+          <DailyEnergyPlaceholder />
+        )}
         <AdaptiveSection dashboard={dashboard} />
       </div>
     </section>
   );
 }
 
-function PlanBreakdownSection({ breakdown }: { breakdown: PlanTdeeBreakdown }) {
+function PlanBreakdownSection({
+  breakdown,
+  enrichedFromProgram,
+}: {
+  breakdown: PlanTdeeBreakdown;
+  enrichedFromProgram?: boolean;
+}) {
   const stackSegments = breakdown.segments.filter(
     (segment) => segment.id !== "goal_adjustment"
   );
@@ -56,6 +65,7 @@ function PlanBreakdownSection({ breakdown }: { breakdown: PlanTdeeBreakdown }) {
   const goalSegment = breakdown.segments.find(
     (segment) => segment.id === "goal_adjustment"
   );
+  const showStack = stackTotal > 0 && stackSegments.length > 0;
 
   return (
     <div className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
@@ -67,7 +77,9 @@ function PlanBreakdownSection({ breakdown }: { breakdown: PlanTdeeBreakdown }) {
           <p className="mt-1 text-xs text-forge-muted">
             {breakdown.isLegacyEstimate
               ? "A starting point from your profile until your program refreshes with detailed energy math."
-              : "Built from your body stats, daily movement, and planned workouts."}
+              : enrichedFromProgram
+                ? "Built from your current program and body stats — your saved plan did not include a detailed breakdown yet."
+                : "Built from your body stats, daily movement, and planned workouts."}
           </p>
         </div>
         <EvidenceExplainerLink
@@ -81,7 +93,7 @@ function PlanBreakdownSection({ breakdown }: { breakdown: PlanTdeeBreakdown }) {
         />
       </div>
 
-      {!breakdown.isLegacyEstimate && stackTotal > 0 && (
+      {showStack && (
         <div className="mt-4">
           <div className="flex h-3 overflow-hidden rounded-full bg-forge-surface-raised">
             {stackSegments.map((segment) => (
@@ -100,15 +112,31 @@ function PlanBreakdownSection({ breakdown }: { breakdown: PlanTdeeBreakdown }) {
               <SegmentRow key={segment.id} segment={segment} />
             ))}
           </ul>
-          <p className="mt-3 text-sm font-medium text-forge-text">
-            Maintenance (TDEE): ~{breakdown.tdeeKcal.toLocaleString()} kcal/day
-          </p>
+          {!breakdown.isLegacyEstimate && (
+            <p className="mt-3 text-sm font-medium text-forge-text">
+              Maintenance (TDEE): ~{breakdown.tdeeKcal.toLocaleString()} kcal/day
+            </p>
+          )}
         </div>
       )}
 
-      {breakdown.isLegacyEstimate && (
-        <p className="mt-3 text-sm text-forge-text">
+      {breakdown.isLegacyEstimate && showStack && (
+        <p className="mt-3 text-sm font-medium text-forge-text">
           Estimated maintenance: ~{breakdown.tdeeKcal.toLocaleString()} kcal/day
+        </p>
+      )}
+
+      {!goalSegment && breakdown.goalLabel !== "maintenance" && (
+        <p className="mt-2 text-sm text-forge-muted">
+          {breakdown.goalLabel === "deficit" ? "Minus" : "Plus"}{" "}
+          <span className="font-semibold text-forge-ember">
+            {Math.abs(breakdown.goalAdjustmentKcal).toLocaleString()} kcal
+          </span>{" "}
+          for your {breakdown.goalLabel === "deficit" ? "fat-loss" : "muscle-gain"}{" "}
+          goal → target{" "}
+          <span className="font-semibold text-forge-text">
+            {breakdown.targetCalories.toLocaleString()} kcal
+          </span>
         </p>
       )}
 
@@ -134,6 +162,20 @@ function PlanBreakdownSection({ breakdown }: { breakdown: PlanTdeeBreakdown }) {
           </span>
         </p>
       )}
+    </div>
+  );
+}
+
+function PlanBreakdownPlaceholder() {
+  return (
+    <div className="rounded-xl border border-dashed border-[var(--border)] bg-forge-surface p-4">
+      <p className="font-display text-sm font-semibold text-forge-text">
+        1. Program estimate
+      </p>
+      <p className="mt-2 text-sm text-forge-muted">
+        Finish onboarding and generate a training program to see how your calorie
+        target is built from rest, movement, and workouts.
+      </p>
     </div>
   );
 }
@@ -218,6 +260,19 @@ function DailyEnergySection({
       <p className="mt-1 text-xs text-forge-muted">
         Static program target: {daily.targetKcal.toLocaleString()} kcal (weekly
         average).
+      </p>
+    </div>
+  );
+}
+
+function DailyEnergyPlaceholder() {
+  return (
+    <div className="rounded-xl border border-dashed border-[var(--border)] bg-forge-surface p-4">
+      <p className="font-display text-sm font-semibold text-forge-text">
+        2. Today&apos;s picture
+      </p>
+      <p className="mt-2 text-sm text-forge-muted">
+        Calorie targets appear here once your program includes nutrition goals.
       </p>
     </div>
   );

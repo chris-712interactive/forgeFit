@@ -3,6 +3,7 @@ import {
   hasFeature,
 } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { enrichNutritionTargets } from "@/lib/nutrition/enrich-nutrition-targets";
 import { loadNutritionDailyTotals } from "@/lib/nutrition/daily-totals";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import { getActiveProgram, loadUserProgramContext } from "@/lib/programs/service";
@@ -10,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   buildPlanTdeeBreakdown,
   sumLoggedSessionsKcal,
+  type NutritionTargets,
   type PlanTdeeBreakdown,
 } from "@forgefit/program-engine";
 import { inferAdaptiveTdee, type AdaptiveTdeeResult } from "@forgefit/projection-engine";
@@ -35,6 +37,8 @@ export interface TdeeDashboard {
   adaptive: AdaptiveTdeeResult | null;
   adaptiveUnlocked: boolean;
   adaptiveNeedsData: boolean;
+  /** True when layered TDEE was derived at read time (older program JSON). */
+  enrichedFromProgram: boolean;
 }
 
 function sessionsOnDate(
@@ -48,15 +52,42 @@ function sessionsOnDate(
   );
 }
 
+function resolveTargetsForTdee(
+  summary: DailyNutritionSummary,
+  program: Awaited<ReturnType<typeof getActiveProgram>>,
+  context: Awaited<ReturnType<typeof loadUserProgramContext>>
+): { targets: NutritionTargets | null; enrichedFromProgram: boolean } {
+  if (!summary.targets && !program) {
+    return { targets: null, enrichedFromProgram: false };
+  }
+
+  if (program && context?.userProfile) {
+    const enriched = enrichNutritionTargets(program, context.userProfile);
+    const enrichedFromProgram =
+      summary.targets == null ||
+      summary.targets.bmrKcal == null ||
+      summary.targets.lifestyleKcal == null ||
+      summary.targets.tdeeKcal == null;
+
+    return {
+      targets: enriched,
+      enrichedFromProgram,
+    };
+  }
+
+  return {
+    targets: summary.targets,
+    enrichedFromProgram: false,
+  };
+}
+
 function buildDailyEnergySnapshot(
   summary: DailyNutritionSummary,
+  targets: NutritionTargets,
   completedSessions: WorkoutSessionRecord[],
   weightKg: number,
   intensityScore: number
 ): DailyEnergySnapshot | null {
-  const targets = summary.targets;
-  if (!targets) return null;
-
   const planTrainingKcalPerDay = Math.round(targets.trainingKcalPerDay ?? 0);
   const actualTrainingKcal = sumLoggedSessionsKcal(
     completedSessions,
@@ -81,7 +112,10 @@ function buildDailyEnergySnapshot(
   ) {
     targetNote =
       "No workout logged yet today — target uses your plan average until you log training.";
-  } else if (actualTrainingKcal > 0 && actualTrainingKcal < planTrainingKcalPerDay - 40) {
+  } else if (
+    actualTrainingKcal > 0 &&
+    actualTrainingKcal < planTrainingKcalPerDay - 40
+  ) {
     targetNote =
       "Today's logged session was lighter than your plan average.";
   }
@@ -137,25 +171,35 @@ export async function getTdeeDashboard(
   const adaptiveUnlocked =
     subscription != null && hasFeature(subscription, "tdee_adaptive");
 
-  const plan = summary.targets
-    ? buildPlanTdeeBreakdown(summary.targets)
-    : null;
-
   const [context, program, sessionResult] = await Promise.all([
     loadUserProgramContext(userId),
     getActiveProgram(userId),
     getServerSessionRecords(userId, 120),
   ]);
 
-  const weightKg = context?.userProfile.weightKg ?? 75;
-  const intensityScore = program?.nutrition.trainingLoad?.intensityScore ?? 1;
-  const todaySessions = sessionsOnDate(sessionResult.records, summary.date);
-  const daily = buildDailyEnergySnapshot(
+  const { targets, enrichedFromProgram } = resolveTargetsForTdee(
     summary,
-    todaySessions,
-    weightKg,
-    intensityScore
+    program,
+    context
   );
+
+  const plan = targets ? buildPlanTdeeBreakdown(targets) : null;
+
+  const weightKg = context?.userProfile.weightKg ?? 75;
+  const intensityScore =
+    targets?.trainingLoad?.intensityScore ??
+    program?.nutrition.trainingLoad?.intensityScore ??
+    1;
+  const todaySessions = sessionsOnDate(sessionResult.records, summary.date);
+  const daily = targets
+    ? buildDailyEnergySnapshot(
+        summary,
+        targets,
+        todaySessions,
+        weightKg,
+        intensityScore
+      )
+    : null;
 
   if (!adaptiveUnlocked) {
     return {
@@ -164,6 +208,7 @@ export async function getTdeeDashboard(
       adaptive: null,
       adaptiveUnlocked: false,
       adaptiveNeedsData: false,
+      enrichedFromProgram,
     };
   }
 
@@ -186,5 +231,6 @@ export async function getTdeeDashboard(
     adaptive,
     adaptiveUnlocked: true,
     adaptiveNeedsData: adaptive == null,
+    enrichedFromProgram,
   };
 }
