@@ -11,6 +11,7 @@ export type TierFeature =
   | "pr_history"
   | "volume_analytics"
   | "nutrition_adherence"
+  | "tdee_adaptive"
   | "unlimited_history"
   | "data_export"
   | "progress_photos"
@@ -33,6 +34,7 @@ const PRO_FEATURES: ReadonlySet<TierFeature> = new Set([
   "pr_history",
   "volume_analytics",
   "nutrition_adherence",
+  "tdee_adaptive",
   "unlimited_history",
   "data_export",
   "progress_photos",

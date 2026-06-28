@@ -32,8 +32,13 @@ export default async function NutritionPage() {
   } = await supabase.auth.getUser();
 
   const pageData = await getNutritionPageData(user?.id);
-  const { summary, yesterdayEntryCount, yesterdayDate, restaurantSearchUnlocked } =
-    pageData;
+  const {
+    summary,
+    yesterdayEntryCount,
+    yesterdayDate,
+    restaurantSearchUnlocked,
+    tdeeDashboard,
+  } = pageData;
 
   const subscription = user ? await getSubscriptionForUser(user.id) : null;
   const adherence =
@@ -60,6 +65,7 @@ export default async function NutritionPage() {
               yesterdayEntryCount={yesterdayEntryCount}
               yesterdayDate={yesterdayDate}
               restaurantSearchUnlocked={restaurantSearchUnlocked}
+              tdeeDashboard={tdeeDashboard}
             />
           </Suspense>
 

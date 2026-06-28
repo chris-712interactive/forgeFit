@@ -1,5 +1,6 @@
 "use client";
 
+import type { TdeeDashboard } from "@/lib/nutrition/tdee-service";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
@@ -12,6 +13,7 @@ import { MacroSummary } from "./macro-summary";
 import { RestaurantSearchPanel } from "./restaurant-search-panel";
 import { SavedMealsLibrary } from "./saved-meals-library";
 import { SaveMealSheet, type SaveMealDraft } from "./save-meal-sheet";
+import { TdeeEnergyPanel } from "./tdee-energy-panel";
 
 type DiaryTab = "today" | "browse" | "my-meals";
 
@@ -29,6 +31,7 @@ interface NutritionDiaryProps {
   yesterdayEntryCount: number;
   yesterdayDate: string;
   restaurantSearchUnlocked: boolean;
+  tdeeDashboard: TdeeDashboard | null;
 }
 
 export function NutritionDiary({
@@ -36,6 +39,7 @@ export function NutritionDiary({
   yesterdayEntryCount,
   yesterdayDate,
   restaurantSearchUnlocked,
+  tdeeDashboard,
 }: NutritionDiaryProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,8 +137,11 @@ export function NutritionDiary({
                 targets={initialSummary.targets}
                 variant="compact"
                 embedded
+                showTargetDetails={false}
               />
             </section>
+
+            {tdeeDashboard && <TdeeEnergyPanel dashboard={tdeeDashboard} />}
 
             <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
               <LoggedEntries

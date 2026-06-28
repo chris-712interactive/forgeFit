@@ -6,6 +6,7 @@ import {
   getRecentMacroEntries,
   yesterdayIsoDate,
 } from "@/lib/nutrition/service";
+import { getTdeeDashboard, type TdeeDashboard } from "@/lib/nutrition/tdee-service";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 
 export interface NutritionPageData {
@@ -14,6 +15,7 @@ export interface NutritionPageData {
   yesterdayEntryCount: number;
   yesterdayDate: string;
   restaurantSearchUnlocked: boolean;
+  tdeeDashboard: TdeeDashboard | null;
 }
 
 export async function getNutritionPageData(
@@ -28,6 +30,7 @@ export async function getNutritionPageData(
       yesterdayEntryCount: 0,
       yesterdayDate,
       restaurantSearchUnlocked: false,
+      tdeeDashboard: null,
     };
   }
 
@@ -42,11 +45,16 @@ export async function getNutritionPageData(
   const restaurantSearchUnlocked =
     subscription != null && hasFeature(subscription, "restaurant_search");
 
+  const tdeeDashboard = summary
+    ? await getTdeeDashboard(userId, summary, subscription)
+    : null;
+
   return {
     summary,
     recentEntries,
     yesterdayEntryCount,
     yesterdayDate,
     restaurantSearchUnlocked,
+    tdeeDashboard,
   };
 }

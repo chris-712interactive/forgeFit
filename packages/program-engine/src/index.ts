@@ -1,6 +1,17 @@
 export { generateProgram } from "./generate";
 export { buildWarmupBlock } from "./warmup";
 export { computeNutrition, getMatchedRules } from "./nutrition";
+export { buildPlanTdeeBreakdown } from "./tdee-breakdown";
+export type { PlanTdeeBreakdown, TdeeSegment } from "./tdee-breakdown";
+export {
+  estimateLoggedSessionActiveMinutes,
+  estimateLoggedSessionKcal,
+  sumLoggedSessionsKcal,
+} from "./logged-session-expenditure";
+export type {
+  LoggedSessionSummary,
+  LoggedSetSummary,
+} from "./logged-session-expenditure";
 export { applyDeloadWeek, isDeloadTrainingWeek } from "./deload";
 export { computeTrainingLoad } from "./training-load";
 export { estimateTrainingExpenditure } from "./training-expenditure";

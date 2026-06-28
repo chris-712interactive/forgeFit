@@ -1,5 +1,6 @@
 import { analyticsHistoryCutoff, hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { loadNutritionDailyTotals } from "@/lib/nutrition/daily-totals";
 import { getSleepContext } from "@/lib/sleep/service";
 import { getRecoveryContext } from "@/lib/recovery/service";
 import { getActivityContext } from "@/lib/activity/service";
@@ -26,38 +27,6 @@ export interface DeviceIntegrationContexts {
   activity?: ActivityContext | null;
   sleep?: SleepContext | null;
   recovery?: RecoveryContext | null;
-}
-
-async function loadNutritionDailyTotals(
-  userId: string,
-  cutoffIso: string | null
-): Promise<{ date: string; calories: number; proteinG: number }[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("nutrition_logs")
-    .select("logged_date, calories, protein_g")
-    .eq("user_id", userId);
-
-  if (cutoffIso) {
-    query = query.gte("logged_date", cutoffIso);
-  }
-
-  const { data, error } = await query;
-  if (error || !data) return [];
-
-  const byDate = new Map<string, { calories: number; proteinG: number }>();
-  for (const row of data) {
-    const date = row.logged_date as string;
-    const entry = byDate.get(date) ?? { calories: 0, proteinG: 0 };
-    entry.calories += Number(row.calories);
-    entry.proteinG += Number(row.protein_g);
-    byDate.set(date, entry);
-  }
-
-  return [...byDate.entries()].map(([date, totals]) => ({
-    date,
-    ...totals,
-  }));
 }
 
 async function loadWeightMeasurements(userId: string) {

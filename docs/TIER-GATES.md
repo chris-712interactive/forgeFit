@@ -3,7 +3,7 @@
 > **Authoritative feature matrix** for Free, Pro, and Pro+.
 > Code gates live in `apps/web/src/lib/billing/gates.ts` — keep in sync with this doc.
 
-**Last updated:** 2026-06-19
+**Last updated:** 2026-06-28
 
 ---
 
@@ -57,6 +57,7 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | PR history & badges (templated) | — | ✓ | ✓ |
 | Volume & training-load trends | — | ✓ | ✓ |
 | Nutrition adherence dashboard (7/30/90d) | — | ✓ | ✓ |
+| Adaptive TDEE from intake + weight logs | — | ✓ | ✓ |
 | Rule-based trend insights | — | ✓ | ✓ |
 | CSV data export | — | ✓ | ✓ |
 | Progress photo timeline | — | ✓ | ✓ |
@@ -104,6 +105,7 @@ Use `hasTierFeature(tier, feature)` from `@/lib/billing/gates`.
 | `pr_history` | Pro | Workout / Profile — PR log |
 | `volume_analytics` | Pro | Home / Progress — volume by muscle |
 | `nutrition_adherence` | Pro | Nutrition tab — adherence card |
+| `tdee_adaptive` | Pro | Nutrition tab — personalized TDEE from logs |
 | `unlimited_history` | Pro | All charts — drop 90-day truncation |
 | `data_export` | Pro | Profile — export button |
 | `progress_photos` | Pro | Progress tab — photo timeline |

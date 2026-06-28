@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-28 |
-| **Last session focus** | Nutrition tab layout redesign |
+| **Last session focus** | TDEE energy visualization (3 layers) |
 
 ---
 
@@ -33,6 +33,30 @@
 ---
 
 ## Session Log
+
+### 2026-06-28 — TDEE energy visualization (3 layers)
+
+**What was done:**
+- **Layer 1 (Free):** Program TDEE breakdown — BMR, daily movement, training avg, goal adjustment with stacked bar + beginner hints (`buildPlanTdeeBreakdown` in program-engine)
+- **Layer 2 (Free):** Today’s dynamic target — adjusts for logged workout burn vs plan average (`sumLoggedSessionsKcal`, `TdeeEnergyPanel` section 2)
+- **Layer 3 (Pro):** Adaptive TDEE inferred from intake + weight trend with confidence band (`inferAdaptiveTdee` in projection-engine, `tdee_adaptive` gate)
+- New `TdeeEnergyPanel` on Nutrition **Today** tab; macro summary footnotes deduped
+- Shared `loadNutritionDailyTotals` helper; tier docs updated
+
+**What's next:**
+- Manual QA: legacy programs without layered nutrition fields, rest-day vs training-day target copy
+- Optional: fold device active calories (Pro+) into daily NEAT slice
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/program-engine/src/tdee-breakdown.ts`, `logged-session-expenditure.ts`, tests, `index.ts`
+- `packages/projection-engine/src/adaptive-tdee.ts`, test, `index.ts`
+- `apps/web/src/lib/billing/gates.ts`
+- `apps/web/src/lib/nutrition/tdee-service.ts`, `daily-totals.ts`, `page-data.ts`
+- `apps/web/src/components/nutrition/tdee-energy-panel.tsx`, `nutrition-diary.tsx`, `macro-summary.tsx`
+- `apps/web/src/lib/analytics/service.ts`
+- `docs/TIER-GATES.md`, `docs/PROGRESS.md`
 
 ### 2026-06-28 — Nutrition tab layout redesign
 

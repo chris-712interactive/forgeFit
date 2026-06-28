@@ -12,6 +12,8 @@ interface MacroSummaryProps {
   embedded?: boolean;
   /** Compact 2×2 grid — fits above the log hub without pushing inputs down */
   variant?: "default" | "compact";
+  /** Hide training/TDEE footnotes when a dedicated energy panel is shown */
+  showTargetDetails?: boolean;
 }
 
 export function MacroSummary({
@@ -19,6 +21,7 @@ export function MacroSummary({
   targets,
   embedded = false,
   variant = "default",
+  showTargetDetails = true,
 }: MacroSummaryProps) {
   const items = [
     {
@@ -144,7 +147,9 @@ export function MacroSummary({
         })}
       </div>
 
-      {targets?.trainingKcalPerDay != null && targets.trainingLoad && (
+      {showTargetDetails &&
+        targets?.trainingKcalPerDay != null &&
+        targets.trainingLoad && (
         variant === "compact" ? (
           <details className="mt-3">
             <summary className="cursor-pointer text-xs font-semibold text-forge-steel hover:text-forge-ember">
