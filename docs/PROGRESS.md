@@ -43,6 +43,8 @@
 - Renamed diary tab from "Log" to "Today"; deep-link support via `?tab=browse` / `?tab=my-meals`
 - Moved all macro-entry UI off the main view; updated empty-state copy
 
+**Follow-up (2026-06-28):** Removed daily macro summary from `/nutrition/log-macros` — screen is entry-only; totals stay on main Today tab.
+
 **What's next:**
 - Manual QA at 375px: FAB placement above bottom nav, log-macros flow, build-meal return navigation
 - Consider moving restaurant search to log-macros screen if users expect it under "add"

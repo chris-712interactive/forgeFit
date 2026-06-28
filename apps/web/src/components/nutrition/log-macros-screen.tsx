@@ -9,7 +9,6 @@ import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/typ
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MacroPresets } from "./macro-presets";
-import { MacroSummary } from "./macro-summary";
 import { NutritionBackLink } from "./nutrition-back-link";
 import { QuickMacroLog } from "./quick-macro-log";
 import { SavedMealsQuickLog } from "./saved-meals-quick-log";
@@ -50,15 +49,6 @@ export function LogMacrosScreen({
       </div>
 
       <div className={`${appHeaderGap} ${appSectionStack}`}>
-        <section className="rounded-2xl border border-forge-ember/25 bg-forge-surface-raised p-4 sm:p-5">
-          <MacroSummary
-            totals={summary.totals}
-            targets={summary.targets}
-            variant="compact"
-            embedded
-          />
-        </section>
-
         <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
             Manual entry
