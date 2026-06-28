@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { seoContentSections } from "./marketing-data";
 import {
   MarketingPageSection,
@@ -32,6 +33,12 @@ export function MarketingSeoContent() {
           </section>
         ))}
       </article>
+
+      <p className="mx-auto mt-10 max-w-3xl text-center text-sm text-forge-muted sm:text-base">
+        <Link href="/guides" className="font-semibold text-forge-ember hover:underline">
+          Read fitness guides & app comparisons →
+        </Link>
+      </p>
     </MarketingPageSection>
   );
 }

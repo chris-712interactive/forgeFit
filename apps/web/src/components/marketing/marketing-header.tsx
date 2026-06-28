@@ -2,10 +2,11 @@ import Link from "next/link";
 import { marketingWideClass } from "./marketing-section";
 
 const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Guides", href: "/guides" },
+  { label: "FAQ", href: "/#faq" },
 ] as const;
 
 export function MarketingHeader() {

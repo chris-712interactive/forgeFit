@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-28 |
-| **Last session focus** | Weekly weigh-in reminders (banner + push) |
+| **Last session focus** | SEO guides & comparison articles |
 
 ---
 
@@ -33,6 +33,29 @@
 ---
 
 ## Session Log
+
+### 2026-06-28 — SEO guides & comparison articles
+
+**What was done:**
+- Added public `/guides` index and `/guides/[slug]` article routes (SSG) with Forge Ember marketing layout
+- **4 training guides:** offline workout tracker, evidence-based programs, macro tracking for lifters, progressive overload
+- **5 comparison articles:** vs Strong, Hevy, MyFitnessPal, MacroFactor, Fitbod — honest side-by-side tables
+- SEO: per-article metadata, Article + Breadcrumb JSON-LD, sitemap entries, header/footer Guides links
+- Developer doc: `docs/marketing/seo-guides.md`
+
+**What's next:**
+- Submit sitemap in Google Search Console after deploy
+- Add 1–2 guides/month; link new posts from Instagram bio / content calendar
+- Optional: FAQ schema on comparison pages; `/guides` CollectionPage JSON-LD
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/seo/articles/*`, `article-metadata.ts`
+- `apps/web/src/components/marketing/article-page.tsx`, `guides-index-content.tsx`, `article-json-ld.tsx`
+- `apps/web/src/app/guides/page.tsx`, `guides/[slug]/page.tsx`, `sitemap.ts`
+- `apps/web/src/components/marketing/marketing-header.tsx`, `marketing-data.ts`
+- `docs/marketing/seo-guides.md`, `docs/PROGRESS.md`
 
 ### 2026-06-28 — Weekly weigh-in reminders
 
