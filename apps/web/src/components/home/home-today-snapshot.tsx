@@ -27,32 +27,23 @@ export function HomeTodaySnapshot({
 
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-          Today
-        </h2>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/progress"
-            className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
-          >
-            Progress →
-          </Link>
-          <Link
-            href="/nutrition"
-            className="text-xs font-semibold text-forge-steel hover:text-forge-ember"
-          >
-            Log food →
-          </Link>
-        </div>
-      </div>
+      <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+        Today
+      </h2>
 
-      <MacroSummary
-        totals={nutrition.totals}
-        targets={nutrition.targets}
-        variant="compact"
-        embedded
-      />
+      <Link
+        href="/nutrition#energy-budget"
+        className="-mx-1 mt-3 block rounded-xl px-1 py-1 transition-colors hover:bg-forge-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forge-ember"
+        aria-label="Open nutrition diary and energy budget"
+      >
+        <MacroSummary
+          totals={nutrition.totals}
+          targets={nutrition.targets}
+          variant="compact"
+          embedded
+          showTargetDetails={false}
+        />
+      </Link>
 
       {showActivity && (
         <div className="mt-4 border-t border-[var(--border)] pt-4">

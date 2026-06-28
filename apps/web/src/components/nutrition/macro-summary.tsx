@@ -12,7 +12,7 @@ interface MacroSummaryProps {
   embedded?: boolean;
   /** Compact 2×2 grid — fits above the log hub without pushing inputs down */
   variant?: "default" | "compact";
-  /** Hide training/TDEE footnotes when a dedicated energy panel is shown */
+  /** Hide training/TDEE footnotes and evidence links (e.g. home snapshot → nutrition) */
   showTargetDetails?: boolean;
 }
 
@@ -60,7 +60,7 @@ export function MacroSummary({
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Today&apos;s macros
         </h2>
-        {targets && (
+        {targets && showTargetDetails && (
           <EvidenceExplainerLink
             href={buildEvidenceHref({
               focus: targets.proteinRuleId,

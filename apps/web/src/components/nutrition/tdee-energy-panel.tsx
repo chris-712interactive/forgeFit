@@ -20,7 +20,10 @@ const SEGMENT_COLORS: Record<string, string> = {
 
 export function TdeeEnergyPanel({ dashboard }: TdeeEnergyPanelProps) {
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+    <section
+      id="energy-budget"
+      className="scroll-mt-6 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5"
+    >
       <div>
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
           Your energy budget

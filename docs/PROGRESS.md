@@ -67,6 +67,8 @@
 - Renamed diary tab from "Log" to "Today"; deep-link support via `?tab=browse` / `?tab=my-meals`
 - Moved all macro-entry UI off the main view; updated empty-state copy
 
+**Follow-up (2026-06-28):** Home Today macros — removed extra links; tap macros → `/nutrition#energy-budget`. TDEE panel lives on Nutrition Today tab (`#energy-budget`).
+
 **Follow-up (2026-06-28):** Layer 1 TDEE — enrich older stored programs at read time (`enrichNutritionTargets`); always render section 1/2 placeholders when data missing.
 
 **Follow-up (2026-06-28):** Removed daily macro summary from `/nutrition/log-macros` — screen is entry-only; totals stay on main Today tab.
