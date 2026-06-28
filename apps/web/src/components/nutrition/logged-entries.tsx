@@ -25,7 +25,7 @@ export function LoggedEntries({
       {entries.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
           <p className="text-forge-muted">
-            Log a meal below or tap a saved meal to adjust portions first.
+            Nothing logged yet. Tap + to log macros or build a meal.
           </p>
         </div>
       ) : (

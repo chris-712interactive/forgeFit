@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-27 |
-| **Last session focus** | Google Tag Manager + GA analytics |
+| **Last updated** | 2026-06-28 |
+| **Last session focus** | Nutrition tab layout redesign |
 
 ---
 
@@ -34,6 +34,35 @@
 
 ## Session Log
 
+### 2026-06-28 — Nutrition tab layout redesign
+
+**What was done:**
+- Simplified main `/nutrition` Today tab to macro summary + logged entries only
+- Added bottom-right FAB (+) with **Log macros** and **Build meal** actions
+- New dedicated screens: `/nutrition/log-macros` (manual entry, presets, saved-meal quick log) and `/nutrition/build-meal` (full-screen ingredient builder)
+- Renamed diary tab from "Log" to "Today"; deep-link support via `?tab=browse` / `?tab=my-meals`
+- Moved all macro-entry UI off the main view; updated empty-state copy
+
+**What's next:**
+- Manual QA at 375px: FAB placement above bottom nav, log-macros flow, build-meal return navigation
+- Consider moving restaurant search to log-macros screen if users expect it under "add"
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/app/(app)/nutrition/page.tsx`
+- `apps/web/src/app/(app)/nutrition/log-macros/page.tsx`
+- `apps/web/src/app/(app)/nutrition/build-meal/page.tsx`
+- `apps/web/src/components/nutrition/nutrition-diary.tsx`
+- `apps/web/src/components/nutrition/nutrition-fab.tsx`
+- `apps/web/src/components/nutrition/nutrition-back-link.tsx`
+- `apps/web/src/components/nutrition/log-macros-screen.tsx`
+- `apps/web/src/components/nutrition/build-meal-screen.tsx`
+- `apps/web/src/components/nutrition/logged-entries.tsx`
+- `apps/web/src/components/nutrition/saved-meals-library.tsx`
+- `apps/web/src/lib/nutrition/page-data.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-06-27 — Google Tag Manager + Analytics
 
 **What was done:**
@@ -50,6 +79,8 @@
 **Blockers:** None
 
 **Follow-up (2026-06-27):** GTM container ID `GTM-57PG354W` added to `.env.local`, production default in `config.ts`, and `.env.example`.
+
+**Follow-up (2026-06-27):** Signup conversion tracking — app pushes `forge_signup` dataLayer event on new account creation (OAuth/email callback + instant email signup); GTM should use Custom Event trigger, not page URL.
 
 **Files touched:**
 - `apps/web/src/lib/analytics/config.ts`

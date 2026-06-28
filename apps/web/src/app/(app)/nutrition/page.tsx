@@ -7,16 +7,23 @@ import {
 } from "@/components/layout/page-layout";
 import { NutritionAdherenceCard } from "@/components/nutrition/nutrition-adherence-card";
 import { NutritionDiary } from "@/components/nutrition/nutrition-diary";
+import { NutritionFab } from "@/components/nutrition/nutrition-fab";
 import { getNutritionAdherenceForUser } from "@/lib/analytics/service";
 import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
-import {
-  getDailyNutritionSummary,
-  getDayLogCount,
-  getRecentMacroEntries,
-  yesterdayIsoDate,
-} from "@/lib/nutrition/service";
+import { getNutritionPageData } from "@/lib/nutrition/page-data";
 import { createClient } from "@/lib/supabase/server";
+import { Suspense } from "react";
+
+function NutritionDiaryFallback() {
+  return (
+    <div
+      className={`${appHeaderGap} rounded-2xl border border-dashed border-[var(--border)] p-8 text-center`}
+    >
+      <p className="text-forge-muted">Loading your diary…</p>
+    </div>
+  );
+}
 
 export default async function NutritionPage() {
   const supabase = await createClient();
@@ -24,25 +31,17 @@ export default async function NutritionPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const yesterday = await yesterdayIsoDate();
+  const pageData = await getNutritionPageData(user?.id);
+  const { summary, yesterdayEntryCount, yesterdayDate, restaurantSearchUnlocked } =
+    pageData;
 
-  const [summary, recentEntries, yesterdayEntryCount, subscription] = user
-    ? await Promise.all([
-        getDailyNutritionSummary(user.id),
-        getRecentMacroEntries(user.id),
-        getDayLogCount(user.id, yesterday),
-        getSubscriptionForUser(user.id),
-      ])
-    : [null, [], 0, null];
-
+  const subscription = user ? await getSubscriptionForUser(user.id) : null;
   const adherence =
     user && subscription
       ? await getNutritionAdherenceForUser(user.id, subscription)
       : null;
   const adherenceUnlocked =
     subscription != null && hasFeature(subscription, "nutrition_adherence");
-  const restaurantSearchUnlocked =
-    subscription != null && hasFeature(subscription, "restaurant_search");
 
   return (
     <div className={appPagePadding}>
@@ -50,18 +49,19 @@ export default async function NutritionPage() {
         Nutrition
       </h1>
       <p className="mt-1 text-sm text-forge-muted">
-        Log macros or build meals from whole ingredients — saved templates adjust at log time.
+        Your daily totals and logged meals — tap + to add food.
       </p>
 
       {summary ? (
         <div className={`${appHeaderGap} ${appSectionStack}`}>
-          <NutritionDiary
-            initialSummary={summary}
-            recentEntries={recentEntries}
-            yesterdayEntryCount={yesterdayEntryCount}
-            yesterdayDate={yesterday}
-            restaurantSearchUnlocked={restaurantSearchUnlocked}
-          />
+          <Suspense fallback={<NutritionDiaryFallback />}>
+            <NutritionDiary
+              initialSummary={summary}
+              yesterdayEntryCount={yesterdayEntryCount}
+              yesterdayDate={yesterdayDate}
+              restaurantSearchUnlocked={restaurantSearchUnlocked}
+            />
+          </Suspense>
 
           <CollapsibleSection title="Nutrition adherence" hint="Pro · 7/30/90 days">
             {adherenceUnlocked ? (
@@ -82,6 +82,8 @@ export default async function NutritionPage() {
           <p className="text-forge-muted">Sign in to use your nutrition diary.</p>
         </div>
       )}
+
+      {summary ? <NutritionFab /> : null}
     </div>
   );
 }

@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
 import {
   GoogleTagManagerNoscript,
   SiteAnalytics,
 } from "@/components/analytics/site-analytics";
+import { SignupConversionTracker } from "@/components/analytics/signup-conversion-tracker";
 import { SerwistProvider } from "@/components/serwist-provider";
 import "./globals.css";
 
@@ -58,6 +60,9 @@ export default function RootLayout({
       <body className={`${inter.variable} ${plusJakarta.variable} antialiased`}>
         <GoogleTagManagerNoscript />
         <SiteAnalytics />
+        <Suspense fallback={null}>
+          <SignupConversionTracker />
+        </Suspense>
         <SerwistProvider swUrl="/serwist/sw.js">{children}</SerwistProvider>
       </body>
     </html>

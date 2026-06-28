@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { pushSignupConversionEvent } from "@/lib/analytics/events";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthFormProps {
@@ -32,7 +33,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     const supabase = createClient();
 
     if (mode === "signup") {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -41,6 +42,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       });
       if (signUpError) {
         setError(signUpError.message);
+      } else if (signUpData.session) {
+        pushSignupConversionEvent();
+        window.location.href = "/onboarding";
+        return;
       } else {
         setMessage("Check your email to confirm your account, then sign in.");
       }

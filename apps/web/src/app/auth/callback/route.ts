@@ -1,3 +1,7 @@
+import {
+  isSignupConversion,
+  withSignupConversionParam,
+} from "@/lib/auth/is-signup-conversion";
 import { ensureUserProfile } from "@/lib/auth/ensure-profile";
 import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 import { createServerClient } from "@supabase/ssr";
@@ -38,6 +42,9 @@ export async function GET(request: Request) {
 
   await ensureUserProfile(supabase, data.user);
   const destination = await getPostAuthPath(supabase, data.user.id);
+  const redirectPath = isSignupConversion(data.user)
+    ? withSignupConversionParam(destination)
+    : destination;
 
-  return NextResponse.redirect(`${origin}${destination}`);
+  return NextResponse.redirect(`${origin}${redirectPath}`);
 }

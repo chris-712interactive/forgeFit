@@ -15,6 +15,7 @@ import {
   type SavedMeal,
   type SavedMealCategory,
 } from "@/lib/nutrition/saved-meals";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LogMealSheet } from "./log-meal-sheet";
 import { MealBuilder } from "./meal-builder";
@@ -24,9 +25,6 @@ interface SavedMealsLibraryProps {
   loggedDate: string;
   refreshKey?: number;
   onMealsChanged?: () => void;
-  /** When set, opens the meal builder (e.g. from Log tab) */
-  openBuilder?: boolean;
-  onBuilderClose?: () => void;
 }
 
 type CategoryFilter = "all" | string;
@@ -35,28 +33,19 @@ export function SavedMealsLibrary({
   loggedDate,
   refreshKey = 0,
   onMealsChanged,
-  openBuilder = false,
-  onBuilderClose,
 }: SavedMealsLibraryProps) {
+  const router = useRouter();
   const [meals, setMeals] = useState<SavedMeal[]>([]);
   const [categories, setCategories] = useState<SavedMealCategory[]>([]);
   const [filter, setFilter] = useState<CategoryFilter>("all");
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saveDraft, setSaveDraft] = useState<SaveMealDraft | null>(null);
-  const [builderMeal, setBuilderMeal] = useState<SavedMeal | null | undefined>(
-    undefined
-  );
+  const [builderMeal, setBuilderMeal] = useState<SavedMeal | null>(null);
   const [logMeal, setLogMeal] = useState<SavedMeal | null>(null);
   const [managingCategories, setManagingCategories] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
-
-  useEffect(() => {
-    if (openBuilder) {
-      setBuilderMeal(null);
-    }
-  }, [openBuilder]);
 
   const reload = useCallback(() => {
     setMeals(loadSavedMeals());
@@ -103,7 +92,7 @@ export function SavedMealsLibrary({
   }
 
   function openCreateBuilder() {
-    setBuilderMeal(null);
+    router.push("/nutrition/build-meal");
   }
 
   function handleEdit(meal: SavedMeal) {
@@ -337,13 +326,10 @@ export function SavedMealsLibrary({
       />
 
       <MealBuilder
-        open={builderMeal !== undefined || openBuilder}
+        open={builderMeal != null}
         initialMeal={builderMeal ?? undefined}
         loggedDate={loggedDate}
-        onClose={() => {
-          setBuilderMeal(undefined);
-          onBuilderClose?.();
-        }}
+        onClose={() => setBuilderMeal(null)}
         onSaved={handleSaved}
       />
 
