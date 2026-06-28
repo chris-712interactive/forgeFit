@@ -4,6 +4,7 @@ import type { SleepContext } from "@/lib/sleep/types";
 import type { GamificationContext } from "@/lib/coaching/types";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import type { ProgramPlan } from "@forgefit/program-engine";
+import type { WeighInReminder } from "@/lib/measurements/weigh-in-reminder";
 import type { FitnessGoal } from "@/lib/types/profile";
 
 export interface WeeklyWorkStats {
@@ -34,4 +35,5 @@ export interface HomeDashboardData {
   activity: ActivityContext;
   sleep: SleepContext;
   gamification: GamificationContext;
+  weighInReminder: WeighInReminder | null;
 }

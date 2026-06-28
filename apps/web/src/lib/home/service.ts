@@ -21,6 +21,7 @@ import {
   computeWeeklyWorkStats,
   findNextPlannedSession,
 } from "./weekly-stats";
+import { getWeighInReminderForUser } from "@/lib/measurements/weigh-in-reminder-service";
 import { createClient } from "@/lib/supabase/server";
 import { pickEncouragement } from "./encouragement";
 
@@ -62,6 +63,8 @@ export async function getHomeDashboardData(
   );
 
   const profile = profileResult.data;
+  const goal = (profile?.primary_goal as FitnessGoal | null) ?? null;
+  const weighInReminder = await getWeighInReminderForUser(userId, goal);
   const weeklyStats = computeWeeklyWorkStats(
     sessionResult.records,
     plan
@@ -94,13 +97,13 @@ export async function getHomeDashboardData(
 
   return {
     displayName: firstName ?? profile?.display_name ?? null,
-    goal: (profile?.primary_goal as FitnessGoal | null) ?? null,
+    goal,
     whyStarted: profile?.why_started ?? null,
     plan,
     nutrition,
     weeklyStats,
     encouragement: pickEncouragement({
-      goal: (profile?.primary_goal as FitnessGoal | null) ?? null,
+      goal,
       displayName: firstName ?? profile?.display_name ?? null,
       weekly: weeklyStats,
       proteinLoggedG: nutrition.totals.proteinG,
@@ -116,5 +119,6 @@ export async function getHomeDashboardData(
     activity,
     sleep,
     gamification,
+    weighInReminder,
   };
 }

@@ -26,6 +26,7 @@ import type {
   CaliperMeasurementRow,
   ProgressDashboardData,
 } from "./types";
+import { getWeighInReminderForUser } from "./weigh-in-reminder-service";
 
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
@@ -307,6 +308,8 @@ export async function getProgressDashboardData(
     void cacheProjection(userId, projection, gates.horizonDays);
   }
 
+  const weighInReminder = await getWeighInReminderForUser(userId, goal);
+
   return {
     goal,
     age,
@@ -324,6 +327,7 @@ export async function getProgressDashboardData(
     activity,
     sleep,
     recovery,
+    weighInReminder,
   };
 }
 

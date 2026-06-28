@@ -8,6 +8,7 @@ import { getUserEquipmentSettings } from "@/lib/equipment/service";
 import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
 import { getCommunityEmailSettings } from "@/lib/coaching/community-email";
 import { getCommunityPushSettings } from "@/lib/coaching/community-push";
+import { getWeighInPushSettings } from "@/lib/coaching/progress-push";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasFeature } from "@/lib/billing/gates";
 import { isStripeProConfigured } from "@/lib/billing/stripe";
@@ -70,13 +71,14 @@ export default async function ProfilePage({
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [oneRepMaxes, equipmentSettings, subscription, communityPush, communityEmail] = user
+  const [oneRepMaxes, equipmentSettings, subscription, communityPush, communityEmail, weighInPush] = user
     ? await Promise.all([
         getUserOneRepMaxes(user.id),
         getUserEquipmentSettings(user.id),
         getSubscriptionForUser(user.id),
         getCommunityPushSettings(user.id),
         getCommunityEmailSettings(user.id),
+        getWeighInPushSettings(user.id),
       ])
     : [
         { rows: [], tableReady: true },
@@ -106,9 +108,15 @@ export default async function ProfilePage({
             cheerReceived: true,
             followMutual: true,
             sundayNudge: true,
+            weeklyWeighInNudge: true,
           },
         },
         { configured: false, weeklyRecap: true },
+        {
+          configured: false,
+          subscribed: false,
+          weeklyWeighInNudge: true,
+        },
       ];
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
@@ -187,6 +195,7 @@ export default async function ProfilePage({
           }
           communityPush={communityPush}
           communityEmail={communityEmail}
+          weighInPush={weighInPush}
           unit={unit}
           initialGoal={profile?.primary_goal ?? null}
           initialSessionsPerWeek={profile?.sessions_per_week ?? null}

@@ -4,8 +4,11 @@ import Link from "next/link";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { CommunityEmailSetting } from "@/components/profile/community-email-setting";
 import { CommunityPushSetting } from "@/components/profile/community-push-setting";
+import { WeighInPushSetting } from "@/components/profile/weigh-in-push-setting";
 import type { CommunityEmailSettings } from "@/lib/coaching/community-email";
 import type { CommunityPushSettings } from "@/lib/coaching/community-push";
+import type { WeighInPushSettings } from "@/lib/coaching/progress-push";
+import { isWeighInReminderGoal } from "@/lib/measurements/weigh-in-reminder";
 import { EquipmentSetting } from "@/components/profile/equipment-setting";
 import { GamificationSetting } from "@/components/profile/gamification-setting";
 import { IntegrationsSetting } from "@/components/profile/integrations-setting";
@@ -49,6 +52,7 @@ interface ProfileSettingsHubProps {
   communityOptInVariant?: import("@/lib/coaching/types").CommunityOptInVariant;
   communityPush: CommunityPushSettings;
   communityEmail: CommunityEmailSettings;
+  weighInPush: WeighInPushSettings;
   unit: UnitSystem;
   initialGoal: FitnessGoal | null;
   initialSessionsPerWeek: number | null;
@@ -80,6 +84,7 @@ export function ProfileSettingsHub({
   communityOptInVariant = "control",
   communityPush,
   communityEmail,
+  weighInPush,
   unit,
   initialGoal,
   initialSessionsPerWeek,
@@ -210,6 +215,9 @@ export function ProfileSettingsHub({
 
       <CollapsibleSection title="Preferences" hint="Units & body stats">
         <div className="space-y-4">
+          {isWeighInReminderGoal(initialGoal) && (
+            <WeighInPushSetting push={weighInPush} />
+          )}
           <UnitPreferenceSetting initialUnit={unit} />
           <section className="space-y-3 rounded-xl border border-[var(--border)] bg-forge-surface p-4 text-sm">
             <Row label="Experience" value={experienceLevel} />

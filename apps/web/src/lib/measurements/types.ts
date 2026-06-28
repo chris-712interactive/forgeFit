@@ -8,6 +8,7 @@ import type { SleepContext } from "@/lib/sleep/types";
 import type { RecoveryContext } from "@/lib/recovery/types";
 import type { ProAnalyticsBundle } from "@/lib/analytics/types";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import type { WeighInReminder } from "@/lib/measurements/weigh-in-reminder";
 import type { ProgressPhotoRow } from "@/lib/progress-photos/types";
 
 export interface BodyMeasurementRow {
@@ -58,4 +59,5 @@ export interface ProgressDashboardData {
   activity: ActivityContext;
   sleep: SleepContext;
   recovery: RecoveryContext;
+  weighInReminder: WeighInReminder | null;
 }

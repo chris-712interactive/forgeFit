@@ -1,5 +1,6 @@
 "use client";
 
+import { WeighInReminderBanner } from "@/components/measurements/weigh-in-reminder-banner";
 import { HomeProgressShortcut } from "@/components/home/home-progress-shortcut";
 import { CommunitySection } from "@/components/home/community-section";
 import { HomeNotificationsStrip } from "@/components/home/home-notifications-strip";
@@ -32,6 +33,10 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         <p className="rounded-xl border border-forge-ember/25 bg-forge-ember/5 px-4 py-3 text-sm leading-relaxed text-forge-text">
           {encouragement}
         </p>
+      )}
+
+      {data.weighInReminder && (
+        <WeighInReminderBanner reminder={data.weighInReminder} variant="home" />
       )}
 
       {data.plan ? (

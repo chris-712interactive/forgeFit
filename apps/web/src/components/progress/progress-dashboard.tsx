@@ -3,6 +3,7 @@
 import { DailyActivityPanel } from "@/components/activity/daily-activity-panel";
 import { DailySleepPanel } from "@/components/sleep/daily-sleep-panel";
 import { DailyRecoveryPanel } from "@/components/recovery/daily-recovery-panel";
+import { WeighInReminderBanner } from "@/components/measurements/weigh-in-reminder-banner";
 import type { ProgressDashboardData } from "@/lib/measurements/types";
 import { hasFeature } from "@/lib/billing/gates";
 import { hasProAccess } from "@/lib/billing/types";
@@ -50,6 +51,24 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
     });
   }, [tab]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    if (tabParam === "log" || tabParam === "training" || tabParam === "trends") {
+      setTab(tabParam);
+    }
+
+    if (window.location.hash === "#log-measurement") {
+      setTab("log");
+      requestAnimationFrame(() => {
+        document.getElementById("log-measurement")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+  }, []);
+
   return (
     <div className={`${appHeaderGap} ${appSectionStack}`}>
       <SectionTabs
@@ -68,6 +87,23 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
           Apply the Phase 5 migration to save new entries. Charts still use
           your onboarding baseline.
         </div>
+      )}
+
+      {data.weighInReminder && (
+        <WeighInReminderBanner
+          reminder={data.weighInReminder}
+          variant="progress"
+          onLogWeight={() => {
+            setTab("log");
+            window.history.replaceState(null, "", "#log-measurement");
+            requestAnimationFrame(() => {
+              document.getElementById("log-measurement")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            });
+          }}
+        />
       )}
 
       {visitedTabs.has("trends") && (
@@ -203,7 +239,10 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
 
       {visitedTabs.has("log") && (
         <div className={tab === "log" ? "flex flex-col gap-4 sm:gap-5" : "hidden"}>
-          <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+          <section
+            id="log-measurement"
+            className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5 scroll-mt-24"
+          >
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               Log measurement
             </h2>

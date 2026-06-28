@@ -9,7 +9,8 @@ export type CommunityPushPreferenceKey =
   | "rival_events"
   | "cheer_received"
   | "follow_mutual"
-  | "sunday_nudge";
+  | "sunday_nudge"
+  | "weekly_weigh_in_nudge";
 
 export interface CommunityPushPreferences {
   rankPassed: boolean;
@@ -18,6 +19,7 @@ export interface CommunityPushPreferences {
   cheerReceived: boolean;
   followMutual: boolean;
   sundayNudge: boolean;
+  weeklyWeighInNudge: boolean;
 }
 
 export interface CommunityPushSettings {
@@ -33,6 +35,7 @@ const DEFAULT_PREFERENCES: CommunityPushPreferences = {
   cheerReceived: true,
   followMutual: true,
   sundayNudge: true,
+  weeklyWeighInNudge: true,
 };
 
 let vapidConfigured = false;
@@ -65,6 +68,7 @@ function preferencesRowToModel(row: Record<string, unknown>): CommunityPushPrefe
     cheerReceived: row.cheer_received !== false,
     followMutual: row.follow_mutual !== false,
     sundayNudge: row.sunday_nudge !== false,
+    weeklyWeighInNudge: row.weekly_weigh_in_nudge !== false,
   };
 }
 
@@ -217,6 +221,9 @@ export async function updatePushPreferences(
   }
   if (preferences.followMutual != null) payload.follow_mutual = preferences.followMutual;
   if (preferences.sundayNudge != null) payload.sunday_nudge = preferences.sundayNudge;
+  if (preferences.weeklyWeighInNudge != null) {
+    payload.weekly_weigh_in_nudge = preferences.weeklyWeighInNudge;
+  }
 
   const { error } = await supabase.from("community_push_preferences").upsert(payload, {
     onConflict: "user_id",

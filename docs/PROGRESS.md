@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-28 |
-| **Last session focus** | TDEE energy visualization (3 layers) |
+| **Last session focus** | Weekly weigh-in reminders (banner + push) |
 
 ---
 
@@ -33,6 +33,35 @@
 ---
 
 ## Session Log
+
+### 2026-06-28 — Weekly weigh-in reminders
+
+**What was done:**
+- **In-app banner:** `WeighInReminderBanner` on Home and Progress when 7+ days since last weigh-in (or never logged) for `fat_loss` / `recomposition` goals
+- **Core logic:** `weigh-in-reminder.ts` + service; unit tests for 7-day threshold and goal gating
+- **Progress deep link:** `?tab=log#log-measurement` opens Log tab and scrolls to the measurement form
+- **Optional push:** Profile toggle (`WeighInPushSetting`) for fat-loss/recomp users; general `/api/push/subscribe` (no community opt-in gate)
+- **Cron:** `/api/cron/weigh-in-nudge` Sunday 14:00 UTC; `weekly_weigh_in_nudge` + `last_weigh_in_push_at` migration
+
+**What's next:**
+- Apply migration `20260611000000_weigh_in_push_preference.sql` to hosted Supabase
+- Manual QA: banner at day 7+, push subscribe from Profile, cron in staging with VAPID keys
+
+**Blockers:** None
+
+**Files touched:**
+- `supabase/migrations/20260611000000_weigh_in_push_preference.sql`
+- `apps/web/src/lib/measurements/weigh-in-reminder*.ts`, `weigh-in-reminder.test.ts`
+- `apps/web/src/lib/coaching/progress-push.ts`, `community-push.ts`
+- `apps/web/src/components/measurements/weigh-in-reminder-banner.tsx`
+- `apps/web/src/components/profile/weigh-in-push-setting.tsx`
+- `apps/web/src/components/home/home-dashboard.tsx`, `progress/progress-dashboard.tsx`
+- `apps/web/src/lib/home/service.ts`, `types.ts`; `lib/measurements/service.ts`, `types.ts`
+- `apps/web/src/app/api/push/subscribe/route.ts`, `api/push/vapid-key/route.ts`
+- `apps/web/src/app/api/cron/weigh-in-nudge/route.ts`
+- `apps/web/src/app/actions/weigh-in-push.ts`
+- `apps/web/src/app/(app)/profile/page.tsx`, `profile-settings-hub.tsx`
+- `apps/web/vercel.json`, `apps/web/src/app/sw.ts`, `docs/PROGRESS.md`
 
 ### 2026-06-28 — TDEE energy visualization (3 layers)
 
