@@ -39,6 +39,12 @@ export interface TdeeDashboard {
   adaptiveNeedsData: boolean;
   /** True when layered TDEE was derived at read time (older program JSON). */
   enrichedFromProgram: boolean;
+  nutritionContext?: {
+    goal: import("@forgefit/program-engine").FitnessGoal;
+    effectiveDeficitKcal?: number;
+    paceLabel?: string;
+    paceSummary?: string;
+  };
 }
 
 function sessionsOnDate(
@@ -184,6 +190,15 @@ export async function getTdeeDashboard(
   );
 
   const plan = targets ? buildPlanTdeeBreakdown(targets) : null;
+  const nutritionContext =
+    context?.userProfile && targets
+      ? {
+          goal: context.userProfile.goal,
+          effectiveDeficitKcal: targets.effectiveDeficitKcal,
+          paceLabel: targets.paceLabel,
+          paceSummary: targets.paceSummary,
+        }
+      : undefined;
 
   const weightKg = context?.userProfile.weightKg ?? 75;
   const intensityScore =
@@ -209,6 +224,7 @@ export async function getTdeeDashboard(
       adaptiveUnlocked: false,
       adaptiveNeedsData: false,
       enrichedFromProgram,
+      nutritionContext,
     };
   }
 
@@ -232,5 +248,6 @@ export async function getTdeeDashboard(
     adaptiveUnlocked: true,
     adaptiveNeedsData: adaptive == null,
     enrichedFromProgram,
+    nutritionContext,
   };
 }

@@ -68,3 +68,57 @@ test("computeNutrition exposes layered TDEE fields with training context", () =>
     nutrition.effectiveDeficitKcal && nutrition.effectiveDeficitKcal > 400
   );
 });
+
+test("fat loss pace maps to evidence deficit range", () => {
+  const rules = getMatchedRules(getRules(), baseProfile);
+  const plan = generateProgram(baseProfile);
+  const load = computeTrainingLoad(plan.week);
+  const expenditure = estimateTrainingExpenditure(plan.week, load, baseProfile);
+  const options = { trainingLoad: load, expenditure };
+
+  const steady = computeNutrition(
+    { ...baseProfile, fatLossPace: "steady" },
+    rules,
+    options
+  );
+  const aggressive = computeNutrition(
+    { ...baseProfile, fatLossPace: "aggressive" },
+    rules,
+    options
+  );
+
+  assert.ok(
+    (aggressive.effectiveDeficitKcal ?? 0) >
+      (steady.effectiveDeficitKcal ?? 0)
+  );
+  assert.equal(steady.fatLossPace, "steady");
+  assert.equal(aggressive.paceLabel, "Aggressive fat loss");
+});
+
+test("recomp priority adjusts effective deficit", () => {
+  const recompProfile: ProgramUserProfile = {
+    ...baseProfile,
+    goal: "recomposition",
+  };
+  const rules = getMatchedRules(getRules(), recompProfile);
+  const plan = generateProgram(recompProfile);
+  const load = computeTrainingLoad(plan.week);
+  const expenditure = estimateTrainingExpenditure(plan.week, load, recompProfile);
+  const options = { trainingLoad: load, expenditure };
+
+  const muscle = computeNutrition(
+    { ...recompProfile, recompPriority: "muscle" },
+    rules,
+    options
+  );
+  const leanOut = computeNutrition(
+    { ...recompProfile, recompPriority: "lean_out" },
+    rules,
+    options
+  );
+
+  assert.ok(
+    (leanOut.effectiveDeficitKcal ?? 0) > (muscle.effectiveDeficitKcal ?? 0)
+  );
+  assert.equal(muscle.recompPriority, "muscle");
+});

@@ -1,4 +1,4 @@
-import type { FitnessGoal } from "@forgefit/program-engine";
+import type { FatLossPace, FitnessGoal, RecompPriority } from "@forgefit/program-engine";
 import type {
   ProjectionPoint,
   WeightDataPoint,
@@ -32,22 +32,41 @@ interface GoalRate {
   maxWeeklyPct: number;
 }
 
-function goalRate(goal: FitnessGoal): GoalRate {
+interface GoalRateOptions {
+  fatLossPace?: FatLossPace;
+  recompPriority?: RecompPriority;
+}
+
+function goalRate(goal: FitnessGoal, options: GoalRateOptions = {}): GoalRate {
   switch (goal) {
-    case "fat_loss":
+    case "fat_loss": {
+      const pace = options.fatLossPace ?? "moderate";
+      const weeklyByPace: Record<FatLossPace, number> = {
+        steady: -0.5,
+        moderate: -0.75,
+        aggressive: -1.0,
+      };
       return {
-        weeklyPct: -0.75,
+        weeklyPct: weeklyByPace[pace],
         minWeeklyPct: -1.0,
         maxWeeklyPct: -0.5,
         ruleId: "fat_loss_rate",
       };
-    case "recomposition":
+    }
+    case "recomposition": {
+      const priority = options.recompPriority ?? "balanced";
+      const weeklyByPriority: Record<RecompPriority, number> = {
+        muscle: -0.25,
+        balanced: -0.35,
+        lean_out: -0.5,
+      };
       return {
-        weeklyPct: -0.35,
+        weeklyPct: weeklyByPriority[priority],
         minWeeklyPct: -1.0,
         maxWeeklyPct: -0.25,
         ruleId: "fat_loss_rate",
       };
+    }
     case "bodybuilding":
       return {
         weeklyPct: 0.35,
@@ -89,9 +108,10 @@ function deficitBasedPrior(
   goal: FitnessGoal,
   currentWeightKg: number,
   effectiveDeficitKcal?: number,
-  effectiveSurplusKcal?: number
+  effectiveSurplusKcal?: number,
+  options: GoalRateOptions = {}
 ): { weeklyKg: number; weeklyPct: number; ruleId: string } {
-  const rate = goalRate(goal);
+  const rate = goalRate(goal, options);
   const energyBased = energyBalanceWeeklyKg(
     goal,
     currentWeightKg,
@@ -147,9 +167,10 @@ function linearSlopeKgPerDay(points: WeightDataPoint[]): number | null {
 function clampWeeklyChange(
   weeklyKg: number,
   currentWeightKg: number,
-  goal: FitnessGoal
+  goal: FitnessGoal,
+  options: GoalRateOptions = {}
 ): { weeklyKg: number; weeklyPct: number; ruleId: string } {
-  const rate = goalRate(goal);
+  const rate = goalRate(goal, options);
   const observedPct = (weeklyKg / currentWeightKg) * 100;
 
   const maxLoss = rate.minWeeklyPct;
@@ -182,8 +203,12 @@ export function projectWeight({
   effectiveDeficitKcal,
   effectiveSurplusKcal,
   trainingKcalPerDay,
+  fatLossPace,
+  recompPriority,
+  goalWeightKg,
   includeConfidenceBand = false,
 }: WeightProjectionInput): WeightProjectionResult {
+  const rateOptions: GoalRateOptions = { fatLossPace, recompPriority };
   const sorted = [...history]
     .filter((point) => point.weightKg > 0)
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -198,7 +223,8 @@ export function projectWeight({
     goal,
     latest.weightKg,
     effectiveDeficitKcal,
-    effectiveSurplusKcal
+    effectiveSurplusKcal,
+    rateOptions
   );
 
   let weeklyChangeKg: number;
@@ -213,7 +239,7 @@ export function projectWeight({
         ? observedWeeklyKg * 0.7 + prior.weeklyKg * 0.3
         : observedWeeklyKg * 0.4 + prior.weeklyKg * 0.6;
 
-    const clamped = clampWeeklyChange(blended, latest.weightKg, goal);
+    const clamped = clampWeeklyChange(blended, latest.weightKg, goal, rateOptions);
     weeklyChangeKg = clamped.weeklyKg;
     if (prior.ruleId === "energy_balance_projection") {
       ruleId = prior.ruleId;
@@ -223,7 +249,7 @@ export function projectWeight({
   }
 
   const dailyChangeKg = weeklyChangeKg / 7;
-  const rate = goalRate(goal);
+  const rate = goalRate(goal, rateOptions);
   const bandLowDailyKg = (rate.minWeeklyPct / 100) * latest.weightKg / 7;
   const bandHighDailyKg = (rate.maxWeeklyPct / 100) * latest.weightKg / 7;
 
@@ -253,6 +279,20 @@ export function projectWeight({
     projected.push(point);
   }
 
+  let goalReachDate: string | undefined;
+  let daysToGoal: number | undefined;
+
+  if (
+    goalWeightKg != null &&
+    goalWeightKg > 0 &&
+    latest.weightKg > goalWeightKg &&
+    dailyChangeKg < 0
+  ) {
+    const kgToLose = latest.weightKg - goalWeightKg;
+    daysToGoal = Math.ceil(kgToLose / Math.abs(dailyChangeKg));
+    goalReachDate = addDays(latest.date, daysToGoal);
+  }
+
   return {
     horizonDays,
     weeklyChangePct:
@@ -263,5 +303,8 @@ export function projectWeight({
     effectiveDeficitKcal,
     effectiveSurplusKcal,
     trainingKcalPerDay,
+    goalWeightKg,
+    goalReachDate,
+    daysToGoal,
   };
 }

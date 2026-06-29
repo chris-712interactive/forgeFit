@@ -39,6 +39,12 @@ export async function loadUserProgramContext(userId: string) {
     sex: profile.sex ?? "other",
     equipment: equipmentRows?.map((r) => r.equipment_type) ?? [],
     recoveryEquipment: recoveryRows?.map((r) => r.equipment_type) ?? [],
+    fatLossPace: profile.fat_loss_pace ?? undefined,
+    recompPriority: profile.recomp_priority ?? undefined,
+    goalWeightKg:
+      profile.goal_weight_kg != null
+        ? Number(profile.goal_weight_kg)
+        : undefined,
   };
 
   return { profile, userProfile };

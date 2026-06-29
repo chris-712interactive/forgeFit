@@ -135,6 +135,7 @@ export function NutritionDiary({
               <MacroSummary
                 totals={initialSummary.totals}
                 targets={initialSummary.targets}
+                goal={tdeeDashboard?.nutritionContext?.goal ?? null}
                 variant="compact"
                 embedded
                 showTargetDetails={false}
@@ -160,6 +161,7 @@ export function NutritionDiary({
               <MacroSummary
                 totals={initialSummary.totals}
                 targets={initialSummary.targets}
+                goal={tdeeDashboard?.nutritionContext?.goal ?? null}
                 variant="compact"
                 embedded
               />

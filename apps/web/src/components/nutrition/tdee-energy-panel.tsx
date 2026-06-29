@@ -5,6 +5,7 @@ import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-
 import { buildEvidenceHref } from "@/lib/evidence/present";
 import type { TdeeDashboard } from "@/lib/nutrition/tdee-service";
 import type { PlanTdeeBreakdown, TdeeSegment } from "@forgefit/program-engine";
+import { describeEffectiveDeficit } from "@forgefit/program-engine";
 import type { AdaptiveTdeeResult } from "@forgefit/projection-engine";
 
 interface TdeeEnergyPanelProps {
@@ -39,6 +40,7 @@ export function TdeeEnergyPanel({ dashboard }: TdeeEnergyPanelProps) {
           <PlanBreakdownSection
             breakdown={dashboard.plan}
             enrichedFromProgram={dashboard.enrichedFromProgram}
+            nutritionContext={dashboard.nutritionContext}
           />
         ) : (
           <PlanBreakdownPlaceholder />
@@ -57,9 +59,11 @@ export function TdeeEnergyPanel({ dashboard }: TdeeEnergyPanelProps) {
 function PlanBreakdownSection({
   breakdown,
   enrichedFromProgram,
+  nutritionContext,
 }: {
   breakdown: PlanTdeeBreakdown;
   enrichedFromProgram?: boolean;
+  nutritionContext?: TdeeDashboard["nutritionContext"];
 }) {
   const stackSegments = breakdown.segments.filter(
     (segment) => segment.id !== "goal_adjustment"
@@ -165,6 +169,26 @@ function PlanBreakdownSection({
           </span>
         </p>
       )}
+
+      {nutritionContext?.paceSummary && (
+        <p className="mt-3 rounded-lg border border-[var(--border)] bg-forge-surface px-3 py-2 text-sm text-forge-muted">
+          <span className="font-semibold text-forge-text">
+            {nutritionContext.paceLabel ?? "Your pace"}:
+          </span>{" "}
+          {nutritionContext.paceSummary}
+        </p>
+      )}
+
+      {nutritionContext?.effectiveDeficitKcal != null &&
+        (nutritionContext.goal === "fat_loss" ||
+          nutritionContext.goal === "recomposition") && (
+          <p className="mt-2 text-xs text-forge-muted">
+            {describeEffectiveDeficit(
+              nutritionContext.effectiveDeficitKcal,
+              nutritionContext.goal
+            )}
+          </p>
+        )}
     </div>
   );
 }

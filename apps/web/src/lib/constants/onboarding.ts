@@ -1,4 +1,4 @@
-import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
+import type { ExperienceLevel, FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
 
 export const FITNESS_GOALS: {
   value: FitnessGoal;
@@ -29,6 +29,50 @@ export const FITNESS_GOALS: {
     value: "recomposition",
     label: "Recomposition",
     description: "Build muscle and lose fat at the same time",
+  },
+];
+
+export const FAT_LOSS_PACE_OPTIONS: {
+  value: FatLossPace;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "steady",
+    label: "Steady",
+    description: "~½ lb/week — best for keeping muscle and training energy",
+  },
+  {
+    value: "moderate",
+    label: "Moderate",
+    description: "~¾–1 lb/week — recommended balance of progress and recovery",
+  },
+  {
+    value: "aggressive",
+    label: "Aggressive",
+    description: "~1+ lb/week — faster cut when you have more weight to lose",
+  },
+];
+
+export const RECOMP_PRIORITY_OPTIONS: {
+  value: RecompPriority;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "muscle",
+    label: "Build muscle",
+    description: "Smallest deficit — prioritize strength and size while trimming fat slowly",
+  },
+  {
+    value: "balanced",
+    label: "Balanced",
+    description: "Moderate deficit — trade fat loss and muscle gain evenly",
+  },
+  {
+    value: "lean_out",
+    label: "Lean out faster",
+    description: "Larger deficit — still below a full cut, but lean out quicker",
   },
 ];
 

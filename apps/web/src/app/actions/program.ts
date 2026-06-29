@@ -6,22 +6,42 @@ import {
   loadUserProgramContext,
 } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
-import type { FitnessGoal } from "@/lib/types/profile";
+import type { FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const planSettingsSchema = z.object({
-  primary_goal: z.enum([
-    "fat_loss",
-    "bodybuilding",
-    "powerlifting",
-    "general_strength",
-    "recomposition",
-  ]),
-  sessions_per_week: z.number().min(1).max(7),
-  minutes_per_session: z.number().min(15).max(120),
-  regenerate_program: z.boolean().optional(),
-});
+const planSettingsSchema = z
+  .object({
+    primary_goal: z.enum([
+      "fat_loss",
+      "bodybuilding",
+      "powerlifting",
+      "general_strength",
+      "recomposition",
+    ]),
+    fat_loss_pace: z.enum(["steady", "moderate", "aggressive"]).optional(),
+    recomp_priority: z.enum(["muscle", "balanced", "lean_out"]).optional(),
+    goal_weight_kg: z.number().min(30).max(300).nullable().optional(),
+    sessions_per_week: z.number().min(1).max(7),
+    minutes_per_session: z.number().min(15).max(120),
+    regenerate_program: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select a fat-loss pace when goal is fat loss.",
+        path: ["fat_loss_pace"],
+      });
+    }
+    if (data.primary_goal === "recomposition" && !data.recomp_priority) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select a recomp priority.",
+        path: ["recomp_priority"],
+      });
+    }
+  });
 
 function revalidateProgramPaths() {
   revalidatePath("/home");
@@ -58,6 +78,9 @@ export async function rebuildProgram() {
 
 export async function updatePlanSettings(input: {
   primary_goal: FitnessGoal;
+  fat_loss_pace?: FatLossPace;
+  recomp_priority?: RecompPriority;
+  goal_weight_kg?: number | null;
   sessions_per_week: number;
   minutes_per_session: number;
   regenerate_program?: boolean;
@@ -85,7 +108,20 @@ export async function updatePlanSettings(input: {
 
   const { error: profileError } = await supabase
     .from("profiles")
-    .update(profileFields)
+    .update({
+      primary_goal: profileFields.primary_goal,
+      sessions_per_week: profileFields.sessions_per_week,
+      minutes_per_session: profileFields.minutes_per_session,
+      fat_loss_pace:
+        profileFields.primary_goal === "fat_loss"
+          ? profileFields.fat_loss_pace ?? null
+          : null,
+      recomp_priority:
+        profileFields.primary_goal === "recomposition"
+          ? profileFields.recomp_priority ?? null
+          : null,
+      goal_weight_kg: profileFields.goal_weight_kg ?? null,
+    })
     .eq("id", user.id);
 
   if (profileError) {

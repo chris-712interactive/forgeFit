@@ -7,6 +7,12 @@ export type FitnessGoal =
 
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
+/** Maps to evidence `daily_deficit_kcal` min / optimal / max. */
+export type FatLossPace = "steady" | "moderate" | "aggressive";
+
+/** Recomp trade-off between muscle gain and fat loss speed. */
+export type RecompPriority = "muscle" | "balanced" | "lean_out";
+
 export interface ProgramUserProfile {
   goal: FitnessGoal;
   experience: ExperienceLevel;
@@ -18,6 +24,9 @@ export interface ProgramUserProfile {
   sex: string;
   equipment: string[];
   recoveryEquipment: string[];
+  fatLossPace?: FatLossPace;
+  recompPriority?: RecompPriority;
+  goalWeightKg?: number;
 }
 
 export interface PlannedExercise {
@@ -89,6 +98,11 @@ export interface NutritionTargets {
   effectiveDeficitKcal?: number;
   effectiveSurplusKcal?: number;
   trainingLoad?: TrainingLoadSummary;
+  fatLossPace?: FatLossPace;
+  recompPriority?: RecompPriority;
+  /** Plain-language label for the selected pace/priority (UI). */
+  paceLabel?: string;
+  paceSummary?: string;
 }
 
 export interface ProgramPlan {

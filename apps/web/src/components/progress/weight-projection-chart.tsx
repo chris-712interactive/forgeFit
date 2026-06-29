@@ -27,6 +27,7 @@ interface WeightProjectionChartProps {
   projection: WeightProjectionResult | null;
   showConfidenceBands?: boolean;
   showGoalDate?: boolean;
+  goalWeightKg?: number | null;
 }
 
 function formatTick(date: string): string {
@@ -38,6 +39,7 @@ export function WeightProjectionChart({
   projection,
   showConfidenceBands = false,
   showGoalDate = false,
+  goalWeightKg = null,
 }: WeightProjectionChartProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
@@ -117,7 +119,30 @@ export function WeightProjectionChart({
         · capped by <EvidenceRuleInline ruleId={projection.ruleId} />
       </p>
 
-      {showGoalDate && lastProjected && (
+      {showGoalDate && projection.goalReachDate && goalWeightKg != null && (
+        <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-3 py-2 text-sm text-forge-text">
+          At your current pace you&apos;ll reach{" "}
+          <span className="font-semibold text-forge-gold">
+            {kgToDisplayValue(goalWeightKg, unit)} {weightLabel}
+          </span>{" "}
+          around{" "}
+          <span className="font-semibold">
+            {new Date(`${projection.goalReachDate}T12:00:00`).toLocaleDateString(
+              undefined,
+              { month: "short", day: "numeric", year: "numeric" }
+            )}
+          </span>
+          {projection.daysToGoal != null && (
+            <span className="text-forge-muted">
+              {" "}
+              (~{projection.daysToGoal} days)
+            </span>
+          )}
+          .
+        </p>
+      )}
+
+      {showGoalDate && lastProjected && !projection.goalReachDate && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/5 px-3 py-2 text-sm text-forge-text">
           At this pace you&apos;ll weigh{" "}
           <span className="font-semibold text-forge-gold">

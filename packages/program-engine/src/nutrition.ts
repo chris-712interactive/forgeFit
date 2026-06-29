@@ -4,6 +4,16 @@ import {
   type EvidenceRule,
   type RuleContext,
 } from "@forgefit/evidence-kb";
+import {
+  describeFatLossPace,
+  describeRecompPriority,
+  FAT_LOSS_PACE_DEFICIT_FIELD,
+  fatLossPaceLabel,
+  recompPriorityLabel,
+  RECOMP_BASE_DEFICIT_KCAL,
+  resolveFatLossPace,
+  resolveRecompPriority,
+} from "./body-composition";
 import type {
   NutritionTargets,
   ProgramUserProfile,
@@ -40,6 +50,42 @@ function eatBackPct(
   return getRecommendationValue<number>(rules, key, "optimal") ?? fallback;
 }
 
+function resolveBaseDeficit(
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[]
+): number {
+  const pace = resolveFatLossPace(profile.fatLossPace);
+  const field = FAT_LOSS_PACE_DEFICIT_FIELD[pace];
+  return (
+    getRecommendationValue<number>(rules, "daily_deficit_kcal", field) ?? 400
+  );
+}
+
+function paceMetadata(profile: ProgramUserProfile): Pick<
+  NutritionTargets,
+  "fatLossPace" | "recompPriority" | "paceLabel" | "paceSummary"
+> {
+  if (profile.goal === "fat_loss") {
+    const pace = resolveFatLossPace(profile.fatLossPace);
+    return {
+      fatLossPace: pace,
+      paceLabel: `${fatLossPaceLabel(pace)} fat loss`,
+      paceSummary: describeFatLossPace(pace),
+    };
+  }
+
+  if (profile.goal === "recomposition") {
+    const priority = resolveRecompPriority(profile.recompPriority);
+    return {
+      recompPriority: priority,
+      paceLabel: `${recompPriorityLabel(priority)} recomp`,
+      paceSummary: describeRecompPriority(priority),
+    };
+  }
+
+  return {};
+}
+
 function legacyTdee(profile: ProgramUserProfile): number {
   return mifflinStJeor(profile) * 1.55;
 }
@@ -57,12 +103,8 @@ function legacyNutrition(
   let calories = tdee;
   let calorieRuleId: string | undefined;
 
-  const deficit = getRecommendationValue<number>(
-    rules,
-    "daily_deficit_kcal",
-    "optimal"
-  );
-  if (profile.goal === "fat_loss" && deficit) {
+  if (profile.goal === "fat_loss") {
+    const deficit = resolveBaseDeficit(profile, rules);
     calories = tdee - deficit;
     calorieRuleId = "deficit_calories_fat_loss";
   } else if (
@@ -72,7 +114,9 @@ function legacyNutrition(
     calories = tdee + 250;
     calorieRuleId = "lean_gain_rate";
   } else if (profile.goal === "recomposition") {
-    calories = tdee - 150;
+    const baseDeficit =
+      RECOMP_BASE_DEFICIT_KCAL[resolveRecompPriority(profile.recompPriority)];
+    calories = tdee - baseDeficit;
     calorieRuleId = "recomposition_training";
   }
 
@@ -94,6 +138,7 @@ function legacyNutrition(
     carbsG,
     proteinRuleId: proteinRule?.id ?? "protein_deficit_general",
     calorieRuleId,
+    ...paceMetadata(profile),
   };
 }
 
@@ -121,8 +166,9 @@ export function computeNutrition(
   let effectiveDeficitKcal: number | undefined;
   let effectiveSurplusKcal: number | undefined;
 
-  const baseDeficit =
-    getRecommendationValue<number>(rules, "daily_deficit_kcal", "optimal") ?? 400;
+  const baseDeficit = resolveBaseDeficit(profile, rules);
+  const recompBaseDeficit =
+    RECOMP_BASE_DEFICIT_KCAL[resolveRecompPriority(profile.recompPriority)];
 
   if (profile.goal === "fat_loss") {
     const eatBack = eatBackPct(rules, "eat_back_pct", 0.5);
@@ -135,7 +181,7 @@ export function computeNutrition(
   } else if (profile.goal === "recomposition") {
     const eatBack = eatBackPct(rules, "recomp_eat_back_pct", 0.65);
     calories =
-      grossTdee - 150 - trainingKcalPerDay * (1 - eatBack);
+      grossTdee - recompBaseDeficit - trainingKcalPerDay * (1 - eatBack);
     calorieRuleId = "recomposition_training";
     effectiveDeficitKcal = Math.round(grossTdee - calories);
   } else if (
@@ -179,6 +225,7 @@ export function computeNutrition(
     effectiveDeficitKcal,
     effectiveSurplusKcal,
     trainingLoad: options.trainingLoad,
+    ...paceMetadata(profile),
   };
 }
 

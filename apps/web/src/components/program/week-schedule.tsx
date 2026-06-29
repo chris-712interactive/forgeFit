@@ -100,8 +100,11 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
             {plan.nutrition.trainingKcalPerDay != null && (
               <> · training ~{plan.nutrition.trainingKcalPerDay} kcal/day</>
             )}
+            {plan.nutrition.paceLabel && (
+              <> · {plan.nutrition.paceLabel}</>
+            )}
             {plan.nutrition.effectiveDeficitKcal != null && (
-              <> · deficit ~{plan.nutrition.effectiveDeficitKcal} kcal/day</>
+              <> · effective deficit ~{plan.nutrition.effectiveDeficitKcal} kcal/day</>
             )}
             {plan.nutrition.effectiveSurplusKcal != null && (
               <> · surplus ~{plan.nutrition.effectiveSurplusKcal} kcal/day</>

@@ -13,6 +13,10 @@ export type EquipmentLocation = "home" | "gym" | "both";
 
 export type UnitSystem = "metric" | "imperial";
 
+export type FatLossPace = "steady" | "moderate" | "aggressive";
+
+export type RecompPriority = "muscle" | "balanced" | "lean_out";
+
 export interface Profile {
   id: string;
   email: string | null;
@@ -24,6 +28,9 @@ export interface Profile {
   age: number | null;
   experience_level: ExperienceLevel | null;
   primary_goal: FitnessGoal | null;
+  fat_loss_pace: FatLossPace | null;
+  recomp_priority: RecompPriority | null;
+  goal_weight_kg: number | null;
   sessions_per_week: number | null;
   minutes_per_session: number | null;
   why_started: string | null;
@@ -61,6 +68,9 @@ export interface Profile {
 
 export interface OnboardingData {
   primary_goal: FitnessGoal;
+  fat_loss_pace?: FatLossPace;
+  recomp_priority?: RecompPriority;
+  goal_weight_kg?: number;
   experience_level: ExperienceLevel;
   first_name: string;
   last_name: string;

@@ -1,4 +1,4 @@
-import type { FitnessGoal } from "@forgefit/program-engine";
+import type { FatLossPace, FitnessGoal, RecompPriority } from "@forgefit/program-engine";
 
 export type CaliperFormula = "jp3" | "jp7";
 
@@ -43,6 +43,9 @@ export interface WeightProjectionInput {
   effectiveDeficitKcal?: number;
   effectiveSurplusKcal?: number;
   trainingKcalPerDay?: number;
+  fatLossPace?: FatLossPace;
+  recompPriority?: RecompPriority;
+  goalWeightKg?: number;
   /** When true, adds bandLowKg/bandHighKg from evidence min/max weekly rates */
   includeConfidenceBand?: boolean;
 }
@@ -56,6 +59,10 @@ export interface WeightProjectionResult {
   effectiveDeficitKcal?: number;
   effectiveSurplusKcal?: number;
   trainingKcalPerDay?: number;
+  goalWeightKg?: number;
+  /** ISO date when projected weight reaches goalWeightKg (Pro goal-date feature). */
+  goalReachDate?: string;
+  daysToGoal?: number;
 }
 
 export interface WaistDataPoint {

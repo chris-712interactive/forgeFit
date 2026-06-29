@@ -4,10 +4,12 @@ import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-
 import { buildEvidenceHref } from "@/lib/evidence/present";
 import type { MacroTotals } from "@forgefit/nutrition-core";
 import type { NutritionTargets } from "@forgefit/program-engine";
+import { describeEffectiveDeficit } from "@forgefit/program-engine";
 
 interface MacroSummaryProps {
   totals: MacroTotals;
   targets: NutritionTargets | null;
+  goal?: import("@forgefit/program-engine").FitnessGoal | null;
   /** Omit outer card shell when nested inside another section */
   embedded?: boolean;
   /** Compact 2×2 grid — fits above the log hub without pushing inputs down */
@@ -19,6 +21,7 @@ interface MacroSummaryProps {
 export function MacroSummary({
   totals,
   targets,
+  goal = null,
   embedded = false,
   variant = "default",
   showTargetDetails = true,
@@ -163,12 +166,24 @@ export function MacroSummary({
                   Math.max(1, targets.trainingLoad.sessionsPerWeek)
               )}{" "}
               min training plan.
-              {targets.effectiveDeficitKcal != null && (
-                <>
-                  {" "}
-                  Effective deficit ~{targets.effectiveDeficitKcal} kcal/day.
-                </>
+              {targets.paceSummary && (
+                <> {targets.paceSummary}</>
               )}
+              {targets.effectiveDeficitKcal != null &&
+                (goal === "fat_loss" || goal === "recomposition") && (
+                  <>
+                    {" "}
+                    {describeEffectiveDeficit(
+                      targets.effectiveDeficitKcal,
+                      goal === "recomposition" ? "recomposition" : "fat_loss"
+                    )}
+                  </>
+                )}
+              {targets.effectiveDeficitKcal != null &&
+                goal !== "fat_loss" &&
+                goal !== "recomposition" && (
+                  <> Effective deficit ~{targets.effectiveDeficitKcal} kcal/day.</>
+                )}
               {targets.effectiveSurplusKcal != null && (
                 <>
                   {" "}
@@ -186,12 +201,22 @@ export function MacroSummary({
                 Math.max(1, targets.trainingLoad.sessionsPerWeek)
             )}{" "}
             min training plan.
-            {targets.effectiveDeficitKcal != null && (
-              <>
-                {" "}
-                Effective deficit ~{targets.effectiveDeficitKcal} kcal/day.
-              </>
-            )}
+            {targets.paceSummary && <> {targets.paceSummary}</>}
+            {targets.effectiveDeficitKcal != null &&
+              (goal === "fat_loss" || goal === "recomposition") && (
+                <>
+                  {" "}
+                  {describeEffectiveDeficit(
+                    targets.effectiveDeficitKcal,
+                    goal === "recomposition" ? "recomposition" : "fat_loss"
+                  )}
+                </>
+              )}
+            {targets.effectiveDeficitKcal != null &&
+              goal !== "fat_loss" &&
+              goal !== "recomposition" && (
+                <> Effective deficit ~{targets.effectiveDeficitKcal} kcal/day.</>
+              )}
             {targets.effectiveSurplusKcal != null && (
               <>
                 {" "}

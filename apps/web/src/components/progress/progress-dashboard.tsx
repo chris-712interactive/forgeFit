@@ -146,6 +146,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
                 projection={data.projection}
                 showConfidenceBands={gates.showConfidenceBands}
                 showGoalDate={gates.showGoalDate}
+                goalWeightKg={data.goalWeightKg}
               />
             </div>
             {!isPro && (

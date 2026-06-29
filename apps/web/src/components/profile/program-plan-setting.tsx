@@ -5,22 +5,36 @@ import {
   updatePlanSettings,
 } from "@/app/actions/program";
 import {
+  FAT_LOSS_PACE_OPTIONS,
   FITNESS_GOALS,
   MINUTES_PER_SESSION_OPTIONS,
+  RECOMP_PRIORITY_OPTIONS,
   SESSIONS_PER_WEEK_OPTIONS,
 } from "@/lib/constants/onboarding";
-import type { FitnessGoal } from "@/lib/types/profile";
+import type {
+  FatLossPace,
+  FitnessGoal,
+  RecompPriority,
+} from "@/lib/types/profile";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 interface ProgramPlanSettingProps {
   initialGoal: FitnessGoal | null;
+  initialFatLossPace: FatLossPace | null;
+  initialRecompPriority: RecompPriority | null;
+  initialGoalWeightKg: number | null;
+  initialCurrentWeightKg: number | null;
   initialSessionsPerWeek: number | null;
   initialMinutesPerSession: number | null;
 }
 
 export function ProgramPlanSetting({
   initialGoal,
+  initialFatLossPace,
+  initialRecompPriority,
+  initialGoalWeightKg,
+  initialCurrentWeightKg,
   initialSessionsPerWeek,
   initialMinutesPerSession,
 }: ProgramPlanSettingProps) {
@@ -33,6 +47,15 @@ export function ProgramPlanSetting({
   const [goal, setGoal] = useState<FitnessGoal>(
     initialGoal ?? "general_strength"
   );
+  const [fatLossPace, setFatLossPace] = useState<FatLossPace>(
+    initialFatLossPace ?? "moderate"
+  );
+  const [recompPriority, setRecompPriority] = useState<RecompPriority>(
+    initialRecompPriority ?? "balanced"
+  );
+  const [goalWeightKg, setGoalWeightKg] = useState<number | null>(
+    initialGoalWeightKg
+  );
   const [sessionsPerWeek, setSessionsPerWeek] = useState(
     initialSessionsPerWeek ?? 3
   );
@@ -40,6 +63,12 @@ export function ProgramPlanSetting({
     initialMinutesPerSession ?? 45
   );
   const [regenerateOnSave, setRegenerateOnSave] = useState(true);
+
+  const showBodyComposition = goal === "fat_loss" || goal === "recomposition";
+  const goalWeightInvalid =
+    goalWeightKg != null &&
+    initialCurrentWeightKg != null &&
+    goalWeightKg >= initialCurrentWeightKg;
 
   function runAction(action: () => Promise<unknown>) {
     startTransition(async () => {
@@ -67,6 +96,25 @@ export function ProgramPlanSetting({
     });
   }
 
+  function saveSettings() {
+    if (goalWeightInvalid) {
+      setError("Goal weight must be below your current weight.");
+      return;
+    }
+
+    runAction(() =>
+      updatePlanSettings({
+        primary_goal: goal,
+        fat_loss_pace: goal === "fat_loss" ? fatLossPace : undefined,
+        recomp_priority: goal === "recomposition" ? recompPriority : undefined,
+        goal_weight_kg: showBodyComposition ? goalWeightKg : null,
+        sessions_per_week: sessionsPerWeek,
+        minutes_per_session: minutesPerSession,
+        regenerate_program: regenerateOnSave,
+      })
+    );
+  }
+
   return (
     <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
       <h2 className="font-display text-lg font-semibold text-forge-text">
@@ -92,6 +140,67 @@ export function ProgramPlanSetting({
             ))}
           </select>
         </div>
+
+        {goal === "fat_loss" && (
+          <div>
+            <p className="mb-2 text-sm text-forge-muted">Fat-loss pace</p>
+            <div className="space-y-2">
+              {FAT_LOSS_PACE_OPTIONS.map((option) => (
+                <ChipButton
+                  key={option.value}
+                  label={option.label}
+                  description={option.description}
+                  selected={fatLossPace === option.value}
+                  onClick={() => setFatLossPace(option.value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {goal === "recomposition" && (
+          <div>
+            <p className="mb-2 text-sm text-forge-muted">Recomp priority</p>
+            <div className="space-y-2">
+              {RECOMP_PRIORITY_OPTIONS.map((option) => (
+                <ChipButton
+                  key={option.value}
+                  label={option.label}
+                  description={option.description}
+                  selected={recompPriority === option.value}
+                  onClick={() => setRecompPriority(option.value)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {showBodyComposition && (
+          <div>
+            <label className="mb-1.5 block text-sm text-forge-muted">
+              Goal weight (optional, kg)
+            </label>
+            <input
+              type="number"
+              min={30}
+              max={300}
+              step={0.1}
+              value={goalWeightKg ?? ""}
+              onChange={(event) =>
+                setGoalWeightKg(
+                  event.target.value ? Number(event.target.value) : null
+                )
+              }
+              placeholder="For Pro goal-date forecasts"
+              className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
+            />
+            {goalWeightInvalid && (
+              <p className="mt-2 text-sm text-forge-coral" role="alert">
+                Goal weight must be below your current weight.
+              </p>
+            )}
+          </div>
+        )}
 
         <div>
           <p className="mb-2 text-sm text-forge-muted">Sessions per week</p>
@@ -139,16 +248,7 @@ export function ProgramPlanSetting({
         <button
           type="button"
           disabled={pending}
-          onClick={() =>
-            runAction(() =>
-              updatePlanSettings({
-                primary_goal: goal,
-                sessions_per_week: sessionsPerWeek,
-                minutes_per_session: minutesPerSession,
-                regenerate_program: regenerateOnSave,
-              })
-            )
-          }
+          onClick={saveSettings}
           className="min-h-[48px] flex-1 rounded-xl bg-forge-ember px-4 text-sm font-semibold text-white disabled:opacity-50"
         >
           {pending ? "Saving…" : "Save plan settings"}
@@ -187,10 +287,12 @@ export function ProgramPlanSetting({
 
 function ChipButton({
   label,
+  description,
   selected,
   onClick,
 }: {
   label: string;
+  description?: string;
   selected: boolean;
   onClick: () => void;
 }) {
@@ -198,13 +300,18 @@ function ChipButton({
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-[40px] rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
+      className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition-colors ${
         selected
           ? "border-forge-ember bg-forge-ember/15 text-forge-ember"
           : "border-[var(--border)] bg-forge-surface text-forge-muted"
       }`}
     >
-      {label}
+      <span>{label}</span>
+      {description && (
+        <span className="mt-0.5 block text-xs font-normal opacity-90">
+          {description}
+        </span>
+      )}
     </button>
   );
 }

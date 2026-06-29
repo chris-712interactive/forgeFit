@@ -9,13 +9,17 @@ Supabase Auth, multi-step onboarding wizard, mobile bottom nav shell.
 
 ## Steps
 
-1. Goal selection (fat loss, bodybuilding, powerlifting, strength, recomposition)
-2. Experience level (beginner, intermediate, advanced)
-3. Body measurements (required + optional)
-4. Equipment inventory
-5. Recovery equipment
-6. Time budget (sessions/week × minutes)
-7. "Why I started" (motivation field)
+1. Health disclaimer
+2. Goal selection (fat loss, bodybuilding, powerlifting, strength, recomposition)
+3. Experience level (beginner, intermediate, advanced)
+4. About you (name, date of birth)
+5. Body measurements (required + optional)
+6. Body composition targets (fat-loss pace / recomp priority + optional goal weight — fat loss & recomp only)
+7. Equipment inventory
+8. Recovery equipment
+9. Time budget (sessions/week × minutes)
+10. "Why I started" (motivation field)
+11. PWA install prompt
 
 ## DB Migrations
 
@@ -36,7 +40,7 @@ Supabase Auth, multi-step onboarding wizard, mobile bottom nav shell.
 |-------|---------|
 | `/login`, `/signup` | Auth |
 | `/auth/callback` | OAuth handler |
-| `/onboarding` | 7-step wizard |
+| `/onboarding` | 11-step wizard |
 | `/home`, `/workout`, `/nutrition`, `/progress`, `/profile` | App shell |
 
 See [supabase-setup.md](../supabase-setup.md) for credentials.

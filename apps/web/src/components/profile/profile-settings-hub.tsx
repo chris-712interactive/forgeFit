@@ -25,7 +25,9 @@ import type { IntegrationPublicStatus } from "@/lib/integrations/types";
 import type { UserOneRepMaxRow } from "@/lib/progression/user-maxes";
 import type {
   ExperienceLevel,
+  FatLossPace,
   FitnessGoal,
+  RecompPriority,
   UnitSystem,
 } from "@/lib/types/profile";
 import type { IntegrationProvider } from "@forgefit/integrations";
@@ -55,6 +57,10 @@ interface ProfileSettingsHubProps {
   weighInPush: WeighInPushSettings;
   unit: UnitSystem;
   initialGoal: FitnessGoal | null;
+  initialFatLossPace: FatLossPace | null;
+  initialRecompPriority: RecompPriority | null;
+  initialGoalWeightKg: number | null;
+  initialCurrentWeightKg: number | null;
   initialSessionsPerWeek: number | null;
   initialMinutesPerSession: number | null;
   equipmentSettings: UserEquipmentSettings;
@@ -87,6 +93,10 @@ export function ProfileSettingsHub({
   weighInPush,
   unit,
   initialGoal,
+  initialFatLossPace,
+  initialRecompPriority,
+  initialGoalWeightKg,
+  initialCurrentWeightKg,
   initialSessionsPerWeek,
   initialMinutesPerSession,
   equipmentSettings,
@@ -199,6 +209,10 @@ export function ProfileSettingsHub({
         <div className="space-y-4">
           <ProgramPlanSetting
             initialGoal={initialGoal}
+            initialFatLossPace={initialFatLossPace}
+            initialRecompPriority={initialRecompPriority}
+            initialGoalWeightKg={initialGoalWeightKg}
+            initialCurrentWeightKg={initialCurrentWeightKg}
             initialSessionsPerWeek={initialSessionsPerWeek}
             initialMinutesPerSession={initialMinutesPerSession}
           />

@@ -50,3 +50,18 @@ test("projectWeight falls back to goal rate without training-aware nutrition", (
   assert.equal(projection.ruleId, "fat_loss_rate");
   assert.equal(projection.effectiveDeficitKcal, undefined);
 });
+
+test("projectWeight computes goal reach date from goal weight", () => {
+  const projection = projectWeight({
+    history: [{ date: "2026-06-08", weightKg: 90 }],
+    goal: "fat_loss",
+    age: 30,
+    effectiveDeficitKcal: 500,
+    goalWeightKg: 80,
+    horizonDays: 30,
+  });
+
+  assert.ok(projection.goalReachDate);
+  assert.ok(projection.daysToGoal && projection.daysToGoal > 0);
+  assert.equal(projection.goalWeightKg, 80);
+});

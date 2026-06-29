@@ -5,6 +5,7 @@ import {
   type WeightProjectionResult,
 } from "@forgefit/projection-engine";
 import type { FitnessGoal, ProgramPlan } from "@forgefit/program-engine";
+import type { FatLossPace, RecompPriority } from "@forgefit/program-engine";
 import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
 import { getSleepContext } from "@/lib/sleep/service";
@@ -63,7 +64,7 @@ async function getProfileBasics(userId: string) {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "primary_goal, age, date_of_birth, sex, weight_kg, waist_cm, chest_cm, arms_cm, legs_cm, neck_cm, hips_cm, created_at"
+      "primary_goal, fat_loss_pace, recomp_priority, goal_weight_kg, age, date_of_birth, sex, weight_kg, waist_cm, chest_cm, arms_cm, legs_cm, neck_cm, hips_cm, created_at"
     )
     .eq("id", userId)
     .single();
@@ -174,7 +175,8 @@ function buildProjection(
   age: number,
   plan: ProgramPlan | null,
   horizonDays: number,
-  includeConfidenceBand: boolean
+  includeConfidenceBand: boolean,
+  profile: Record<string, unknown> | null
 ): WeightProjectionResult | null {
   const weightHistory = measurements
     .filter((row) => row.weightKg != null && row.weightKg > 0)
@@ -195,6 +197,16 @@ function buildProjection(
     effectiveDeficitKcal: nutrition?.effectiveDeficitKcal,
     effectiveSurplusKcal: nutrition?.effectiveSurplusKcal,
     trainingKcalPerDay: nutrition?.trainingKcalPerDay,
+    fatLossPace:
+      (profile?.fat_loss_pace as FatLossPace | undefined) ??
+      nutrition?.fatLossPace,
+    recompPriority:
+      (profile?.recomp_priority as RecompPriority | undefined) ??
+      nutrition?.recompPriority,
+    goalWeightKg:
+      profile?.goal_weight_kg != null
+        ? Number(profile.goal_weight_kg)
+        : undefined,
     includeConfidenceBand,
   });
 }
@@ -287,7 +299,8 @@ export async function getProgressDashboardData(
           age,
           plan,
           gates.horizonDays,
-          gates.showConfidenceBands
+          gates.showConfidenceBands,
+          profile
         )
       : null;
 
@@ -313,6 +326,8 @@ export async function getProgressDashboardData(
   return {
     goal,
     age,
+    goalWeightKg:
+      profile?.goal_weight_kg != null ? Number(profile.goal_weight_kg) : null,
     sex: (profile?.sex as string | null) ?? null,
     measurements,
     caliperEntries,

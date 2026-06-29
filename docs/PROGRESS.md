@@ -34,6 +34,31 @@
 
 ## Session Log
 
+### 2026-06-28 — Body composition targets (pace, recomp priority, goal weight)
+
+**What was done:**
+- Added onboarding step 6 for **fat-loss pace** (steady / moderate / aggressive) and **recomp priority** (muscle / balanced / lean out), mapped to evidence `daily_deficit_kcal` min/optimal/max and recomp base deficits
+- Optional **goal weight** on onboarding + Profile → Program plan; Pro goal-date forecast uses `goalReachDate` from projection engine
+- `program-engine`: pace-aware `computeNutrition`, `describeEffectiveDeficit` UI copy clarifying recomp ~200 kcal vs fat-loss deficits
+- Migration `20260611100000_body_composition_targets.sql` — `fat_loss_pace`, `recomp_priority`, `goal_weight_kg` on `profiles`
+- Updated TDEE panel, macro summary, week schedule, and weight projection chart copy
+
+**What's next:**
+- Apply migration `20260611100000_body_composition_targets.sql` to hosted Supabase
+- Existing fat-loss users: set pace in Profile → Program plan and regenerate to refresh macros
+- Optional: prompt existing fat-loss/recomp users to set pace on next login
+
+**Blockers:** None
+
+**Files touched:**
+- `supabase/migrations/20260611100000_body_composition_targets.sql`
+- `packages/program-engine/src/body-composition.ts`, `nutrition.ts`, `types.ts`
+- `packages/projection-engine/src/weight-projection.ts`, `types.ts`
+- `apps/web/src/components/onboarding/*`, `profile/program-plan-setting.tsx`
+- `apps/web/src/app/actions/onboarding.ts`, `program.ts`
+- `apps/web/src/lib/programs/service.ts`, `measurements/service.ts`, `nutrition/tdee-service.ts`
+- `docs/phases/01-onboarding.md`, `docs/PROGRESS.md`
+
 ### 2026-06-28 — SEO guides & comparison articles
 
 **What was done:**

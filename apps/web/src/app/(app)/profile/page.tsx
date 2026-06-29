@@ -198,6 +198,16 @@ export default async function ProfilePage({
           weighInPush={weighInPush}
           unit={unit}
           initialGoal={profile?.primary_goal ?? null}
+          initialFatLossPace={profile?.fat_loss_pace ?? null}
+          initialRecompPriority={profile?.recomp_priority ?? null}
+          initialGoalWeightKg={
+            profile?.goal_weight_kg != null
+              ? Number(profile.goal_weight_kg)
+              : null
+          }
+          initialCurrentWeightKg={
+            profile?.weight_kg != null ? Number(profile.weight_kg) : null
+          }
           initialSessionsPerWeek={profile?.sessions_per_week ?? null}
           initialMinutesPerSession={profile?.minutes_per_session ?? null}
           equipmentSettings={equipmentSettings}

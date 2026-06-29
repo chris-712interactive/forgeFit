@@ -19,11 +19,15 @@ import type {
   OnboardingData,
 } from "@/lib/types/profile";
 import { AboutYouStep } from "@/components/onboarding/about-you-step";
+import {
+  BodyCompositionTargetStep,
+  bodyCompositionStepValid,
+} from "@/components/onboarding/body-composition-target-step";
 import { HealthDisclaimerStep } from "@/components/onboarding/health-disclaimer-step";
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 
 const initialData: Partial<OnboardingData> = {
   equipment: [],
@@ -77,14 +81,16 @@ export function OnboardingWizard() {
           !!data.weight_kg
         );
       case 6:
-        return (data.equipment?.length ?? 0) > 0;
+        return bodyCompositionStepValid(data);
       case 7:
-        return true;
+        return (data.equipment?.length ?? 0) > 0;
       case 8:
-        return !!data.sessions_per_week && !!data.minutes_per_session;
+        return true;
       case 9:
-        return (data.why_started?.trim().length ?? 0) >= 10;
+        return !!data.sessions_per_week && !!data.minutes_per_session;
       case 10:
+        return (data.why_started?.trim().length ?? 0) >= 10;
+      case 11:
         return true;
       default:
         return false;
@@ -148,7 +154,15 @@ export function OnboardingWizard() {
                   key={goal.value}
                   selected={data.primary_goal === goal.value}
                   onClick={() =>
-                    update({ primary_goal: goal.value as FitnessGoal })
+                    update({
+                      primary_goal: goal.value as FitnessGoal,
+                      fat_loss_pace:
+                        goal.value === "fat_loss" ? data.fat_loss_pace : undefined,
+                      recomp_priority:
+                        goal.value === "recomposition"
+                          ? data.recomp_priority
+                          : undefined,
+                    })
                   }
                   title={goal.label}
                   description={goal.description}
@@ -201,6 +215,26 @@ export function OnboardingWizard() {
 
         {step === 6 && (
           <StepShell
+            title={
+              data.primary_goal === "fat_loss"
+                ? "How fast do you want to lose fat?"
+                : data.primary_goal === "recomposition"
+                  ? "Recomp priorities"
+                  : "Body composition"
+            }
+            subtitle={
+              data.primary_goal === "fat_loss" ||
+              data.primary_goal === "recomposition"
+                ? "We tailor your calorie deficit from evidence — not a one-size 500 kcal cut."
+                : "Your goal focuses on building strength and muscle."
+            }
+          >
+            <BodyCompositionTargetStep data={data} onChange={update} />
+          </StepShell>
+        )}
+
+        {step === 7 && (
+          <StepShell
             title="What equipment do you have?"
             subtitle="Select everything available to you."
           >
@@ -241,7 +275,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 7 && (
+        {step === 8 && (
           <StepShell
             title="Recovery tools"
             subtitle="Optional — we'll weave these into your plan."
@@ -263,7 +297,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 8 && (
+        {step === 9 && (
           <StepShell
             title="How much time do you have?"
             subtitle="Any amount works — we'll make it count."
@@ -293,7 +327,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 9 && (
+        {step === 10 && (
           <StepShell
             title="Why did you start?"
             subtitle="We'll remind you of this when you need it most."
@@ -312,7 +346,7 @@ export function OnboardingWizard() {
           </StepShell>
         )}
 
-        {step === 10 && (
+        {step === 11 && (
           <StepShell
             title="Almost done"
             subtitle="Add ForgeRep to your home screen for faster access and offline workouts — optional."

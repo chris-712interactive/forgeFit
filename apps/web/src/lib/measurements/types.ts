@@ -46,6 +46,7 @@ export interface ProgressDashboardData {
   goal: FitnessGoal | null;
   age: number | null;
   sex: string | null;
+  goalWeightKg: number | null;
   measurements: BodyMeasurementRow[];
   caliperEntries: CaliperMeasurementRow[];
   projection: WeightProjectionResult | null;
