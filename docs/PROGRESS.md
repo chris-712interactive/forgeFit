@@ -34,6 +34,26 @@
 
 ## Session Log
 
+### 2026-06-28 — Nutrition diary date picker (backfill past days)
+
+**What was done:**
+- Added **Diary date** picker on Nutrition with prev/next arrows, Today/Yesterday chips, and calendar picker
+- URL param `?date=YYYY-MM-DD` drives diary, log-macros, and build-meal (90-day lookback)
+- Past-day banner + copy-from-previous-day on Browse tab for backfilling missed logs
+- Energy budget panel hidden when viewing past days (targets still shown on macro summary)
+- FAB and back links preserve selected date
+
+**What's next:**
+- Optional: show historical macro targets if plan changed since that date
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/nutrition/date-param.ts`, `page-data.ts`
+- `apps/web/src/components/nutrition/nutrition-date-picker.tsx`, `nutrition-diary.tsx`, `nutrition-fab.tsx`
+- `apps/web/src/app/(app)/nutrition/page.tsx`, `log-macros/page.tsx`, `build-meal/page.tsx`
+- `docs/PROGRESS.md`
+
 ### 2026-06-28 — Body composition targets (pace, recomp priority, goal weight)
 
 **What was done:**

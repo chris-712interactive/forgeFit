@@ -3,7 +3,12 @@ import { getNutritionPageData } from "@/lib/nutrition/page-data";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function LogMacrosPage() {
+export default async function LogMacrosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -13,13 +18,19 @@ export default async function LogMacrosPage() {
     redirect("/nutrition");
   }
 
-  const { summary, recentEntries } = await getNutritionPageData(user.id);
+  const pageData = await getNutritionPageData(user.id, params.date);
 
-  if (!summary) {
+  if (!pageData.summary) {
     redirect("/nutrition");
   }
 
   return (
-    <LogMacrosScreen summary={summary} recentEntries={recentEntries} />
+    <LogMacrosScreen
+      summary={pageData.summary}
+      recentEntries={pageData.recentEntries}
+      selectedDate={pageData.selectedDate}
+      todayIso={pageData.todayIso}
+      yesterdayIso={pageData.yesterdayIso}
+    />
   );
 }

@@ -9,6 +9,8 @@ interface LoggedEntriesProps {
   deletingId: string | null;
   onDelete: (id: string) => void;
   embedded?: boolean;
+  title?: string;
+  emptyMessage?: string;
 }
 
 export function LoggedEntries({
@@ -16,17 +18,17 @@ export function LoggedEntries({
   deletingId,
   onDelete,
   embedded = false,
+  title = "Logged today",
+  emptyMessage = "Nothing logged yet. Tap + to log macros or build a meal.",
 }: LoggedEntriesProps) {
   const content = (
     <>
       <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-        Logged today
+        {title}
       </h2>
       {entries.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
-          <p className="text-forge-muted">
-            Nothing logged yet. Tap + to log macros or build a meal.
-          </p>
+          <p className="text-forge-muted">{emptyMessage}</p>
         </div>
       ) : (
         <div className="mt-4 flex flex-col gap-3">

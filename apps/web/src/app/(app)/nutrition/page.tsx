@@ -25,15 +25,26 @@ function NutritionDiaryFallback() {
   );
 }
 
-export default async function NutritionPage() {
+export default async function NutritionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string; tab?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pageData = await getNutritionPageData(user?.id);
+  const pageData = await getNutritionPageData(user?.id, params.date);
   const {
     summary,
+    selectedDate,
+    todayIso,
+    yesterdayIso,
+    isViewingToday,
+    previousDayDate,
+    previousDayEntryCount,
     yesterdayEntryCount,
     yesterdayDate,
     restaurantSearchUnlocked,
@@ -54,7 +65,9 @@ export default async function NutritionPage() {
         Nutrition
       </h1>
       <p className="mt-1 text-sm text-forge-muted">
-        Your daily totals and logged meals — tap + to add food.
+        {isViewingToday
+          ? "Your daily totals and logged meals — tap + to add food."
+          : "Catch up on a missed day — new entries save to the date you select."}
       </p>
 
       {summary ? (
@@ -62,6 +75,12 @@ export default async function NutritionPage() {
           <Suspense fallback={<NutritionDiaryFallback />}>
             <NutritionDiary
               initialSummary={summary}
+              selectedDate={selectedDate}
+              todayIso={todayIso}
+              yesterdayIso={yesterdayIso}
+              isViewingToday={isViewingToday}
+              previousDayDate={previousDayDate}
+              previousDayEntryCount={previousDayEntryCount}
               yesterdayEntryCount={yesterdayEntryCount}
               yesterdayDate={yesterdayDate}
               restaurantSearchUnlocked={restaurantSearchUnlocked}
@@ -89,7 +108,7 @@ export default async function NutritionPage() {
         </div>
       )}
 
-      {summary ? <NutritionFab /> : null}
+      {summary ? <NutritionFab selectedDate={selectedDate} todayIso={todayIso} /> : null}
     </div>
   );
 }

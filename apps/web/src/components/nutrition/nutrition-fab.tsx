@@ -1,17 +1,25 @@
 "use client";
 
+import { buildNutritionLogHref } from "@/lib/nutrition/date-param";
 import Link from "next/link";
 import { useState } from "react";
 
-const FAB_BOTTOM =
-  "calc(5rem + env(safe-area-inset-bottom) + 0.75rem)" as const;
+interface NutritionFabProps {
+  selectedDate: string;
+  todayIso: string;
+}
 
-export function NutritionFab() {
+export function NutritionFab({ selectedDate, todayIso }: NutritionFabProps) {
   const [open, setOpen] = useState(false);
+  const dateQuery =
+    selectedDate !== todayIso ? selectedDate : undefined;
 
   function closeMenu() {
     setOpen(false);
   }
+
+  const FAB_BOTTOM =
+    "calc(5rem + env(safe-area-inset-bottom) + 0.75rem)" as const;
 
   return (
     <>
@@ -30,15 +38,20 @@ export function NutritionFab() {
       >
         {open && (
           <div className="flex flex-col items-end gap-2">
+            {selectedDate !== todayIso && (
+              <p className="rounded-full border border-forge-gold/30 bg-forge-surface-raised px-3 py-1 text-xs font-medium text-forge-muted shadow-lg">
+                Logging for {selectedDate}
+              </p>
+            )}
             <Link
-              href="/nutrition/log-macros"
+              href={buildNutritionLogHref("log-macros", dateQuery)}
               onClick={closeMenu}
               className="flex min-h-[48px] items-center rounded-full border border-[var(--border)] bg-forge-surface-raised px-5 py-3 font-display text-sm font-semibold text-forge-text shadow-lg transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
             >
               Log macros
             </Link>
             <Link
-              href="/nutrition/build-meal"
+              href={buildNutritionLogHref("build-meal", dateQuery)}
               onClick={closeMenu}
               className="flex min-h-[48px] items-center rounded-full border border-[var(--border)] bg-forge-surface-raised px-5 py-3 font-display text-sm font-semibold text-forge-text shadow-lg transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
             >
