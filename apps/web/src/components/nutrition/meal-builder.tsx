@@ -4,14 +4,15 @@ import {
   buildLineItem,
   formatLineItemPortion,
   rescaleLineItem,
-  searchWholeFoods,
   sumLineItems,
   WHOLE_FOOD_GROUPS,
   WHOLE_FOOD_GROUP_LABELS,
   type MealLineItem,
   type WholeFood,
-  type WholeFoodGroup,
 } from "@forgefit/nutrition-core";
+import { searchBuilderFoods, type BuilderFoodFilter } from "@/lib/nutrition/builder-foods";
+import { MealTypePicker } from "@/components/nutrition/meal-type-picker";
+import { getPreferredMealType, type MealType } from "@/lib/nutrition/meal-types";
 import {
   createCategoryId,
   formatServingsLabel,
@@ -81,7 +82,8 @@ export function MealBuilder({
   const [lineItems, setLineItems] = useState<MealLineItem[]>([]);
   const [servings, setServings] = useState(1);
   const [query, setQuery] = useState("");
-  const [groupFilter, setGroupFilter] = useState<WholeFoodGroup | "all">("all");
+  const [groupFilter, setGroupFilter] = useState<BuilderFoodFilter>("all");
+  const [mealType, setMealType] = useState<MealType>(() => getPreferredMealType());
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,7 @@ export function MealBuilder({
     }
     setQuery("");
     setGroupFilter("all");
+    setMealType(getPreferredMealType());
     setShowNewCategory(false);
     setNewCategoryName("");
     setError(null);
@@ -121,11 +124,7 @@ export function MealBuilder({
   }, [open]);
 
   const foods = useMemo(
-    () =>
-      searchWholeFoods(
-        query,
-        groupFilter === "all" ? undefined : groupFilter
-      ).slice(0, 24),
+    () => searchBuilderFoods(query, groupFilter).slice(0, 24),
     [query, groupFilter]
   );
 
@@ -249,6 +248,7 @@ export function MealBuilder({
               : "1 serving",
           lineItems: getPerServingLineItems(meal),
           servingsLogged: 1,
+          mealType,
         });
         router.refresh();
       }
@@ -354,6 +354,8 @@ export function MealBuilder({
               onToggleNewCategory={() => setShowNewCategory((v) => !v)}
               onNewCategoryNameChange={setNewCategoryName}
               onAddCategory={handleAddCategory}
+              mealType={mealType}
+              onMealTypeChange={setMealType}
             />
           )}
 
@@ -487,10 +489,10 @@ function StepIngredients({
   lineItems: MealLineItem[];
   totals: ReturnType<typeof sumLineItems>;
   query: string;
-  groupFilter: WholeFoodGroup | "all";
+  groupFilter: BuilderFoodFilter;
   foods: WholeFood[];
   onQueryChange: (value: string) => void;
-  onGroupFilterChange: (value: WholeFoodGroup | "all") => void;
+  onGroupFilterChange: (value: BuilderFoodFilter) => void;
   onAddFood: (food: WholeFood) => void;
   onUpdateQuantity: (id: string, quantity: number) => void;
 }) {
@@ -559,6 +561,11 @@ function StepIngredients({
             active={groupFilter === "all"}
             onClick={() => onGroupFilterChange("all")}
           />
+          <FilterChip
+            label="My foods"
+            active={groupFilter === "custom"}
+            onClick={() => onGroupFilterChange("custom")}
+          />
           {GROUPS.map((group) => (
             <FilterChip
               key={group}
@@ -591,7 +598,12 @@ function StepIngredients({
               </button>
             </li>
           ))}
-          {foods.length === 0 && query.trim().length >= 2 && (
+          {foods.length === 0 && groupFilter === "custom" && (
+            <li className="py-4 text-center text-sm text-forge-muted">
+              No custom foods yet. Save one from a diary entry or log macros.
+            </li>
+          )}
+          {foods.length === 0 && query.trim().length >= 2 && groupFilter !== "custom" && (
             <IngredientSuggestionPanel
               key={query.trim().toLowerCase()}
               searchQuery={query.trim()}
@@ -632,6 +644,8 @@ function StepSave({
   onToggleNewCategory,
   onNewCategoryNameChange,
   onAddCategory,
+  mealType,
+  onMealTypeChange,
 }: {
   name: string;
   lineItems: MealLineItem[];
@@ -647,6 +661,8 @@ function StepSave({
   onToggleNewCategory: () => void;
   onNewCategoryNameChange: (value: string) => void;
   onAddCategory: () => void;
+  mealType: MealType;
+  onMealTypeChange: (mealType: MealType) => void;
 }) {
   const previewMeal = {
     name,
@@ -712,6 +728,16 @@ function StepSave({
             className={`${inputClass} mt-2 text-sm`}
           />
         </label>
+      </section>
+
+      <section className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
+        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-forge-muted">
+          Log to meal
+        </span>
+        <p className="mb-2 text-xs text-forge-muted">
+          When you tap Save &amp; log today, this goes to the selected meal slot.
+        </p>
+        <MealTypePicker value={mealType} onChange={onMealTypeChange} compact />
       </section>
 
       <section>

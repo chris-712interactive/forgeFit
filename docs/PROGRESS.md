@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-28 |
-| **Last session focus** | SEO guides & comparison articles |
+| **Last session focus** | Tier 2 nutrition diary UX |
 
 ---
 
@@ -33,6 +33,63 @@
 ---
 
 ## Session Log
+
+### 2026-06-28 — Tier 2 nutrition diary UX
+
+**What was done:**
+- **Meal picker everywhere** — restaurant log, build-meal save & log; preferred meal slot persists in localStorage
+- **Copy yesterday on Diary tab** — one tap when previous day has entries (compact when today already has logs)
+- **Custom foods (My foods)** — save from diary row, quick log, or log-macros; searchable in meal builder with dedicated filter
+- **Per-meal budget hints** — meal group headers show logged vs ~target kcal and protein (25/30/10/35 split)
+
+**What's next:**
+- Logging streak on Home; selective barcode/OFF re-entry for packaged foods
+- MFP partner API (user sends email)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/nutrition/meal-budgets.ts`, `custom-foods.ts`, `builder-foods.ts`, `meal-types.ts`, `log-entry.ts`, `meal-budgets.test.ts`
+- `apps/web/src/components/nutrition/copy-day-panel.tsx`, `logged-entries.tsx`, `nutrition-diary.tsx`, `restaurant-search-panel.tsx`, `meal-builder.tsx`, `quick-macro-log.tsx`, `meal-type-picker.tsx`
+- `docs/phases/04-nutrition.md`, `docs/PROGRESS.md`
+
+### 2026-06-28 — Whole-foods: lamb, herbs, onions, spices
+
+**What was done:**
+- Added 12 ingredients to `@forgefit/nutrition-core` whole-foods library: ground lamb, fresh mint/parsley/basil/thyme, red/white/yellow onion, cumin, salt, black pepper, dried oregano/thyme
+
+**What's next:**
+- Expand whole-foods from user-built meals as needed
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
+### 2026-06-28 — Tier 1 nutrition diary UX (MFP-inspired)
+
+**What was done:**
+- **Meal slots** — breakfast/lunch/dinner/snack picker on quick log and saved-meal log sheet; defaults from time of day; diary groups entries by meal with subtotals
+- **Edit entries** — `PATCH /api/nutrition/logs/[id]` + edit sheet (name, macros, meal)
+- **Log again** — one tap on diary rows; preserves meal slot and line items
+- **Favorites** — pin entries or quick-log cards via localStorage (`forgefit:nutrition-favorites`)
+- **Quick log on diary home** — recents, favorites, and common presets without opening Log tab
+- **Remaining highlight** — calories + protein left under compact macro summary
+- **Copy day fix** — preserves `line_items` and `servings_logged` when copying a day
+
+**What's next:**
+- Tier 2: meal slot on restaurant/build-meal flows, copy-day UX polish
+- MFP partner API email (blocked on user sending)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/nutrition/meal-types.ts`, `favorites.ts`, `log-entry.ts`, `meal-types.test.ts`
+- `apps/web/src/app/api/nutrition/logs/[id]/route.ts`, `copy-day/route.ts`
+- `apps/web/src/components/nutrition/meal-type-picker.tsx`, `edit-entry-sheet.tsx`, `diary-quick-log.tsx`, `logged-entries.tsx`, `nutrition-diary.tsx`, `quick-macro-log.tsx`, `log-meal-sheet.tsx`, `macro-summary.tsx`
+- `apps/web/src/app/(app)/nutrition/page.tsx`
+- `docs/phases/04-nutrition.md`, `docs/PROGRESS.md`
 
 ### 2026-06-28 — Nutrition diary date picker (backfill past days)
 

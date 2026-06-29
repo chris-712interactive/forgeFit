@@ -1,7 +1,10 @@
 "use client";
 
 import type { MacroTotals } from "@forgefit/nutrition-core";
+import { MealTypePicker } from "@/components/nutrition/meal-type-picker";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
+import { saveCustomFood } from "@/lib/nutrition/custom-foods";
+import { getPreferredMealType, type MealType } from "@/lib/nutrition/meal-types";
 import type { NutritionTargets } from "@forgefit/program-engine";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
@@ -88,6 +91,7 @@ export function QuickMacroLog({
   const [fatG, setFatG] = useState(
     initialValues?.fatG != null ? String(initialValues.fatG) : ""
   );
+  const [mealType, setMealType] = useState<MealType>(() => getPreferredMealType());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,6 +129,7 @@ export function QuickMacroLog({
         carbsG: draft.carbsG,
         fatG: draft.fatG,
         loggedDate,
+        mealType,
       });
 
       setName("");
@@ -148,6 +153,27 @@ export function QuickMacroLog({
     }
     setError(null);
     onSaveMeal?.(draft);
+  }
+
+  function handleSaveCustomFood() {
+    const draft = buildDraft(name, calories, proteinG, carbsG, fatG);
+    if (!draft) {
+      setError("Enter macros before saving to My foods.");
+      return;
+    }
+    setError(null);
+    try {
+      saveCustomFood({
+        name: draft.name,
+        calories: draft.calories,
+        proteinG: draft.proteinG,
+        carbsG: draft.carbsG,
+        fatG: draft.fatG,
+      });
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save food.");
+    }
   }
 
   return (
@@ -191,11 +217,18 @@ export function QuickMacroLog({
         })}
       </div>
 
+      <label className="block">
+        <span className="mb-1.5 block text-xs font-semibold text-forge-muted">
+          Meal
+        </span>
+        <MealTypePicker value={mealType} onChange={setMealType} compact />
+      </label>
+
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Label optional (e.g. Lunch, Shake)"
+        placeholder="Label optional (e.g. Greek yogurt, Shake)"
         className={inputClass}
       />
 
@@ -223,6 +256,13 @@ export function QuickMacroLog({
             Save meal
           </button>
         )}
+        <button
+          type="button"
+          onClick={handleSaveCustomFood}
+          className="flex min-h-[52px] flex-1 items-center justify-center rounded-xl border border-[var(--border)] bg-forge-surface font-display text-sm font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
+        >
+          Save food
+        </button>
       </div>
     </form>
   );

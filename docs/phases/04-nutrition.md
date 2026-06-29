@@ -14,8 +14,11 @@ USDA + Open Food Facts search, daily macro diary, targets from evidence engine.
 - [x] `GET /api/nutrition/search?q=` — legacy USDA + OFF lookup (removed from UI; whole-foods in-repo)
 - [x] `GET/POST /api/nutrition/logs` — daily diary CRUD
 - [x] `DELETE /api/nutrition/logs/[id]` — remove entry
+- [x] `PATCH /api/nutrition/logs/[id]` — edit entry macros, name, meal slot (2026-06-28)
 - [x] Nutrition tab UI — macro progress vs program targets, search, log list; Log tab optimized for fast manual macro entry (2026-06-19)
 - [x] **Diary date picker** — view/log any day up to 90 days back via `?date=` (2026-06-28)
+- [x] **Tier 1 diary UX** — meal slots, edit entries, log again, device favorites, quick log on diary home (2026-06-28)
+- [x] **Tier 2 diary UX** — meal picker on all log paths, copy day on diary, custom foods, per-meal budget hints (2026-06-28)
 - [x] **My Meals** library — saved meals with user-defined categories, ingredient line items, one-time log adjustments (localStorage; 2026-06-19)
 - [x] Ingredient suggestion flow — users submit missing items from meal builder; stored in Supabase + optional email alert (2026-06-19)
 

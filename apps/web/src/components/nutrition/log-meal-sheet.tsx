@@ -11,7 +11,9 @@ import {
   sumLineItems,
   type MealLineItem,
 } from "@forgefit/nutrition-core";
+import { MealTypePicker } from "@/components/nutrition/meal-type-picker";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
+import { getPreferredMealType, type MealType } from "@/lib/nutrition/meal-types";
 import {
   formatMacroLine,
   formatServingsLabel,
@@ -43,6 +45,7 @@ export function LogMealSheet({
   const [proteinG, setProteinG] = useState("");
   const [carbsG, setCarbsG] = useState("");
   const [fatG, setFatG] = useState("");
+  const [mealType, setMealType] = useState<MealType>(() => getPreferredMealType());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +70,7 @@ export function LogMealSheet({
       setFatG(String(meal.fatG));
     }
     setError(null);
+    setMealType(getPreferredMealType());
   }, [open, meal]);
 
   useEffect(() => {
@@ -132,6 +136,7 @@ export function LogMealSheet({
         carbsG: totals.carbsG,
         fatG: totals.fatG,
         loggedDate,
+        mealType,
         servingDescription: servingDesc,
         lineItems: hasItems ? lineItems : undefined,
         servingsLogged: hasItems ? servingsEating : undefined,
@@ -185,12 +190,19 @@ export function LogMealSheet({
 
           <div className="mt-4 rounded-xl border border-forge-ember/25 bg-forge-ember/5 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
-              Today&apos;s total
+              Total for this log
             </p>
             <p className="font-display text-lg font-bold text-forge-text">
               {formatMacroLine(totals)}
             </p>
           </div>
+
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-xs font-semibold text-forge-muted">
+              Meal
+            </span>
+            <MealTypePicker value={mealType} onChange={setMealType} compact />
+          </label>
 
           {hasItems && (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-2.5">

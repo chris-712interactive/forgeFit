@@ -1,7 +1,9 @@
 "use client";
 
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
+import { MealTypePicker } from "@/components/nutrition/meal-type-picker";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
+import { getPreferredMealType, type MealType } from "@/lib/nutrition/meal-types";
 import {
   listRestaurantChains,
   searchRestaurantMenu,
@@ -27,6 +29,7 @@ export function RestaurantSearchPanel({
   const [loggingId, setLoggingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveAfterLog, setSaveAfterLog] = useState(true);
+  const [mealType, setMealType] = useState<MealType>(() => getPreferredMealType());
 
   const results = useMemo(
     () => (unlocked ? searchRestaurantMenu(query) : []),
@@ -48,6 +51,7 @@ export function RestaurantSearchPanel({
         carbsG: hit.item.carbsG,
         fatG: hit.item.fatG,
         loggedDate,
+        mealType,
       });
 
       if (saveMeal) {
@@ -115,6 +119,13 @@ export function RestaurantSearchPanel({
               className="size-4 rounded border-[var(--border)]"
             />
             Save logged meals to My Meals (pick a category)
+          </label>
+
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-xs font-semibold text-forge-muted">
+              Log to meal
+            </span>
+            <MealTypePicker value={mealType} onChange={setMealType} compact />
           </label>
 
           {query.trim().length >= 2 && results.length === 0 && (

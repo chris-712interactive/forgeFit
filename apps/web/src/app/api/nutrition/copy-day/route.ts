@@ -67,6 +67,8 @@ export async function POST(request: Request) {
     protein_g: row.protein_g,
     fat_g: row.fat_g,
     carbs_g: row.carbs_g,
+    line_items: row.line_items,
+    servings_logged: row.servings_logged,
     updated_at: now,
   }));
 

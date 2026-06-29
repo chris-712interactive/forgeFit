@@ -75,6 +75,7 @@ export default async function NutritionPage({
           <Suspense fallback={<NutritionDiaryFallback />}>
             <NutritionDiary
               initialSummary={summary}
+              recentEntries={pageData.recentEntries}
               selectedDate={selectedDate}
               todayIso={todayIso}
               yesterdayIso={yesterdayIso}

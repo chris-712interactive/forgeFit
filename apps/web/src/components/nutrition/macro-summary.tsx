@@ -16,6 +16,8 @@ interface MacroSummaryProps {
   variant?: "default" | "compact";
   /** Hide training/TDEE footnotes and evidence links (e.g. home snapshot → nutrition) */
   showTargetDetails?: boolean;
+  /** Prominent calories + protein remaining line (diary home) */
+  showRemainingHighlight?: boolean;
 }
 
 export function MacroSummary({
@@ -25,6 +27,7 @@ export function MacroSummary({
   embedded = false,
   variant = "default",
   showTargetDetails = true,
+  showRemainingHighlight = false,
 }: MacroSummaryProps) {
   const items = [
     {
@@ -150,6 +153,12 @@ export function MacroSummary({
         })}
       </div>
 
+      {showRemainingHighlight && targets && (
+        <p className="mt-3 text-sm font-medium text-forge-steel">
+          {formatRemainingHighlight(totals, targets)}
+        </p>
+      )}
+
       {showTargetDetails &&
         targets?.trainingKcalPerDay != null &&
         targets.trainingLoad && (
@@ -252,4 +261,23 @@ export function MacroSummary({
 
 function formatAmount(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function formatRemainingHighlight(
+  totals: MacroTotals,
+  targets: NutritionTargets
+): string {
+  const parts: string[] = [];
+
+  if (targets.calories != null && targets.calories > 0) {
+    const left = Math.round(targets.calories - totals.calories);
+    parts.push(left <= 0 ? "Calories at target" : `${left} cal left`);
+  }
+
+  if (targets.proteinG != null && targets.proteinG > 0) {
+    const left = Math.round(targets.proteinG - totals.proteinG);
+    parts.push(left <= 0 ? "Protein at target" : `${left}g protein left`);
+  }
+
+  return parts.join(" · ");
 }

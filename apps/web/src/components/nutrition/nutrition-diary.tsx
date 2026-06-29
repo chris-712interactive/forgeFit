@@ -1,12 +1,15 @@
 "use client";
 
 import type { TdeeDashboard } from "@/lib/nutrition/tdee-service";
-import { formatNutritionDayShort } from "@/lib/nutrition/date-param";
-import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { appSectionStack } from "@/components/layout/page-layout";
 import { NutritionDatePicker } from "@/components/nutrition/nutrition-date-picker";
+import { CopyDayPanel } from "@/components/nutrition/copy-day-panel";
+import { DiaryQuickLog } from "@/components/nutrition/diary-quick-log";
+import { EditEntrySheet } from "@/components/nutrition/edit-entry-sheet";
+import { formatNutritionDayShort } from "@/lib/nutrition/date-param";
+import type { DailyNutritionSummary, MacroQuickEntry, NutritionLogRow } from "@/lib/nutrition/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoggedEntries } from "./logged-entries";
@@ -31,6 +34,7 @@ function parseTab(value: string | null): DiaryTab {
 
 interface NutritionDiaryProps {
   initialSummary: DailyNutritionSummary;
+  recentEntries: MacroQuickEntry[];
   selectedDate: string;
   todayIso: string;
   yesterdayIso: string;
@@ -45,6 +49,7 @@ interface NutritionDiaryProps {
 
 export function NutritionDiary({
   initialSummary,
+  recentEntries,
   selectedDate,
   todayIso,
   yesterdayIso,
@@ -66,6 +71,7 @@ export function NutritionDiary({
   const [copyError, setCopyError] = useState<string | null>(null);
   const [mealsVersion, setMealsVersion] = useState(0);
   const [saveDraft, setSaveDraft] = useState<SaveMealDraft | null>(null);
+  const [editingEntry, setEditingEntry] = useState<NutritionLogRow | null>(null);
 
   const entryCount = initialSummary.entries.length;
   const copySourceDate = isViewingToday ? yesterdayDate : previousDayDate;
@@ -167,8 +173,27 @@ export function NutritionDiary({
                 variant="compact"
                 embedded
                 showTargetDetails={false}
+                showRemainingHighlight
               />
             </section>
+
+            <DiaryQuickLog
+              loggedDate={initialSummary.date}
+              recentEntries={recentEntries}
+            />
+
+            {copySourceCount > 0 && (
+              <CopyDayPanel
+                isViewingToday={isViewingToday}
+                selectedDate={selectedDate}
+                copySourceDate={copySourceDate}
+                copySourceCount={copySourceCount}
+                copying={copying}
+                copyError={copyError}
+                onCopy={() => void handleCopyFromPreviousDay()}
+                compact={entryCount > 0}
+              />
+            )}
 
             {tdeeDashboard && isViewingToday && (
               <TdeeEnergyPanel dashboard={tdeeDashboard} />
@@ -177,8 +202,11 @@ export function NutritionDiary({
             <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
               <LoggedEntries
                 entries={initialSummary.entries}
+                loggedDate={initialSummary.date}
+                targets={initialSummary.targets}
                 deletingId={deletingId}
                 onDelete={(id) => void handleDelete(id)}
+                onEdit={setEditingEntry}
                 embedded
                 title={isViewingToday ? "Logged today" : "Logged this day"}
                 emptyMessage={
@@ -212,32 +240,6 @@ export function NutritionDiary({
             <CollapsibleSection title="Example plates" hint="Scaled to your targets">
               <MealPlateExamples targets={initialSummary.targets} embedded />
             </CollapsibleSection>
-
-            {copySourceCount > 0 && (
-              <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-                <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-                  {isViewingToday ? "Copy yesterday" : "Copy previous day"}
-                </h2>
-                <p className="mt-1 text-sm text-forge-muted">
-                  {isViewingToday
-                    ? "Duplicate everything you logged yesterday onto today."
-                    : `Fill ${formatNutritionDayShort(selectedDate)} from ${formatNutritionDayShort(copySourceDate)}.`}
-                </p>
-                <button
-                  type="button"
-                  disabled={copying}
-                  onClick={() => void handleCopyFromPreviousDay()}
-                  className="mt-3 rounded-xl bg-forge-surface px-4 py-2.5 text-sm font-semibold text-forge-steel ring-1 ring-[var(--border)] transition-colors hover:text-forge-ember disabled:opacity-50"
-                >
-                  {copying
-                    ? "Copying…"
-                    : `Copy ${copySourceCount} ${copySourceCount === 1 ? "entry" : "entries"}`}
-                </button>
-                {copyError && (
-                  <p className="mt-2 text-sm text-forge-coral">{copyError}</p>
-                )}
-              </section>
-            )}
           </div>
         )}
 
@@ -260,6 +262,12 @@ export function NutritionDiary({
           setMealsVersion((version) => version + 1);
           setSaveDraft(null);
         }}
+      />
+
+      <EditEntrySheet
+        open={editingEntry != null}
+        entry={editingEntry}
+        onClose={() => setEditingEntry(null)}
       />
     </>
   );
