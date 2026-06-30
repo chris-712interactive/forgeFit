@@ -1,5 +1,5 @@
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
+import { appHeaderGap, appPagePadding, appSectionStack } from "@/components/layout/page-layout";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { LegalFooter } from "@/components/legal/legal-document";
 import { PrivacyDataSetting } from "@/components/profile/privacy-data-setting";
@@ -166,7 +166,7 @@ export default async function ProfilePage({
       <h1 className="font-display text-2xl font-bold text-forge-text">Profile</h1>
       <p className="mt-2 text-forge-muted">{user?.email}</p>
 
-      <div className={appHeaderGap}>
+      <div className={`${appHeaderGap} ${appSectionStack}`}>
         <ProfileSettingsHub
           subscription={subscription}
           stripeConfigured={isStripeProConfigured()}
@@ -229,23 +229,28 @@ export default async function ProfilePage({
           spotifyError={spotifyError}
         />
 
-        <LegalFooter />
+        <section
+          aria-label="Account actions"
+          className="flex flex-col gap-4 border-t border-[var(--border)] pt-6 sm:gap-5 sm:pt-8"
+        >
+          {user?.email && (
+            <CollapsibleSection title="Privacy & data" hint="Export or delete">
+              <p className="mb-4 text-xs text-forge-muted">
+                Download everything ForgeRep stores about you, or permanently delete
+                your account and all associated data.
+              </p>
+              <PrivacyDataSetting
+                email={user.email}
+                userId={user.id}
+                canExport={hasProAccess(subscription)}
+              />
+            </CollapsibleSection>
+          )}
 
-        {user?.email && (
-          <CollapsibleSection title="Privacy & data" hint="Export or delete">
-            <p className="mb-4 text-xs text-forge-muted">
-              Download everything ForgeRep stores about you, or permanently delete
-              your account and all associated data.
-            </p>
-            <PrivacyDataSetting
-              email={user.email}
-              userId={user.id}
-              canExport={hasProAccess(subscription)}
-            />
-          </CollapsibleSection>
-        )}
+          <SignOutButton />
 
-        <SignOutButton />
+          <LegalFooter className="pt-1 text-center text-xs sm:pt-2" />
+        </section>
       </div>
     </div>
   );
