@@ -4,7 +4,7 @@ import type { MacroTotals } from "@forgefit/nutrition-core";
 import { MealTypePicker } from "@/components/nutrition/meal-type-picker";
 import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
 import { saveCustomFood } from "@/lib/nutrition/custom-foods";
-import { getPreferredMealType, type MealType } from "@/lib/nutrition/meal-types";
+import { getPreferredMealType, persistPreferredMealType, type MealType } from "@/lib/nutrition/meal-types";
 import type { NutritionTargets } from "@forgefit/program-engine";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
@@ -15,6 +15,7 @@ interface QuickMacroLogProps {
   totals: MacroTotals;
   targets: NutritionTargets | null;
   initialValues?: Partial<SaveMealDraft>;
+  initialMealType?: MealType;
   onSaveMeal?: (draft: SaveMealDraft) => void;
 }
 
@@ -74,6 +75,7 @@ export function QuickMacroLog({
   totals,
   targets,
   initialValues,
+  initialMealType,
   onSaveMeal,
 }: QuickMacroLogProps) {
   const router = useRouter();
@@ -91,7 +93,13 @@ export function QuickMacroLog({
   const [fatG, setFatG] = useState(
     initialValues?.fatG != null ? String(initialValues.fatG) : ""
   );
-  const [mealType, setMealType] = useState<MealType>(() => getPreferredMealType());
+  const [mealType, setMealType] = useState<MealType>(() => {
+    if (initialMealType) {
+      persistPreferredMealType(initialMealType);
+      return initialMealType;
+    }
+    return getPreferredMealType();
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

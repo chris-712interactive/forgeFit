@@ -1,4 +1,5 @@
 import { addDaysIso } from "@/lib/datetime/local-date";
+import { isMealType, type MealType } from "@/lib/nutrition/meal-types";
 
 export const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -52,10 +53,12 @@ export function buildNutritionHref(options?: {
   date?: string;
   tab?: string;
   hash?: string;
+  meal?: MealType;
 }): string {
   const params = new URLSearchParams();
   if (options?.date) params.set("date", options.date);
   if (options?.tab && options.tab !== "today") params.set("tab", options.tab);
+  if (options?.meal) params.set("meal", options.meal);
 
   const query = params.toString();
   const hash = options?.hash ? `#${options.hash}` : "";
@@ -64,8 +67,26 @@ export function buildNutritionHref(options?: {
 
 export function buildNutritionLogHref(
   path: "log-macros" | "build-meal",
-  date?: string
+  options?: { date?: string; meal?: MealType }
 ): string {
-  if (!date) return `/nutrition/${path}`;
-  return `/nutrition/${path}?date=${date}`;
+  const params = new URLSearchParams();
+  if (options?.date) params.set("date", options.date);
+  if (options?.meal) params.set("meal", options.meal);
+
+  const query = params.toString();
+  return query ? `/nutrition/${path}?${query}` : `/nutrition/${path}`;
+}
+
+/** Deep link after a workout — pre-selects meal slot on log-macros. */
+export function buildPostWorkoutNutritionHref(options?: {
+  date?: string;
+  meal?: MealType;
+}): string {
+  return buildNutritionLogHref("log-macros", options);
+}
+
+export function parseNutritionMealParam(
+  value: string | null | undefined
+): MealType | undefined {
+  return isMealType(value) ? value : undefined;
 }

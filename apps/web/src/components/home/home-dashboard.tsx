@@ -1,6 +1,7 @@
 "use client";
 
 import { WeighInReminderBanner } from "@/components/measurements/weigh-in-reminder-banner";
+import { HomeIntegratedLoop } from "@/components/home/home-integrated-loop";
 import { HomeProgressShortcut } from "@/components/home/home-progress-shortcut";
 import { CommunitySection } from "@/components/home/community-section";
 import { HomeNotificationsStrip } from "@/components/home/home-notifications-strip";
@@ -8,7 +9,6 @@ import { BirthdayBanner } from "@/components/home/birthday-banner";
 import { HomeTodaySnapshot } from "@/components/home/home-today-snapshot";
 import { ProInsightsStrip } from "@/components/home/pro-insights-strip";
 import { WeeklyScorecardStrip } from "@/components/home/weekly-scorecard-strip";
-import { WeekAccountability } from "@/components/home/week-accountability";
 import { WeeklyWorkStatsGrid } from "@/components/home/weekly-work-stats";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
@@ -40,8 +40,10 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
       )}
 
       {data.plan ? (
-        <WeekAccountability
+        <HomeIntegratedLoop
+          plan={data.plan}
           stats={data.weeklyStats}
+          nutrition={data.nutrition}
           nextSessionDayIndex={data.nextSessionDayIndex}
           nextSessionName={data.nextSessionName}
         />
@@ -51,11 +53,7 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         </p>
       )}
 
-      <HomeTodaySnapshot
-        nutrition={data.nutrition}
-        activity={data.activity}
-        sleep={data.sleep}
-      />
+      <HomeTodaySnapshot activity={data.activity} sleep={data.sleep} />
 
       <HomeProgressShortcut />
 

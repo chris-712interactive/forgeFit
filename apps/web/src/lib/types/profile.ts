@@ -48,6 +48,7 @@ export interface Profile {
   unit_system: UnitSystem;
   experience_promoted_at: string | null;
   promotion_snoozed_until: string | null;
+  signup_source: string | null;
   subscription_tier?: "free" | "pro" | "pro_plus";
   subscription_status?:
     | "inactive"
@@ -91,4 +92,5 @@ export interface OnboardingData {
   minutes_per_session: number;
   why_started: string;
   health_disclaimer_accepted: boolean;
+  signup_source?: string;
 }

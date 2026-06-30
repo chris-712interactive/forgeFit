@@ -146,6 +146,20 @@ export const RECOVERY_EQUIPMENT = [
 export const SESSIONS_PER_WEEK_OPTIONS = [2, 3, 4, 5, 6];
 export const MINUTES_PER_SESSION_OPTIONS = [20, 30, 45, 60, 75, 90];
 
+export const SIGNUP_SOURCE_OPTIONS = [
+  { value: "myfitnesspal", label: "MyFitnessPal" },
+  { value: "strong", label: "Strong" },
+  { value: "hevy", label: "Hevy" },
+  { value: "macrofactor", label: "MacroFactor" },
+  { value: "fitbod", label: "Fitbod" },
+  { value: "friend", label: "Friend or coach" },
+  { value: "social", label: "Social media" },
+  { value: "search", label: "Search" },
+  { value: "other", label: "Other" },
+] as const;
+
+export type SignupSource = (typeof SIGNUP_SOURCE_OPTIONS)[number]["value"];
+
 export const HEALTH_DISCLAIMER = {
   title: "Before we begin",
   paragraphs: [

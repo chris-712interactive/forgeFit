@@ -30,6 +30,7 @@ import {
 import { WorkoutSyncNotice } from "./workout-sync-notice";
 import { WorkoutDeviceIntensityCard } from "./workout-device-intensity-card";
 import { WorkoutRankDeltaCard } from "@/components/coaching/workout-rank-delta-card";
+import { PostWorkoutNutritionNudge } from "@/components/workout/post-workout-nutrition-nudge";
 import type { LeaderboardRankDelta } from "@/lib/coaching/types";
 import type { WorkoutDeviceMetricsRecord } from "@/lib/workouts/device-metrics-types";
 
@@ -100,6 +101,8 @@ export function WorkoutRecap({
       />
 
       {rankDelta && <WorkoutRankDeltaCard rankDelta={rankDelta} />}
+
+      <PostWorkoutNutritionNudge />
 
       {prior && (
         <p className="mt-3 rounded-xl border border-forge-steel/20 bg-forge-surface-raised px-3 py-2 text-sm text-forge-muted">

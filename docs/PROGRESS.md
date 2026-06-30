@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Watermark workout phase row |
+| **Last session focus** | MFP Q3 loop — Home train & fuel, post-workout nudge, signup source |
 
 ---
 
@@ -33,6 +33,46 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — MFP Q3 loop (train + fuel integration)
+
+**What was done:**
+- **Home “Train & fuel” card** — weekly workouts + today protein/calories with progress bars, training-day hints, CTAs to workout and diary (`home-integrated-loop.tsx`)
+- **Post-workout refuel nudge** on workout recap → `/nutrition/log-macros?meal=` with time-based meal slot
+- **Onboarding optional “What were you using before?”** — chips on step 11, saved to `profiles.signup_source`, GTM `forge_signup_source` event
+- Migration `20260630100000_signup_source.sql`
+
+**What's next (from mfp-differentiation.md):**
+- Q4: MFP CSV import, selective barcode
+- Q4: Pro projection/adherence upgrade moments
+- Apply migration #46 on hosted Supabase if onboarding save fails
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/home/home-integrated-loop.tsx`, `home-dashboard.tsx`, `home-today-snapshot.tsx`
+- `apps/web/src/components/workout/post-workout-nutrition-nudge.tsx`, `workout-recap.tsx`
+- `apps/web/src/lib/nutrition/date-param.ts`, `quick-macro-log.tsx`, `log-macros-screen.tsx`, `nutrition-fab.tsx`
+- `apps/web/src/components/onboarding/onboarding-wizard.tsx`, `app/actions/onboarding.ts`
+- `apps/web/src/lib/constants/onboarding.ts`, `types/profile.ts`, `analytics/events.ts`, `supabase/schema-errors.ts`
+- `supabase/migrations/20260630100000_signup_source.sql`
+- `docs/marketing/mfp-differentiation.md`, `docs/supabase-setup.md`, `docs/PROGRESS.md`
+
+### 2026-06-30 — MFP differentiation roadmap
+
+**What was done:**
+- Added `docs/marketing/mfp-differentiation.md` — positioning, three pillars, quarterly map (Q3 2026–Q2 2027), prioritized backlog, GTM, metrics, build handoff order
+- Linked from `docs/marketing/seo-guides.md`
+
+**What's next (from roadmap Q3 P0):**
+- Home integrated dashboard — weekly training + nutrition adherence on one card
+- Post-workout → diary nudge with meal slot pre-selected
+- Optional onboarding “previous app” question for switcher analytics
+
+**Blockers:** None
+
+**Files touched:**
+- `docs/marketing/mfp-differentiation.md`, `docs/marketing/seo-guides.md`, `docs/PROGRESS.md`
 
 ### 2026-06-30 — Watermark workout phase row
 

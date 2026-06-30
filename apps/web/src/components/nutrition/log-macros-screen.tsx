@@ -6,6 +6,7 @@ import {
   appSectionStack,
 } from "@/components/layout/page-layout";
 import { NutritionDatePicker } from "@/components/nutrition/nutrition-date-picker";
+import type { MealType } from "@/lib/nutrition/meal-types";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 import { buildNutritionHref } from "@/lib/nutrition/date-param";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ interface LogMacrosScreenProps {
   selectedDate: string;
   todayIso: string;
   yesterdayIso: string;
+  initialMealType?: MealType;
 }
 
 export function LogMacrosScreen({
@@ -30,6 +32,7 @@ export function LogMacrosScreen({
   selectedDate,
   todayIso,
   yesterdayIso,
+  initialMealType,
 }: LogMacrosScreenProps) {
   const router = useRouter();
   const [mealsVersion, setMealsVersion] = useState(0);
@@ -73,11 +76,12 @@ export function LogMacrosScreen({
           </h2>
           <div className="mt-4">
             <QuickMacroLog
-              key={`${formKey}-${summary.date}`}
+              key={`${formKey}-${summary.date}-${initialMealType ?? "default"}`}
               loggedDate={summary.date}
               totals={summary.totals}
               targets={summary.targets}
               initialValues={formPrefill}
+              initialMealType={initialMealType}
               onSaveMeal={setSaveDraft}
             />
           </div>

@@ -83,6 +83,7 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 43. `20260610910000_backfill_onboarding_body_measurements.sql` — optional backfill for existing users
 44. `20260611000000_weigh_in_push_preference.sql` — Sunday weigh-in push preference
 45. `20260611100000_body_composition_targets.sql` — **required for fat-loss pace, recomp priority, goal weight** (Profile → Program plan)
+46. `20260630100000_signup_source.sql` — optional onboarding “previous app” answer (`profiles.signup_source`)
 
 After running SQL in the dashboard, reload the API schema if errors persist: **Project Settings → API → Reload schema cache**.
 

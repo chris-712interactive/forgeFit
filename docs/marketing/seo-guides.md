@@ -34,3 +34,4 @@ Public, indexable articles at `/guides` for search discovery and comparison-inte
 - Link related guides via `relatedSlugs`
 - Update `updatedAt` when materially revising an article
 - Keep ForgeRep differentiators aligned with `docs/BIBLE.md` and landing copy
+- Strategy roadmap vs MyFitnessPal: [mfp-differentiation.md](./mfp-differentiation.md)

@@ -44,14 +44,14 @@ export function NutritionFab({ selectedDate, todayIso }: NutritionFabProps) {
               </p>
             )}
             <Link
-              href={buildNutritionLogHref("log-macros", dateQuery)}
+              href={buildNutritionLogHref("log-macros", { date: dateQuery })}
               onClick={closeMenu}
               className="flex min-h-[48px] items-center rounded-full border border-[var(--border)] bg-forge-surface-raised px-5 py-3 font-display text-sm font-semibold text-forge-text shadow-lg transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
             >
               Log macros
             </Link>
             <Link
-              href={buildNutritionLogHref("build-meal", dateQuery)}
+              href={buildNutritionLogHref("build-meal", { date: dateQuery })}
               onClick={closeMenu}
               className="flex min-h-[48px] items-center rounded-full border border-[var(--border)] bg-forge-surface-raised px-5 py-3 font-display text-sm font-semibold text-forge-text shadow-lg transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
             >

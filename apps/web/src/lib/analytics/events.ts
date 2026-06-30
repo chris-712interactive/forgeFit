@@ -24,3 +24,16 @@ export function pushSignupConversionEvent(): void {
 
   sessionStorage.setItem(SIGNUP_TRACKED_KEY, "1");
 }
+
+/** Push optional onboarding previous-app answer for GTM segmentation. */
+export function pushSignupSourceEvent(source: string): void {
+  if (typeof window === "undefined" || !source.trim()) {
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "forge_signup_source",
+    signup_source: source.trim(),
+  });
+}

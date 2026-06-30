@@ -1,4 +1,5 @@
 import { LogMacrosScreen } from "@/components/nutrition/log-macros-screen";
+import { parseNutritionMealParam } from "@/lib/nutrition/date-param";
 import { getNutritionPageData } from "@/lib/nutrition/page-data";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -6,7 +7,7 @@ import { redirect } from "next/navigation";
 export default async function LogMacrosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; meal?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -31,6 +32,7 @@ export default async function LogMacrosPage({
       selectedDate={pageData.selectedDate}
       todayIso={pageData.todayIso}
       yesterdayIso={pageData.yesterdayIso}
+      initialMealType={parseNutritionMealParam(params.meal)}
     />
   );
 }

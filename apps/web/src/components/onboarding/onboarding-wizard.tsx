@@ -10,8 +10,10 @@ import {
   MINUTES_PER_SESSION_OPTIONS,
   RECOVERY_EQUIPMENT,
   SESSIONS_PER_WEEK_OPTIONS,
+  SIGNUP_SOURCE_OPTIONS,
   STRENGTH_EQUIPMENT,
 } from "@/lib/constants/onboarding";
+import { pushSignupSourceEvent } from "@/lib/analytics/events";
 import type {
   EquipmentLocation,
   ExperienceLevel,
@@ -101,6 +103,10 @@ export function OnboardingWizard() {
     if (!canProceed()) return;
     setSubmitting(true);
     setError(null);
+
+    if (data.signup_source) {
+      pushSignupSourceEvent(data.signup_source);
+    }
 
     const result = await completeOnboarding(data as OnboardingData);
     if (result?.error) {
@@ -352,6 +358,34 @@ export function OnboardingWizard() {
             subtitle="Add ForgeRep to your home screen for faster access and offline workouts — optional."
           >
             <PwaInstallPrompt showAfterOnboarding />
+
+            <div className="mt-6">
+              <p className="text-sm font-medium text-forge-text">
+                What were you using before?{" "}
+                <span className="font-normal text-forge-muted">(optional)</span>
+              </p>
+              <p className="mt-1 text-xs text-forge-muted">
+                Helps us improve — won&apos;t change your plan.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {SIGNUP_SOURCE_OPTIONS.map((option) => (
+                  <Chip
+                    key={option.value}
+                    label={option.label}
+                    selected={data.signup_source === option.value}
+                    onClick={() =>
+                      update({
+                        signup_source:
+                          data.signup_source === option.value
+                            ? undefined
+                            : option.value,
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+
             <p className="mt-4 text-sm text-forge-muted">
               You can always install later from Home. Tap finish to generate your
               program.
