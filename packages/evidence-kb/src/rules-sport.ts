@@ -13,7 +13,7 @@ export const SPORT_RULES: EvidenceRule[] = [
     },
     citations: [
       {
-        url: "https://www.acsm.org",
+        doi: "10.1519/JSC.0b013e3181e3807b",
         summary: "Youth resistance training: progressive overload with conservative volume for adolescents",
       },
     ],
@@ -29,7 +29,7 @@ export const SPORT_RULES: EvidenceRule[] = [
     },
     citations: [
       {
-        url: "https://www.nsca.com/education/articles/nsca-coach/youth-resistance-training/",
+        doi: "10.1519/JSC.0b013e3181e3807b",
         summary: "Teen athletes tolerate moderate gym volume when sport practice load is accounted for",
       },
     ],
@@ -139,7 +139,7 @@ export const SPORT_RULES: EvidenceRule[] = [
     },
     citations: [
       {
-        url: "https://www.aap.org",
+        doi: "10.1136/bjsports-2014-093502",
         summary: "Conservative deficits in adolescents protect growth, performance, and recovery",
       },
     ],
@@ -186,7 +186,7 @@ export const SPORT_RULES: EvidenceRule[] = [
     },
     citations: [
       {
-        url: "https://fifa.com/technical/medical/the11/index.html",
+        doi: "10.1136/bjsports-2014-094442",
         summary: "Neuromuscular warm-ups reduce lower-limb injury rates in field and court sports",
       },
     ],

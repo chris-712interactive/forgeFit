@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 9 in progress (9A–9G shipped) |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Phase 9C–9G sport engine, evidence, teen community |
+| **Last session focus** | Evidence KB gap fill + sport rule wiring (9I) |
 
 ---
 
@@ -28,12 +28,41 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| 9 | Youth & Sport Performance | ⏳ In progress | — |
+| 9 | Youth & Sport Performance | ⏳ In progress (9A–9G shipped) |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-06-30 — Evidence KB gap audit + sport rule wiring
+
+**What was done:**
+- Audited sport-science calculations vs evidence KB: identified unwired rules, hardcoded splits, weak citations
+- Added **23 rules** (KB v0.5.0): `rules-youth-policy.ts` (10 age/time/nutrition gates), `rules-sport-catalog.ts` (13 sport demand profiles for catalog sports without hardcoded templates)
+- Strengthened citations in `rules-sport.ts` (NSCA youth RT, RED-S, FIFA 11+ meta-analysis DOIs)
+- Wired engine: `priority_patterns` merge, sport-specific `reps_range`, neuromuscular ACL warmups from matched rules
+
+**What's next:** Move `SPORT_TEMPLATES` + `POSITION_PATTERN_BOOSTS` into evidence-backed catalog rules · ADR for hardcoded split rationale · 9H remaining catalog sports · age-policy reads rule IDs for traceability
+
+**Blockers:** None
+
+**Files touched:** `packages/evidence-kb/src/rules-youth-policy.ts`, `rules-sport-catalog.ts`, `rules-sport.ts`, `index.ts`, `packages/program-engine/src/sport/patterns.ts`, `warmup.ts`, `generate.ts`, `docs/PROGRESS.md`
+
+### 2026-06-30 — Phase 9C–9G: sport engine, evidence, teen community
+
+**What was done:**
+- **9C:** 16 sport/youth evidence rules (`rules-sport.ts`), extended `RuleContext` (age band, sport, season, secondary goal), KB v0.4.0
+- **9D:** Sport splits for basketball, soccer, football, volleyball, baseball, softball, general athleticism + position modifiers
+- **9E:** In-season volume caps, maintenance/off-season nutrition, hybrid secondary goal calories
+- **9F:** Profile sport plan fields (sport, position, season, secondary goal) + `updatePlanSettings` validation
+- **9G:** `bucket_age_cohort` migration, teen/adult leaderboard isolation, parent-consent gate on community opt-in
+
+**What's next:** Apply migrations on hosted Supabase · 9H expand sport catalog · migrate hardcoded sport templates into evidence rules
+
+**Blockers:** None
+
+**Files touched:** `packages/evidence-kb/src/rules-sport.ts`, `packages/program-engine/src/sport/*`, `packages/program-engine/src/nutrition.ts`, `apps/web/src/components/profile/sport-plan-fields.tsx`, `apps/web/src/lib/coaching/community-bucket.ts`, `supabase/migrations/20260630120000_community_teen_cohort.sql`, docs
 
 ### 2026-06-30 — Phase 9A + 9B: youth sport onboarding
 

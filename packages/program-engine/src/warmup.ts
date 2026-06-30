@@ -99,6 +99,30 @@ const FOCUS_MOVEMENTS: WarmupMovementDef[] = [
   },
 ];
 
+const NEUROMUSCULAR_MOVEMENTS: WarmupMovementDef[] = [
+  {
+    id: "warmup_single_leg_balance",
+    name: "Single-leg balance hold",
+    prescription: "20 sec each leg",
+    focuses: ["legs", "full_body", "general"],
+    order: 0,
+  },
+  {
+    id: "warmup_lateral_lunge",
+    name: "Lateral lunge",
+    prescription: "8 each side",
+    focuses: ["legs", "full_body"],
+    order: 1,
+  },
+  {
+    id: "warmup_jump_land",
+    name: "Stick landing",
+    prescription: "6 soft landings",
+    focuses: ["legs", "full_body"],
+    order: 2,
+  },
+];
+
 const FOCUS_LABELS: Record<WarmupFocus, string> = {
   push: "Push prep",
   pull: "Pull prep",
@@ -172,9 +196,13 @@ function movementCountForBudget(minutes: number): number {
 function selectWarmupMovements(
   focus: WarmupFocus,
   userEquipment: string[],
-  maxCount: number
+  maxCount: number,
+  neuromuscular: boolean
 ): WarmupMovement[] {
-  const candidates = [...GENERAL_MOVEMENTS, ...FOCUS_MOVEMENTS]
+  const pool = neuromuscular
+    ? [...NEUROMUSCULAR_MOVEMENTS, ...GENERAL_MOVEMENTS, ...FOCUS_MOVEMENTS]
+    : [...GENERAL_MOVEMENTS, ...FOCUS_MOVEMENTS];
+  const candidates = pool
     .filter(
       (movement) =>
         movement.focuses.includes(focus) && hasEquipment(movement, userEquipment)
@@ -212,18 +240,36 @@ function selectWarmupMovements(
 
 export function buildWarmupBlock(
   template: SessionTemplate,
-  profile: ProgramUserProfile
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[] = []
 ): WarmupBlock {
   const focus = warmupFocusForTemplate(template);
-  const durationMinutes = warmupMinutesBudget(profile.minutesPerSession);
+  const neuromuscular = rules.some(
+    (rule) => rule.recommendation.neuromuscular_warmup_minutes != null
+  );
+  const durationMinutes = neuromuscular
+    ? Math.min(
+        10,
+        Math.max(
+          warmupMinutesBudget(profile.minutesPerSession),
+          rules.reduce((max, rule) => {
+            const mins = rule.recommendation.neuromuscular_warmup_minutes as
+              | { optimal?: number }
+              | undefined;
+            return Math.max(max, mins?.optimal ?? 0);
+          }, 0)
+        )
+      )
+    : warmupMinutesBudget(profile.minutesPerSession);
   const movements = selectWarmupMovements(
     focus,
     profile.equipment,
-    movementCountForBudget(durationMinutes)
+    movementCountForBudget(durationMinutes),
+    neuromuscular
   );
 
   return {
-    name: FOCUS_LABELS[focus],
+    name: neuromuscular ? "Neuromuscular prep" : FOCUS_LABELS[focus],
     durationMinutes,
     focus,
     movements,

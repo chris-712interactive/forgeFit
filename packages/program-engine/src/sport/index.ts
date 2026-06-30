@@ -48,4 +48,9 @@ export {
   baseTemplatesForSport,
   getSportWeeklySplit,
 } from "./splits";
+export {
+  mergeSessionPatterns,
+  requiresNeuromuscularWarmup,
+  sportRepsRange,
+} from "./patterns";
 export { sportSessionCap, sportSummarySuffix, sportVolumeMultiplier } from "./volume";

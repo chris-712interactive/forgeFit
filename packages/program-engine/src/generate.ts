@@ -37,7 +37,10 @@ import { computeTrainingLoad } from "./training-load";
 import { estimateTrainingExpenditure } from "./training-expenditure";
 import { getWeeklySplit } from "./splits";
 import {
-  resolveNutritionGoal,
+  mergeSessionPatterns,
+  sportRepsRange,
+} from "./sport/patterns";
+import {
   resolveWeeklySplit,
   sportSessionCap,
   sportSummarySuffix,
@@ -401,10 +404,17 @@ function fillSessionToTimeBudget(
   }
 }
 
-function repsForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): string {
+function repsForGoal(
+  goal: ProgramUserProfile["goal"],
+  rules: EvidenceRule[]
+): string {
+  if (goal === "sport_performance") {
+    return sportRepsRange(rules, "5-8");
+  }
+
   const hypertrophy = getRecommendationValue<string>(rules, "reps_range", "optimal");
   if (goal === "powerlifting") return "3-5";
-  if (goal === "general_strength" || goal === "sport_performance") {
+  if (goal === "general_strength") {
     return hypertrophy === "8-15" ? "5-8" : "5-8";
   }
   if (goal === "bodybuilding" || goal === "recomposition") return hypertrophy ?? "8-12";
@@ -526,12 +536,13 @@ function buildSession(
   );
   const reps = repsForGoal(profile.goal, rules);
   const rest = restForGoal(profile.goal, rules);
-  const warmupBlock = buildWarmupBlock(template, profile);
+  const warmupBlock = buildWarmupBlock(template, profile, rules);
   const rampSets = warmUpRampSetCount(profile.experience, rules);
+  const sessionPatterns = mergeSessionPatterns(template.patterns, rules);
 
   const exercises: PlannedExercise[] = [];
 
-  for (const pattern of template.patterns) {
+  for (const pattern of sessionPatterns) {
     if (exercises.length >= maxExercises) break;
     const picked = pickExerciseForPattern(
       pattern,
@@ -614,7 +625,7 @@ function buildSession(
     reps,
     rest,
     rampSets,
-    template.patterns
+    sessionPatterns
   );
 
   if (template.includeCardio) {

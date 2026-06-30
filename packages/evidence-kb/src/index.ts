@@ -1,5 +1,7 @@
 import { EXTRA_RULES } from "./rules-extra";
+import { SPORT_CATALOG_RULES } from "./rules-sport-catalog";
 import { SPORT_RULES } from "./rules-sport";
+import { YOUTH_POLICY_RULES } from "./rules-youth-policy";
 import type { EvidenceRule } from "./types";
 
 export type { EvidenceRule, Citation, Confidence } from "./types";
@@ -10,7 +12,7 @@ export {
 export type { AgeBand, RuleContext } from "./match";
 
 /** Evidence KB version — bump when rules change materially */
-export const EVIDENCE_KB_VERSION = "0.4.0";
+export const EVIDENCE_KB_VERSION = "0.5.0";
 
 const SEED_RULES: EvidenceRule[] = [
   {
@@ -175,7 +177,13 @@ const SEED_RULES: EvidenceRule[] = [
   },
 ];
 
-export const ALL_RULES: EvidenceRule[] = [...SEED_RULES, ...EXTRA_RULES, ...SPORT_RULES];
+export const ALL_RULES: EvidenceRule[] = [
+  ...SEED_RULES,
+  ...EXTRA_RULES,
+  ...SPORT_RULES,
+  ...SPORT_CATALOG_RULES,
+  ...YOUTH_POLICY_RULES,
+];
 
 export function getRules(): EvidenceRule[] {
   return ALL_RULES;
