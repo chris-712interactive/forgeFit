@@ -1,4 +1,5 @@
 import type { ProgramPlan } from "@forgefit/program-engine";
+import { formatPlanStartDateLabel, planScheduleStartIso } from "@/lib/programs/start-date";
 
 function weeklySets(plan: ProgramPlan): number {
   return plan.week.reduce(
@@ -21,11 +22,18 @@ export function summarizePlanChanges(
   if (!before) {
     return [
       `New ${after.week.length}-session plan (~${averageSessionMinutes(after)} min/session).`,
+      `Starts ${formatPlanStartDateLabel(planScheduleStartIso(after))}.`,
       `Daily targets: ${after.nutrition.calories} kcal · ${after.nutrition.proteinG}g protein.`,
     ];
   }
 
   const items: string[] = [];
+
+  const beforeStart = before.scheduleStartDate ?? before.generatedAt.slice(0, 10);
+  const afterStart = planScheduleStartIso(after);
+  if (beforeStart !== afterStart) {
+    items.push(`Plan start date set to ${formatPlanStartDateLabel(afterStart)}.`);
+  }
 
   if (after.isDeloadWeek && !before.isDeloadWeek) {
     items.push("Deload week — reduced volume and intensity across sessions.");

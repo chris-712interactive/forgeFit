@@ -1,6 +1,7 @@
 import {
   generateProgram,
   isDeloadTrainingWeek,
+  toScheduleStartIso,
   type ProgramPlan,
   type ProgramUserProfile,
 } from "@forgefit/program-engine";
@@ -87,7 +88,8 @@ async function countCompletedSessions(userId: string): Promise<number> {
 
 export async function generateAndSaveProgram(
   userId: string,
-  previousPlan: ProgramPlan | null = null
+  previousPlan: ProgramPlan | null = null,
+  options: { startDate?: Date } = {}
 ): Promise<{ plan: ProgramPlan; previousPlan: ProgramPlan | null } | { error: string }> {
   const ctx = await loadUserProgramContext(userId);
   if (!ctx) {
@@ -101,11 +103,18 @@ export async function generateAndSaveProgram(
     ctx.userProfile.sessionsPerWeek
   );
 
+  const startDate = options.startDate ?? new Date();
+  const todayIso = toScheduleStartIso(new Date());
+  const startIso = toScheduleStartIso(startDate);
+  const isFutureStart = startIso > todayIso;
+  const isRegenerate = priorPlan != null;
+
   const plan = generateProgram(ctx.userProfile, {
-    startDate: new Date(),
+    startDate,
     isDeloadWeek,
     deloadVolumeReductionPct: 40,
-    scheduleFromTodayOnly: priorPlan != null,
+    scheduleFromTodayOnly:
+      isRegenerate && !isFutureStart && startIso === todayIso,
   });
 
   const supabase = await createClient();

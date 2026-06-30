@@ -1,6 +1,13 @@
-import { isoWeekdayFromDate } from "@forgefit/program-engine";
+import { isoWeekdayFromDate, parseScheduleStartIso } from "@forgefit/program-engine";
 import type { ProgramPlan } from "@forgefit/program-engine";
+import { planScheduleStartIso } from "@/lib/programs/start-date";
 import type { WorkoutSessionRecord } from "./sessions";
+
+function startOfDay(date: Date): Date {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
 
 /** Next incomplete session for this calendar week (today first, then later days). */
 export function findNextPlannedSession(
@@ -9,6 +16,11 @@ export function findNextPlannedSession(
   referenceDate = new Date()
 ): { dayIndex: number; name: string } | null {
   if (!plan) return null;
+
+  const planStart = parseScheduleStartIso(planScheduleStartIso(plan));
+  if (startOfDay(referenceDate) < startOfDay(planStart)) {
+    return null;
+  }
 
   const completedDays = new Set(
     sessions

@@ -31,6 +31,8 @@ export {
   dayLabelForIndex,
   DAY_LABELS,
   isoWeekdayFromDate,
+  parseScheduleStartIso,
+  toScheduleStartIso,
 } from "./schedule";
 export type {
   ProgramPlan,

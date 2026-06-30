@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Functional movement prioritization in program engine |
+| **Last session focus** | Program regeneration start-date picker |
 
 ---
 

@@ -27,7 +27,12 @@ import {
   estimateExerciseMinutes,
   estimateMainWorkMinutes,
 } from "./session-time";
-import { assignSessionWeekdays, dayLabelForIndex, isoWeekdayFromDate } from "./schedule";
+import {
+  assignSessionWeekdays,
+  dayLabelForIndex,
+  isoWeekdayFromDate,
+  toScheduleStartIso,
+} from "./schedule";
 import { computeTrainingLoad } from "./training-load";
 import { estimateTrainingExpenditure } from "./training-expenditure";
 import { getWeeklySplit } from "./splits";
@@ -694,6 +699,7 @@ export function generateProgram(
     nutrition,
     week,
     scheduleAnchorWeekday: anchorWeekday,
+    scheduleStartDate: toScheduleStartIso(startDate),
     generatedAt: startDate.toISOString(),
     summary: `${goalLabel} program · ${profile.sessionsPerWeek}×${profile.minutesPerSession} min · starts ${dayLabelForIndex(anchorWeekday)} · ${week.length} sessions built from ${appliedRuleIds.length} evidence rules`,
   };

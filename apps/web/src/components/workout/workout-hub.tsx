@@ -15,6 +15,7 @@ import {
   mergeSessionRecords,
   type WorkoutSessionRecord,
 } from "@/lib/workouts/sessions";
+import { canStartPlanSession } from "@/lib/workouts/schedule-dates";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
@@ -283,6 +284,7 @@ export function WorkoutHub({
       if (!plan) return;
       const session = plan.week.find((s) => s.dayIndex === dayIndex);
       if (!session) return;
+      if (!canStartPlanSession(dayIndex, plan)) return;
 
       const dayStatus = dayStatusMap.get(dayIndex);
       if (dayStatus?.inProgress) {
@@ -544,6 +546,7 @@ export function WorkoutHub({
             {plan.week.map((session) => (
               <WeekPlanCard
                 key={`${session.dayIndex}-${session.name}`}
+                plan={plan}
                 session={session}
                 dayStatus={dayStatusMap.get(session.dayIndex)}
                 starting={startingDay === session.dayIndex}

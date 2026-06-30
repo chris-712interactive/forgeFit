@@ -115,6 +115,8 @@ export interface ProgramPlan {
   week: WorkoutSession[];
   /** Weekday (Mon=0) the schedule was anchored to at generation */
   scheduleAnchorWeekday?: number;
+  /** Calendar date (YYYY-MM-DD, local) when this plan week becomes active */
+  scheduleStartDate?: string;
   generatedAt: string;
   summary: string;
   isDeloadWeek?: boolean;

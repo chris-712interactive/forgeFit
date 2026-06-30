@@ -11,6 +11,7 @@ import {
   RECOMP_PRIORITY_OPTIONS,
   SESSIONS_PER_WEEK_OPTIONS,
 } from "@/lib/constants/onboarding";
+import { todayScheduleStartIso } from "@/lib/programs/start-date";
 import type {
   FatLossPace,
   FitnessGoal,
@@ -63,6 +64,9 @@ export function ProgramPlanSetting({
     initialMinutesPerSession ?? 45
   );
   const [regenerateOnSave, setRegenerateOnSave] = useState(true);
+  const [scheduleStartDate, setScheduleStartDate] = useState(
+    todayScheduleStartIso()
+  );
 
   const showBodyComposition = goal === "fat_loss" || goal === "recomposition";
   const goalWeightInvalid =
@@ -111,6 +115,7 @@ export function ProgramPlanSetting({
         sessions_per_week: sessionsPerWeek,
         minutes_per_session: minutesPerSession,
         regenerate_program: regenerateOnSave,
+        schedule_start_date: scheduleStartDate,
       })
     );
   }
@@ -230,6 +235,27 @@ export function ProgramPlanSetting({
           </div>
         </div>
 
+        <div>
+          <label
+            htmlFor="schedule-start-date"
+            className="mb-1.5 block text-sm text-forge-muted"
+          >
+            New plan starts on
+          </label>
+          <input
+            id="schedule-start-date"
+            type="date"
+            min={todayScheduleStartIso()}
+            value={scheduleStartDate}
+            onChange={(event) => setScheduleStartDate(event.target.value)}
+            className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
+          />
+          <p className="mt-1.5 text-xs text-forge-muted">
+            Used when you rebuild or save with regeneration. Workouts stay locked
+            until this date.
+          </p>
+        </div>
+
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface p-3">
           <input
             type="checkbox"
@@ -256,7 +282,11 @@ export function ProgramPlanSetting({
         <button
           type="button"
           disabled={pending}
-          onClick={() => runAction(() => rebuildProgram())}
+          onClick={() =>
+            runAction(() =>
+              rebuildProgram({ schedule_start_date: scheduleStartDate })
+            )
+          }
           className="min-h-[48px] flex-1 rounded-xl border border-forge-ember/40 px-4 text-sm font-semibold text-forge-ember disabled:opacity-50"
         >
           Rebuild plan

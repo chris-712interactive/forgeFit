@@ -5,6 +5,10 @@ import {
   generateAndSaveProgram,
   loadUserProgramContext,
 } from "@/lib/programs/service";
+import {
+  isValidPlanStartDate,
+  parsePlanStartDateInput,
+} from "@/lib/programs/start-date";
 import { createClient } from "@/lib/supabase/server";
 import type { FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
@@ -25,6 +29,10 @@ const planSettingsSchema = z
     sessions_per_week: z.number().min(1).max(7),
     minutes_per_session: z.number().min(15).max(120),
     regenerate_program: z.boolean().optional(),
+    schedule_start_date: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
@@ -52,7 +60,23 @@ function revalidateProgramPaths() {
   revalidatePath("/evidence");
 }
 
-export async function rebuildProgram() {
+function resolveStartDate(
+  isoDate?: string
+): { startDate: Date } | { error: string } {
+  if (!isoDate) {
+    return { startDate: new Date() };
+  }
+
+  if (!isValidPlanStartDate(isoDate)) {
+    return {
+      error: "Choose today or a future date for your new plan to start.",
+    };
+  }
+
+  return { startDate: parsePlanStartDateInput(isoDate)! };
+}
+
+export async function rebuildProgram(input?: { schedule_start_date?: string }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -62,7 +86,14 @@ export async function rebuildProgram() {
     return { error: "You must be signed in." };
   }
 
-  const result = await generateAndSaveProgram(user.id);
+  const start = resolveStartDate(input?.schedule_start_date);
+  if ("error" in start) {
+    return { error: start.error };
+  }
+
+  const result = await generateAndSaveProgram(user.id, null, {
+    startDate: start.startDate,
+  });
   if ("error" in result) {
     return { error: result.error };
   }
@@ -84,6 +115,7 @@ export async function updatePlanSettings(input: {
   sessions_per_week: number;
   minutes_per_session: number;
   regenerate_program?: boolean;
+  schedule_start_date?: string;
 }) {
   const parsed = planSettingsSchema.safeParse(input);
   if (!parsed.success) {
@@ -133,7 +165,14 @@ export async function updatePlanSettings(input: {
     return { success: true as const, regenerated: false as const };
   }
 
-  const result = await generateAndSaveProgram(user.id);
+  const start = resolveStartDate(parsed.data.schedule_start_date);
+  if ("error" in start) {
+    return { error: start.error };
+  }
+
+  const result = await generateAndSaveProgram(user.id, null, {
+    startDate: start.startDate,
+  });
   if ("error" in result) {
     return { error: result.error };
   }

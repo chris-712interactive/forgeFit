@@ -1,6 +1,9 @@
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { buildEvidenceHref } from "@/lib/evidence/present";
-import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
+import {
+  canStartPlanSession,
+  formatPlanSessionDate,
+} from "@/lib/workouts/schedule-dates";
 import { formatWarmupDuration } from "@/lib/workouts/warmup";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import Link from "next/link";
@@ -32,7 +35,7 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
                 {session.dayLabel}
               </p>
               <p className="text-xs text-forge-muted">
-                {formatScheduledSessionDate(session.dayIndex)}
+                {formatPlanSessionDate(session.dayIndex, plan)}
               </p>
               <h3 className="font-display font-semibold text-forge-text">
                 {session.name}
@@ -43,10 +46,19 @@ export function WeekSchedule({ plan }: WeekScheduleProps) {
               </p>
             </div>
             <Link
-              href={`/workout?day=${session.dayIndex}`}
-              className="shrink-0 rounded-lg bg-forge-ember/15 px-3 py-2 text-xs font-semibold text-forge-ember"
+              href={
+                canStartPlanSession(session.dayIndex, plan)
+                  ? `/workout?day=${session.dayIndex}`
+                  : "/workout"
+              }
+              aria-disabled={!canStartPlanSession(session.dayIndex, plan)}
+              className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold ${
+                canStartPlanSession(session.dayIndex, plan)
+                  ? "bg-forge-ember/15 text-forge-ember"
+                  : "bg-forge-surface text-forge-muted pointer-events-none"
+              }`}
             >
-              Start
+              {canStartPlanSession(session.dayIndex, plan) ? "Start" : "Upcoming"}
             </Link>
           </div>
 

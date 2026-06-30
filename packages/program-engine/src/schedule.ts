@@ -6,6 +6,19 @@ export function isoWeekdayFromDate(date: Date): number {
   return day === 0 ? 6 : day - 1;
 }
 
+/** Local calendar date as YYYY-MM-DD for plan schedule anchoring. */
+export function toScheduleStartIso(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function parseScheduleStartIso(isoDate: string): Date {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0, 0);
+}
+
 export interface AssignSessionWeekdaysOptions {
   /**
    * Regenerate path: prefer today through Sunday before wrapping to earlier weekdays.

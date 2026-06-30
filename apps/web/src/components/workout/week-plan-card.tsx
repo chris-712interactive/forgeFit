@@ -1,14 +1,18 @@
 "use client";
 
-import type { WorkoutSession } from "@forgefit/program-engine";
+import type { ProgramPlan, WorkoutSession } from "@forgefit/program-engine";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { formatShortDate } from "@/lib/workouts/comparison";
-import { formatScheduledSessionDate } from "@/lib/workouts/schedule-dates";
+import {
+  canStartPlanSession,
+  formatPlanSessionDate,
+} from "@/lib/workouts/schedule-dates";
 import type { DayPlanStatus } from "@/lib/workouts/sessions";
 import { WorkoutMusicPicker } from "./workout-music-picker";
 import { WorkoutPhaseCards } from "./workout-phase-cards";
 
 interface WeekPlanCardProps {
+  plan: ProgramPlan;
   session: WorkoutSession;
   dayStatus?: DayPlanStatus;
   starting: boolean;
@@ -20,6 +24,7 @@ interface WeekPlanCardProps {
 }
 
 export function WeekPlanCard({
+  plan,
   session,
   dayStatus,
   starting,
@@ -33,6 +38,7 @@ export function WeekPlanCard({
   const inProgress = dayStatus?.inProgress ?? null;
   const completed = dayStatus?.latestCompleted ?? null;
   const isDone = Boolean(completed) && !inProgress;
+  const canStart = canStartPlanSession(session.dayIndex, plan);
 
   const completedSets = completed?.sets.filter((s) => s.completed).length ?? 0;
   const totalSets = completed?.sets.length ?? 0;
@@ -53,7 +59,7 @@ export function WeekPlanCard({
             {session.dayLabel}
           </p>
           <p className="text-xs text-forge-muted">
-            {formatScheduledSessionDate(session.dayIndex)}
+            {formatPlanSessionDate(session.dayIndex, plan)}
           </p>
           <h3 className="font-display font-semibold text-forge-text">
             {session.name}
@@ -90,11 +96,11 @@ export function WeekPlanCard({
           ) : (
             <button
               type="button"
-              disabled={starting}
+              disabled={starting || !canStart}
               onClick={onStart}
               className="rounded-lg bg-forge-ember px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
-              {starting ? "Starting…" : "Start"}
+              {starting ? "Starting…" : canStart ? "Start" : "Upcoming"}
             </button>
           )}
         </div>
