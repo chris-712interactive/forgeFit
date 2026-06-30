@@ -59,7 +59,12 @@ Versioned US catalog with categories, sports, optional positions, season phases.
 
 Runtime loader: `packages/evidence-kb/src/sports-catalog.ts`.
 
-### Database (`supabase/migrations/20260630110000_youth_sport_onboarding.sql`)
+### Database (`supabase/migrations/`)
+
+| Migration | Notes |
+|-----------|-------|
+| `20260630110000_youth_sport_enum.sql` | Adds `sport_performance` to `fitness_goal` — **must run alone** (PG enum rule) |
+| `20260630110100_youth_sport_onboarding.sql` | Sport columns, parent consent, check constraint |
 
 | Column | Type | Notes |
 |--------|------|-------|
@@ -132,7 +137,7 @@ Until slice **9D**, `sport_performance` uses the **general strength** template i
 | Phase doc | `docs/phases/09-youth-sport.md` |
 | Age policy | `packages/program-engine/src/age-policy.ts` |
 | Catalog | `packages/evidence-kb/data/sports-catalog.json`, `src/sports-catalog.ts` |
-| Migration | `supabase/migrations/20260630110000_youth_sport_onboarding.sql` |
+| Migration | `20260630110000_youth_sport_enum.sql`, `20260630110100_youth_sport_onboarding.sql` |
 | Onboarding | `apps/web/src/components/onboarding/*`, `lib/onboarding/steps.ts` |
 | Server | `apps/web/src/app/actions/onboarding.ts` |
 

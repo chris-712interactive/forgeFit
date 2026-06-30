@@ -39,14 +39,26 @@
 
 **What was done:**
 - **`docs/phases/09-youth-sport.md`** — full phase plan (hybrid secondary goal, teen cohort preview, parent sign-off 13–15, US catalog)
-- **9A:** `age-policy.ts` + tests, `sports-catalog.json` + loader, migration `20260630110000_youth_sport_onboarding.sql`, `sport_performance` goal type
+- **9A:** `age-policy.ts` + tests, `sports-catalog.json` + loader, migrations `20260630110000_youth_sport_enum.sql` + `20260630110100_youth_sport_onboarding.sql`, `sport_performance` goal type
 - **9B:** Dynamic onboarding wizard — sport path (all ages), optional secondary goal, parent consent step (13–15), age-gated physique goals and time budgets; server validation in `completeOnboarding`
 
 **What's next:** Apply migration on hosted Supabase · 9C evidence rules · 9D sport-specific engine splits · 9G teen community cohort
 
 **Blockers:** None
 
-**Files touched:** `packages/program-engine/src/age-policy.ts`, `packages/evidence-kb/data/sports-catalog.json`, `packages/evidence-kb/src/sports-catalog.ts`, `apps/web/src/components/onboarding/*`, `apps/web/src/lib/onboarding/*`, `apps/web/src/app/actions/onboarding.ts`, `supabase/migrations/20260630110000_youth_sport_onboarding.sql`, `docs/phases/09-youth-sport.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+**Files touched:** `packages/program-engine/src/age-policy.ts`, `packages/evidence-kb/data/sports-catalog.json`, `packages/evidence-kb/src/sports-catalog.ts`, `apps/web/src/components/onboarding/*`, `apps/web/src/lib/onboarding/*`, `apps/web/src/app/actions/onboarding.ts`, `supabase/migrations/20260630110000_youth_sport_enum.sql`, `supabase/migrations/20260630110100_youth_sport_onboarding.sql`, `docs/phases/09-youth-sport.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+### 2026-06-30 — Fix sport_performance enum migration split
+
+**What was done:**
+- Split youth sport migration into two files — PostgreSQL rejects using a new enum value in the same transaction that adds it
+- `20260630110000_youth_sport_enum.sql` adds `sport_performance` only; `20260630110100_youth_sport_onboarding.sql` adds columns + check constraint
+
+**What's next:** Re-run migrations on hosted Supabase (enum first, then columns)
+
+**Blockers:** None
+
+**Files touched:** `supabase/migrations/20260630110000_youth_sport_enum.sql`, `supabase/migrations/20260630110100_youth_sport_onboarding.sql`, `docs/PROGRESS.md`, `docs/phases/09-youth-sport.md`
 
 ### 2026-06-30 — 5-year business plan printable URL
 

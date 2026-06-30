@@ -1,6 +1,5 @@
--- Phase 9A: youth sport onboarding fields + sport_performance goal
-
-alter type public.fitness_goal add value if not exists 'sport_performance';
+-- Phase 9A (part 2): sport profile fields + parent consent.
+-- Depends on 20260630110000_youth_sport_enum.sql (sport_performance enum value).
 
 create type public.sport_season_phase as enum (
   'in_season',
@@ -22,7 +21,7 @@ alter table public.profiles
 
 alter table public.profiles
   add constraint profiles_secondary_goal_not_sport
-  check (secondary_goal is null or secondary_goal <> 'sport_performance');
+  check (secondary_goal is null or secondary_goal <> 'sport_performance'::public.fitness_goal);
 
 comment on column public.profiles.sport_id is
   'US sport catalog id when primary_goal is sport_performance.';
