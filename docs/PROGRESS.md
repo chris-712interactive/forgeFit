@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | MFP Q4 — CSV import, OFF barcode, Pro upgrade moments |
+| **Last session focus** | Instagram calendar — production specs per post |
 
 ---
 
@@ -33,6 +33,19 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — Instagram production specs (batch + audio + phone)
+
+**What was done:**
+- **Phone-first production guide** in calendar doc — batch clip names, audio codes, daily CapCut/Canva/IG workflow
+- **Production table on all 31 days** — batch file, clips, audio (VO/CAP/TREND/BEAT/CAM), tool, time per piece
+- Printable `/docs/marketing/ig31` updated with production legend page + per-day prod tables
+
+**What's next:** Deploy · Batch Day 0 if not recorded
+
+**Blockers:** None
+
+**Files touched:** `docs/marketing/instagram-31-day-calendar.md`, `apps/web/content/marketing/ig31-print.html`, `docs/PROGRESS.md`
 
 ### 2026-06-30 — Instagram calendar printable URL
 

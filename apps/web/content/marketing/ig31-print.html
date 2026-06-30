@@ -150,6 +150,20 @@
 
     .format strong { color: var(--ember); }
 
+    .prod-table {
+      font-size: 7.5pt;
+      margin: 0.3em 0 0.45em;
+    }
+
+    .prod-table th {
+      font-size: 7pt;
+      padding: 0.15em 0.25em;
+    }
+
+    .prod-table td {
+      padding: 0.15em 0.25em;
+    }
+
     .checklist { list-style: none; padding-left: 0; }
     .checklist li::before { content: "☐ "; }
 
@@ -356,12 +370,56 @@ Start free ↓</pre></div>
     </table>
   </div>
 
+  <!-- PAGE 3: Production legend -->
+  <div class="page page-break">
+    <h1>Production — phone workflow</h1>
+    <p class="meta">CapCut = Reels · Canva = carousels/statics · IG = Stories · CAM = phone camera · MBS = Meta Business Suite</p>
+
+    <h2>Batch files (Photos album “ForgeRep Batch”)</h2>
+    <table>
+      <tr><th>File</th><th>Key clips to trim</th></tr>
+      <tr><td><strong>01</strong> home</td><td>greeting · this-week · today-macros · body-of-work</td></tr>
+      <tr><td><strong>02</strong> workout</td><td>week-plan · start-btn · set-row · effort-rir · rest-timer · progression-hint</td></tr>
+      <tr><td><strong>03</strong> offline</td><td>airplane-on · log-offline · sync-banner · synced</td></tr>
+      <tr><td><strong>04</strong> nutrition</td><td>macro-bars · quick-log · bars-update · example-plate</td></tr>
+      <tr><td><strong>05</strong> onboarding</td><td>10-step montage @ 1.5× speed → 45–60s</td></tr>
+      <tr><td><strong>06</strong> exercises</td><td>search · gif-demo · muscle-map · substitution</td></tr>
+      <tr><td><strong>07</strong> evidence</td><td>header · rule-card · citation · scroll-rules</td></tr>
+      <tr><td><strong>08</strong> progress</td><td>projection-chart · strength-chart · log-form</td></tr>
+      <tr><td><strong>09</strong> community</td><td>leaderboard · rival-card · habit-score (Pro demo)</td></tr>
+      <tr><td><strong>10</strong> b-roll</td><td>nav-tabs · integrations · music-picker · pwa-icon</td></tr>
+    </table>
+
+    <h2>Audio codes</h2>
+    <table>
+      <tr><th>Code</th><th>Use when</th><th>Phone how-to</th></tr>
+      <tr><td><strong>VO</strong></td><td>Explainers, trust, education</td><td>CapCut voiceover or TTS + auto-captions</td></tr>
+      <tr><td><strong>CAP</strong></td><td>UI demo tells the story</td><td>Silent or 10% ambient · captions required</td></tr>
+      <tr><td><strong>TREND</strong></td><td>Relatable / humor / reach</td><td>CapCut trending sound + bold text hooks</td></tr>
+      <tr><td><strong>BEAT</strong></td><td>Montages, energy</td><td>CapCut music → “gym phonk” instrumental</td></tr>
+      <tr><td><strong>CAM</strong></td><td>Skits, founder, gym B-roll</td><td>Phone camera + TREND or BEAT</td></tr>
+    </table>
+
+    <h2>Daily phone rhythm</h2>
+    <table>
+      <tr><th>When</th><th>App</th><th>Task</th></tr>
+      <tr><td>7–9 AM</td><td>CapCut</td><td>Trim batch clips → audio → captions → post Reel</td></tr>
+      <tr><td>12–2 PM</td><td>Canva</td><td>Duplicate template → swap text/screenshot → post</td></tr>
+      <tr><td>5–9 PM</td><td>Instagram</td><td>Stories: poll · link · reshare</td></tr>
+    </table>
+    <p><strong>Screenshot tip:</strong> Pause batch video in Photos → screenshot → Canva Uploads.</p>
+  </div>
+
   <!-- WEEK 1 -->
   <div class="page page-break">
     <h1>Week 1 — Launch & identity</h1>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 1 — What is ForgeRep?</strong><span class="day-theme">Pin Reel #1</span></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips / source</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>01+02+04</td><td>this-week → set-row → macro-bars → logo</td><td>VO or BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>5 text slides</td><td>—</td><td>Canva</td></tr>
+      <tr><td>📖</td><td>01</td><td>Poll → reshare Reel → link</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (60s):</strong> “Not another workout list” — hook: “Stop downloading apps that only give you random workouts.” Clips: home → workout → macros → logo. Highlight “evidence-based” + “offline” in orange.</p>
       <p class="caption">Most fitness apps give you workouts. ForgeRep gives you a plan that holds you accountable. ✓ Personalized programs ✓ Macro tracking tied to YOUR plan ✓ Offline logging ✓ Research-backed — not AI guesswork. Start free — link in bio.</p>
       <p class="format"><strong>📱 Carousel (5 slides):</strong> 3 problems → random workouts / gym WiFi dies / AI leg day → Try it free</p>
@@ -370,6 +428,10 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 2 — Offline gym logging</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>03</td><td>airplane-on → log-offline → synced</td><td>TREND+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>Text + optional 03 screenshot</td><td>—</td><td>Canva</td></tr>
+      <tr><td>📖</td><td>03</td><td>Split no signal / still logging</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (25s):</strong> “POV: gym has no signal” — airplane mode → log set → sync ✓</p>
       <p class="format"><strong>📱 Static:</strong> “Works offline. Syncs when signal returns.”</p>
       <p class="format"><strong>📖 Stories:</strong> Split “No signal 😤” / “Still logging 💪”</p>
@@ -377,6 +439,10 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 3 — Evidence-based (trust)</strong><span class="day-theme">Pin Reel #2</span></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>07</td><td>header → rule-card + citation → scroll</td><td>VO+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>Myth vs Fact 6 slides</td><td>—</td><td>Canva</td></tr>
+      <tr><td>📖</td><td>07</td><td>Deload quiz → answer w/ screenshot</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (35s):</strong> “Your plan isn’t from ChatGPT” — Evidence page screen record</p>
       <p class="format"><strong>📱 Carousel:</strong> Myth vs Fact (6 slides) — sets/week, protein when dieting, deloads, any app same</p>
       <p class="format"><strong>📖 Stories:</strong> Quiz — “Deload weeks optional: True/False” (False)</p>
@@ -384,6 +450,10 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 4 — Nutrition accountability</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>04+01</td><td>macro-bars → bars-update → today-macros</td><td>VO or CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>04 screenshots</td><td>4-step log flow</td><td>—</td><td>Canva</td></tr>
+      <tr><td>📖</td><td>04</td><td>example-plate scroll</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “Generic macro calculators vs targets from YOUR plan”</p>
       <p class="format"><strong>📱 Carousel:</strong> “Log a meal in 4 taps” — search → select → bars update → home %</p>
       <p class="format"><strong>📖 Stories:</strong> “What I ate today” demo diary format</p>
@@ -391,6 +461,10 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 5 — Onboarding / signup push</strong><span class="day-theme">Pin Carousel #3</span></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>05</td><td>Full onboarding @1.5× → 45s</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva+05</td><td>4 step screenshots</td><td>—</td><td>Canva</td></tr>
+      <tr><td>📖</td><td>IG</td><td>Free / no CC ×3 + link</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (45s, 1.5×):</strong> “Free account in under 60 seconds” — fast-cut onboarding</p>
       <p class="format"><strong>📱 Carousel:</strong> How it works — starting point → plan → log → start free</p>
       <p class="format"><strong>📖 Stories:</strong> “Free — no credit card” + link × 3</p>
@@ -398,6 +472,10 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 6 — Exercise library</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>06</td><td>search → gif → map → swap</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>06</td><td>substitution screenshot</td><td>—</td><td>Canva</td></tr>
+      <tr><td>📖</td><td>06</td><td>Poll lift → gif demo</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (20s):</strong> “800+ exercises with demos” — search → GIF → heatmap → swap</p>
       <p class="format"><strong>📱 Static:</strong> “Equipment busy? ForgeRep suggests substitutions.”</p>
       <p class="format"><strong>📖 Stories:</strong> Poll Bench / Squat / Deadlift → show demo</p>
@@ -405,6 +483,10 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 7 — Week 1 recap + Batch Day 2</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>07+03+01</td><td>3s each montage</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>7 free-tier bullets</td><td>—</td><td>Canva</td></tr>
+      <tr><td>⏱</td><td>CAM</td><td>10× gym B-roll 5s</td><td>TREND</td><td>Camera</td></tr></table>
       <p class="format"><strong>🎬 Reel:</strong> “Week 1 in 15 seconds” — Evidence · Offline · Accountability montage</p>
       <p class="format"><strong>📱 Carousel:</strong> Start free — what’s included (7 slides)</p>
       <p class="format"><strong>📖 Stories:</strong> Poll — demo Offline / Macros / Programs / Community next week</p>
@@ -418,12 +500,18 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 8 — No plan</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>CAM+01+02</td><td>Skit scenes → week-plan</td><td>TREND</td><td>Camera+CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>5 signs slides</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> Relatable skit — Mon fresh start → Tue YouTube → Wed sore → Thu lost → ForgeRep program</p>
       <p class="format"><strong>📱 Carousel:</strong> “5 signs you need a real program” (6 slides)</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 9 — RIR / logging</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>02</td><td>set-row → effort-rir → rest-timer</td><td>CAP+BEAT</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>02</td><td>set-row screenshot</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (25s):</strong> “Log every rep” — sets, reps, rest timer, RIR</p>
       <p class="format"><strong>📱 Static:</strong> “Active workout mode &gt; Notes app”</p>
       <p class="format"><strong>📖 Stories:</strong> Poll “Do you log RIR?” → educate in follow-up</p>
@@ -431,18 +519,27 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 10 — Offline (algorithm boost)</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>03+Canva</td><td>List #1 #2 → log-offline #3</td><td>TREND+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>CAM+03</td><td>Gym bag → phone slide</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (20s):</strong> “Things that just make sense” — offline logging as #3</p>
       <p class="format"><strong>📱 Carousel:</strong> “Gym bag essentials” — last slide: ForgeRep on phone</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 11 — Nutrition pain</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>01+04</td><td>protein bar focus → bars-update</td><td>VO or CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>Protein science 5 slides</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “You hit calories but miss protein” → home protein bar</p>
       <p class="format"><strong>📱 Carousel:</strong> “Protein targets from science” (5 slides) — not medical advice</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 12 — Time budget</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>05</td><td>Step 8 schedule screen</td><td>VO or CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>05</td><td>Step 8 screenshot</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (25s):</strong> “Only 3 days a week?” — onboarding schedule screen</p>
       <p class="format"><strong>📱 Static:</strong> “Your plan fits YOUR schedule — not a 6-day split.”</p>
       <p class="format"><strong>📖 Stories:</strong> Poll — 2-3 / 4-5 / 6+ training days</p>
@@ -450,12 +547,19 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 13 — Equipment-aware</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>05+06</td><td>equipment chips → substitution</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>06</td><td>Substitution slides</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “Home gym vs commercial gym” — equipment onboarding</p>
       <p class="format"><strong>📱 Carousel:</strong> “No barbell? No problem.” — substitutions</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 14 — Week 2 recap + Batch Day 3</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>Repurpose</td><td>Re-trim top Reel from Insights</td><td>TREND</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>FAQ 6 slides</td><td>—</td><td>Canva</td></tr>
+      <tr><td>⏱</td><td>MBS</td><td>Schedule Week 3</td><td>—</td><td>MBS</td></tr></table>
       <p class="format"><strong>🎬 Reel:</strong> “Stop winging it” (20s)</p>
       <p class="format"><strong>📱 Carousel:</strong> FAQ — free? offline? iOS/Android? evidence? AI? credit card?</p>
       <p class="format"><strong>📖 Stories:</strong> AMA — answer FAQ in replies</p>
@@ -469,6 +573,9 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 15 — Dashboard accountability</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>01</td><td>Full home scroll</td><td>VO or CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>01</td><td>Annotated screenshot</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “Open the app. Know where you stand.” — home macros + weekly workouts</p>
       <p class="format"><strong>📱 Carousel:</strong> “Accountability at a glance” — annotated screenshot</p>
       <p class="format"><strong>⏱ Giveaway option:</strong> Follow + tag gym buddy + signup screenshot (check local rules)</p>
@@ -476,24 +583,36 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 16 — Progressive overload</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>02+08</td><td>progression-hint → strength-chart</td><td>VO+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>02</td><td>progression-hint screenshot</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (35s):</strong> “How ForgeRep progresses your weights” — RIR / progression UI</p>
       <p class="format"><strong>📱 Static:</strong> “Progressive overload — tracked automatically”</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 17 — Projections</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>08</td><td>projection-chart zoom</td><td>VO or CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>08</td><td>Trends + measurements</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (25s):</strong> “30-day weight projection” — progress chart</p>
       <p class="format"><strong>📱 Carousel:</strong> “Progress isn’t just the scale” — measurements, trends</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 18 — Deload weeks</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>07+02</td><td>deload rule → week plan</td><td>VO required</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>Recovery slides</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “Why your program includes deload weeks” — every ~6 weeks</p>
       <p class="format"><strong>📱 Carousel:</strong> “Recovery is programmed in” — sleep, deload, mobility</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 19 — Goals showcase</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>05</td><td>5 goal taps fast cut</td><td>BEAT</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>5 goal icons</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (20s):</strong> “Pick your goal” — Fat loss · Bodybuilding · Powerlifting · Strength · Recomp</p>
       <p class="format"><strong>📱 Static:</strong> “One app. Every goal.”</p>
       <p class="format"><strong>📖 Stories:</strong> Poll each goal type across 5 stories</p>
@@ -501,12 +620,18 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 20 — Community teaser (Pro)</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>09</td><td>leaderboard → rival → habit (label Pro)</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>09</td><td>Habit score slides</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “Train with rivals, not alone” — leaderboard, rival — label Pro feature</p>
       <p class="format"><strong>📱 Carousel:</strong> “Accountability layer” — habit score simplified</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 21 — Week 3 recap + Batch Day 4</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>Repurpose</td><td>Repost top Reel in IG</td><td>original</td><td>IG</td></tr>
+      <tr><td>⏱</td><td>CAM</td><td>10 hook clips 15s</td><td>VO/TREND</td><td>Camera</td></tr></table>
       <p class="format"><strong>🎬 Reel:</strong> Repost best performer — “In case you missed it”</p>
       <p class="format"><strong>📱 Carousel:</strong> “Evidence-backed rules we use” — 5 examples</p>
       <p class="format"><strong>⏱ Batch Day 4:</strong> Film 10 hook clips (15s each) for Week 4</p>
@@ -519,24 +644,36 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 22 — Built for real gym sessions</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>03+02+10</td><td>offline → set → sync montage</td><td>VO or BEAT</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>Founder story 5 slides</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> Montage offline + logging + rest + sync — “spreadsheets weren’t enough”</p>
       <p class="format"><strong>📱 Carousel:</strong> “Why we built ForgeRep” — founder story (5 slides)</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 23 — Comparison</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>02+CAM</td><td>Notes app vs set-row split</td><td>TREND or CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>One app graphic</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (25s):</strong> “Spreadsheet vs ForgeRep” — messy notes vs clean UI (no competitor names)</p>
       <p class="format"><strong>📱 Static:</strong> “Your program + macros + progress = one app”</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 24 — Free tier push</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>01–06 mix</td><td>2s/feature + green checks</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>Free vs Pro matrix</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (35s):</strong> “Everything you need to train seriously — $0” — green checkmarks</p>
       <p class="format"><strong>📱 Carousel:</strong> Free vs Pro vs Pro+ simplified — end “Start on Free”</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 25 — Hard CTA</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>05+02</td><td>signup → onboarding → week-plan</td><td>VO direct</td><td>CapCut</td></tr>
+      <tr><td>📖</td><td>05</td><td>8-frame signup stories</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (20s):</strong> “If you’re starting Monday…” → signup → onboarding → first workout</p>
       <p class="format"><strong>📱 Static:</strong> Bold CTA: “Create free account → link in bio”</p>
       <p class="format"><strong>📖 Stories:</strong> 8-frame signup walkthrough · link every 2nd frame</p>
@@ -544,30 +681,45 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 26 — Workout music</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>10</td><td>music-picker vibes</td><td>BEAT+CAP</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>4 vibe cards</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (20s):</strong> “Pick a vibe. Hit play.” — Spotify picker</p>
       <p class="format"><strong>📱 Carousel:</strong> 4 vibes — Focus / Pump / Cardio / Cooldown</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 27 — Integrations (Pro+)</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>10</td><td>integrations scroll (label Pro+)</td><td>CAP+BEAT</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>10</td><td>Integrations screenshot</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (25s):</strong> “Connect Fitbit / wearables” — integrations screen</p>
       <p class="format"><strong>📱 Static:</strong> “Free to train. Upgrade when you want automation.”</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 28 — Objection handling</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>05</td><td>Experience level taps</td><td>VO</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>5 beginner tips</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (30s):</strong> “Is this for beginners?” — experience levels + scaling</p>
       <p class="format"><strong>📱 Carousel:</strong> “Beginner mistakes ForgeRep helps you avoid” (5 tips)</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 29 — Best-of montage</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>01–07</td><td>1–2s best of each batch</td><td>BEAT epic</td><td>CapCut</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>10 lesson recap</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (45s):</strong> Days 1–28 montage — “day 30 is your turn”</p>
       <p class="format"><strong>📱 Carousel:</strong> “Month 1 recap” — 10 slides, one lesson each</p>
     </div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 30 — Conversion day</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>01+03+05</td><td>home → offline → signup 3s each</td><td>VO or BEAT</td><td>CapCut</td></tr>
+      <tr><td>📖</td><td>IG</td><td>Link all day + reshare</td><td>—</td><td>IG</td></tr></table>
       <p class="format"><strong>🎬 Reel (15s):</strong> Direct CTA — free · evidence plan · offline logging · link in bio</p>
       <p class="format"><strong>📱 Static:</strong> Logo + “Start free today” + URL</p>
       <p class="format"><strong>📖 Stories:</strong> All day — link sticker · reshare every post · “DM GOAL for plan fit”</p>
@@ -575,6 +727,9 @@ Start free ↓</pre></div>
 
     <div class="day-block">
       <div class="day-title"><strong>Day 31 — Next month tease</strong></div>
+      <table class="prod-table"><tr><th>Piece</th><th>Batch</th><th>Clips</th><th>Audio</th><th>Tool</th></tr>
+      <tr><td>🎬</td><td>CAM</td><td>You to camera — ask Month 2</td><td>VO or TREND</td><td>Camera</td></tr>
+      <tr><td>📱</td><td>Canva</td><td>5-step checklist</td><td>—</td><td>Canva</td></tr></table>
       <p class="format"><strong>🎬 Reel (20s):</strong> “What should Month 2 cover?” — form, meal prep, programs</p>
       <p class="format"><strong>📱 Carousel:</strong> Day 31 checklist — sign up · onboarding · first workout · first meal · progress</p>
       <p class="format"><strong>📖 Stories:</strong> Poll Month 2 content + thank you + link</p>

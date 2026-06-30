@@ -7,7 +7,7 @@
 > **Cadence:** 1 Reel + 1 Carousel/static daily + 5–8 Stories (~2 feed touchpoints/day)  
 > **Time budget:** ~45–60 min/day after batch setup; ~4 hours on batch days (Days 0, 7, 14, 21)
 
-**Last updated:** 2026-06-26
+**Last updated:** 2026-06-30
 
 ---
 
@@ -20,14 +20,15 @@
 3. [Content system](#content-system)
 4. [Daily rhythm](#daily-rhythm)
 5. [Week themes](#week-themes)
-6. [Day-by-day calendar](#day-by-day-calendar)
-7. [Speed systems](#speed-systems)
-8. [Hook bank](#hook-bank)
-9. [Hashtag groups](#hashtag-groups)
-10. [Growth accelerators](#growth-accelerators)
-11. [Metrics](#metrics)
-12. [First 48 hours checklist](#first-48-hours-checklist)
-13. [Brand references (in-repo)](#brand-references-in-repo)
+6. [Phone-first production guide](#phone-first-production-guide)
+7. [Day-by-day calendar](#day-by-day-calendar)
+8. [Speed systems](#speed-systems)
+9. [Hook bank](#hook-bank)
+10. [Hashtag groups](#hashtag-groups)
+11. [Growth accelerators](#growth-accelerators)
+12. [Metrics](#metrics)
+13. [First 48 hours checklist](#first-48-hours-checklist)
+14. [Brand references (in-repo)](#brand-references-in-repo)
 
 ---
 
@@ -507,11 +508,76 @@ Upload to iCloud/Google Drive. Import into CapCut project **ForgeRep Batch Day 0
 
 ---
 
+## Phone-first production guide
+
+Use this section with the day-by-day specs below. **Goal:** most days you only touch your phone — CapCut for Reels, Canva for carousels/statics, Instagram for Stories. Batch Day 0 screen recordings live in Photos (or iCloud); trim the same files all month.
+
+### Batch clip library (Day 0 — keep in Photos album “ForgeRep Batch”)
+
+| File | Recording | Route | Trim these clips (filename hint) |
+|------|-----------|-------|----------------------------------|
+| **batch-01-home** | 1 — Home | `/home` | `greeting` 3s · `this-week` 5s · `today-macros` 5s · `body-of-work` 3s |
+| **batch-02-workout** | 2 — Workout | `/workout` | `week-plan` 3s · `start-btn` 2s · `set-row` 4s · `effort-rir` 3s · `rest-timer` 4s · `progression-hint` 3s |
+| **batch-03-offline** | 3 — Offline | Airplane + workout | `airplane-on` 2s · `log-offline` 5s · `sync-banner` 3s · `synced` 2s |
+| **batch-04-nutrition** | 4 — Nutrition | `/nutrition` | `macro-bars` 4s · `quick-log` 5s · `bars-update` 3s · `example-plate` 4s |
+| **batch-05-onboarding** | 5 — Onboarding | `/signup` → 10 steps | Full take → speed **1.5×** in CapCut to 45–60s montage |
+| **batch-06-exercises** | 6 — Library | `/exercises` | `search` 3s · `gif-demo` 4s · `muscle-map` 3s · `substitution` 4s |
+| **batch-07-evidence** | 7 — Evidence | `/evidence` | `header` 3s · `rule-card` 5s · `citation` 3s · `scroll-rules` 4s |
+| **batch-08-progress** | 8 — Progress | `/progress` | `projection-chart` 5s · `strength-chart` 4s (Pro demo) · `log-form` 3s |
+| **batch-09-community** | 9 — Community | `/community` | `leaderboard` 4s · `rival-card` 3s · `habit-score` 4s — **Pro demo account** |
+| **batch-10-broll** | 10 — B-roll | Various | `nav-tabs` 6s · `integrations` 4s · `music-picker` 4s · `pwa-icon` 3s |
+
+**Demo account rule:** Clips from **batch-09**, **batch-08** (Training tab), and **batch-10** (integrations) = paid demo account. Label “Pro” or “Pro+” on screen or in caption.
+
+### Audio legend
+
+| Code | When to use | How (phone) |
+|------|-------------|-------------|
+| **VO** | Explainer Reels, trust/education | CapCut → **Text-to-speech** (fast) OR record voiceover in quiet room · add **auto-captions** |
+| **CAP** | Screen demos where UI tells the story | No music, or CapCut **Ambient** bed at **8–12%** volume · **auto-captions required** |
+| **TREND** | Relatable/humor, reach plays | CapCut → **Sounds** → trending fitness/gym clip · bold **text hooks** on screen (no VO needed) |
+| **BEAT** | Montage / energy / feature demos | CapCut → **Music** → search “gym phonk” or “motivation instrumental” · no lyrics · CAP optional |
+| **CAM** | Skits, founder story, gym B-roll | Phone camera · TREND or BEAT underneath · text overlays |
+| **—** | Carousels, statics, Stories | N/A |
+
+**Default if unsure:** screen recording = **CAP** or **BEAT + CAP** · skit = **TREND** · educational myth-bust = **VO**.
+
+### Phone workflow (repeat daily)
+
+| When | Task | App | Time |
+|------|------|-----|------|
+| **Batch days 0, 7, 14, 21** | Record or film B-roll; write next week captions | Camera + Notes | 2–4 hrs |
+| **7–9 AM** | Trim batch clips → audio → captions → export Reel | **CapCut** | 15–25 min |
+| **12–2 PM** | Duplicate Canva template → swap text/screenshot → post Carousel/static | **Canva** | 15–25 min |
+| **5–9 PM** | Poll → link sticker → reshare feed post | **Instagram** | 10 min |
+| **Weekly** | Schedule feed in advance | **Meta Business Suite** app | 30 min |
+
+**Carousel screenshots on phone:** Pause batch video in Photos → screenshot → AirDrop to self → Canva **Uploads** → drop on slide.
+
+**CapCut project tip:** One project per week (`ForgeRep W1`) with subfolders per batch file — duplicate timeline, swap clip order per day.
+
+### Production spec columns (under each day)
+
+| Column | Meaning |
+|--------|---------|
+| **Batch** | Which `batch-XX` file(s) — or **Canva** / **CAM** / **Repurpose** |
+| **Clips** | Exact trims or slide content |
+| **Audio** | VO · CAP · TREND · BEAT · CAM · — |
+| **Tool** | CapCut · Canva · IG · Camera · MBS (Meta Business Suite) |
+
+---
+
 ## Day-by-day calendar
 
 ### Week 1 — Launch & identity
 
 #### Day 1 — What is ForgeRep?
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **01** + **02** + **04** | 01: `greeting` 3s → `this-week` 5s → 02: `start-btn` + `set-row` 5s → 04: `macro-bars` 4s → logo end card | **VO** (preferred) or **BEAT** + CAP · on-screen hook first 2s | CapCut | 20m |
+| 📱 Carousel | **Canva** — Carousel template | 5 text slides (table below) — optional 01 `this-week` screenshot on slide 2 | — | Canva | 25m |
+| 📖 Stories | **01** screenshot + IG | Poll “Track macros?” → reshare Reel → link sticker → question “#1 goal?” | — | IG | 10m |
 
 **🎬 Reel — “Not another workout list” (60s)** ⏱ 20 min
 
@@ -555,6 +621,12 @@ Start free — link in bio.
 
 #### Day 2 — Offline gym logging
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **03** | `airplane-on` 2s → `log-offline` 6s → `sync-banner` 3s → `synced` 2s → text end card | **TREND** (POV format) + CAP · or **VO** 1 sentence | CapCut | 15m |
+| 📱 Static | **Canva** — Quote card | Text only: “Works offline. Syncs when signal returns.” · optional 03 `log-offline` screenshot bg | — | Canva | 10m |
+| 📖 Stories | **03** + IG | Split frame: screenshot `airplane-on` / `log-offline` → link sticker | — | IG | 5m |
+
 **🎬 Reel — “POV: gym has no signal” (25s)** ⏱ 15 min
 
 - Hook: “POV: your gym’s WiFi gave up but your workout didn’t”
@@ -570,6 +642,12 @@ Start free — link in bio.
 ---
 
 #### Day 3 — Evidence-based (trust)
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **07** | `header` 3s → `rule-card` + `citation` 8s → `scroll-rules` 6s → logo | **VO** (trust tone) + CAP · hook text 0–2s on screen | CapCut | 20m |
+| 📱 Carousel | **Canva** — Myth vs Fact template | 6 slides (table below) — no capture required | — | Canva | 30m |
+| 📖 Stories | **Canva** + IG | Quiz slide “Deload optional?” → answer story with 07 `rule-card` screenshot | — | Canva + IG | 10m |
 
 **🎬 Reel — “Your plan isn’t from ChatGPT” (35s)** ⏱ 20 min
 
@@ -594,6 +672,12 @@ Start free — link in bio.
 
 #### Day 4 — Nutrition accountability
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **04** + **01** | Split: generic calculator graphic (Canva 2s) → 04: `macro-bars` + `bars-update` 8s → 01: `today-macros` 4s | **VO** or **CAP** · emphasize protein bar | CapCut | 15m |
+| 📱 Carousel | **04** screenshots | Slide 1–4: `quick-log` → food selected → `bars-update` → 01 `today-macros` | — | Photos + Canva | 20m |
+| 📖 Stories | **04** | `example-plate` scroll + “What I ate today” text overlay | — | IG | 10m |
+
 **🎬 Reel — “Macros that match your program” (30s)** ⏱ 15 min
 
 - Hook: “Generic macro calculators vs targets from YOUR plan.”
@@ -607,6 +691,12 @@ Step screenshots from batch: search food → select → see macros update → ho
 ---
 
 #### Day 5 — Onboarding / signup push
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **05** | Full onboarding montage — trim to 45s · **1.5× speed** in CapCut | **BEAT** (upbeat) + CAP · hook “Free in 60 seconds” | CapCut | 10m |
+| 📱 Carousel | **Canva** + **05** screenshots | 4 slides: pick 4 onboarding steps as backgrounds | — | Canva | 15m |
+| 📖 Stories | IG native | “Free — no credit card” text × 3 frames + link sticker each | — | IG | 5m |
 
 **🎬 Reel — “Free account in under 60 seconds” (45s, 1.5× speed)** ⏱ 10 min
 
@@ -625,6 +715,12 @@ Hook: “Your personalized program is one signup away.” Fast-cut onboarding sc
 
 #### Day 6 — Exercise library
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **06** | `search` 3s → `gif-demo` 4s → `muscle-map` 3s → `substitution` 4s | **BEAT** + CAP · fast cuts | CapCut | 10m |
+| 📱 Static | **06** screenshot | `substitution` frame + text “Equipment busy? Substitutions built in.” | — | Canva | 10m |
+| 📖 Stories | **06** | Poll Bench/Squat/Deadlift → reply story with matching `gif-demo` clip | — | IG | 10m |
+
 **🎬 Reel — “800+ exercises with demos” (20s)** ⏱ 10 min
 
 Quick montage: search exercise → GIF plays → muscle heatmap → substitution swap.
@@ -636,6 +732,13 @@ Quick montage: search exercise → GIF plays → muscle heatmap → substitution
 ---
 
 #### Day 7 — Week 1 recap + Batch Day 2
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **07** + **03** + **01** | 3s each: evidence → offline sync → `this-week` · 15s total | **BEAT** montage + CAP | CapCut | 20m |
+| 📱 Carousel | **Canva** | 7 bullet slides (list below) — icons only, no capture | — | Canva | 25m |
+| 📖 Stories | IG poll | “What next week?” Offline / Macros / Programs / Community | — | IG | 5m |
+| ⏱ Batch | **CAM** | Film 10× gym B-roll clips (5s each): bad WiFi, gym bag, meal prep, bench, phone on rack | TREND optional | Camera | 2 hrs |
 
 **🎬 Reel — “Week 1 in 15 seconds”** ⏱ 20 min — montage: Evidence · Offline · Accountability
 
@@ -658,6 +761,12 @@ Quick montage: search exercise → GIF plays → muscle heatmap → substitution
 
 #### Day 8 — No plan
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **CAM** + **01** + **02** | Scenes 1–4: you on bench looking lost (CAM) → Scene 5: 02 `week-plan` + 01 `this-week` 5s | **TREND** (“oh no” / relatable) + text overlays per scene | Camera + CapCut | 25m |
+| 📱 Carousel | **Canva** | 6 text slides “5 signs you need a real program” | — | Canva | 25m |
+| 📖 Stories | **01** | Reshare Reel + “Which scene is you?” poll | — | IG | 5m |
+
 **🎬 Reel — Relatable skit (30s)** ⏱ 25 min
 
 | Scene | Text |
@@ -676,6 +785,12 @@ Film: sitting on bench looking at phone; cut between angles. CapCut “oh no” 
 
 #### Day 9 — RIR / logging
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **02** | `set-row` 4s → `effort-rir` 4s → `rest-timer` 4s → `progression-hint` 3s | **CAP** + quiet **BEAT** · label “RIR = reps in reserve” text | CapCut | 10m |
+| 📱 Static | **02** screenshot | `set-row` close-up + text “Active workout &gt; Notes app” | — | Canva | 10m |
+| 📖 Stories | IG | Poll “Log RIR?” → follow-up text story explaining Good = 1–2 left | — | IG | 5m |
+
 **🎬 Reel — “Log every rep” (25s)** ⏱ 10 min
 
 Show sets, reps, rest timer, RIR if visible in UI.
@@ -688,6 +803,12 @@ Show sets, reps, rest timer, RIR if visible in UI.
 
 #### Day 10 — Offline (algorithm boost)
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **03** + **10** | List format text slides (Canva) #1 #2 → #3 `log-offline` 5s from batch-03 | **TREND** “things that make sense” + CAP | CapCut + Canva | 15m |
+| 📱 Carousel | **CAM** + **Canva** | Gym bag photos 4 slides → last slide phone with ForgeRep (10 `pwa-icon` or 03 screenshot) | — | Camera + Canva | 20m |
+| 📖 Stories | **03** | Reshare Reel + link | — | IG | 5m |
+
 **🎬 Reel — Trend format (20s)** ⏱ 15 min — “Things that just make sense” → offline logging as #3 in list
 
 **📱 Carousel — “Gym bag essentials” — last slide: ForgeRep on your phone
@@ -695,6 +816,12 @@ Show sets, reps, rest timer, RIR if visible in UI.
 ---
 
 #### Day 11 — Nutrition pain
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **01** + **04** | Hook text → 01: `today-macros` pause on **protein bar** 6s → 04: `bars-update` after high-protein log | **VO** (short) or **CAP** · “calories ≠ protein” text | CapCut | 15m |
+| 📱 Carousel | **Canva** | 5 slides protein science + disclaimer footer | — | Canva | 25m |
+| 📖 Stories | **04** | `macro-bars` screenshot + “Protein goal today?” sticker | — | IG | 5m |
 
 **🎬 Reel — “Tracking macros without a plan” (30s)** ⏱ 15 min
 
@@ -705,6 +832,12 @@ Hook: “You hit your calories but miss your protein — every time.” → show
 ---
 
 #### Day 12 — Time budget
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **05** | Onboarding step 8 only: sessions/week + minutes — loop 3× or slow zoom | **VO** or **CAP** · “3 days? 45 min? Program adapts.” | CapCut | 15m |
+| 📱 Static | **05** screenshot | Step 8 screen + headline text overlay in Canva | — | Canva | 10m |
+| 📖 Stories | IG poll | 2–3 / 4–5 / 6+ training days | — | IG | 5m |
 
 **🎬 Reel — “Only 3 days a week?” (25s)** ⏱ 15 min
 
@@ -718,6 +851,12 @@ Show onboarding schedule screen: program scales to your time budget.
 
 #### Day 13 — Equipment-aware
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **05** + **06** | 05 step 6 equipment chips → 06 `substitution` 5s | **BEAT** + CAP | CapCut | 15m |
+| 📱 Carousel | **06** screenshots | `substitution` list + 3 text slides home vs commercial gym | — | Canva | 20m |
+| 📖 Stories | **06** | Show one `substitution` swipe as 3-frame story | — | IG | 5m |
+
 **🎬 Reel — “Home gym vs commercial gym” (30s)** ⏱ 15 min
 
 Show equipment selection in onboarding → program adapts.
@@ -727,6 +866,13 @@ Show equipment selection in onboarding → program adapts.
 ---
 
 #### Day 14 — Week 2 recap + Batch Day 3
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **Repurpose** | Re-trim best clip from Days 8–13 (Insights → top Reel) · new hook text “Stop winging it” | Same as original or **TREND** | CapCut | 10m |
+| 📱 Carousel | **Canva** | FAQ 6 slides (all text) | — | Canva | 25m |
+| 📖 Stories | IG | AMA sticker — answer in replies | — | IG | 15m |
+| ⏱ Batch | **Notes** + **MBS** | Write Week 3 captions in Notes · schedule in Meta Business Suite app | — | Phone | 2 hrs |
 
 **🎬 Reel — “Stop winging it” (20s)**
 
@@ -742,6 +888,12 @@ Show equipment selection in onboarding → program adapts.
 
 #### Day 15 — Dashboard accountability
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **01** | Full scroll: `greeting` → `this-week` → `today-macros` → `body-of-work` · 25–30s | **VO** or **CAP** · “One screen. Full picture.” | CapCut | 10m |
+| 📱 Carousel | **01** screenshot | Single home screenshot — add arrows in Canva (annotate) | — | Canva | 20m |
+| 📖 Stories | **01** | `this-week` screenshot + “How’s your week going?” poll | — | IG | 5m |
+
 **🎬 Reel — “Open the app. Know where you stand.” (30s)** ⏱ 10 min
 
 Home screen: macros + weekly workouts + body of work.
@@ -751,6 +903,12 @@ Home screen: macros + weekly workouts + body of work.
 ---
 
 #### Day 16 — Progressive overload
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **02** + **08** | 02: `progression-hint` 5s → `effort-rir` 3s → 08: `strength-chart` 5s (Pro demo) or 02 history | **VO** (explain progression) + CAP | CapCut | 20m |
+| 📱 Static | **02** screenshot | `progression-hint` card + headline | — | Canva | 10m |
+| 📖 Stories | **02** | Clip `effort-rir` with text “Good = 1–2 reps left” | — | IG | 5m |
 
 **🎬 Reel — “How ForgeRep progresses your weights” (35s)** ⏱ 20 min
 
@@ -762,6 +920,12 @@ Screen record progression/RIR suggestion; or text over workout history chart.
 
 #### Day 17 — Projections
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **08** | `projection-chart` 8s slow zoom → optional `log-form` 3s | **VO** or **CAP** · “30-day forecast” text | CapCut | 10m |
+| 📱 Carousel | **08** screenshots | Trends tab + measurement list — 4–5 slides | — | Canva | 20m |
+| 📖 Stories | **08** | `projection-chart` screenshot + link | — | IG | 5m |
+
 **🎬 Reel — “30-day weight projection” (25s)** ⏱ 10 min
 
 Show projection chart from progress tab.
@@ -772,6 +936,12 @@ Show projection chart from progress tab.
 
 #### Day 18 — Deload weeks
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **07** + **02** | 07: rule card mentioning deload → 02: `week-plan` showing deload session name if visible | **VO** required · cite “~every 6 weeks” · educational tone | CapCut | 20m |
+| 📱 Carousel | **Canva** | Recovery slides — deload, sleep, mobility (text + icons) | — | Canva | 25m |
+| 📖 Stories | **07** | Reshare Day 3 quiz or new “Deload = recovery week” text | — | IG | 5m |
+
 **🎬 Reel — “Why your program includes deload weeks” (30s)** ⏱ 20 min
 
 Educational voiceover; cite “every ~6 training weeks” from marketing evidence points.
@@ -781,6 +951,12 @@ Educational voiceover; cite “every ~6 training weeks” from marketing evidenc
 ---
 
 #### Day 19 — Goals showcase
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **05** | Step 2 goal selection — cut between 5 goal taps (split into 5 clips) | **BEAT** + text labels per goal | CapCut | 15m |
+| 📱 Static | **Canva** | 5 goal icons + “One app. Every goal.” | — | Canva | 15m |
+| 📖 Stories | **05** | 5 stories — poll one goal type each | — | IG | 10m |
 
 **🎬 Reel — “Pick your goal” (20s)** ⏱ 15 min
 
@@ -794,6 +970,12 @@ Fast cuts: Fat loss · Bodybuilding · Powerlifting · Strength · Recomposition
 
 #### Day 20 — Community teaser (Pro)
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **09** | `leaderboard` 4s → `rival-card` 4s → `habit-score` 4s · on-screen **“Pro feature”** | **BEAT** + CAP | CapCut | 15m |
+| 📱 Carousel | **09** screenshots | Habit score breakdown simplified — 4 slides | — | Canva | 20m |
+| 📖 Stories | **09** | `rival-card` screenshot · “Train with a rival” text | — | IG | 5m |
+
 **🎬 Reel — “Train with rivals, not alone” (30s)** ⏱ 15 min
 
 Community tab: leaderboard, rank strip, weekly rival — “Pro feature — core training still free”
@@ -803,6 +985,12 @@ Community tab: leaderboard, rank strip, weekly rival — “Pro feature — core
 ---
 
 #### Day 21 — Week 3 recap + Batch Day 4
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **Repurpose** | Instagram → Insights → top Reel → repost with sticker “Missed this?” | Keep original audio | IG native | 5m |
+| 📱 Carousel | **07** + **Canva** | 5 slides: screenshot `rule-card` + citation text from evidence page | — | Canva | 25m |
+| ⏱ Batch | **CAM** | Film 10 hook clips (15s each) — you to camera OR gym B-roll for Week 4 | **TREND** or **VO** hook only | Camera | 2 hrs |
 
 **🎬 Reel — Repost best performer with new hook** (check Insights → repost best Reel with “In case you missed it”)
 
@@ -816,6 +1004,12 @@ Community tab: leaderboard, rank strip, weekly rival — “Pro feature — core
 
 #### Day 22 — Built for real gym sessions
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **03** + **02** + **10** | Montage: `log-offline` → `set-row` → `rest-timer` → `synced` → 10 `nav-tabs` | **VO** founder tone or **BEAT** + CAP | CapCut | 15m |
+| 📱 Carousel | **Canva** + **CAM** | 5 slides founder story — optional gym photo as bg | — | Canva | 25m |
+| 📖 Stories | Reshare | Reel + link | — | IG | 5m |
+
 **🎬 Reel — “Built for real gym sessions” (30s)** ⏱ 15 min
 
 Montage: offline, logging, rest timer, sync — “We built this because spreadsheets and random PDFs weren’t enough.”
@@ -825,6 +1019,12 @@ Montage: offline, logging, rest timer, sync — “We built this because spreads
 ---
 
 #### Day 23 — Comparison
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **02** + **CAM** | Split screen: Notes app messy list (CAM/Canva) vs 02 `set-row` + `week-plan` | **TREND** or **CAP** · no competitor names | CapCut | 20m |
+| 📱 Static | **Canva** | Text-only comparison graphic | — | Canva | 10m |
+| 📖 Stories | **02** | `week-plan` screenshot + “Structured &gt; random” | — | IG | 5m |
 
 **🎬 Reel — “Spreadsheet vs ForgeRep” (25s)** ⏱ 20 min
 
@@ -836,6 +1036,12 @@ Split: messy notes app vs clean workout UI — don’t name competitors.
 
 #### Day 24 — Free tier push
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **01** + **02** + **03** + **04** + **06** | 2s each feature + green ✓ overlays in CapCut · 35s total | **BEAT** + CAP checklist style | CapCut | 10m |
+| 📱 Carousel | **Canva** | Free vs Pro vs Pro+ — 4 slides (text matrix) | — | Canva | 20m |
+| 📖 Stories | **Canva** | “Everything below is free” list sticker | — | IG | 5m |
+
 **🎬 Reel — “Everything you need to train seriously — $0” (35s)** ⏱ 10 min
 
 Rapid list with checkmarks (green `#22C55E`) over app clips.
@@ -845,6 +1051,12 @@ Rapid list with checkmarks (green `#22C55E`) over app clips.
 ---
 
 #### Day 25 — Hard CTA
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **05** + **02** | 05: signup → onboarding fast cuts → 02: `week-plan` “Monday’s session ready” | **VO** direct · “Starting Monday? Do this today.” | CapCut | 10m |
+| 📱 Static | **Canva** | Bold CTA graphic — logo + “Create free account” | — | Canva | 10m |
+| 📖 Stories | **05** | 8 frames: 2 onboarding screenshots alternating link stickers | — | IG | 15m |
 
 **🎬 Reel — “If you’re starting Monday…” (20s)** ⏱ 10 min
 
@@ -858,6 +1070,12 @@ Hook: “If you’re starting Monday, do this today.” → signup → onboardin
 
 #### Day 26 — Workout music
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **10** | `music-picker` 6s → optional 02 `start-btn` with music playing | **BEAT** (show vibe names on screen) + CAP | CapCut | 10m |
+| 📱 Carousel | **Canva** + **10** | 4 vibe cards: Focus / Pump / Cardio / Cooldown | — | Canva | 15m |
+| 📖 Stories | **10** | Poll “Training music?” Spotify / Apple / None | — | IG | 5m |
+
 **🎬 Reel — “Pick a vibe. Hit play.” (20s)** ⏱ 10 min
 
 Show workout music picker + Spotify deep link — “All tiers. Spotify Premium for in-app controls.”
@@ -867,6 +1085,12 @@ Show workout music picker + Spotify deep link — “All tiers. Spotify Premium 
 ---
 
 #### Day 27 — Integrations (Pro+)
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|------|------|---|
+| 🎬 Reel | **10** | `integrations` 8s scroll Fitbit/Withings cards · label **Pro+** on screen | **CAP** + soft **BEAT** | CapCut | 15m |
+| 📱 Static | **10** screenshot | Integrations card + “Free to train. Upgrade for sync.” | — | Canva | 10m |
+| 📖 Stories | **10** | One integration card + link | — | IG | 5m |
 
 **🎬 Reel — “Connect Fitbit / wearables” (25s)** ⏱ 15 min
 
@@ -878,6 +1102,12 @@ Integrations screen — positions Pro+ without blocking free signup message.
 
 #### Day 28 — Objection handling
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **05** | Step 3 experience levels — tap Beginner → Intermediate → Advanced | **VO** · “Beginner to advanced — program scales” | CapCut | 15m |
+| 📱 Carousel | **Canva** | 5 beginner tips (text slides) | — | Canva | 20m |
+| 📖 Stories | IG | Question box “What’s holding you back?” | — | IG | 10m |
+
 **🎬 Reel — “Is this for beginners?” (30s)** ⏱ 15 min
 
 Onboarding experience levels + program scaling — “Beginner to advanced.”
@@ -888,6 +1118,12 @@ Onboarding experience levels + program scaling — “Beginner to advanced.”
 
 #### Day 29 — Best-of montage
 
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **All batch** | 1–2s best clip from each batch-01 through batch-07 · 45s | **BEAT** epic montage + CAP | CapCut | 30m |
+| 📱 Carousel | **Canva** | 10 slides — one lesson per week/day (text recap) | — | Canva | 30m |
+| 📖 Stories | IG | Countdown “Day 30 tomorrow” + link | — | IG | 5m |
+
 **🎬 Reel — 45s montage Days 1–28** — “31 days of ForgeRep — day 30 is your turn”
 
 **📱 Carousel — “Month 1 recap” — 10 slides, one lesson per slide
@@ -895,6 +1131,12 @@ Onboarding experience levels + program scaling — “Beginner to advanced.”
 ---
 
 #### Day 30 — Conversion day
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **01** + **03** + **05** | 3s each: home → offline sync → onboarding · text CTA end | **VO** short direct sell or **BEAT** + bold text | CapCut | 10m |
+| 📱 Static | **Canva** | Logo + “Start free today” + URL | — | Canva | 5m |
+| 📖 Stories | IG all day | Link sticker every story · reshare feed · “DM GOAL” | — | IG | 20m |
 
 **🎬 Reel — Direct CTA (15s):** Free account. Evidence-based plan. Offline gym logging. Link in bio.
 
@@ -905,6 +1147,12 @@ Onboarding experience levels + program scaling — “Beginner to advanced.”
 ---
 
 #### Day 31 — Next month tease
+
+| Piece | Batch | Clips | Audio | Tool | ⏱ |
+|-------|-------|-------|-------|------|---|
+| 🎬 Reel | **CAM** | You to camera OR text-on-dark — ask “Month 2 topics?” | **VO** or **TREND** | Camera + CapCut | 10m |
+| 📱 Carousel | **Canva** | 5-step checklist (signup → onboarding → workout → meal → progress) | — | Canva | 15m |
+| 📖 Stories | IG | Poll Month 2 topics + thank you + link | — | IG | 10m |
 
 **🎬 Reel — “What should Month 2 cover?” (20s)** ⏱ 10 min
 
