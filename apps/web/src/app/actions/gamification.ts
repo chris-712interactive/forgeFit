@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ensureLeagueTier } from "@/lib/coaching/community-leagues";
+import { canOptIntoCommunity, resolveCommunityBucket } from "@/lib/coaching/community-bucket";
 import { recordCommunityAction } from "@/lib/coaching/community-metrics";
 import type {
   WinPresetCommentKey,
@@ -25,9 +26,18 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("primary_goal, experience_level")
+    .select(
+      "primary_goal, experience_level, date_of_birth, age, parent_consent_at"
+    )
     .eq("id", user.id)
     .single();
+
+  if (optIn) {
+    const consent = canOptIntoCommunity(profile ?? {});
+    if (!consent.allowed) {
+      return { ok: false, error: consent.reason };
+    }
+  }
 
   const { error } = await supabase
     .from("profiles")
@@ -50,6 +60,7 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
       userId: user.id,
       bucketGoal: profile.primary_goal,
       bucketExperience: profile.experience_level,
+      bucketAgeCohort: resolveCommunityBucket(profile)?.bucketAgeCohort,
     });
     void recordCommunityAction(user.id, "opt_in");
   }

@@ -28,6 +28,7 @@ import type {
   FatLossPace,
   FitnessGoal,
   RecompPriority,
+  SportSeasonPhase,
   UnitSystem,
 } from "@/lib/types/profile";
 import type { IntegrationProvider } from "@forgefit/integrations";
@@ -63,6 +64,10 @@ interface ProfileSettingsHubProps {
   initialCurrentWeightKg: number | null;
   initialSessionsPerWeek: number | null;
   initialMinutesPerSession: number | null;
+  initialSportId?: string | null;
+  initialSportPositionId?: string | null;
+  initialSportSeasonPhase?: SportSeasonPhase | null;
+  initialSecondaryGoal?: FitnessGoal | null;
   equipmentSettings: UserEquipmentSettings;
   oneRepMaxes: UserOneRepMaxRow[];
   oneRepMaxesTableReady: boolean;
@@ -99,6 +104,10 @@ export function ProfileSettingsHub({
   initialCurrentWeightKg,
   initialSessionsPerWeek,
   initialMinutesPerSession,
+  initialSportId,
+  initialSportPositionId,
+  initialSportSeasonPhase,
+  initialSecondaryGoal,
   equipmentSettings,
   oneRepMaxes,
   oneRepMaxesTableReady,
@@ -215,6 +224,10 @@ export function ProfileSettingsHub({
             initialCurrentWeightKg={initialCurrentWeightKg}
             initialSessionsPerWeek={initialSessionsPerWeek}
             initialMinutesPerSession={initialMinutesPerSession}
+            initialSportId={initialSportId}
+            initialSportPositionId={initialSportPositionId}
+            initialSportSeasonPhase={initialSportSeasonPhase}
+            initialSecondaryGoal={initialSecondaryGoal}
           />
           <EquipmentSetting initialSettings={equipmentSettings} />
         </div>

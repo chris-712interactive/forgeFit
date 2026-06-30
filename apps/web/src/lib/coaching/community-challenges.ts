@@ -145,6 +145,7 @@ export async function upsertWeeklyChallengeStatus(input: {
   weekStart: string;
   bucketGoal: string;
   bucketExperience: string;
+  bucketAgeCohort?: string;
   sessions: WorkoutSessionRecord[];
   plan: ProgramPlan | null;
   proteinHitDays: number;
@@ -164,6 +165,7 @@ export async function upsertWeeklyChallengeStatus(input: {
       week_start: input.weekStart,
       bucket_goal: input.bucketGoal,
       bucket_experience: input.bucketExperience,
+      bucket_age_cohort: input.bucketAgeCohort ?? "adult",
       challenge_key: definition.key,
       progress_value: metrics.progressValue,
       target_value: definition.targetValue,

@@ -7,6 +7,9 @@ import { countQualitySessionsInLookback } from "@/lib/progression/adherence";
 import { getActiveProgram } from "@/lib/programs/service";
 import { profileFirstName } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
+import {
+  resolveCommunityBucket,
+} from "@/lib/coaching/community-bucket";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { bucketLabel as formatBucketLabel, leagueTierLabel } from "./community-labels";
 import {
@@ -308,7 +311,7 @@ export async function upsertWeeklyLeaderboardScore(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, display_name, email, primary_goal, experience_level, gamification_opt_in, community_suspended"
+      "first_name, last_name, display_name, email, primary_goal, experience_level, gamification_opt_in, community_suspended, date_of_birth, age, parent_consent_at"
     )
     .eq("id", userId)
     .single();
@@ -320,6 +323,11 @@ export async function upsertWeeklyLeaderboardScore(
   const goal = profile.primary_goal;
   const experience = profile.experience_level;
   if (!goal || !experience) {
+    return;
+  }
+
+  const bucket = resolveCommunityBucket(profile);
+  if (!bucket) {
     return;
   }
 
@@ -369,8 +377,9 @@ export async function upsertWeeklyLeaderboardScore(
   const { error } = await supabase.from("leaderboard_entries").upsert(
     {
       user_id: userId,
-      bucket_goal: goal,
-      bucket_experience: experience,
+      bucket_goal: bucket.bucketGoal,
+      bucket_experience: bucket.bucketExperience,
+      bucket_age_cohort: bucket.bucketAgeCohort,
       week_start: weekStart,
       habit_score: habit.score,
       display_label: leaderboardDisplayLabel(profile),
@@ -389,15 +398,17 @@ export async function upsertWeeklyLeaderboardScore(
 
   await ensureLeagueTier({
     userId,
-    bucketGoal: goal,
-    bucketExperience: experience,
+    bucketGoal: bucket.bucketGoal,
+    bucketExperience: bucket.bucketExperience,
+    bucketAgeCohort: bucket.bucketAgeCohort,
   });
 
   await upsertWeeklyChallengeStatus({
     userId,
     weekStart,
-    bucketGoal: goal,
-    bucketExperience: experience,
+    bucketGoal: bucket.bucketGoal,
+    bucketExperience: bucket.bucketExperience,
+    bucketAgeCohort: bucket.bucketAgeCohort,
     sessions,
     plan,
     proteinHitDays,
@@ -415,7 +426,7 @@ export async function getGamificationContext(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "primary_goal, experience_level, gamification_opt_in, community_opt_in_variant, is_community_moderator"
+      "primary_goal, experience_level, gamification_opt_in, community_opt_in_variant, is_community_moderator, date_of_birth, age, parent_consent_at"
     )
     .eq("id", userId)
     .single();
@@ -432,13 +443,14 @@ export async function getGamificationContext(
   });
   const goal = profile?.primary_goal ?? null;
   const experience = profile?.experience_level ?? null;
+  const bucket = profile ? resolveCommunityBucket(profile) : null;
   const bucketLabelValue = formatBucketLabel(goal, experience);
 
   if (!unlocked) {
     return baseGamificationContext({ unlocked: false, optedIn });
   }
 
-  if (!goal || !experience) {
+  if (!goal || !experience || !bucket) {
     return baseGamificationContext({
       unlocked: true,
       optedIn,
@@ -453,6 +465,7 @@ export async function getGamificationContext(
   }
 
   const weekStart = weekStartIso();
+  const ageCohort = bucket.bucketAgeCohort;
 
   const userTier = optedIn ? await getUserLeagueTier(userId) : null;
   const effectiveTier = userTier ?? "bronze";
@@ -469,6 +482,7 @@ export async function getGamificationContext(
       .select("user_id, display_label, habit_score, score_flagged")
       .eq("bucket_goal", goal)
       .eq("bucket_experience", experience)
+      .eq("bucket_age_cohort", ageCohort)
       .eq("week_start", weekStart)
       .order("habit_score", { ascending: false })
       .limit(50),
@@ -486,18 +500,21 @@ export async function getGamificationContext(
       .from("leaderboard_entries")
       .select("user_id", { count: "exact", head: true })
       .eq("bucket_goal", goal)
-      .eq("bucket_experience", experience),
+      .eq("bucket_experience", experience)
+      .eq("bucket_age_cohort", ageCohort),
     supabase
       .from("leaderboard_entries")
       .select("user_id", { count: "exact", head: true })
       .eq("bucket_goal", goal)
       .eq("bucket_experience", experience)
+      .eq("bucket_age_cohort", ageCohort)
       .eq("week_start", weekStart),
     supabase
       .from("community_wins")
       .select("id, user_id, win_type, headline, detail, occurred_at")
       .eq("bucket_goal", goal)
       .eq("bucket_experience", experience)
+      .eq("bucket_age_cohort", ageCohort)
       .is("hidden_at", null)
       .order("occurred_at", { ascending: false })
       .limit(8),
@@ -731,7 +748,7 @@ export async function recordCommunityWin(input: {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("primary_goal, experience_level, gamification_opt_in")
+    .select("primary_goal, experience_level, gamification_opt_in, date_of_birth, age")
     .eq("id", input.userId)
     .single();
 
@@ -739,9 +756,8 @@ export async function recordCommunityWin(input: {
     return;
   }
 
-  const goal = profile.primary_goal;
-  const experience = profile.experience_level;
-  if (!goal || !experience) {
+  const bucket = resolveCommunityBucket(profile);
+  if (!bucket) {
     return;
   }
 
@@ -750,8 +766,9 @@ export async function recordCommunityWin(input: {
     win_type: input.winType,
     headline: input.headline,
     detail: input.detail ?? null,
-    bucket_goal: goal,
-    bucket_experience: experience,
+    bucket_goal: bucket.bucketGoal,
+    bucket_experience: bucket.bucketExperience,
+    bucket_age_cohort: bucket.bucketAgeCohort,
     occurred_at: new Date().toISOString(),
   });
 

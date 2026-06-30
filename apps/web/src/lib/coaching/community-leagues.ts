@@ -143,6 +143,7 @@ export async function ensureLeagueTier(input: {
   userId: string;
   bucketGoal: string;
   bucketExperience: string;
+  bucketAgeCohort?: string;
 }): Promise<LeagueTier | null> {
   const supabase = await createClient();
   const { data: existing, error: readError } = await supabase
@@ -163,7 +164,10 @@ export async function ensureLeagueTier(input: {
   if (existing) {
     if (
       existing.bucket_goal === input.bucketGoal &&
-      existing.bucket_experience === input.bucketExperience
+      existing.bucket_experience === input.bucketExperience &&
+      (input.bucketAgeCohort == null ||
+        (existing as { bucket_age_cohort?: string }).bucket_age_cohort ===
+          input.bucketAgeCohort)
     ) {
       return parseTier(existing.tier as string);
     }
@@ -173,6 +177,9 @@ export async function ensureLeagueTier(input: {
       .update({
         bucket_goal: input.bucketGoal,
         bucket_experience: input.bucketExperience,
+        ...(input.bucketAgeCohort
+          ? { bucket_age_cohort: input.bucketAgeCohort }
+          : {}),
         tier: "bronze",
         updated_at: new Date().toISOString(),
       })
@@ -188,6 +195,7 @@ export async function ensureLeagueTier(input: {
     user_id: input.userId,
     bucket_goal: input.bucketGoal,
     bucket_experience: input.bucketExperience,
+    bucket_age_cohort: input.bucketAgeCohort ?? "adult",
     tier: "bronze",
   });
 

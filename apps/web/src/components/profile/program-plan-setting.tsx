@@ -5,7 +5,9 @@ import {
   updatePlanSettings,
 } from "@/app/actions/program";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { SportPlanFields } from "@/components/profile/sport-plan-fields";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import { getSportById } from "@forgefit/evidence-kb";
 import {
   FAT_LOSS_PACE_OPTIONS,
   FITNESS_GOALS,
@@ -19,6 +21,7 @@ import type {
   FatLossPace,
   FitnessGoal,
   RecompPriority,
+  SportSeasonPhase,
 } from "@/lib/types/profile";
 import {
   formatWeight,
@@ -37,6 +40,10 @@ interface ProgramPlanSettingProps {
   initialCurrentWeightKg: number | null;
   initialSessionsPerWeek: number | null;
   initialMinutesPerSession: number | null;
+  initialSportId?: string | null;
+  initialSportPositionId?: string | null;
+  initialSportSeasonPhase?: SportSeasonPhase | null;
+  initialSecondaryGoal?: FitnessGoal | null;
 }
 
 export function ProgramPlanSetting({
@@ -47,6 +54,10 @@ export function ProgramPlanSetting({
   initialCurrentWeightKg,
   initialSessionsPerWeek,
   initialMinutesPerSession,
+  initialSportId,
+  initialSportPositionId,
+  initialSportSeasonPhase,
+  initialSecondaryGoal,
 }: ProgramPlanSettingProps) {
   const router = useRouter();
   const unit = useUnitPreference();
@@ -79,7 +90,26 @@ export function ProgramPlanSetting({
     todayScheduleStartIso()
   );
 
-  const showBodyComposition = goal === "fat_loss" || goal === "recomposition";
+  const initialSport = getSportById(initialSportId ?? undefined);
+  const [sportCategoryId, setSportCategoryId] = useState(
+    initialSport?.categoryId ?? ""
+  );
+  const [sportId, setSportId] = useState(initialSportId ?? "");
+  const [sportPositionId, setSportPositionId] = useState(
+    initialSportPositionId ?? ""
+  );
+  const [sportSeasonPhase, setSportSeasonPhase] = useState<SportSeasonPhase>(
+    initialSportSeasonPhase ?? "general_prep"
+  );
+  const [secondaryGoal, setSecondaryGoal] = useState<FitnessGoal | "">(
+    initialSecondaryGoal ?? ""
+  );
+
+  const showBodyComposition =
+    goal === "fat_loss" ||
+    goal === "recomposition" ||
+    (goal === "sport_performance" && secondaryGoal === "fat_loss") ||
+    (goal === "sport_performance" && secondaryGoal === "recomposition");
   const goalWeightInvalid =
     goalWeightKg != null &&
     initialCurrentWeightKg != null &&
@@ -124,8 +154,25 @@ export function ProgramPlanSetting({
     runAction(() =>
       updatePlanSettings({
         primary_goal: goal,
-        fat_loss_pace: goal === "fat_loss" ? fatLossPace : undefined,
-        recomp_priority: goal === "recomposition" ? recompPriority : undefined,
+        sport_id: goal === "sport_performance" ? sportId : undefined,
+        sport_position_id:
+          goal === "sport_performance" ? sportPositionId || undefined : undefined,
+        sport_season_phase:
+          goal === "sport_performance" ? sportSeasonPhase : undefined,
+        secondary_goal:
+          goal === "sport_performance" && secondaryGoal
+            ? secondaryGoal
+            : undefined,
+        fat_loss_pace:
+          goal === "fat_loss" ||
+          (goal === "sport_performance" && secondaryGoal === "fat_loss")
+            ? fatLossPace
+            : undefined,
+        recomp_priority:
+          goal === "recomposition" ||
+          (goal === "sport_performance" && secondaryGoal === "recomposition")
+            ? recompPriority
+            : undefined,
         goal_weight_kg: showBodyComposition ? goalWeightKg : null,
         sessions_per_week: sessionsPerWeek,
         minutes_per_session: minutesPerSession,
@@ -164,7 +211,23 @@ export function ProgramPlanSetting({
           </select>
         </div>
 
-        {goal === "fat_loss" && (
+        {goal === "sport_performance" ? (
+          <SportPlanFields
+            sportCategoryId={sportCategoryId}
+            sportId={sportId}
+            sportPositionId={sportPositionId}
+            sportSeasonPhase={sportSeasonPhase}
+            secondaryGoal={secondaryGoal}
+            onSportCategoryChange={setSportCategoryId}
+            onSportIdChange={setSportId}
+            onSportPositionChange={setSportPositionId}
+            onSeasonPhaseChange={setSportSeasonPhase}
+            onSecondaryGoalChange={setSecondaryGoal}
+          />
+        ) : null}
+
+        {(goal === "fat_loss" ||
+          (goal === "sport_performance" && secondaryGoal === "fat_loss")) && (
           <div>
             <p className="mb-2 text-sm text-forge-muted">Fat-loss pace</p>
             <div className="space-y-2">
@@ -181,7 +244,8 @@ export function ProgramPlanSetting({
           </div>
         )}
 
-        {goal === "recomposition" && (
+        {(goal === "recomposition" ||
+          (goal === "sport_performance" && secondaryGoal === "recomposition")) && (
           <div>
             <p className="mb-2 text-sm text-forge-muted">Recomp priority</p>
             <div className="space-y-2">

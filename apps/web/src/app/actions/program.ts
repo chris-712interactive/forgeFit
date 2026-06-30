@@ -1,5 +1,6 @@
 "use server";
 
+import { validateGoalsForAge } from "@/lib/onboarding/age-gates";
 import { summarizePlanChanges } from "@/lib/programs/plan-diff";
 import {
   generateAndSaveProgram,
@@ -9,9 +10,21 @@ import {
   resolveProgramStartDate,
   SCHEDULE_START_DATE_SCHEMA,
 } from "@/lib/programs/start-date";
+import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import { friendlySupabaseError } from "@/lib/supabase/schema-errors";
-import type { FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
+import type { FatLossPace, FitnessGoal, RecompPriority, SportSeasonPhase } from "@/lib/types/profile";
+import {
+  isValidSeasonPhase,
+  isValidSportId,
+  isValidSportPositionId,
+  sportRequiresPosition,
+} from "@forgefit/evidence-kb";
+import {
+  capExperienceForAge,
+  maxMinutesPerSessionForAge,
+  maxSessionsPerWeekForAge,
+} from "@forgefit/program-engine";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -25,6 +38,20 @@ const planSettingsSchema = z
       "recomposition",
       "sport_performance",
     ]),
+    sport_id: z.string().optional(),
+    sport_position_id: z.string().optional(),
+    sport_season_phase: z
+      .enum(["in_season", "off_season", "general_prep"])
+      .optional(),
+    secondary_goal: z
+      .enum([
+        "fat_loss",
+        "bodybuilding",
+        "powerlifting",
+        "general_strength",
+        "recomposition",
+      ])
+      .optional(),
     fat_loss_pace: z.enum(["steady", "moderate", "aggressive"]).optional(),
     recomp_priority: z.enum(["muscle", "balanced", "lean_out"]).optional(),
     goal_weight_kg: z.number().min(30).max(300).nullable().optional(),
@@ -37,14 +64,70 @@ const planSettingsSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
+    if (data.primary_goal === "sport_performance") {
+      if (!data.sport_id || !isValidSportId(data.sport_id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a sport.",
+          path: ["sport_id"],
+        });
+      }
+      if (
+        data.sport_id &&
+        sportRequiresPosition(data.sport_id) &&
+        (!data.sport_position_id ||
+          !isValidSportPositionId(data.sport_id, data.sport_position_id))
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select your position.",
+          path: ["sport_position_id"],
+        });
+      }
+      if (
+        !data.sport_season_phase ||
+        !isValidSeasonPhase(data.sport_season_phase)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a season phase.",
+          path: ["sport_season_phase"],
+        });
+      }
+    } else if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Select a fat-loss pace when goal is fat loss.",
         path: ["fat_loss_pace"],
       });
+    } else if (
+      data.primary_goal === "recomposition" &&
+      !data.recomp_priority
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select a recomp priority.",
+        path: ["recomp_priority"],
+      });
     }
-    if (data.primary_goal === "recomposition" && !data.recomp_priority) {
+
+    const needsFatLossPace =
+      data.primary_goal === "fat_loss" ||
+      (data.primary_goal === "sport_performance" &&
+        data.secondary_goal === "fat_loss");
+    if (needsFatLossPace && !data.fat_loss_pace) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Select a fat-loss pace.",
+        path: ["fat_loss_pace"],
+      });
+    }
+
+    const needsRecomp =
+      data.primary_goal === "recomposition" ||
+      (data.primary_goal === "sport_performance" &&
+        data.secondary_goal === "recomposition");
+    if (needsRecomp && !data.recomp_priority) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Select a recomp priority.",
@@ -95,6 +178,10 @@ export async function rebuildProgram(input?: { schedule_start_date?: string }) {
 
 export async function updatePlanSettings(input: {
   primary_goal: FitnessGoal;
+  sport_id?: string;
+  sport_position_id?: string;
+  sport_season_phase?: SportSeasonPhase;
+  secondary_goal?: FitnessGoal;
   fat_loss_pace?: FatLossPace;
   recomp_priority?: RecompPriority;
   goal_weight_kg?: number | null;
@@ -122,7 +209,26 @@ export async function updatePlanSettings(input: {
     return { error: "Complete onboarding before updating your plan." };
   }
 
+  const age = resolveProfileAge(ctx.profile) ?? ctx.profile.age ?? 18;
+  const ageError = validateGoalsForAge({
+    age,
+    primary_goal: parsed.data.primary_goal,
+    secondary_goal: parsed.data.secondary_goal,
+    fat_loss_pace: parsed.data.fat_loss_pace,
+  });
+  if (ageError) {
+    return { error: ageError };
+  }
+
+  if (parsed.data.sessions_per_week > maxSessionsPerWeekForAge(age)) {
+    return { error: "Sessions per week exceeds the limit for your age." };
+  }
+  if (parsed.data.minutes_per_session > maxMinutesPerSessionForAge(age)) {
+    return { error: "Session length exceeds the limit for your age." };
+  }
+
   const { regenerate_program, ...profileFields } = parsed.data;
+  const isSport = parsed.data.primary_goal === "sport_performance";
 
   const { error: profileError } = await supabase
     .from("profiles")
@@ -130,15 +236,25 @@ export async function updatePlanSettings(input: {
       primary_goal: profileFields.primary_goal,
       sessions_per_week: profileFields.sessions_per_week,
       minutes_per_session: profileFields.minutes_per_session,
+      experience_level: capExperienceForAge(
+        ctx.profile.experience_level!,
+        age
+      ),
       fat_loss_pace:
-        profileFields.primary_goal === "fat_loss"
-          ? profileFields.fat_loss_pace ?? null
+        parsed.data.primary_goal === "fat_loss" ||
+        parsed.data.secondary_goal === "fat_loss"
+          ? parsed.data.fat_loss_pace ?? null
           : null,
       recomp_priority:
-        profileFields.primary_goal === "recomposition"
-          ? profileFields.recomp_priority ?? null
+        parsed.data.primary_goal === "recomposition" ||
+        parsed.data.secondary_goal === "recomposition"
+          ? parsed.data.recomp_priority ?? null
           : null,
       goal_weight_kg: profileFields.goal_weight_kg ?? null,
+      sport_id: isSport ? parsed.data.sport_id ?? null : null,
+      sport_position_id: isSport ? parsed.data.sport_position_id ?? null : null,
+      sport_season_phase: isSport ? parsed.data.sport_season_phase ?? null : null,
+      secondary_goal: isSport ? parsed.data.secondary_goal ?? null : null,
     })
     .eq("id", user.id);
 

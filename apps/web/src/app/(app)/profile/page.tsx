@@ -210,6 +210,10 @@ export default async function ProfilePage({
           }
           initialSessionsPerWeek={profile?.sessions_per_week ?? null}
           initialMinutesPerSession={profile?.minutes_per_session ?? null}
+          initialSportId={profile?.sport_id ?? null}
+          initialSportPositionId={profile?.sport_position_id ?? null}
+          initialSportSeasonPhase={profile?.sport_season_phase ?? null}
+          initialSecondaryGoal={profile?.secondary_goal ?? null}
           equipmentSettings={equipmentSettings}
           oneRepMaxes={oneRepMaxes.rows}
           oneRepMaxesTableReady={oneRepMaxes.tableReady}

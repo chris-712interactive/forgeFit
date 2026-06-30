@@ -39,6 +39,7 @@ export {
   resolveAgeCohort,
 } from "./age-policy";
 export type { AgeBand, AgeCohort } from "./age-policy";
+export { resolveNutritionGoal, resolveWeeklySplit } from "./sport";
 export { applyDeloadWeek, isDeloadTrainingWeek } from "./deload";
 export { computeTrainingLoad } from "./training-load";
 export { estimateTrainingExpenditure } from "./training-expenditure";

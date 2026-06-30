@@ -1,6 +1,6 @@
 # Phase 9 — Youth & Sport Performance
 
-**Status:** In progress (9A + 9B shipped)  
+**Status:** In progress (9A–9G shipped; 9H catalog expansion remaining)  
 **Depends on:** Phases 1–2 (onboarding, evidence engine, program engine)
 
 ## Goal
@@ -29,11 +29,11 @@ Program logic remains in `program-engine` + `evidence-kb` only — never LLM-gen
 |-------|-------|--------|
 | **9A** | Age policy module, US sport catalog, DB migration, shared types | ✅ |
 | **9B** | Onboarding: sport path, secondary goal, parent step, age-gated physique goals | ✅ |
-| **9C** | Evidence rules: youth LTAD, in-season volume, sport demand profiles | ⏳ |
-| **9D** | Engine: sport splits + position modifiers (6 sports MVP) | ⏳ |
-| **9E** | Season phase volume + hybrid secondary nutrition | ⏳ |
-| **9F** | Profile settings: edit sport / season / secondary | ⏳ |
-| **9G** | Teen community cohort + parent-consent gate for community | ⏳ |
+| **9C** | Evidence rules: youth LTAD, in-season volume, sport demand profiles | ✅ |
+| **9D** | Engine: sport splits + position modifiers (6 sports MVP) | ✅ |
+| **9E** | Season phase volume + hybrid secondary nutrition | ✅ |
+| **9F** | Profile settings: edit sport / season / secondary | ✅ |
+| **9G** | Teen community cohort + parent-consent gate for community | ✅ |
 | **9H** | Expand catalog (+ wrestling, swim, cheer, lacrosse, track sub-events) | ⏳ |
 
 ---
@@ -106,7 +106,7 @@ Runtime loader: `packages/evidence-kb/src/sports-catalog.ts`.
 
 ### Interim program behavior
 
-Until slice **9D**, `sport_performance` uses the **general strength** template in `program-engine` with sport metadata stored on profile. Nutrition follows general-strength maintenance targets.
+~~Until slice **9D**, `sport_performance` uses the **general strength** template~~ **Updated:** Sport-specific splits, position modifiers, season volume, and hybrid nutrition are live for MVP sports (basketball, soccer, football, volleyball, baseball, softball, general athleticism).
 
 ---
 
@@ -121,11 +121,11 @@ Until slice **9D**, `sport_performance` uses the **general strength** template i
 
 - [x] 9A: age policy tested; catalog loads; migration applied
 - [x] 9B: sport onboarding path; parent step 13–15; server rejects invalid goal/pace for age
-- [ ] 9C: ≥15 new evidence rules with citations for youth + sport
-- [ ] 9D: Generated plans differ by sport + position (6 sports)
-- [ ] 9E: In-season volume reduction + secondary goal nutrition
-- [ ] 9F: Profile settings regenerate with sport fields
-- [ ] 9G: Teen-only leaderboards; parent gate on community
+- [x] 9C: ≥15 new evidence rules with citations for youth + sport
+- [x] 9D: Generated plans differ by sport + position (6 sports)
+- [x] 9E: In-season volume reduction + secondary goal nutrition
+- [x] 9F: Profile settings regenerate with sport fields
+- [x] 9G: Teen-only leaderboards; parent gate on community
 - [ ] 9H: Catalog ≥20 US sports
 
 ---

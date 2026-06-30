@@ -4,6 +4,7 @@ import {
   type EvidenceRule,
   type RuleContext,
 } from "@forgefit/evidence-kb";
+import { resolveAgeBand } from "./age-policy";
 import {
   describeFatLossPace,
   describeRecompPriority,
@@ -14,6 +15,7 @@ import {
   resolveFatLossPace,
   resolveRecompPriority,
 } from "./body-composition";
+import { resolveNutritionGoal } from "./sport";
 import type {
   NutritionTargets,
   ProgramUserProfile,
@@ -65,7 +67,9 @@ function paceMetadata(profile: ProgramUserProfile): Pick<
   NutritionTargets,
   "fatLossPace" | "recompPriority" | "paceLabel" | "paceSummary"
 > {
-  if (profile.goal === "fat_loss") {
+  const nutritionGoal = resolveNutritionGoal(profile);
+
+  if (nutritionGoal === "fat_loss") {
     const pace = resolveFatLossPace(profile.fatLossPace);
     return {
       fatLossPace: pace,
@@ -74,7 +78,7 @@ function paceMetadata(profile: ProgramUserProfile): Pick<
     };
   }
 
-  if (profile.goal === "recomposition") {
+  if (nutritionGoal === "recomposition") {
     const priority = resolveRecompPriority(profile.recompPriority);
     return {
       recompPriority: priority,
@@ -83,7 +87,108 @@ function paceMetadata(profile: ProgramUserProfile): Pick<
     };
   }
 
+  if (profile.goal === "sport_performance") {
+    if (profile.sportSeasonPhase === "in_season") {
+      return {
+        paceLabel: "In-season maintenance",
+        paceSummary:
+          "Calories matched to training and sport — no intentional deficit during competition phase.",
+      };
+    }
+    return {
+      paceLabel: "Off-season build",
+      paceSummary:
+        "Modest surplus supports strength and power gains between sport seasons.",
+    };
+  }
+
   return {};
+}
+
+interface CalorieResult {
+  calories: number;
+  calorieRuleId?: string;
+  effectiveDeficitKcal?: number;
+  effectiveSurplusKcal?: number;
+}
+
+function resolveCalories(
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[],
+  grossTdee: number,
+  trainingKcalPerDay: number
+): CalorieResult {
+  const nutritionGoal = resolveNutritionGoal(profile);
+  const baseDeficit = resolveBaseDeficit(profile, rules);
+  const recompBaseDeficit =
+    RECOMP_BASE_DEFICIT_KCAL[resolveRecompPriority(profile.recompPriority)];
+
+  if (nutritionGoal === "sport_performance") {
+    if (profile.sportSeasonPhase === "in_season") {
+      return {
+        calories: grossTdee,
+        calorieRuleId: "sport_in_season_maintenance_calories",
+      };
+    }
+
+    const surplus =
+      getRecommendationValue<number>(rules, "calorie_surplus_kcal", "optimal") ??
+      250;
+    const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
+    const calories = grossTdee + surplus + trainingKcalPerDay * eatBack;
+    return {
+      calories,
+      calorieRuleId: "sport_off_season_surplus",
+      effectiveSurplusKcal: Math.round(calories - grossTdee),
+    };
+  }
+
+  if (nutritionGoal === "fat_loss") {
+    const eatBack = eatBackPct(rules, "eat_back_pct", 0.5);
+    const calories =
+      grossTdee - baseDeficit - trainingKcalPerDay * (1 - eatBack);
+    return {
+      calories,
+      calorieRuleId: "training_eat_back_fat_loss",
+      effectiveDeficitKcal: Math.round(grossTdee - calories),
+    };
+  }
+
+  if (nutritionGoal === "recomposition") {
+    const eatBack = eatBackPct(rules, "recomp_eat_back_pct", 0.65);
+    const calories =
+      grossTdee - recompBaseDeficit - trainingKcalPerDay * (1 - eatBack);
+    return {
+      calories,
+      calorieRuleId: "recomposition_training",
+      effectiveDeficitKcal: Math.round(grossTdee - calories),
+    };
+  }
+
+  if (
+    nutritionGoal === "bodybuilding" ||
+    nutritionGoal === "general_strength"
+  ) {
+    const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
+    const calories = grossTdee + 250 + trainingKcalPerDay * eatBack;
+    return {
+      calories,
+      calorieRuleId: "lean_gain_rate",
+      effectiveSurplusKcal: Math.round(calories - grossTdee),
+    };
+  }
+
+  if (nutritionGoal === "powerlifting") {
+    const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
+    const calories = grossTdee + 200 + trainingKcalPerDay * eatBack;
+    return {
+      calories,
+      calorieRuleId: "lean_gain_rate",
+      effectiveSurplusKcal: Math.round(calories - grossTdee),
+    };
+  }
+
+  return { calories: grossTdee };
 }
 
 function legacyTdee(profile: ProgramUserProfile): number {
@@ -100,32 +205,13 @@ function legacyNutrition(
     getRecommendationValue<number>(rules, "fat_g_per_kg", "optimal") ?? 0.9;
 
   const tdee = legacyTdee(profile);
-  let calories = tdee;
-  let calorieRuleId: string | undefined;
-
-  if (profile.goal === "fat_loss") {
-    const deficit = resolveBaseDeficit(profile, rules);
-    calories = tdee - deficit;
-    calorieRuleId = "deficit_calories_fat_loss";
-  } else if (
-    profile.goal === "bodybuilding" ||
-    profile.goal === "general_strength" ||
-    profile.goal === "sport_performance"
-  ) {
-    calories = tdee + 250;
-    calorieRuleId = "lean_gain_rate";
-  } else if (profile.goal === "recomposition") {
-    const baseDeficit =
-      RECOMP_BASE_DEFICIT_KCAL[resolveRecompPriority(profile.recompPriority)];
-    calories = tdee - baseDeficit;
-    calorieRuleId = "recomposition_training";
-  }
+  const calorieResult = resolveCalories(profile, rules, tdee, 0);
 
   const proteinG = Math.round(proteinPerKg * profile.weightKg);
   const fatG = Math.round(fatPerKg * profile.weightKg);
   const carbsG = Math.max(
     0,
-    Math.round((calories - proteinG * 4 - fatG * 9) / 4)
+    Math.round((calorieResult.calories - proteinG * 4 - fatG * 9) / 4)
   );
 
   const proteinRule = rules.find((r) =>
@@ -133,12 +219,12 @@ function legacyNutrition(
   );
 
   return {
-    calories: Math.round(calories),
+    calories: Math.round(calorieResult.calories),
     proteinG,
     fatG,
     carbsG,
     proteinRuleId: proteinRule?.id ?? "protein_deficit_general",
-    calorieRuleId,
+    calorieRuleId: calorieResult.calorieRuleId,
     ...paceMetadata(profile),
   };
 }
@@ -162,48 +248,16 @@ export function computeNutrition(
   const trainingKcalPerDay = options.expenditure.dailyTrainingKcal;
   const grossTdee = lifestyleKcal + trainingKcalPerDay;
 
-  let calories = grossTdee;
-  let calorieRuleId: string | undefined;
-  let effectiveDeficitKcal: number | undefined;
-  let effectiveSurplusKcal: number | undefined;
-
-  const baseDeficit = resolveBaseDeficit(profile, rules);
-  const recompBaseDeficit =
-    RECOMP_BASE_DEFICIT_KCAL[resolveRecompPriority(profile.recompPriority)];
-
-  if (profile.goal === "fat_loss") {
-    const eatBack = eatBackPct(rules, "eat_back_pct", 0.5);
-    calories =
-      grossTdee -
-      baseDeficit -
-      trainingKcalPerDay * (1 - eatBack);
-    calorieRuleId = "training_eat_back_fat_loss";
-    effectiveDeficitKcal = Math.round(grossTdee - calories);
-  } else if (profile.goal === "recomposition") {
-    const eatBack = eatBackPct(rules, "recomp_eat_back_pct", 0.65);
-    calories =
-      grossTdee - recompBaseDeficit - trainingKcalPerDay * (1 - eatBack);
-    calorieRuleId = "recomposition_training";
-    effectiveDeficitKcal = Math.round(grossTdee - calories);
-  } else if (
-    profile.goal === "bodybuilding" ||
-    profile.goal === "general_strength" ||
-    profile.goal === "sport_performance"
-  ) {
-    const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
-    calories = grossTdee + 250 + trainingKcalPerDay * eatBack;
-    calorieRuleId = "lean_gain_rate";
-    effectiveSurplusKcal = Math.round(calories - grossTdee);
-  } else if (profile.goal === "powerlifting") {
-    const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
-    calories = grossTdee + 200 + trainingKcalPerDay * eatBack;
-    calorieRuleId = "lean_gain_rate";
-    effectiveSurplusKcal = Math.round(calories - grossTdee);
-  }
+  const calorieResult = resolveCalories(
+    profile,
+    rules,
+    grossTdee,
+    trainingKcalPerDay
+  );
 
   const proteinG = Math.round(proteinPerKg * profile.weightKg);
   const fatG = Math.round(fatPerKg * profile.weightKg);
-  const roundedCalories = Math.round(calories);
+  const roundedCalories = Math.round(calorieResult.calories);
   const carbsG = Math.max(
     0,
     Math.round((roundedCalories - proteinG * 4 - fatG * 9) / 4)
@@ -219,13 +273,13 @@ export function computeNutrition(
     fatG,
     carbsG,
     proteinRuleId: proteinRule?.id ?? "protein_deficit_general",
-    calorieRuleId,
+    calorieRuleId: calorieResult.calorieRuleId,
     bmrKcal,
     lifestyleKcal,
     trainingKcalPerDay,
     tdeeKcal: grossTdee,
-    effectiveDeficitKcal,
-    effectiveSurplusKcal,
+    effectiveDeficitKcal: calorieResult.effectiveDeficitKcal,
+    effectiveSurplusKcal: calorieResult.effectiveSurplusKcal,
     trainingLoad: options.trainingLoad,
     ...paceMetadata(profile),
   };
@@ -235,6 +289,12 @@ export function buildRuleContext(profile: ProgramUserProfile): RuleContext {
   return {
     goal: profile.goal,
     experience: profile.experience,
+    age: profile.age,
+    ageBand: resolveAgeBand(profile.age),
+    sportId: profile.sportId,
+    sportPositionId: profile.sportPositionId,
+    seasonPhase: profile.sportSeasonPhase,
+    secondaryGoal: profile.secondaryGoal,
     weightKg: profile.weightKg,
     heightCm: profile.heightCm,
     recoveryEquipment: profile.recoveryEquipment,

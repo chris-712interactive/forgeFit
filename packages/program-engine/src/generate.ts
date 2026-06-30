@@ -37,6 +37,13 @@ import { computeTrainingLoad } from "./training-load";
 import { estimateTrainingExpenditure } from "./training-expenditure";
 import { getWeeklySplit } from "./splits";
 import {
+  resolveNutritionGoal,
+  resolveWeeklySplit,
+  sportSessionCap,
+  sportSummarySuffix,
+  sportVolumeMultiplier,
+} from "./sport";
+import {
   appendRampSetNote,
   buildWarmupBlock,
   warmUpRampSetCount,
@@ -656,8 +663,14 @@ export function generateProgram(
 ): ProgramPlan {
   const allRules = getRules();
   const matchedRules = getMatchedRules(allRules, profile);
-  const volumeMult = volumeMultiplier(profile.experience, matchedRules);
-  const split = getWeeklySplit(profile.goal, profile.sessionsPerWeek);
+  let volumeMult = volumeMultiplier(profile.experience, matchedRules);
+  volumeMult = sportVolumeMultiplier(profile, matchedRules, volumeMult);
+
+  let split = resolveWeeklySplit(profile);
+  const sessionCap = sportSessionCap(profile, matchedRules);
+  if (sessionCap != null && split.length > sessionCap) {
+    split = split.slice(0, sessionCap);
+  }
   const startDate = options.startDate ?? new Date();
   const anchorWeekday = isoWeekdayFromDate(startDate);
   const sessionWeekdays = assignSessionWeekdays(split.length, anchorWeekday, {
@@ -697,6 +710,7 @@ export function generateProgram(
   ];
 
   const goalLabel = profile.goal.replace(/_/g, " ");
+  const sportSuffix = sportSummarySuffix(profile);
 
   let plan: ProgramPlan = {
     version: ENGINE_VERSION,
@@ -709,7 +723,7 @@ export function generateProgram(
     scheduleAnchorWeekday: anchorWeekday,
     scheduleStartDate: toScheduleStartIso(startDate),
     generatedAt: startDate.toISOString(),
-    summary: `${goalLabel} program · ${profile.sessionsPerWeek}×${profile.minutesPerSession} min · starts ${dayLabelForIndex(anchorWeekday)} · ${week.length} sessions built from ${appliedRuleIds.length} evidence rules`,
+    summary: `${goalLabel} program${sportSuffix} · ${profile.sessionsPerWeek}×${profile.minutesPerSession} min · starts ${dayLabelForIndex(anchorWeekday)} · ${week.length} sessions built from ${appliedRuleIds.length} evidence rules`,
   };
 
   if (options.isDeloadWeek) {

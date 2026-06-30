@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 9 in progress (9A + 9B) |
+| **Active phase** | Phase 9 in progress (9A–9G shipped) |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Youth & sport onboarding (Phase 9A + 9B) |
+| **Last session focus** | Phase 9C–9G sport engine, evidence, teen community |
 
 ---
 
