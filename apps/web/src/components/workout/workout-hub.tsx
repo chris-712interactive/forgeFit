@@ -142,7 +142,10 @@ export function WorkoutHub({
     [localSessions, serverSessions]
   );
 
-  const dayStatusMap = useMemo(() => buildDayStatusMap(allSessions), [allSessions]);
+  const dayStatusMap = useMemo(
+    () => buildDayStatusMap(allSessions, plan),
+    [allSessions, plan]
+  );
 
   const reviewSession = useMemo(() => {
     const session =

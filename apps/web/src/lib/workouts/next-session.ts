@@ -1,6 +1,7 @@
 import { isoWeekdayFromDate, parseScheduleStartIso } from "@forgefit/program-engine";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import { planScheduleStartIso } from "@/lib/programs/start-date";
+import { sessionMatchesScheduledPlanDay } from "@/lib/workouts/schedule-dates";
 import type { WorkoutSessionRecord } from "./sessions";
 
 function startOfDay(date: Date): Date {
@@ -25,9 +26,26 @@ export function findNextPlannedSession(
   const completedDays = new Set(
     sessions
       .filter((session) => session.status === "completed")
+      .filter((session) =>
+        sessionMatchesScheduledPlanDay(
+          session,
+          session.dayIndex,
+          plan,
+          referenceDate
+        )
+      )
       .map((session) => session.dayIndex)
   );
-  const inProgress = sessions.find((session) => session.status === "in_progress");
+  const inProgress = sessions.find(
+    (session) =>
+      session.status === "in_progress" &&
+      sessionMatchesScheduledPlanDay(
+        session,
+        session.dayIndex,
+        plan,
+        referenceDate
+      )
+  );
 
   if (inProgress) {
     return {

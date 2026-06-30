@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Goal weight imperial units in profile settings |
+| **Last session focus** | Fix stale workout completion after plan regen |
 
 ---
 
@@ -33,6 +33,31 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — Fix stale completions after schedule regeneration
+
+**What was done:**
+- Workout completion status now matches sessions to the **plan week's calendar date**, not weekday index alone
+- Prevents June 18/19 completed workouts from appearing done on a regenerated July schedule (same Thu/Fri indices)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/workouts/schedule-dates.ts`, `sessions.ts`, `next-session.ts`, `sessions.test.ts`
+- `apps/web/src/components/workout/workout-hub.tsx`
+- `docs/PROGRESS.md`
+
+### 2026-06-30 — Body composition migration error messaging
+
+**What was done:**
+- Friendlier save errors when `fat_loss_pace` / `recomp_priority` / `goal_weight_kg` columns are missing (points to migration `20260611100000_body_composition_targets.sql`)
+- Documented migrations 39–45 in `docs/supabase-setup.md`
+
+**Blockers:** Hosted Supabase must run pending migrations (especially #45) — user hit schema cache error on plan save
+
+**Files touched:**
+- `apps/web/src/lib/supabase/schema-errors.ts`, `app/actions/program.ts`, `app/actions/onboarding.ts`
+- `docs/supabase-setup.md`, `docs/PROGRESS.md`
 
 ### 2026-06-28 — Goal weight uses unit preference in profile settings
 

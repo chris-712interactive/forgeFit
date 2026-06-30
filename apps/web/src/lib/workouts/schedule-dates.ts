@@ -1,6 +1,10 @@
 import { getWeekBounds } from "@/lib/home/weekly-stats";
 import { planScheduleStartIso } from "@/lib/programs/start-date";
-import { parseScheduleStartIso, type ProgramPlan } from "@forgefit/program-engine";
+import {
+  parseScheduleStartIso,
+  toScheduleStartIso,
+  type ProgramPlan,
+} from "@forgefit/program-engine";
 
 function startOfDay(date: Date): Date {
   const copy = new Date(date);
@@ -56,6 +60,40 @@ export function formatPlanSessionDate(
   return formatScheduledSessionDate(
     dayIndex,
     planScheduleReferenceDate(plan, referenceDate)
+  );
+}
+
+/** ISO calendar date (YYYY-MM-DD) when this plan slot occurs in the active week. */
+export function scheduledDateIsoForPlanDay(
+  dayIndex: number,
+  plan: ProgramPlan,
+  referenceDate = new Date()
+): string {
+  return toScheduleStartIso(
+    scheduledDateForDayIndex(
+      dayIndex,
+      planScheduleReferenceDate(plan, referenceDate)
+    )
+  );
+}
+
+export function sessionDateIso(session: {
+  startedAt: string;
+  completedAt: string | null;
+}): string {
+  return (session.completedAt ?? session.startedAt).slice(0, 10);
+}
+
+/** True when a logged session belongs to this plan week's calendar slot (not just weekday index). */
+export function sessionMatchesScheduledPlanDay(
+  session: { startedAt: string; completedAt: string | null },
+  dayIndex: number,
+  plan: ProgramPlan,
+  referenceDate = new Date()
+): boolean {
+  return (
+    sessionDateIso(session) ===
+    scheduledDateIsoForPlanDay(dayIndex, plan, referenceDate)
   );
 }
 

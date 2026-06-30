@@ -74,6 +74,18 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 37. `20260610850000_community_phase6.sql` — reactions, preset comments, score flags, moderation, opt-in A/B
 38. `20260610860000_community_metrics_email.sql` — WACP events, email prefs, send log
 
+### Spotify, nutrition, body composition (2026-06)
+
+39. `20260610870000_spotify_integration.sql`
+40. `20260610880000_nutrition_ingredient_suggestions.sql`
+41. `20260610890000_nutrition_ingredient_suggestions_fix.sql`
+42. `20260610900000_nutrition_log_line_items.sql` — meal builder line items on diary logs
+43. `20260610910000_backfill_onboarding_body_measurements.sql` — optional backfill for existing users
+44. `20260611000000_weigh_in_push_preference.sql` — Sunday weigh-in push preference
+45. `20260611100000_body_composition_targets.sql` — **required for fat-loss pace, recomp priority, goal weight** (Profile → Program plan)
+
+After running SQL in the dashboard, reload the API schema if errors persist: **Project Settings → API → Reload schema cache**.
+
 ## 4. Auth providers
 
 **Authentication → Providers:**

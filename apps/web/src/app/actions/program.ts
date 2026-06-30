@@ -10,6 +10,7 @@ import {
   SCHEDULE_START_DATE_SCHEMA,
 } from "@/lib/programs/start-date";
 import { createClient } from "@/lib/supabase/server";
+import { friendlySupabaseError } from "@/lib/supabase/schema-errors";
 import type { FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -141,7 +142,7 @@ export async function updatePlanSettings(input: {
     .eq("id", user.id);
 
   if (profileError) {
-    return { error: profileError.message };
+    return { error: friendlySupabaseError(profileError.message) };
   }
 
   if (!regenerate_program) {

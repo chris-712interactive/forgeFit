@@ -1,4 +1,6 @@
 import type { RecoveryBlock, WarmupBlock } from "@forgefit/program-engine";
+import type { ProgramPlan } from "@forgefit/program-engine";
+import { sessionMatchesScheduledPlanDay } from "@/lib/workouts/schedule-dates";
 import type { RecoveryStatus } from "./recovery";
 import type { WarmupStatus } from "./warmup";
 
@@ -133,7 +135,9 @@ export function mergeSessionRecords(
 }
 
 export function buildDayStatusMap(
-  sessions: WorkoutSessionRecord[]
+  sessions: WorkoutSessionRecord[],
+  plan?: ProgramPlan | null,
+  referenceDate = new Date()
 ): Map<number, DayPlanStatus> {
   const map = new Map<number, DayPlanStatus>();
 
@@ -145,7 +149,17 @@ export function buildDayStatusMap(
       priorCompleted: [],
     };
 
+    const matchesCurrentPlanDay =
+      plan == null ||
+      sessionMatchesScheduledPlanDay(
+        session,
+        session.dayIndex,
+        plan,
+        referenceDate
+      );
+
     if (session.status === "in_progress") {
+      if (!matchesCurrentPlanDay) continue;
       if (
         !entry.inProgress ||
         session.startedAt.localeCompare(entry.inProgress.startedAt) > 0
@@ -153,16 +167,20 @@ export function buildDayStatusMap(
         entry.inProgress = session;
       }
     } else if (session.status === "completed") {
-      if (
-        !entry.latestCompleted ||
-        (session.completedAt ?? session.startedAt).localeCompare(
-          entry.latestCompleted.completedAt ?? entry.latestCompleted.startedAt
-        ) > 0
-      ) {
-        if (entry.latestCompleted) {
-          entry.priorCompleted.push(entry.latestCompleted);
+      if (matchesCurrentPlanDay) {
+        if (
+          !entry.latestCompleted ||
+          (session.completedAt ?? session.startedAt).localeCompare(
+            entry.latestCompleted.completedAt ?? entry.latestCompleted.startedAt
+          ) > 0
+        ) {
+          if (entry.latestCompleted) {
+            entry.priorCompleted.push(entry.latestCompleted);
+          }
+          entry.latestCompleted = session;
+        } else {
+          entry.priorCompleted.push(session);
         }
-        entry.latestCompleted = session;
       } else {
         entry.priorCompleted.push(session);
       }

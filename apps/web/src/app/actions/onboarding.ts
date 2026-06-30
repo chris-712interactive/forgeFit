@@ -8,6 +8,7 @@ import {
 } from "@/lib/profile/identity";
 import { generateAndSaveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
+import { friendlySupabaseError } from "@/lib/supabase/schema-errors";
 import type { OnboardingData } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -133,7 +134,7 @@ export async function completeOnboarding(data: OnboardingData) {
     .eq("id", user.id);
 
   if (profileError) {
-    return { error: profileError.message };
+    return { error: friendlySupabaseError(profileError.message) };
   }
 
   const measuredDate = new Date().toISOString().slice(0, 10);
