@@ -6,8 +6,8 @@ import {
   loadUserProgramContext,
 } from "@/lib/programs/service";
 import {
-  isValidPlanStartDate,
-  parsePlanStartDateInput,
+  resolveProgramStartDate,
+  SCHEDULE_START_DATE_SCHEMA,
 } from "@/lib/programs/start-date";
 import { createClient } from "@/lib/supabase/server";
 import type { FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
@@ -31,7 +31,7 @@ const planSettingsSchema = z
     regenerate_program: z.boolean().optional(),
     schedule_start_date: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .regex(SCHEDULE_START_DATE_SCHEMA)
       .optional(),
   })
   .superRefine((data, ctx) => {
@@ -60,22 +60,6 @@ function revalidateProgramPaths() {
   revalidatePath("/evidence");
 }
 
-function resolveStartDate(
-  isoDate?: string
-): { startDate: Date } | { error: string } {
-  if (!isoDate) {
-    return { startDate: new Date() };
-  }
-
-  if (!isValidPlanStartDate(isoDate)) {
-    return {
-      error: "Choose today or a future date for your new plan to start.",
-    };
-  }
-
-  return { startDate: parsePlanStartDateInput(isoDate)! };
-}
-
 export async function rebuildProgram(input?: { schedule_start_date?: string }) {
   const supabase = await createClient();
   const {
@@ -86,7 +70,7 @@ export async function rebuildProgram(input?: { schedule_start_date?: string }) {
     return { error: "You must be signed in." };
   }
 
-  const start = resolveStartDate(input?.schedule_start_date);
+  const start = resolveProgramStartDate(input?.schedule_start_date);
   if ("error" in start) {
     return { error: start.error };
   }
@@ -165,7 +149,7 @@ export async function updatePlanSettings(input: {
     return { success: true as const, regenerated: false as const };
   }
 
-  const start = resolveStartDate(parsed.data.schedule_start_date);
+  const start = resolveProgramStartDate(parsed.data.schedule_start_date);
   if ("error" in start) {
     return { error: start.error };
   }

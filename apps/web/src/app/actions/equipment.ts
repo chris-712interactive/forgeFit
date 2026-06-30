@@ -6,6 +6,10 @@ import {
   replaceUserEquipment,
 } from "@/lib/equipment/service";
 import { generateAndSaveProgram } from "@/lib/programs/service";
+import {
+  resolveProgramStartDate,
+  SCHEDULE_START_DATE_SCHEMA,
+} from "@/lib/programs/start-date";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -15,6 +19,7 @@ const equipmentSchema = z.object({
   equipmentLocation: z.enum(["home", "gym", "both"]),
   recoveryEquipment: z.array(z.string()),
   regenerateProgram: z.boolean().optional(),
+  schedule_start_date: z.string().regex(SCHEDULE_START_DATE_SCHEMA).optional(),
 });
 
 function revalidateEquipmentPaths() {
@@ -24,17 +29,38 @@ function revalidateEquipmentPaths() {
   revalidatePath("/exercises");
 }
 
+async function regenerateWithStartDate(
+  userId: string,
+  scheduleStartDate?: string
+) {
+  const start = resolveProgramStartDate(scheduleStartDate);
+  if ("error" in start) {
+    return { error: start.error };
+  }
+
+  const programResult = await generateAndSaveProgram(userId, null, {
+    startDate: start.startDate,
+  });
+  if ("error" in programResult) {
+    return { error: programResult.error };
+  }
+
+  return { success: true as const };
+}
+
 export async function saveUserEquipment(
   equipment: string[],
   equipmentLocation: "home" | "gym" | "both",
   recoveryEquipment: string[],
-  regenerateProgram = false
+  regenerateProgram = false,
+  scheduleStartDate?: string
 ) {
   const parsed = equipmentSchema.safeParse({
     equipment,
     equipmentLocation,
     recoveryEquipment,
     regenerateProgram,
+    schedule_start_date: scheduleStartDate,
   });
   if (!parsed.success) {
     return { error: "Select at least one piece of training equipment." };
@@ -76,9 +102,12 @@ export async function saveUserEquipment(
   }
 
   if (parsed.data.regenerateProgram) {
-    const programResult = await generateAndSaveProgram(user.id);
+    const programResult = await regenerateWithStartDate(
+      user.id,
+      parsed.data.schedule_start_date
+    );
     if ("error" in programResult) {
-      return { error: programResult.error };
+      return programResult;
     }
   }
 
@@ -86,7 +115,10 @@ export async function saveUserEquipment(
   return { success: true as const };
 }
 
-export async function enterTravelMode(regenerateProgram = false) {
+export async function enterTravelMode(
+  regenerateProgram = false,
+  scheduleStartDate?: string
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -102,9 +134,12 @@ export async function enterTravelMode(regenerateProgram = false) {
   }
 
   if (regenerateProgram) {
-    const programResult = await generateAndSaveProgram(user.id);
+    const programResult = await regenerateWithStartDate(
+      user.id,
+      scheduleStartDate
+    );
     if ("error" in programResult) {
-      return { error: programResult.error };
+      return programResult;
     }
   }
 
@@ -112,7 +147,10 @@ export async function enterTravelMode(regenerateProgram = false) {
   return { success: true as const };
 }
 
-export async function exitTravelMode(regenerateProgram = false) {
+export async function exitTravelMode(
+  regenerateProgram = false,
+  scheduleStartDate?: string
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -128,9 +166,12 @@ export async function exitTravelMode(regenerateProgram = false) {
   }
 
   if (regenerateProgram) {
-    const programResult = await generateAndSaveProgram(user.id);
+    const programResult = await regenerateWithStartDate(
+      user.id,
+      scheduleStartDate
+    );
     if ("error" in programResult) {
-      return { error: programResult.error };
+      return programResult;
     }
   }
 

@@ -5,7 +5,9 @@ import {
   snoozeExperiencePromotion,
 } from "@/app/actions/progression";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
+import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
 import { buildEvidenceHref } from "@/lib/evidence/present";
+import { todayScheduleStartIso } from "@/lib/programs/start-date";
 import type { PromotionEvaluation } from "@/lib/progression/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -22,6 +24,9 @@ export function ExperiencePathPanel({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [scheduleStartDate, setScheduleStartDate] = useState(
+    todayScheduleStartIso()
+  );
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -57,7 +62,9 @@ export function ExperiencePathPanel({
   function handleAccept() {
     setError(null);
     startTransition(async () => {
-      const result = await acceptExperiencePromotion();
+      const result = await acceptExperiencePromotion({
+        schedule_start_date: scheduleStartDate,
+      });
       if (result.error) {
         setError(result.error);
         return;
@@ -164,6 +171,15 @@ export function ExperiencePathPanel({
                 ))}
               </div>
             </div>
+          )}
+
+          {(showNudge || eligible) && (
+            <PlanScheduleStartField
+              id="promotion-schedule-start-date"
+              value={scheduleStartDate}
+              onChange={setScheduleStartDate}
+              description="Your upgraded plan begins on this date."
+            />
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">

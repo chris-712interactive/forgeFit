@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Program regeneration start-date picker |
+| **Last session focus** | Start date on equipment and promotion regenerations |
 
 ---
 
@@ -1647,6 +1647,42 @@
 
 **Files touched:**
 - `.github/workflows/ci.yml`, `docs/PROGRESS.md`
+
+---
+
+### 2026-06-30 — Program regeneration start date
+
+**What was done:**
+- Profile → Program plan now includes **New plan starts on** date picker (today or future)
+- `rebuildProgram` and save-with-regenerate pass `schedule_start_date` through to `generateAndSaveProgram`
+- `ProgramPlan.scheduleStartDate` stored on generation; workout/home UI respects it for calendar labels and Start button gating
+- Future start dates skip mid-week `scheduleFromTodayOnly` wrapping so sessions anchor to the chosen week
+
+**What's next:**
+- Surface upcoming plan start banner on Home when `scheduleStartDate` is in the future
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/programs/start-date.ts`, `start-date.test.ts`
+- `apps/web/src/components/profile/plan-schedule-start-field.tsx`
+- `apps/web/src/app/actions/equipment.ts`, `progression.ts`, `program.ts`
+- `apps/web/src/components/profile/equipment-setting.tsx`, `program-plan-setting.tsx`
+- `apps/web/src/components/progression/experience-path-panel.tsx`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-06-30 — Start date on equipment and promotion regenerations
+
+**What was done:**
+- Shared `PlanScheduleStartField` component and `resolveProgramStartDate` helper
+- Equipment save, travel mode enter/exit, and experience promotion upgrade now accept a schedule start date when regenerating the plan
+- Profile equipment UI shows the date picker when “Regenerate program with this equipment” is checked
+- Experience promotion modal includes start date before confirming upgrade
+
+**What's next:**
+- Surface upcoming plan start banner on Home when `scheduleStartDate` is in the future
 
 ---
 

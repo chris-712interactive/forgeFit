@@ -4,6 +4,7 @@ import {
   rebuildProgram,
   updatePlanSettings,
 } from "@/app/actions/program";
+import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
 import {
   FAT_LOSS_PACE_OPTIONS,
   FITNESS_GOALS,
@@ -235,26 +236,11 @@ export function ProgramPlanSetting({
           </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="schedule-start-date"
-            className="mb-1.5 block text-sm text-forge-muted"
-          >
-            New plan starts on
-          </label>
-          <input
-            id="schedule-start-date"
-            type="date"
-            min={todayScheduleStartIso()}
-            value={scheduleStartDate}
-            onChange={(event) => setScheduleStartDate(event.target.value)}
-            className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
-          />
-          <p className="mt-1.5 text-xs text-forge-muted">
-            Used when you rebuild or save with regeneration. Workouts stay locked
-            until this date.
-          </p>
-        </div>
+        <PlanScheduleStartField
+          value={scheduleStartDate}
+          onChange={setScheduleStartDate}
+          description="Used when you rebuild or save with regeneration. Workouts stay locked until this date."
+        />
 
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface p-3">
           <input

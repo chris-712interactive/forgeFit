@@ -33,3 +33,21 @@ export function formatPlanStartDateLabel(isoDate: string): string {
     day: "numeric",
   });
 }
+
+export function resolveProgramStartDate(
+  isoDate?: string
+): { startDate: Date } | { error: string } {
+  if (!isoDate) {
+    return { startDate: new Date() };
+  }
+
+  if (!isValidPlanStartDate(isoDate)) {
+    return {
+      error: "Choose today or a future date for your new plan to start.",
+    };
+  }
+
+  return { startDate: parsePlanStartDateInput(isoDate)! };
+}
+
+export const SCHEDULE_START_DATE_SCHEMA = /^\d{4}-\d{2}-\d{2}$/;

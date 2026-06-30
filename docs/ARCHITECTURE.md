@@ -55,7 +55,7 @@ supabase/         → PostgreSQL migrations + RLS
 1. `generateProgram()` in `@forgefit/program-engine` reads profile + `evidence-kb` rules
 2. Equipment inventory filters `@forgefit/exercise-db` picks per movement pattern
 3. Goal-based functional bias ranks free-weight compounds ahead of machines; bodybuilding keeps a compound floor per session while strength goals prioritize transferable patterns (including carries)
-4. Regeneration accepts an optional **schedule start date** (`scheduleStartDate` on `ProgramPlan`); workouts stay locked until that calendar day
+4. Regeneration accepts an optional **schedule start date** (`scheduleStartDate` on `ProgramPlan`) from profile plan settings, equipment changes, travel mode, and experience promotions; workouts stay locked until that calendar day
 5. Goal-based weekly split scaled by sessions/week and minutes/session
 6. Nutrition targets (Mifflin-St Jeor + protein/fat/carbs from matched rules)
 7. `ProgramPlan` JSON stored in `programs.plan` with `appliedRuleIds` for traceability

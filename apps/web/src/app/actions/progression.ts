@@ -4,6 +4,7 @@ import {
   generateAndSaveProgram,
   getActiveProgram,
 } from "@/lib/programs/service";
+import { resolveProgramStartDate } from "@/lib/programs/start-date";
 import { evaluatePromotion } from "@/lib/progression/evaluate";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -40,7 +41,9 @@ async function loadPromotionContext(userId: string) {
   return { evaluation, supabase };
 }
 
-export async function acceptExperiencePromotion() {
+export async function acceptExperiencePromotion(input?: {
+  schedule_start_date?: string;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -76,7 +79,14 @@ export async function acceptExperiencePromotion() {
     };
   }
 
-  const programResult = await generateAndSaveProgram(user.id);
+  const start = resolveProgramStartDate(input?.schedule_start_date);
+  if ("error" in start) {
+    return { error: start.error };
+  }
+
+  const programResult = await generateAndSaveProgram(user.id, null, {
+    startDate: start.startDate,
+  });
   if ("error" in programResult) {
     return { error: programResult.error };
   }

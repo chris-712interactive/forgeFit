@@ -5,11 +5,13 @@ import {
   exitTravelMode,
   saveUserEquipment,
 } from "@/app/actions/equipment";
+import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
 import {
   CARDIO_EQUIPMENT,
   RECOVERY_EQUIPMENT,
   STRENGTH_EQUIPMENT,
 } from "@/lib/constants/onboarding";
+import { todayScheduleStartIso } from "@/lib/programs/start-date";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
 import type { EquipmentLocation } from "@/lib/types/profile";
 import { useRouter } from "next/navigation";
@@ -31,6 +33,9 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [regenerateProgram, setRegenerateProgram] = useState(true);
+  const [scheduleStartDate, setScheduleStartDate] = useState(
+    todayScheduleStartIso()
+  );
 
   const [equipment, setEquipment] = useState(initialSettings.equipment);
   const [recoveryEquipment, setRecoveryEquipment] = useState(
@@ -75,7 +80,8 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
         equipment,
         equipmentLocation,
         recoveryEquipment,
-        regenerateProgram
+        regenerateProgram,
+        regenerateProgram ? scheduleStartDate : undefined
       );
       if (result.error) {
         setError(result.error);
@@ -89,7 +95,10 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
   function handleEnterTravelMode() {
     startTransition(async () => {
       setError(null);
-      const result = await enterTravelMode(regenerateProgram);
+      const result = await enterTravelMode(
+        regenerateProgram,
+        regenerateProgram ? scheduleStartDate : undefined
+      );
       if (result.error) {
         setError(result.error);
         return;
@@ -102,7 +111,10 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
   function handleExitTravelMode() {
     startTransition(async () => {
       setError(null);
-      const result = await exitTravelMode(regenerateProgram);
+      const result = await exitTravelMode(
+        regenerateProgram,
+        regenerateProgram ? scheduleStartDate : undefined
+      );
       if (result.error) {
         setError(result.error);
         return;
@@ -234,6 +246,15 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
           </span>
         </span>
       </label>
+
+      {regenerateProgram && (
+        <PlanScheduleStartField
+          id="equipment-schedule-start-date"
+          value={scheduleStartDate}
+          onChange={setScheduleStartDate}
+          description="Used when regenerating your plan for new equipment or travel mode."
+        />
+      )}
 
       <div className="flex flex-wrap gap-2">
         <button
