@@ -4,72 +4,83 @@ import type { WorkoutSession } from "@forgefit/program-engine";
 
 type PhaseTone = "warmup" | "workout" | "recovery";
 
-const toneClasses: Record<PhaseTone, string> = {
-  warmup: "text-forge-gold",
-  workout: "text-forge-success",
-  recovery: "text-forge-steel",
+const phaseStyles: Record<
+  PhaseTone,
+  { text: string; watermark: string }
+> = {
+  warmup: {
+    text: "text-forge-gold",
+    watermark: "text-forge-gold",
+  },
+  workout: {
+    text: "text-forge-success",
+    watermark: "text-forge-success",
+  },
+  recovery: {
+    text: "text-forge-steel",
+    watermark: "text-forge-steel",
+  },
 };
 
-function PhaseIcon({
+function PhaseWatermark({
+  tone,
   children,
-  className = "",
 }: {
+  tone: PhaseTone;
   children: React.ReactNode;
-  className?: string;
 }) {
   return (
-    <span
-      className={`inline-flex size-7 shrink-0 items-center justify-center sm:size-8 ${className}`}
+    <svg
+      viewBox="0 0 48 48"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden
+      className={`pointer-events-none absolute left-1/2 top-1/2 h-[3.25rem] w-[3.25rem] -translate-x-[58%] -translate-y-1/2 opacity-[0.18] sm:h-14 sm:w-14 ${phaseStyles[tone].watermark}`}
     >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="block size-[1.125rem] sm:size-5"
-      >
-        {children}
-      </svg>
-    </span>
+      {children}
+    </svg>
   );
 }
 
-function WarmupIcon({ className = "" }: { className?: string }) {
+function WarmupWatermark() {
   return (
-    <PhaseIcon className={className}>
-      <path d="M12 20c2.5 0 4-1.75 4-3.75 0-1.75-1.75-3.5-1.75-6 2.5 0 5 3 5 6.5a5 5 0 1 1-10 0c0 2 1.5 3.25 2.5 3.25Z" />
-    </PhaseIcon>
+    <PhaseWatermark tone="warmup">
+      <path d="M24 40c4.5 0 7.5-3 7.5-6.5 0-3-3-6-3-10 4.5 0 9 5.5 9 11.5a8.5 8.5 0 1 1-17 0c0 3.5 2.5 5.5 3.5 5.5Z" />
+    </PhaseWatermark>
   );
 }
 
-function WorkoutIcon({ className = "" }: { className?: string }) {
+function WorkoutWatermark() {
   return (
-    <PhaseIcon className={className}>
-      <path d="M2 10h4l1.5-3h9l1.5 3h4" />
-      <path d="M6 10v4M18 10v4" />
-      <path d="M4 14h16" />
-    </PhaseIcon>
+    <PhaseWatermark tone="workout">
+      <circle cx="24" cy="11" r="3.5" />
+      <path d="M24 14.5V24" />
+      <path d="M18 19h12" />
+      <path d="M15 19v3.5M33 19v3.5" />
+      <path d="M12 22.5h24" />
+      <path d="M20 24v8M28 24v8" />
+      <path d="M17 32h14" />
+    </PhaseWatermark>
   );
 }
 
-function RecoveryIcon({ className = "" }: { className?: string }) {
+function RecoveryWatermark() {
   return (
-    <PhaseIcon className={className}>
-      <path d="M5 16c2-3 4-6 7-6s5 3 7 6" />
-      <path d="M4 19h16" />
-      <path d="M12 5v3" />
-      <path d="M9.5 7.5h5" />
-    </PhaseIcon>
+    <PhaseWatermark tone="recovery">
+      <path d="M24 9a13 13 0 1 1 0 26 13 13 0 0 1 0-26Z" />
+      <path d="M24 17v14M17 24h14" strokeWidth="2" />
+      <path d="M33.5 11.5l2-2M33.5 11.5l-2 2" strokeWidth="1.75" />
+    </PhaseWatermark>
   );
 }
 
-const phaseIcons: Record<PhaseTone, typeof WarmupIcon> = {
-  warmup: WarmupIcon,
-  workout: WorkoutIcon,
-  recovery: RecoveryIcon,
+const phaseWatermarks: Record<PhaseTone, () => React.JSX.Element> = {
+  warmup: WarmupWatermark,
+  workout: WorkoutWatermark,
+  recovery: RecoveryWatermark,
 };
 
 function totalPlannedSets(session: WorkoutSession): number {
@@ -115,29 +126,27 @@ function PhaseSegment({
   ariaLabel,
   duration,
   showDivider,
-  Icon,
+  Watermark,
 }: {
   tone: PhaseTone;
   ariaLabel: string;
   duration: string;
   showDivider: boolean;
-  Icon: typeof WarmupIcon;
+  Watermark: () => React.JSX.Element;
 }) {
   return (
     <div
-      className={`flex min-w-0 flex-1 items-center justify-center px-1 py-3 sm:px-2 ${
+      className={`relative flex min-w-0 flex-1 items-center justify-center overflow-hidden px-1 py-3.5 sm:py-4 ${
         showDivider ? "border-l border-[var(--border)]" : ""
       }`}
     >
-      <div className="flex items-center justify-center gap-2 sm:gap-2.5">
-        <Icon className={toneClasses[tone]} />
-        <span
-          className={`font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${toneClasses[tone]}`}
-        >
-          {duration}
-        </span>
-        <span className="sr-only">{ariaLabel}</span>
-      </div>
+      <Watermark />
+      <span
+        className={`relative z-10 whitespace-nowrap font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${phaseStyles[tone].text}`}
+      >
+        {duration}
+      </span>
+      <span className="sr-only">{ariaLabel}</span>
     </div>
   );
 }
@@ -192,7 +201,7 @@ export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
             ariaLabel={phase.ariaLabel}
             duration={phase.duration}
             showDivider={index > 0}
-            Icon={phaseIcons[phase.tone]}
+            Watermark={phaseWatermarks[phase.tone]}
           />
         ))}
       </div>

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Compact workout schedule phase row |
+| **Last session focus** | Watermark workout phase row |
 
 ---
 
@@ -33,6 +33,18 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — Watermark workout phase row
+
+**What was done:**
+- Week plan phase bar uses large low-opacity background icons (flame, lifter, recovery) with bold duration text centered in each equal column
+- Matches mockup direction: scannable times, color-coded gold/green/steel, expectation sentence below
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/workout/workout-phase-cards.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-30 — Compact workout schedule cards
 
