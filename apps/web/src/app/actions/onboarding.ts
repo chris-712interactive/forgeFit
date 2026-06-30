@@ -2,6 +2,7 @@
 
 import { replaceUserEquipment } from "@/lib/equipment/service";
 import { validateGoalsForAge } from "@/lib/onboarding/age-gates";
+import { resolvedSportPracticeGymPolicy } from "@/lib/onboarding/sport-practice";
 import {
   computeAgeFromDateOfBirth,
   isValidDateOfBirth,
@@ -44,6 +45,11 @@ const onboardingSchema = z
     sport_season_phase: z
       .enum(["in_season", "off_season", "general_prep"])
       .optional(),
+    sport_practice_days: z.array(z.number().int().min(0).max(6)).optional(),
+    sport_practice_gym_policy: z
+      .enum(["avoid", "allow_light", "allow"])
+      .optional(),
+    sport_practice_schedule_varies: z.boolean().optional(),
     secondary_goal: fitnessGoalSchema.optional(),
     parent_consent_name: z.string().trim().max(120).optional(),
     parent_consent_email: z.string().trim().email().max(200).optional(),
@@ -104,6 +110,29 @@ const onboardingSchema = z
           code: z.ZodIssueCode.custom,
           message: "Select a season phase.",
           path: ["sport_season_phase"],
+        });
+      }
+      const practiceVaries = data.sport_practice_schedule_varies === true;
+      if (
+        !practiceVaries &&
+        (data.sport_practice_days?.length ?? 0) === 0
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select practice days or mark your schedule as varying.",
+          path: ["sport_practice_days"],
+        });
+      }
+      if (
+        !resolvedSportPracticeGymPolicy(
+          data.sport_practice_gym_policy,
+          data.sport_season_phase
+        )
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a gym-on-practice-day preference.",
+          path: ["sport_practice_gym_policy"],
         });
       }
       if (data.secondary_goal === "sport_performance") {
@@ -228,6 +257,9 @@ export async function completeOnboarding(data: OnboardingData) {
     sport_id,
     sport_position_id,
     sport_season_phase,
+    sport_practice_days,
+    sport_practice_gym_policy,
+    sport_practice_schedule_varies,
     secondary_goal,
     parent_consent_name,
     parent_consent_email,
@@ -262,6 +294,16 @@ export async function completeOnboarding(data: OnboardingData) {
       sport_id: isSport ? sport_id ?? null : null,
       sport_position_id: isSport ? sport_position_id ?? null : null,
       sport_season_phase: isSport ? sport_season_phase ?? null : null,
+      sport_practice_days: isSport ? sport_practice_days ?? [] : [],
+      sport_practice_gym_policy: isSport
+        ? resolvedSportPracticeGymPolicy(
+            sport_practice_gym_policy,
+            sport_season_phase
+          )
+        : null,
+      sport_practice_schedule_varies: isSport
+        ? sport_practice_schedule_varies ?? false
+        : false,
       secondary_goal: isSport ? secondary_goal ?? null : null,
       parent_consent_at: parentConsentAt,
       parent_consent_name: parentConsentAt ? parent_consent_name ?? null : null,

@@ -28,6 +28,7 @@ import type {
   FatLossPace,
   FitnessGoal,
   RecompPriority,
+  SportPracticeGymPolicy,
   SportSeasonPhase,
   UnitSystem,
 } from "@/lib/types/profile";
@@ -67,6 +68,9 @@ interface ProfileSettingsHubProps {
   initialSportId?: string | null;
   initialSportPositionId?: string | null;
   initialSportSeasonPhase?: SportSeasonPhase | null;
+  initialSportPracticeDays?: number[] | null;
+  initialSportPracticeGymPolicy?: SportPracticeGymPolicy | null;
+  initialSportPracticeScheduleVaries?: boolean;
   initialSecondaryGoal?: FitnessGoal | null;
   equipmentSettings: UserEquipmentSettings;
   oneRepMaxes: UserOneRepMaxRow[];
@@ -107,6 +111,9 @@ export function ProfileSettingsHub({
   initialSportId,
   initialSportPositionId,
   initialSportSeasonPhase,
+  initialSportPracticeDays,
+  initialSportPracticeGymPolicy,
+  initialSportPracticeScheduleVaries,
   initialSecondaryGoal,
   equipmentSettings,
   oneRepMaxes,
@@ -227,6 +234,9 @@ export function ProfileSettingsHub({
             initialSportId={initialSportId}
             initialSportPositionId={initialSportPositionId}
             initialSportSeasonPhase={initialSportSeasonPhase}
+            initialSportPracticeDays={initialSportPracticeDays}
+            initialSportPracticeGymPolicy={initialSportPracticeGymPolicy}
+            initialSportPracticeScheduleVaries={initialSportPracticeScheduleVaries}
             initialSecondaryGoal={initialSecondaryGoal}
           />
           <EquipmentSetting initialSettings={equipmentSettings} />

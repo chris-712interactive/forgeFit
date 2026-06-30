@@ -51,6 +51,7 @@ import {
   SecondaryGoalStep,
   SportCategoryStep,
   SportPositionStep,
+  SportPracticeStep,
   SportSeasonStep,
   SportSelectStep,
 } from "@/components/onboarding/sport-steps";
@@ -227,6 +228,9 @@ export function OnboardingWizard() {
                       sport_id: undefined,
                       sport_position_id: undefined,
                       sport_season_phase: undefined,
+                      sport_practice_days: undefined,
+                      sport_practice_gym_policy: undefined,
+                      sport_practice_schedule_varies: undefined,
                       sport_category_id: undefined,
                       secondary_goal: undefined,
                       fat_loss_pace:
@@ -262,6 +266,9 @@ export function OnboardingWizard() {
           )}
           {currentStepId === "sport_season" && (
             <SportSeasonStep data={data} onChange={update} />
+          )}
+          {currentStepId === "sport_practice" && (
+            <SportPracticeStep data={data} onChange={update} />
           )}
           {currentStepId === "secondary_goal" && (
             <SecondaryGoalStep data={data} onChange={update} />

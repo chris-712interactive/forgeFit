@@ -64,6 +64,9 @@ export async function loadUserProgramContext(userId: string) {
     sportPositionId: profile.sport_position_id ?? undefined,
     sportSeasonPhase: profile.sport_season_phase ?? undefined,
     secondaryGoal: profile.secondary_goal ?? undefined,
+    sportPracticeDays: profile.sport_practice_days ?? undefined,
+    sportPracticeGymPolicy: profile.sport_practice_gym_policy ?? undefined,
+    sportPracticeScheduleVaries: profile.sport_practice_schedule_varies ?? undefined,
   };
 
   return { profile, userProfile };

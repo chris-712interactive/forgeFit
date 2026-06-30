@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 9 in progress (9A–9G shipped) |
+| **Active phase** | Phase 9 in progress (9A–9I shipped) |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Competitive cheer evidence + Vercel build fix |
+| **Last session focus** | Sport practice days + schedule blocking (9I) |
 
 ---
 
@@ -28,12 +28,32 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| 9 | Youth & Sport Performance | ⏳ In progress (9A–9G shipped) |
+| 9 | Youth & Sport Performance | ⏳ In progress (9A–9I shipped) |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-06-30 — Sport practice days + schedule blocking (9I)
+
+**What was done:**
+- Migration: `sport_practice_days`, `sport_practice_gym_policy`, `sport_practice_schedule_varies` on profiles
+- Onboarding step after season timing: practice weekdays, “varies week to week”, gym-on-practice policy (default avoid in-season)
+- Profile → Program plan: edit practice schedule; regenerate respects blocked days
+- Engine: `assignSessionWeekdays` deprioritizes practice days when policy is `avoid`; falls back if not enough open days
+
+**What's next:** Apply migration `#47` on hosted Supabase; manual QA sport onboarding + profile regenerate
+
+**Files touched:**
+- `supabase/migrations/20260630130000_sport_practice_schedule.sql`
+- `packages/program-engine/src/schedule.ts`, `sport/practice-schedule.ts`, `generate.ts`, tests
+- `apps/web/src/lib/types/profile.ts`, `lib/onboarding/steps.ts`, `lib/onboarding/sport-practice.ts`
+- `apps/web/src/components/onboarding/sport-steps.tsx`, `onboarding-wizard.tsx`
+- `apps/web/src/components/profile/sport-plan-fields.tsx`, `program-plan-setting.tsx`
+- `apps/web/src/app/actions/onboarding.ts`, `actions/program.ts`
+- `apps/web/src/lib/programs/service.ts`
+- `docs/phases/09-youth-sport.md`, `docs/supabase-setup.md`, `docs/PROGRESS.md`
 
 ### 2026-06-30 — Workout phase card flip preview
 

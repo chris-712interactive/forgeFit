@@ -25,27 +25,22 @@ export interface AssignSessionWeekdaysOptions {
    * Avoids scheduling "new" sessions on days that already passed this week when possible.
    */
   scheduleFromTodayOnly?: boolean;
+  /** Weekdays to deprioritize (Mon=0 … Sun=6). Falls back if not enough open days remain. */
+  blockedWeekdays?: number[];
 }
 
-/**
- * Spread sessions across the week starting on the anchor day (signup / program start).
- * Fills the rest of the current week first, then wraps to Mon+ if needed.
- */
-export function assignSessionWeekdays(
+function buildWeekdayPool(
   sessionCount: number,
   anchorWeekday: number,
-  options?: AssignSessionWeekdaysOptions
+  scheduleFromTodayOnly?: boolean
 ): number[] {
-  if (sessionCount <= 0) return [];
-  if (sessionCount === 1) return [anchorWeekday];
-
   const pool: number[] = [];
   for (let day = anchorWeekday; day < 7; day += 1) {
     pool.push(day);
   }
 
   const needsEarlierDays =
-    !options?.scheduleFromTodayOnly || pool.length < sessionCount;
+    !scheduleFromTodayOnly || pool.length < sessionCount;
 
   if (needsEarlierDays) {
     for (let day = 0; day < anchorWeekday && pool.length < sessionCount; day += 1) {
@@ -53,6 +48,10 @@ export function assignSessionWeekdays(
     }
   }
 
+  return pool;
+}
+
+function pickSpreadWeekdays(sessionCount: number, pool: number[]): number[] {
   const picked: number[] = [];
   for (let i = 0; i < sessionCount; i += 1) {
     const idx = Math.round((i * (pool.length - 1)) / (sessionCount - 1));
@@ -68,6 +67,55 @@ export function assignSessionWeekdays(
   }
 
   return picked.slice(0, sessionCount);
+}
+
+function firstAvailableWeekday(
+  anchorWeekday: number,
+  blocked: Set<number>
+): number {
+  for (let day = anchorWeekday; day < 7; day += 1) {
+    if (!blocked.has(day)) return day;
+  }
+  for (let day = 0; day < anchorWeekday; day += 1) {
+    if (!blocked.has(day)) return day;
+  }
+  return anchorWeekday;
+}
+
+function resolveWeekdayPool(
+  sessionCount: number,
+  anchorWeekday: number,
+  options?: AssignSessionWeekdaysOptions
+): number[] {
+  const fullPool = buildWeekdayPool(
+    sessionCount,
+    anchorWeekday,
+    options?.scheduleFromTodayOnly
+  );
+  const blocked = new Set(options?.blockedWeekdays ?? []);
+  if (blocked.size === 0) return fullPool;
+
+  const preferred = fullPool.filter((day) => !blocked.has(day));
+  return preferred.length >= sessionCount ? preferred : fullPool;
+}
+
+/**
+ * Spread sessions across the week starting on the anchor day (signup / program start).
+ * Fills the rest of the current week first, then wraps to Mon+ if needed.
+ */
+export function assignSessionWeekdays(
+  sessionCount: number,
+  anchorWeekday: number,
+  options?: AssignSessionWeekdaysOptions
+): number[] {
+  if (sessionCount <= 0) return [];
+  if (sessionCount === 1) {
+    const blocked = new Set(options?.blockedWeekdays ?? []);
+    return [firstAvailableWeekday(anchorWeekday, blocked)];
+  }
+
+  const pool = resolveWeekdayPool(sessionCount, anchorWeekday, options);
+  return pickSpreadWeekdays(sessionCount, pool);
 }
 
 export function dayLabelForIndex(dayIndex: number): string {

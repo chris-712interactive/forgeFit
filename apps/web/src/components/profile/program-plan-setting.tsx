@@ -21,6 +21,7 @@ import type {
   FatLossPace,
   FitnessGoal,
   RecompPriority,
+  SportPracticeGymPolicy,
   SportSeasonPhase,
 } from "@/lib/types/profile";
 import {
@@ -43,6 +44,9 @@ interface ProgramPlanSettingProps {
   initialSportId?: string | null;
   initialSportPositionId?: string | null;
   initialSportSeasonPhase?: SportSeasonPhase | null;
+  initialSportPracticeDays?: number[] | null;
+  initialSportPracticeGymPolicy?: SportPracticeGymPolicy | null;
+  initialSportPracticeScheduleVaries?: boolean;
   initialSecondaryGoal?: FitnessGoal | null;
 }
 
@@ -57,6 +61,9 @@ export function ProgramPlanSetting({
   initialSportId,
   initialSportPositionId,
   initialSportSeasonPhase,
+  initialSportPracticeDays,
+  initialSportPracticeGymPolicy,
+  initialSportPracticeScheduleVaries,
   initialSecondaryGoal,
 }: ProgramPlanSettingProps) {
   const router = useRouter();
@@ -101,6 +108,14 @@ export function ProgramPlanSetting({
   const [sportSeasonPhase, setSportSeasonPhase] = useState<SportSeasonPhase>(
     initialSportSeasonPhase ?? "general_prep"
   );
+  const [sportPracticeDays, setSportPracticeDays] = useState<number[]>(
+    initialSportPracticeDays ?? []
+  );
+  const [sportPracticeGymPolicy, setSportPracticeGymPolicy] = useState<
+    SportPracticeGymPolicy | ""
+  >(initialSportPracticeGymPolicy ?? "");
+  const [sportPracticeScheduleVaries, setSportPracticeScheduleVaries] =
+    useState(initialSportPracticeScheduleVaries ?? false);
   const [secondaryGoal, setSecondaryGoal] = useState<FitnessGoal | "">(
     initialSecondaryGoal ?? ""
   );
@@ -159,6 +174,16 @@ export function ProgramPlanSetting({
           goal === "sport_performance" ? sportPositionId || undefined : undefined,
         sport_season_phase:
           goal === "sport_performance" ? sportSeasonPhase : undefined,
+        sport_practice_days:
+          goal === "sport_performance" ? sportPracticeDays : undefined,
+        sport_practice_gym_policy:
+          goal === "sport_performance" && sportPracticeGymPolicy
+            ? sportPracticeGymPolicy
+            : undefined,
+        sport_practice_schedule_varies:
+          goal === "sport_performance"
+            ? sportPracticeScheduleVaries
+            : undefined,
         secondary_goal:
           goal === "sport_performance" && secondaryGoal
             ? secondaryGoal
@@ -217,11 +242,17 @@ export function ProgramPlanSetting({
             sportId={sportId}
             sportPositionId={sportPositionId}
             sportSeasonPhase={sportSeasonPhase}
+            sportPracticeDays={sportPracticeDays}
+            sportPracticeGymPolicy={sportPracticeGymPolicy}
+            sportPracticeScheduleVaries={sportPracticeScheduleVaries}
             secondaryGoal={secondaryGoal}
             onSportCategoryChange={setSportCategoryId}
             onSportIdChange={setSportId}
             onSportPositionChange={setSportPositionId}
             onSeasonPhaseChange={setSportSeasonPhase}
+            onSportPracticeDaysChange={setSportPracticeDays}
+            onSportPracticeGymPolicyChange={setSportPracticeGymPolicy}
+            onSportPracticeScheduleVariesChange={setSportPracticeScheduleVaries}
             onSecondaryGoalChange={setSecondaryGoal}
           />
         ) : null}

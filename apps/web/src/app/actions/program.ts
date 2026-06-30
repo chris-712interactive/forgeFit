@@ -1,6 +1,7 @@
 "use server";
 
 import { validateGoalsForAge } from "@/lib/onboarding/age-gates";
+import { resolvedSportPracticeGymPolicy } from "@/lib/onboarding/sport-practice";
 import { summarizePlanChanges } from "@/lib/programs/plan-diff";
 import {
   generateAndSaveProgram,
@@ -13,7 +14,7 @@ import {
 import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import { friendlySupabaseError } from "@/lib/supabase/schema-errors";
-import type { FatLossPace, FitnessGoal, RecompPriority, SportSeasonPhase } from "@/lib/types/profile";
+import type { FatLossPace, FitnessGoal, RecompPriority, SportPracticeGymPolicy, SportSeasonPhase } from "@/lib/types/profile";
 import {
   isValidSeasonPhase,
   isValidSportId,
@@ -43,6 +44,11 @@ const planSettingsSchema = z
     sport_season_phase: z
       .enum(["in_season", "off_season", "general_prep"])
       .optional(),
+    sport_practice_days: z.array(z.number().int().min(0).max(6)).optional(),
+    sport_practice_gym_policy: z
+      .enum(["avoid", "allow_light", "allow"])
+      .optional(),
+    sport_practice_schedule_varies: z.boolean().optional(),
     secondary_goal: z
       .enum([
         "fat_loss",
@@ -92,6 +98,29 @@ const planSettingsSchema = z
           code: z.ZodIssueCode.custom,
           message: "Select a season phase.",
           path: ["sport_season_phase"],
+        });
+      }
+      const practiceVaries = data.sport_practice_schedule_varies === true;
+      if (
+        !practiceVaries &&
+        (data.sport_practice_days?.length ?? 0) === 0
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select practice days or mark your schedule as varying.",
+          path: ["sport_practice_days"],
+        });
+      }
+      if (
+        !resolvedSportPracticeGymPolicy(
+          data.sport_practice_gym_policy,
+          data.sport_season_phase
+        )
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a gym-on-practice-day preference.",
+          path: ["sport_practice_gym_policy"],
         });
       }
     } else if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
@@ -181,6 +210,9 @@ export async function updatePlanSettings(input: {
   sport_id?: string;
   sport_position_id?: string;
   sport_season_phase?: SportSeasonPhase;
+  sport_practice_days?: number[];
+  sport_practice_gym_policy?: SportPracticeGymPolicy;
+  sport_practice_schedule_varies?: boolean;
   secondary_goal?: FitnessGoal;
   fat_loss_pace?: FatLossPace;
   recomp_priority?: RecompPriority;
@@ -254,6 +286,16 @@ export async function updatePlanSettings(input: {
       sport_id: isSport ? parsed.data.sport_id ?? null : null,
       sport_position_id: isSport ? parsed.data.sport_position_id ?? null : null,
       sport_season_phase: isSport ? parsed.data.sport_season_phase ?? null : null,
+      sport_practice_days: isSport ? parsed.data.sport_practice_days ?? [] : [],
+      sport_practice_gym_policy: isSport
+        ? resolvedSportPracticeGymPolicy(
+            parsed.data.sport_practice_gym_policy,
+            parsed.data.sport_season_phase
+          )
+        : null,
+      sport_practice_schedule_varies: isSport
+        ? parsed.data.sport_practice_schedule_varies ?? false
+        : false,
       secondary_goal: isSport ? parsed.data.secondary_goal ?? null : null,
     })
     .eq("id", user.id);

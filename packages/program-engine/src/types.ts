@@ -8,6 +8,8 @@ export type FitnessGoal =
 
 export type SportSeasonPhase = "in_season" | "off_season" | "general_prep";
 
+export type SportPracticeGymPolicy = "avoid" | "allow_light" | "allow";
+
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
 /** Maps to evidence `daily_deficit_kcal` min / optimal / max. */
@@ -34,6 +36,9 @@ export interface ProgramUserProfile {
   sportPositionId?: string;
   sportSeasonPhase?: SportSeasonPhase;
   secondaryGoal?: FitnessGoal;
+  sportPracticeDays?: number[];
+  sportPracticeGymPolicy?: SportPracticeGymPolicy;
+  sportPracticeScheduleVaries?: boolean;
 }
 
 export interface PlannedExercise {

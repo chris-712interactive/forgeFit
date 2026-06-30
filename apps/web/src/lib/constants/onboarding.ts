@@ -174,6 +174,24 @@ export const SIGNUP_SOURCE_OPTIONS = [
 
 export type SignupSource = (typeof SIGNUP_SOURCE_OPTIONS)[number]["value"];
 
+export const SPORT_PRACTICE_GYM_POLICY_OPTIONS = [
+  {
+    value: "avoid" as const,
+    label: "Avoid gym on practice days",
+    description: "We schedule strength sessions on your other days when possible",
+  },
+  {
+    value: "allow_light" as const,
+    label: "Light gym sessions OK",
+    description: "Short accessory work on practice days is fine",
+  },
+  {
+    value: "allow" as const,
+    label: "Full gym sessions OK",
+    description: "Practice days don't block gym scheduling",
+  },
+];
+
 export const HEALTH_DISCLAIMER = {
   title: "Before we begin",
   paragraphs: [

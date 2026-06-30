@@ -67,5 +67,6 @@ export type {
   FatLossPace,
   RecompPriority,
   SportSeasonPhase,
+  SportPracticeGymPolicy,
   GenerateProgramOptions,
 } from "./types";

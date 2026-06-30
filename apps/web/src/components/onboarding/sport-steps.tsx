@@ -6,7 +6,16 @@ import {
   getSeasonPhases,
   getSportById,
 } from "@forgefit/evidence-kb";
-import type { OnboardingData, SportSeasonPhase } from "@/lib/types/profile";
+import { DAY_LABELS } from "@forgefit/program-engine";
+import { SPORT_PRACTICE_GYM_POLICY_OPTIONS } from "@/lib/constants/onboarding";
+import {
+  defaultSportPracticeGymPolicy,
+  resolvedSportPracticeGymPolicy,
+} from "@/lib/onboarding/sport-practice";
+import type {
+  OnboardingData,
+  SportSeasonPhase,
+} from "@/lib/types/profile";
 import { SECONDARY_GOALS } from "@/lib/constants/onboarding";
 import { filterSecondaryGoalsForAge } from "@/lib/onboarding/age-gates";
 import { resolveProfileAgeFromData } from "@/lib/onboarding/steps";
@@ -94,12 +103,85 @@ export function SportSeasonStep({ data, onChange }: SportStepProps) {
           key={phase.id}
           selected={data.sport_season_phase === phase.id}
           onClick={() =>
-            onChange({ sport_season_phase: phase.id as SportSeasonPhase })
+            onChange({
+              sport_season_phase: phase.id as SportSeasonPhase,
+              sport_practice_gym_policy:
+                data.sport_practice_gym_policy ??
+                defaultSportPracticeGymPolicy(phase.id as SportSeasonPhase),
+            })
           }
           title={phase.label}
           description={phase.description}
         />
       ))}
+    </div>
+  );
+}
+
+export function SportPracticeStep({ data, onChange }: SportStepProps) {
+  const policy = resolvedSportPracticeGymPolicy(
+    data.sport_practice_gym_policy,
+    data.sport_season_phase
+  );
+  const practiceDays = data.sport_practice_days ?? [];
+  const scheduleVaries = data.sport_practice_schedule_varies === true;
+
+  function togglePracticeDay(dayIndex: number) {
+    const next = practiceDays.includes(dayIndex)
+      ? practiceDays.filter((day) => day !== dayIndex)
+      : [...practiceDays, dayIndex].sort((a, b) => a - b);
+    onChange({ sport_practice_days: next });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="mb-2 text-sm text-forge-muted">
+          Which days do you usually have sport practice?
+        </p>
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+          {DAY_LABELS.map((label, dayIndex) => (
+            <DayChip
+              key={label}
+              label={label}
+              selected={practiceDays.includes(dayIndex)}
+              disabled={scheduleVaries}
+              onClick={() => togglePracticeDay(dayIndex)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <OptionCard
+        selected={scheduleVaries}
+        onClick={() =>
+          onChange({
+            sport_practice_schedule_varies: !scheduleVaries,
+            sport_practice_days: scheduleVaries ? practiceDays : [],
+          })
+        }
+        title="Practice days change week to week"
+        description="We won't block gym days — update this when your schedule settles."
+      />
+
+      <div>
+        <p className="mb-2 text-sm text-forge-muted">
+          Gym sessions on practice days?
+        </p>
+        <div className="space-y-2">
+          {SPORT_PRACTICE_GYM_POLICY_OPTIONS.map((option) => (
+            <OptionCard
+              key={option.value}
+              selected={policy === option.value}
+              onClick={() =>
+                onChange({ sport_practice_gym_policy: option.value })
+              }
+              title={option.label}
+              description={option.description}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -135,6 +217,33 @@ export function SecondaryGoalStep({ data, onChange }: SportStepProps) {
         />
       ))}
     </div>
+  );
+}
+
+function DayChip({
+  label,
+  selected,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`min-h-[44px] rounded-xl border px-2 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+        selected
+          ? "border-forge-ember bg-forge-ember/15 text-forge-ember"
+          : "border-[var(--border)] bg-forge-surface-raised text-forge-muted"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 

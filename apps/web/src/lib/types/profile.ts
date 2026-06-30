@@ -8,6 +8,8 @@ export type FitnessGoal =
 
 export type SportSeasonPhase = "in_season" | "off_season" | "general_prep";
 
+export type SportPracticeGymPolicy = "avoid" | "allow_light" | "allow";
+
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
 export type SexType = "male" | "female" | "other" | "prefer_not_to_say";
@@ -34,6 +36,9 @@ export interface Profile {
   sport_id: string | null;
   sport_position_id: string | null;
   sport_season_phase: SportSeasonPhase | null;
+  sport_practice_days: number[] | null;
+  sport_practice_gym_policy: SportPracticeGymPolicy | null;
+  sport_practice_schedule_varies: boolean;
   secondary_goal: FitnessGoal | null;
   parent_consent_at: string | null;
   parent_consent_name: string | null;
@@ -83,6 +88,9 @@ export interface OnboardingData {
   sport_id?: string;
   sport_position_id?: string;
   sport_season_phase?: SportSeasonPhase;
+  sport_practice_days?: number[];
+  sport_practice_gym_policy?: SportPracticeGymPolicy;
+  sport_practice_schedule_varies?: boolean;
   secondary_goal?: FitnessGoal;
   parent_consent_name?: string;
   parent_consent_email?: string;

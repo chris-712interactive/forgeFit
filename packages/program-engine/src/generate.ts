@@ -27,6 +27,7 @@ import {
   estimateExerciseMinutes,
   estimateMainWorkMinutes,
 } from "./session-time";
+import { blockedWeekdaysForProfile } from "./sport/practice-schedule";
 import {
   assignSessionWeekdays,
   dayLabelForIndex,
@@ -686,6 +687,7 @@ export function generateProgram(
   const anchorWeekday = isoWeekdayFromDate(startDate);
   const sessionWeekdays = assignSessionWeekdays(split.length, anchorWeekday, {
     scheduleFromTodayOnly: options.scheduleFromTodayOnly,
+    blockedWeekdays: blockedWeekdaysForProfile(profile),
   });
 
   const week = split

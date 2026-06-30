@@ -35,6 +35,7 @@ Program logic remains in `program-engine` + `evidence-kb` only — never LLM-gen
 | **9F** | Profile settings: edit sport / season / secondary | ✅ |
 | **9G** | Teen community cohort + parent-consent gate for community | ✅ |
 | **9H** | Expand catalog (+ wrestling, swim, cheer, lacrosse, track sub-events) | ⏳ |
+| **9I** | Practice days + gym-on-practice policy → schedule blocking | ✅ |
 
 ---
 
@@ -76,6 +77,9 @@ Runtime loader: `packages/evidence-kb/src/sports-catalog.ts`.
 | `parent_consent_at` | timestamptz | Required when age 13–15 |
 | `parent_consent_name` | text | |
 | `parent_consent_email` | text | |
+| `sport_practice_days` | integer[] | Mon=0 … Sun=6; used when scheduling gym sessions |
+| `sport_practice_gym_policy` | enum | `avoid` · `allow_light` · `allow` |
+| `sport_practice_schedule_varies` | boolean | When true, practice days do not block scheduling |
 
 ---
 

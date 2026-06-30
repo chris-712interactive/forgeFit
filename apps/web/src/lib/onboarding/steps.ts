@@ -12,6 +12,7 @@ import {
 } from "@/lib/profile/identity";
 import type { OnboardingData } from "@/lib/types/profile";
 import { bodyCompositionStepValid } from "@/components/onboarding/body-composition-target-step";
+import { resolvedSportPracticeGymPolicy } from "@/lib/onboarding/sport-practice";
 
 export type OnboardingStepId =
   | "disclaimer"
@@ -20,6 +21,7 @@ export type OnboardingStepId =
   | "sport"
   | "sport_position"
   | "sport_season"
+  | "sport_practice"
   | "secondary_goal"
   | "experience"
   | "about_you"
@@ -42,7 +44,7 @@ export function buildOnboardingSteps(
     if (sportRequiresPosition(data.sport_id)) {
       steps.push("sport_position");
     }
-    steps.push("sport_season", "secondary_goal");
+    steps.push("sport_season", "sport_practice", "secondary_goal");
   }
 
   steps.push("experience", "about_you");
@@ -82,6 +84,8 @@ export function stepTitle(stepId: OnboardingStepId): string {
       return "Your position";
     case "sport_season":
       return "Season timing";
+    case "sport_practice":
+      return "Practice schedule";
     case "secondary_goal":
       return "Also working on…";
     case "experience":
@@ -123,6 +127,8 @@ export function stepSubtitle(stepId: OnboardingStepId): string {
       return "Position changes how we emphasize strength and power.";
     case "sport_season":
       return "In-season plans keep gym work from interfering with practices.";
+    case "sport_practice":
+      return "We avoid stacking hard gym sessions on practice days when you ask us to.";
     case "secondary_goal":
       return "Optional — your sport plan always comes first.";
     case "experience":
@@ -167,6 +173,15 @@ export function canProceedStep(
       return !!data.sport_position_id;
     case "sport_season":
       return !!data.sport_season_phase;
+    case "sport_practice":
+      return (
+        !!resolvedSportPracticeGymPolicy(
+          data.sport_practice_gym_policy,
+          data.sport_season_phase
+        ) &&
+        (data.sport_practice_schedule_varies === true ||
+          (data.sport_practice_days?.length ?? 0) > 0)
+      );
     case "secondary_goal":
       return true;
     case "experience":

@@ -54,3 +54,7 @@ export {
   sportRepsRange,
 } from "./patterns";
 export { sportSessionCap, sportSummarySuffix, sportVolumeMultiplier } from "./volume";
+export {
+  blockedWeekdaysForProfile,
+  defaultSportPracticeGymPolicy,
+} from "./practice-schedule";

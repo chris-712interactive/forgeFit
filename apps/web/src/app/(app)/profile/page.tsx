@@ -213,6 +213,13 @@ export default async function ProfilePage({
           initialSportId={profile?.sport_id ?? null}
           initialSportPositionId={profile?.sport_position_id ?? null}
           initialSportSeasonPhase={profile?.sport_season_phase ?? null}
+          initialSportPracticeDays={profile?.sport_practice_days ?? null}
+          initialSportPracticeGymPolicy={
+            profile?.sport_practice_gym_policy ?? null
+          }
+          initialSportPracticeScheduleVaries={
+            profile?.sport_practice_schedule_varies ?? false
+          }
           initialSecondaryGoal={profile?.secondary_goal ?? null}
           equipmentSettings={equipmentSettings}
           oneRepMaxes={oneRepMaxes.rows}
