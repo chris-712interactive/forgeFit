@@ -52,7 +52,10 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/serwist") ||
     path.startsWith("/~offline");
   const isPublicRoute =
-    path === "/" || path.startsWith("/privacy") || path.startsWith("/terms");
+    path === "/" ||
+    path.startsWith("/privacy") ||
+    path.startsWith("/terms") ||
+    path.startsWith("/docs");
   const isAppRoute =
     path.startsWith("/home") ||
     path.startsWith("/workout") ||

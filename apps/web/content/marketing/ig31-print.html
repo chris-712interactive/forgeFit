@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>ForgeRep Instagram — 31-Day Calendar (Printable)</title>
+  <style>
+    :root {
+      --ember: #c2410c;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --border: #d6d3d1;
+      --surface: #fafaf9;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .page {
+      max-width: 7.5in;
+      margin: 0 auto;
+      padding: 0.45in 0.55in;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.2;
+      margin: 0 0 0.35em;
+    }
+
+    h1 { font-size: 20pt; }
+    h2 {
+      font-size: 13pt;
+      margin-top: 1.1em;
+      padding-bottom: 0.15em;
+      border-bottom: 2px solid var(--ember);
+    }
+    h3 {
+      font-size: 11pt;
+      margin-top: 0.85em;
+      color: var(--ember);
+    }
+    h4 {
+      font-size: 10pt;
+      margin-top: 0.6em;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    p { margin: 0.35em 0; }
+    ul, ol { margin: 0.35em 0 0.5em; padding-left: 1.25em; }
+    li { margin: 0.15em 0; }
+
+    .meta {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 9pt;
+      color: var(--muted);
+      margin-bottom: 0.75em;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5em 1em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin: 0.4em 0 0.6em;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.25em 0.4em;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--surface);
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .box {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 0.45em 0.55em;
+      margin: 0.45em 0;
+      border-radius: 4px;
+    }
+
+    .box pre, pre {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 9pt;
+      white-space: pre-wrap;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .day-block {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-bottom: 0.75em;
+      padding-bottom: 0.55em;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .day-block:last-child { border-bottom: none; }
+
+    .day-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5em;
+      margin-bottom: 0.25em;
+    }
+
+    .day-title strong {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 11pt;
+    }
+
+    .day-theme {
+      font-size: 8.5pt;
+      color: var(--muted);
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .format {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 9pt;
+      margin: 0.2em 0;
+    }
+
+    .format strong { color: var(--ember); }
+
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li::before { content: "☐ "; }
+
+    .caption {
+      font-size: 9pt;
+      color: var(--ink);
+      border-left: 3px solid var(--ember);
+      padding-left: 0.5em;
+      margin: 0.35em 0;
+    }
+
+    .footer-note {
+      margin-top: 1.5em;
+      padding-top: 0.5em;
+      border-top: 1px solid var(--border);
+      font-size: 8.5pt;
+      color: var(--muted);
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    @media print {
+      body { font-size: 10pt; }
+      .page { max-width: none; padding: 0; }
+      .no-print { display: none !important; }
+      h2 { break-after: avoid; }
+      .page-break { break-before: page; page-break-before: always; }
+    }
+
+    @media screen {
+      body { background: #ececec; padding: 1rem 0 2rem; }
+      .page {
+        background: #fff;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+        margin-bottom: 1.5rem;
+      }
+      .print-bar {
+        max-width: 7.5in;
+        margin: 0 auto 1rem;
+        padding: 0.75rem 1rem;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 8px;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+      .print-bar button {
+        background: var(--ember);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-bar no-print">
+    <span>ForgeRep 31-Day Calendar — open Print (⌘P) · enable “Background graphics” for accent lines</span>
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+
+  <!-- PAGE 1: Quick reference -->
+  <div class="page">
+    <h1>ForgeRep Instagram — 31-Day Calendar</h1>
+    <p class="meta">Printable field guide · @forgerep · forge-rep.com/signup · Last updated 2026-06-30</p>
+
+    <div class="grid-2">
+      <div>
+        <h2>Goals & cadence</h2>
+        <ul>
+          <li><strong>Goal:</strong> Grow followers → convert to app signups</li>
+          <li><strong>Cadence:</strong> 1 Reel + 1 Carousel/static daily + 5–8 Stories</li>
+          <li><strong>Time:</strong> ~45–60 min/day · ~4 hrs on batch days (0, 7, 14, 21)</li>
+          <li><strong>CTA every post:</strong> “Link in bio — free to start”</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Bio & link</h2>
+        <div class="box"><pre>Evidence-based fitness that keeps you accountable.
+Programs, macros & offline gym logging — one app.
+Start free ↓</pre></div>
+        <p><strong>Link:</strong> forge-rep.com/signup?utm_source=instagram&utm_medium=bio</p>
+      </div>
+    </div>
+
+    <h2>Daily rhythm</h2>
+    <table>
+      <tr><th>Time</th><th>Format</th><th>Purpose</th></tr>
+      <tr><td>7–9 AM</td><td>Reel</td><td>Reach — hook in first 1.5s</td></tr>
+      <tr><td>12–2 PM</td><td>Carousel / static</td><td>Saves + education</td></tr>
+      <tr><td>5–9 PM</td><td>5–8 Stories</td><td>Polls, Q&A, link reminders</td></tr>
+      <tr><td>Story 1</td><td>“New post ↑” sticker</td><td>Drives Reel views</td></tr>
+    </table>
+
+    <h2>Week themes</h2>
+    <table>
+      <tr><th>Week</th><th>Theme</th><th>Focus</th></tr>
+      <tr><td>1</td><td>Launch & identity</td><td>Who ForgeRep is, 3 differentiators</td></tr>
+      <tr><td>2</td><td>Pain → solution</td><td>Problems generic apps cause</td></tr>
+      <tr><td>3</td><td>Feature proof</td><td>Deep demos + evidence</td></tr>
+      <tr><td>4</td><td>Convert & urgency</td><td>Free tier, signup push</td></tr>
+    </table>
+
+    <h2>Content pillars</h2>
+    <table>
+      <tr><th>Pillar</th><th>%</th><th>Purpose</th></tr>
+      <tr><td>Evidence / education</td><td>30%</td><td>Saves, shares, trust</td></tr>
+      <tr><td>App demo / feature</td><td>30%</td><td>Conversion</td></tr>
+      <tr><td>Relatable gym humor</td><td>25%</td><td>Reach, follows</td></tr>
+      <tr><td>Accountability / mindset</td><td>15%</td><td>Comments, community</td></tr>
+    </table>
+
+    <h2>Format legend</h2>
+    <p>🎬 Reel · 📱 Carousel/static · 📖 Stories · ⏱ est. time if not batched</p>
+
+    <h2>Pinned posts (Days 1, 3, 5)</h2>
+    <ol>
+      <li>“What is ForgeRep?” (60s Reel) — Day 1</li>
+      <li>“Works offline in the gym” (demo Reel) — Day 3</li>
+      <li>“Start free in 60 seconds” (signup Carousel) — Day 5</li>
+    </ol>
+
+    <h2>Engagement (10 min/day)</h2>
+    <ul>
+      <li>Reply to every comment in the first hour</li>
+      <li>Reply to 5–10 posts under #fitnessapp / #macrotracking</li>
+      <li>Share best Story replies to feed</li>
+    </ul>
+
+    <h2>Caption formula</h2>
+    <div class="box"><pre>[Hook — problem or bold claim]
+
+[2–3 lines: what ForgeRep does]
+
+[Soft CTA: Link in bio — free to start]
+
+[5–8 hashtags]</pre></div>
+  </div>
+
+  <!-- PAGE 2: Batch reference + checklist -->
+  <div class="page page-break">
+    <h1>Batch Day 0 — Quick reference</h1>
+    <p class="meta">Record once · cut all month · use demo+free@ for most clips · demo+pro@ for community/integrations</p>
+
+    <table>
+      <tr><th>Recording</th><th>Route</th><th>Calendar days</th></tr>
+      <tr><td>1 Home dashboard</td><td>/home</td><td>1, 8, 15, 22, 29</td></tr>
+      <tr><td>2 Workout + active logging</td><td>/workout</td><td>2, 9, 16</td></tr>
+      <tr><td>3 Offline + sync</td><td>Airplane mode during workout</td><td>3, 10, 17</td></tr>
+      <tr><td>4 Nutrition diary</td><td>/nutrition</td><td>4, 11, 18</td></tr>
+      <tr><td>5 Onboarding</td><td>/signup → 10 steps</td><td>5, 12</td></tr>
+      <tr><td>6 Exercise library</td><td>/exercises</td><td>6, 13</td></tr>
+      <tr><td>7 Evidence page</td><td>/evidence</td><td>7, 14, 21</td></tr>
+      <tr><td>8 Progress / projections</td><td>/progress</td><td>17, 18</td></tr>
+      <tr><td>9 Community</td><td>/community (Pro demo)</td><td>20, 27</td></tr>
+      <tr><td>10 Bonus B-roll</td><td>Nav, integrations, PWA</td><td>8, 10, 14, 22, 26, 29</td></tr>
+    </table>
+
+    <p><strong>Repurpose rule:</strong> 1 screen recording → full Reel (30–45s) + 3-slide Carousel + 3 Story frames</p>
+
+    <h2>Brand kit (Canva)</h2>
+    <table>
+      <tr><th>Token</th><th>Hex</th><th>Use</th></tr>
+      <tr><td>forge-ember</td><td>#FF6B35</td><td>CTA, accents</td></tr>
+      <tr><td>forge-surface</td><td>#1C1917</td><td>Dark background</td></tr>
+      <tr><td>forge-text</td><td>#FAFAF9</td><td>Body text</td></tr>
+      <tr><td>forge-gold</td><td>#FBBF24</td><td>PRs, highlights</td></tr>
+      <tr><td>forge-success</td><td>#22C55E</td><td>Checkmarks</td></tr>
+    </table>
+    <p>Fonts: Montserrat (headlines) + Open Sans (body)</p>
+
+    <h2>First 48 hours checklist</h2>
+    <ul class="checklist">
+      <li>Profile + bio + link + highlights</li>
+      <li>Canva templates + brand kit</li>
+      <li>Batch Day 0 screen recordings</li>
+      <li>Publish Day 1 Reel + Carousel</li>
+      <li>Schedule Week 1 in Meta Business Suite</li>
+      <li>Pin posts when Days 3 & 5 go live</li>
+    </ul>
+
+    <h2>15-minute Reel factory (when behind)</h2>
+    <ol>
+      <li>Pick hook from Hook bank (last page)</li>
+      <li>One screen recording (3–10s)</li>
+      <li>CapCut auto-captions</li>
+      <li>Logo end card</li>
+      <li>Post</li>
+    </ol>
+
+    <h2>Weekly metrics targets</h2>
+    <table>
+      <tr><th>Metric</th><th>Target</th></tr>
+      <tr><td>Reel views</td><td>500+ Week 2 · 2k+ Week 4</td></tr>
+      <tr><td>Link clicks</td><td>Track UTM on bio link</td></tr>
+      <tr><td>Saves</td><td>Education carousels &gt; likes</td></tr>
+      <tr><td>Signups</td><td>5–10/week = content working</td></tr>
+    </table>
+  </div>
+
+  <!-- WEEK 1 -->
+  <div class="page page-break">
+    <h1>Week 1 — Launch & identity</h1>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 1 — What is ForgeRep?</strong><span class="day-theme">Pin Reel #1</span></div>
+      <p class="format"><strong>🎬 Reel (60s):</strong> “Not another workout list” — hook: “Stop downloading apps that only give you random workouts.” Clips: home → workout → macros → logo. Highlight “evidence-based” + “offline” in orange.</p>
+      <p class="caption">Most fitness apps give you workouts. ForgeRep gives you a plan that holds you accountable. ✓ Personalized programs ✓ Macro tracking tied to YOUR plan ✓ Offline logging ✓ Research-backed — not AI guesswork. Start free — link in bio.</p>
+      <p class="format"><strong>📱 Carousel (5 slides):</strong> 3 problems → random workouts / gym WiFi dies / AI leg day → Try it free</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll “Do you track macros?” → reshare Reel → link → “#1 fitness goal?”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 2 — Offline gym logging</strong></div>
+      <p class="format"><strong>🎬 Reel (25s):</strong> “POV: gym has no signal” — airplane mode → log set → sync ✓</p>
+      <p class="format"><strong>📱 Static:</strong> “Works offline. Syncs when signal returns.”</p>
+      <p class="format"><strong>📖 Stories:</strong> Split “No signal 😤” / “Still logging 💪”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 3 — Evidence-based (trust)</strong><span class="day-theme">Pin Reel #2</span></div>
+      <p class="format"><strong>🎬 Reel (35s):</strong> “Your plan isn’t from ChatGPT” — Evidence page screen record</p>
+      <p class="format"><strong>📱 Carousel:</strong> Myth vs Fact (6 slides) — sets/week, protein when dieting, deloads, any app same</p>
+      <p class="format"><strong>📖 Stories:</strong> Quiz — “Deload weeks optional: True/False” (False)</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 4 — Nutrition accountability</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “Generic macro calculators vs targets from YOUR plan”</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Log a meal in 4 taps” — search → select → bars update → home %</p>
+      <p class="format"><strong>📖 Stories:</strong> “What I ate today” demo diary format</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 5 — Onboarding / signup push</strong><span class="day-theme">Pin Carousel #3</span></div>
+      <p class="format"><strong>🎬 Reel (45s, 1.5×):</strong> “Free account in under 60 seconds” — fast-cut onboarding</p>
+      <p class="format"><strong>📱 Carousel:</strong> How it works — starting point → plan → log → start free</p>
+      <p class="format"><strong>📖 Stories:</strong> “Free — no credit card” + link × 3</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 6 — Exercise library</strong></div>
+      <p class="format"><strong>🎬 Reel (20s):</strong> “800+ exercises with demos” — search → GIF → heatmap → swap</p>
+      <p class="format"><strong>📱 Static:</strong> “Equipment busy? ForgeRep suggests substitutions.”</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll Bench / Squat / Deadlift → show demo</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 7 — Week 1 recap + Batch Day 2</strong></div>
+      <p class="format"><strong>🎬 Reel:</strong> “Week 1 in 15 seconds” — Evidence · Offline · Accountability montage</p>
+      <p class="format"><strong>📱 Carousel:</strong> Start free — what’s included (7 slides)</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll — demo Offline / Macros / Programs / Community next week</p>
+      <p class="format"><strong>⏱ Batch Day 2 (~2 hrs):</strong> Gym B-roll — bad WiFi, gym bag, meal prep, 10 clips × 5s</p>
+    </div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="page page-break">
+    <h1>Week 2 — Pain → solution</h1>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 8 — No plan</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> Relatable skit — Mon fresh start → Tue YouTube → Wed sore → Thu lost → ForgeRep program</p>
+      <p class="format"><strong>📱 Carousel:</strong> “5 signs you need a real program” (6 slides)</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 9 — RIR / logging</strong></div>
+      <p class="format"><strong>🎬 Reel (25s):</strong> “Log every rep” — sets, reps, rest timer, RIR</p>
+      <p class="format"><strong>📱 Static:</strong> “Active workout mode &gt; Notes app”</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll “Do you log RIR?” → educate in follow-up</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 10 — Offline (algorithm boost)</strong></div>
+      <p class="format"><strong>🎬 Reel (20s):</strong> “Things that just make sense” — offline logging as #3</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Gym bag essentials” — last slide: ForgeRep on phone</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 11 — Nutrition pain</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “You hit calories but miss protein” → home protein bar</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Protein targets from science” (5 slides) — not medical advice</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 12 — Time budget</strong></div>
+      <p class="format"><strong>🎬 Reel (25s):</strong> “Only 3 days a week?” — onboarding schedule screen</p>
+      <p class="format"><strong>📱 Static:</strong> “Your plan fits YOUR schedule — not a 6-day split.”</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll — 2-3 / 4-5 / 6+ training days</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 13 — Equipment-aware</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “Home gym vs commercial gym” — equipment onboarding</p>
+      <p class="format"><strong>📱 Carousel:</strong> “No barbell? No problem.” — substitutions</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 14 — Week 2 recap + Batch Day 3</strong></div>
+      <p class="format"><strong>🎬 Reel:</strong> “Stop winging it” (20s)</p>
+      <p class="format"><strong>📱 Carousel:</strong> FAQ — free? offline? iOS/Android? evidence? AI? credit card?</p>
+      <p class="format"><strong>📖 Stories:</strong> AMA — answer FAQ in replies</p>
+      <p class="format"><strong>⏱ Batch Day 3:</strong> Write Week 3 captions · schedule in Meta Business Suite</p>
+    </div>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="page page-break">
+    <h1>Week 3 — Feature proof & evidence</h1>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 15 — Dashboard accountability</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “Open the app. Know where you stand.” — home macros + weekly workouts</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Accountability at a glance” — annotated screenshot</p>
+      <p class="format"><strong>⏱ Giveaway option:</strong> Follow + tag gym buddy + signup screenshot (check local rules)</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 16 — Progressive overload</strong></div>
+      <p class="format"><strong>🎬 Reel (35s):</strong> “How ForgeRep progresses your weights” — RIR / progression UI</p>
+      <p class="format"><strong>📱 Static:</strong> “Progressive overload — tracked automatically”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 17 — Projections</strong></div>
+      <p class="format"><strong>🎬 Reel (25s):</strong> “30-day weight projection” — progress chart</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Progress isn’t just the scale” — measurements, trends</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 18 — Deload weeks</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “Why your program includes deload weeks” — every ~6 weeks</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Recovery is programmed in” — sleep, deload, mobility</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 19 — Goals showcase</strong></div>
+      <p class="format"><strong>🎬 Reel (20s):</strong> “Pick your goal” — Fat loss · Bodybuilding · Powerlifting · Strength · Recomp</p>
+      <p class="format"><strong>📱 Static:</strong> “One app. Every goal.”</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll each goal type across 5 stories</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 20 — Community teaser (Pro)</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “Train with rivals, not alone” — leaderboard, rival — label Pro feature</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Accountability layer” — habit score simplified</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 21 — Week 3 recap + Batch Day 4</strong></div>
+      <p class="format"><strong>🎬 Reel:</strong> Repost best performer — “In case you missed it”</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Evidence-backed rules we use” — 5 examples</p>
+      <p class="format"><strong>⏱ Batch Day 4:</strong> Film 10 hook clips (15s each) for Week 4</p>
+    </div>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="page page-break">
+    <h1>Week 4 — Convert & scale</h1>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 22 — Built for real gym sessions</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> Montage offline + logging + rest + sync — “spreadsheets weren’t enough”</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Why we built ForgeRep” — founder story (5 slides)</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 23 — Comparison</strong></div>
+      <p class="format"><strong>🎬 Reel (25s):</strong> “Spreadsheet vs ForgeRep” — messy notes vs clean UI (no competitor names)</p>
+      <p class="format"><strong>📱 Static:</strong> “Your program + macros + progress = one app”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 24 — Free tier push</strong></div>
+      <p class="format"><strong>🎬 Reel (35s):</strong> “Everything you need to train seriously — $0” — green checkmarks</p>
+      <p class="format"><strong>📱 Carousel:</strong> Free vs Pro vs Pro+ simplified — end “Start on Free”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 25 — Hard CTA</strong></div>
+      <p class="format"><strong>🎬 Reel (20s):</strong> “If you’re starting Monday…” → signup → onboarding → first workout</p>
+      <p class="format"><strong>📱 Static:</strong> Bold CTA: “Create free account → link in bio”</p>
+      <p class="format"><strong>📖 Stories:</strong> 8-frame signup walkthrough · link every 2nd frame</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 26 — Workout music</strong></div>
+      <p class="format"><strong>🎬 Reel (20s):</strong> “Pick a vibe. Hit play.” — Spotify picker</p>
+      <p class="format"><strong>📱 Carousel:</strong> 4 vibes — Focus / Pump / Cardio / Cooldown</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 27 — Integrations (Pro+)</strong></div>
+      <p class="format"><strong>🎬 Reel (25s):</strong> “Connect Fitbit / wearables” — integrations screen</p>
+      <p class="format"><strong>📱 Static:</strong> “Free to train. Upgrade when you want automation.”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 28 — Objection handling</strong></div>
+      <p class="format"><strong>🎬 Reel (30s):</strong> “Is this for beginners?” — experience levels + scaling</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Beginner mistakes ForgeRep helps you avoid” (5 tips)</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 29 — Best-of montage</strong></div>
+      <p class="format"><strong>🎬 Reel (45s):</strong> Days 1–28 montage — “day 30 is your turn”</p>
+      <p class="format"><strong>📱 Carousel:</strong> “Month 1 recap” — 10 slides, one lesson each</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 30 — Conversion day</strong></div>
+      <p class="format"><strong>🎬 Reel (15s):</strong> Direct CTA — free · evidence plan · offline logging · link in bio</p>
+      <p class="format"><strong>📱 Static:</strong> Logo + “Start free today” + URL</p>
+      <p class="format"><strong>📖 Stories:</strong> All day — link sticker · reshare every post · “DM GOAL for plan fit”</p>
+    </div>
+
+    <div class="day-block">
+      <div class="day-title"><strong>Day 31 — Next month tease</strong></div>
+      <p class="format"><strong>🎬 Reel (20s):</strong> “What should Month 2 cover?” — form, meal prep, programs</p>
+      <p class="format"><strong>📱 Carousel:</strong> Day 31 checklist — sign up · onboarding · first workout · first meal · progress</p>
+      <p class="format"><strong>📖 Stories:</strong> Poll Month 2 content + thank you + link</p>
+    </div>
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="page page-break">
+    <h1>Reference sheets</h1>
+
+    <h2>Hook bank</h2>
+    <ul>
+      <li>Your gym has no WiFi. Your app shouldn’t care.</li>
+      <li>This isn’t a workout generator.</li>
+      <li>Macros that match your program — not a random calculator.</li>
+      <li>Evidence-based &gt; Instagram hype.</li>
+      <li>Log the set. Sync later. Keep training.</li>
+      <li>Free doesn’t mean fake program.</li>
+      <li>Accountability the second you open the app.</li>
+      <li>800+ exercises. One tap demos.</li>
+      <li>Deload weeks are built in — on purpose.</li>
+      <li>Stop starting over every Monday.</li>
+    </ul>
+
+    <h2>Hashtag groups (rotate 8–12 per post)</h2>
+    <p><strong>A — Broad:</strong> #fitness #gym #workout #fitnessmotivation #gymlife #fitfam #training #health</p>
+    <p><strong>B — Niche:</strong> #evidencebasedtraining #macrotracking #progressiveoverload #workouttracker #fitnessapp #offlinefitness #strengthtraining #nutrition</p>
+    <p><strong>C — Intent:</strong> #fitnessjourney #accountability #fatloss #bodybuilding #powerlifting #mealprep #gymtok #fitnesstips</p>
+
+    <h2>Growth accelerators</h2>
+    <table>
+      <tr><th>Tactic</th><th>How</th></tr>
+      <tr><td>Collabs</td><td>DM 5 micro accounts (1–10k): free Pro month for honest Reel review</td></tr>
+      <tr><td>Cross-post</td><td>Same Reels to TikTok & YouTube Shorts same day</td></tr>
+      <tr><td>Alt text</td><td>“ForgeRep fitness app offline workout tracker evidence-based”</td></tr>
+    </table>
+
+    <h2>Story highlights</h2>
+    <table>
+      <tr><th>Highlight</th><th>Contents</th></tr>
+      <tr><td>START HERE</td><td>What is ForgeRep → Free to start → Link</td></tr>
+      <tr><td>APP TOUR</td><td>Screen recordings from Batch Day 0</td></tr>
+      <tr><td>EVIDENCE</td><td>Myth vs fact carousels</td></tr>
+      <tr><td>OFFLINE</td><td>Gym / no-signal demos</td></tr>
+      <tr><td>FREE</td><td>What’s included free</td></tr>
+    </table>
+
+    <p class="footer-note">Full detail (Batch Day 0 recording steps, slide copy, captions): docs/marketing/instagram-31-day-calendar.md · Canva guide: docs/marketing/canva-template-guide.md</p>
+  </div>
+</body>
+</html>

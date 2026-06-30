@@ -34,6 +34,31 @@
 
 ## Session Log
 
+### 2026-06-30 — Instagram calendar printable URL
+
+**What was done:**
+- Printable calendar served at **`/docs/marketing/ig31`** (easy to type, not in sitemap)
+- `noindex` via meta tag, `X-Robots-Tag` header, and `robots.txt` disallow `/docs/`
+- Public route (no login) · source HTML: `apps/web/content/marketing/ig31-print.html`
+
+**What's next:** —
+
+**Blockers:** None
+
+**Files touched:** `apps/web/src/app/docs/marketing/ig31/route.ts`, `apps/web/src/app/docs/layout.tsx`, `apps/web/content/marketing/ig31-print.html`, `apps/web/src/app/robots.ts`, `apps/web/src/lib/supabase/middleware.ts`, `docs/marketing/instagram-31-day-calendar.md`, `docs/PROGRESS.md`
+
+### 2026-06-30 — Instagram calendar printable
+
+**What was done:**
+- Added `docs/marketing/instagram-31-day-calendar-printable.html` — print-optimized field guide (~8 pages): quick reference, batch mapping, all 31 days, hook bank, hashtags, checklists
+- Linked from `instagram-31-day-calendar.md`
+
+**What's next:** —
+
+**Blockers:** None
+
+**Files touched:** `docs/marketing/instagram-31-day-calendar-printable.html`, `docs/marketing/instagram-31-day-calendar.md`, `docs/PROGRESS.md`
+
 ### 2026-06-30 — MFP Q4 (switcher tools + Pro upgrade moments)
 
 **What was done:**

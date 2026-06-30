@@ -1,5 +1,7 @@
 # ForgeRep Instagram — 31-Day Content Calendar
 
+> **Printable field guide:** [forge-rep.com/docs/marketing/ig31](https://forge-rep.com/docs/marketing/ig31) — open on phone or desktop → Print (⌘P). Source: `apps/web/content/marketing/ig31-print.html`
+
 > **Account:** [@forgerep](https://instagram.com/forgerep)  
 > **Goal:** Grow followers quickly → convert to app signups at `https://forge-rep.com/signup`  
 > **Cadence:** 1 Reel + 1 Carousel/static daily + 5–8 Stories (~2 feed touchpoints/day)  
