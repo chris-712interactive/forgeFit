@@ -10,59 +10,59 @@ const toneClasses: Record<PhaseTone, string> = {
   recovery: "text-forge-steel",
 };
 
-function WarmupIcon({ className = "" }: { className?: string }) {
+function PhaseIcon({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`h-5 w-5 shrink-0 ${className}`}
+    <span
+      className={`inline-flex size-7 shrink-0 items-center justify-center sm:size-8 ${className}`}
       aria-hidden
     >
-      <path d="M8 14.5a2 2 0 0 0 2-2.5c0-1.2-1.2-2.4-1.2-4 1.6 0 3.2 2 3.2 4.4a3.2 3.2 0 1 1-6.4 0 2 2 0 0 0 2 2.1Z" />
-    </svg>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="block size-[1.125rem] sm:size-5"
+      >
+        {children}
+      </svg>
+    </span>
+  );
+}
+
+function WarmupIcon({ className = "" }: { className?: string }) {
+  return (
+    <PhaseIcon className={className}>
+      <path d="M12 20c2.5 0 4-1.75 4-3.75 0-1.75-1.75-3.5-1.75-6 2.5 0 5 3 5 6.5a5 5 0 1 1-10 0c0 2 1.5 3.25 2.5 3.25Z" />
+    </PhaseIcon>
   );
 }
 
 function WorkoutIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`h-5 w-5 shrink-0 ${className}`}
-      aria-hidden
-    >
-      <path d="M1.5 6.5h2.5l1-2h6l1 2h2.5" />
-      <path d="M4 6.5v3M12 6.5v3" />
-      <path d="M2.5 9.5h11" />
-    </svg>
+    <PhaseIcon className={className}>
+      <path d="M2 10h4l1.5-3h9l1.5 3h4" />
+      <path d="M6 10v4M18 10v4" />
+      <path d="M4 14h16" />
+    </PhaseIcon>
   );
 }
 
 function RecoveryIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`h-5 w-5 shrink-0 ${className}`}
-      aria-hidden
-    >
-      <path d="M3 10c1.5-2 2.5-4 5-4s3.5 2 5 4" />
-      <path d="M2 12.5h12" />
-      <path d="M8 3.5v2" />
-      <path d="M6 5.5h4" />
-    </svg>
+    <PhaseIcon className={className}>
+      <path d="M5 16c2-3 4-6 7-6s5 3 7 6" />
+      <path d="M4 19h16" />
+      <path d="M12 5v3" />
+      <path d="M9.5 7.5h5" />
+    </PhaseIcon>
   );
 }
 
@@ -110,6 +110,38 @@ function buildSessionExpectation(
   return `${segments.join(", ")}.`;
 }
 
+function PhaseSegment({
+  tone,
+  ariaLabel,
+  duration,
+  showDivider,
+  Icon,
+}: {
+  tone: PhaseTone;
+  ariaLabel: string;
+  duration: string;
+  showDivider: boolean;
+  Icon: typeof WarmupIcon;
+}) {
+  return (
+    <div
+      className={`flex min-w-0 flex-1 items-center justify-center px-1 py-3 sm:px-2 ${
+        showDivider ? "border-l border-[var(--border)]" : ""
+      }`}
+    >
+      <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+        <Icon className={toneClasses[tone]} />
+        <span
+          className={`font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${toneClasses[tone]}`}
+        >
+          {duration}
+        </span>
+        <span className="sr-only">{ariaLabel}</span>
+      </div>
+    </div>
+  );
+}
+
 export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
   const setCount = totalPlannedSets(session);
 
@@ -133,7 +165,7 @@ export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
     key: "workout",
     tone: "workout",
     ariaLabel: "Main workout",
-    duration: `~${mainWorkoutMinutes(session)} min`,
+    duration: `${mainWorkoutMinutes(session)} min`,
   });
 
   if (session.recoveryBlock) {
@@ -153,26 +185,16 @@ export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
         className="flex w-full items-stretch rounded-xl border border-[var(--border)] bg-forge-surface/40"
         aria-label={expectation}
       >
-        {phases.map((phase, index) => {
-          const Icon = phaseIcons[phase.tone];
-
-          return (
-            <div
-              key={phase.key}
-              className={`flex min-w-0 flex-1 items-center justify-center gap-2 px-2 py-3 ${
-                index > 0 ? "border-l border-[var(--border)]" : ""
-              }`}
-            >
-              <span className="sr-only">{phase.ariaLabel}</span>
-              <Icon className={toneClasses[phase.tone]} />
-              <span
-                className={`font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${toneClasses[phase.tone]}`}
-              >
-                {phase.duration}
-              </span>
-            </div>
-          );
-        })}
+        {phases.map((phase, index) => (
+          <PhaseSegment
+            key={phase.key}
+            tone={phase.tone}
+            ariaLabel={phase.ariaLabel}
+            duration={phase.duration}
+            showDivider={index > 0}
+            Icon={phaseIcons[phase.tone]}
+          />
+        ))}
       </div>
       <p className="mt-1.5 text-xs leading-snug text-forge-muted">
         {expectation}
