@@ -28,8 +28,23 @@ export function BodyCompositionTargetStep({
   onChange,
 }: BodyCompositionTargetStepProps) {
   const goal = data.primary_goal;
-  const isFatLoss = goal === "fat_loss";
-  const isRecomp = goal === "recomposition";
+  const isFatLoss =
+    goal === "fat_loss" ||
+    (goal === "sport_performance" && data.secondary_goal === "fat_loss");
+  const isRecomp =
+    goal === "recomposition" ||
+    (goal === "sport_performance" && data.secondary_goal === "recomposition");
+  const isSportInSeason =
+    goal === "sport_performance" && data.sport_season_phase === "in_season";
+
+  if (isSportInSeason && !isFatLoss && !isRecomp) {
+    return (
+      <p className="text-sm text-forge-muted">
+        In-season sport plans prioritize fuel and maintenance — no calorie cut
+        here. Continue to equipment.
+      </p>
+    );
+  }
 
   if (!isFatLoss && !isRecomp) {
     return (
@@ -219,6 +234,20 @@ function OptionCard({
 
 export function bodyCompositionStepValid(data: Partial<OnboardingData>): boolean {
   const goal = data.primary_goal;
+
+  if (goal === "sport_performance") {
+    if (data.sport_season_phase === "in_season" && !data.secondary_goal) {
+      return true;
+    }
+    if (data.secondary_goal === "fat_loss" && !data.fat_loss_pace) {
+      return false;
+    }
+    if (data.secondary_goal === "recomposition" && !data.recomp_priority) {
+      return false;
+    }
+    return true;
+  }
+
   if (goal === "fat_loss") {
     if (!data.fat_loss_pace) return false;
   } else if (goal === "recomposition") {

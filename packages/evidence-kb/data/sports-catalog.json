@@ -1,0 +1,227 @@
+{
+  "version": "1.0.0",
+  "categories": [
+    { "id": "court_field", "label": "Court & field team" },
+    { "id": "racquet_rotational", "label": "Racquet & rotational" },
+    { "id": "track_endurance", "label": "Track & endurance" },
+    { "id": "aquatic", "label": "Aquatic" },
+    { "id": "combat", "label": "Combat & contact" },
+    { "id": "winter", "label": "Winter" },
+    { "id": "performance_spirit", "label": "Performance & spirit" },
+    { "id": "general", "label": "General" }
+  ],
+  "sports": [
+    {
+      "id": "general_athleticism",
+      "label": "General athleticism",
+      "categoryId": "general",
+      "description": "Multi-sport base or off-season strength and conditioning",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "basketball",
+      "label": "Basketball",
+      "categoryId": "court_field",
+      "description": "Explosive legs, lateral quickness, and upper-body strength",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "guard", "label": "Guard", "modifier": "lateral_power_endurance" },
+        { "id": "wing", "label": "Wing / Forward", "modifier": "balanced_athletic" },
+        { "id": "post", "label": "Post / Center", "modifier": "lower_power_post_strength" }
+      ]
+    },
+    {
+      "id": "soccer",
+      "label": "Soccer",
+      "categoryId": "court_field",
+      "description": "Single-leg strength, aerobic base, and change of direction",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "goalkeeper", "label": "Goalkeeper", "modifier": "reactive_power" },
+        { "id": "defender", "label": "Defender", "modifier": "endurance_strength" },
+        { "id": "midfielder", "label": "Midfielder", "modifier": "endurance_power" },
+        { "id": "forward", "label": "Forward", "modifier": "sprint_power" }
+      ]
+    },
+    {
+      "id": "football",
+      "label": "Football (American)",
+      "categoryId": "court_field",
+      "description": "Position-specific power, speed, and contact readiness",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "skill", "label": "Skill (WR, DB, RB, QB)", "modifier": "speed_agility" },
+        { "id": "line", "label": "Line (OL / DL)", "modifier": "max_strength_mass" },
+        { "id": "hybrid", "label": "LB / TE / hybrid", "modifier": "balanced_power" }
+      ]
+    },
+    {
+      "id": "volleyball",
+      "label": "Volleyball",
+      "categoryId": "court_field",
+      "description": "Vertical jump, shoulder health, and landing mechanics",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "setter", "label": "Setter", "modifier": "upper_endurance_agility" },
+        { "id": "hitter", "label": "Hitter / Outside", "modifier": "vertical_power" },
+        { "id": "middle", "label": "Middle blocker", "modifier": "vertical_block_power" },
+        { "id": "libero", "label": "Libero / DS", "modifier": "lateral_endurance" }
+      ]
+    },
+    {
+      "id": "baseball",
+      "label": "Baseball",
+      "categoryId": "racquet_rotational",
+      "description": "Rotational power, arm care, and sprint speed",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "pitcher", "label": "Pitcher", "modifier": "overhead_arm_care" },
+        { "id": "position_player", "label": "Position player", "modifier": "rotational_power" }
+      ]
+    },
+    {
+      "id": "softball",
+      "label": "Softball",
+      "categoryId": "racquet_rotational",
+      "description": "Windmill pitching workload, rotational power, and speed",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "pitcher", "label": "Pitcher", "modifier": "softball_pitcher_arm_care" },
+        { "id": "position_player", "label": "Position player", "modifier": "rotational_power" }
+      ]
+    },
+    {
+      "id": "field_hockey",
+      "label": "Field hockey",
+      "categoryId": "court_field",
+      "description": "Hinge strength, repeated sprint ability, and stick-side balance",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "lacrosse_boys",
+      "label": "Lacrosse (boys)",
+      "categoryId": "court_field",
+      "description": "Sprint speed, contact readiness, and rotational throwing power",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "attack", "label": "Attack", "modifier": "sprint_agility" },
+        { "id": "midfield", "label": "Midfield", "modifier": "endurance_power" },
+        { "id": "defense", "label": "Defense", "modifier": "strength_agility" },
+        { "id": "goalie", "label": "Goalie", "modifier": "reactive_power" }
+      ]
+    },
+    {
+      "id": "lacrosse_girls",
+      "label": "Lacrosse (girls)",
+      "categoryId": "court_field",
+      "description": "Speed, agility, and upper-body endurance for stick work",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "attack", "label": "Attack", "modifier": "sprint_agility" },
+        { "id": "midfield", "label": "Midfield", "modifier": "endurance_power" },
+        { "id": "defense", "label": "Defense", "modifier": "strength_agility" },
+        { "id": "goalie", "label": "Goalie", "modifier": "reactive_power" }
+      ]
+    },
+    {
+      "id": "tennis",
+      "label": "Tennis",
+      "categoryId": "racquet_rotational",
+      "description": "Lateral speed, rotational trunk strength, and shoulder stability",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "golf",
+      "label": "Golf",
+      "categoryId": "racquet_rotational",
+      "description": "Rotational mobility, core stiffness, and posterior chain",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "cross_country",
+      "label": "Cross country",
+      "categoryId": "track_endurance",
+      "description": "Running economy, single-leg resilience, and core stability",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "track_field",
+      "label": "Track & field",
+      "categoryId": "track_endurance",
+      "description": "Event-group training emphasis",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "sprints", "label": "Sprints / hurdles", "modifier": "sprint_power" },
+        { "id": "distance", "label": "Distance", "modifier": "endurance_strength" },
+        { "id": "jumps", "label": "Jumps", "modifier": "elastic_power" },
+        { "id": "throws", "label": "Throws", "modifier": "max_strength_power" }
+      ]
+    },
+    {
+      "id": "swimming",
+      "label": "Swimming",
+      "categoryId": "aquatic",
+      "description": "Pull strength, shoulder health, and core stability",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "wrestling",
+      "label": "Wrestling",
+      "categoryId": "combat",
+      "description": "Grip, neck-safe strength, and repeated anaerobic power",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "ice_hockey",
+      "label": "Ice hockey",
+      "categoryId": "winter",
+      "description": "Skating power, hip mobility, and contact strength",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "forward", "label": "Forward", "modifier": "sprint_power" },
+        { "id": "defense", "label": "Defense", "modifier": "strength_agility" },
+        { "id": "goalie", "label": "Goalie", "modifier": "reactive_power" }
+      ]
+    },
+    {
+      "id": "competitive_cheer",
+      "label": "Competitive cheer",
+      "categoryId": "performance_spirit",
+      "description": "Tumbling, stunting, and landing mechanics",
+      "positionAffectsProgram": false,
+      "positions": []
+    },
+    {
+      "id": "gymnastics",
+      "label": "Gymnastics",
+      "categoryId": "performance_spirit",
+      "description": "Relative strength, wrist/shoulder load management, and mobility",
+      "positionAffectsProgram": false,
+      "positions": []
+    }
+  ],
+  "seasonPhases": [
+    {
+      "id": "in_season",
+      "label": "In season",
+      "description": "Competition or school season — lower gym volume, maintain strength"
+    },
+    {
+      "id": "off_season",
+      "label": "Off season",
+      "description": "Build strength, power, and address weak points"
+    },
+    {
+      "id": "general_prep",
+      "label": "General prep",
+      "description": "Pre-season or return-to-training base building"
+    }
+  ]
+}

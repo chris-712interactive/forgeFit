@@ -1,6 +1,7 @@
 "use server";
 
 import { replaceUserEquipment } from "@/lib/equipment/service";
+import { validateGoalsForAge } from "@/lib/onboarding/age-gates";
 import {
   computeAgeFromDateOfBirth,
   isValidDateOfBirth,
@@ -10,61 +11,149 @@ import { generateAndSaveProgram } from "@/lib/programs/service";
 import { createClient } from "@/lib/supabase/server";
 import { friendlySupabaseError } from "@/lib/supabase/schema-errors";
 import type { OnboardingData } from "@/lib/types/profile";
+import {
+  isValidSeasonPhase,
+  isValidSportId,
+  isValidSportPositionId,
+  sportRequiresPosition,
+} from "@forgefit/evidence-kb";
+import {
+  capExperienceForAge,
+  maxMinutesPerSessionForAge,
+  maxSessionsPerWeekForAge,
+  requiresParentConsent,
+} from "@forgefit/program-engine";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+const fitnessGoalSchema = z.enum([
+  "fat_loss",
+  "bodybuilding",
+  "powerlifting",
+  "general_strength",
+  "recomposition",
+  "sport_performance",
+]);
+
 const onboardingSchema = z
   .object({
-    primary_goal: z.enum([
-      "fat_loss",
-      "bodybuilding",
-      "powerlifting",
-      "general_strength",
-      "recomposition",
-    ]),
+    primary_goal: fitnessGoalSchema,
+    sport_id: z.string().optional(),
+    sport_position_id: z.string().optional(),
+    sport_season_phase: z
+      .enum(["in_season", "off_season", "general_prep"])
+      .optional(),
+    secondary_goal: fitnessGoalSchema.optional(),
+    parent_consent_name: z.string().trim().max(120).optional(),
+    parent_consent_email: z.string().trim().email().max(200).optional(),
+    parent_consent_acknowledged: z.boolean().optional(),
     fat_loss_pace: z.enum(["steady", "moderate", "aggressive"]).optional(),
     recomp_priority: z.enum(["muscle", "balanced", "lean_out"]).optional(),
     goal_weight_kg: z.number().min(30).max(300).optional(),
     experience_level: z.enum(["beginner", "intermediate", "advanced"]),
-  first_name: z.string().trim().min(1).max(80),
-  last_name: z.string().trim().min(1).max(80),
-  date_of_birth: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date of birth."),
-  sex: z.enum(["male", "female", "other", "prefer_not_to_say"]),
-  height_cm: z.number().min(100).max(250),
-  weight_kg: z.number().min(30).max(300),
-  waist_cm: z.number().optional(),
-  chest_cm: z.number().optional(),
-  arms_cm: z.number().optional(),
-  legs_cm: z.number().optional(),
-  neck_cm: z.number().optional(),
-  hips_cm: z.number().optional(),
-  equipment: z.array(z.string()).min(1),
-  equipment_location: z.enum(["home", "gym", "both"]),
-  recovery_equipment: z.array(z.string()),
-  sessions_per_week: z.number().min(1).max(7),
-  minutes_per_session: z.number().min(15).max(120),
-  why_started: z.string().min(10).max(500),
-  signup_source: z.string().max(64).optional(),
-  health_disclaimer_accepted: z.literal(true),
-})
+    first_name: z.string().trim().min(1).max(80),
+    last_name: z.string().trim().min(1).max(80),
+    date_of_birth: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date of birth."),
+    sex: z.enum(["male", "female", "other", "prefer_not_to_say"]),
+    height_cm: z.number().min(100).max(250),
+    weight_kg: z.number().min(30).max(300),
+    waist_cm: z.number().optional(),
+    chest_cm: z.number().optional(),
+    arms_cm: z.number().optional(),
+    legs_cm: z.number().optional(),
+    neck_cm: z.number().optional(),
+    hips_cm: z.number().optional(),
+    equipment: z.array(z.string()).min(1),
+    equipment_location: z.enum(["home", "gym", "both"]),
+    recovery_equipment: z.array(z.string()),
+    sessions_per_week: z.number().min(1).max(7),
+    minutes_per_session: z.number().min(15).max(120),
+    why_started: z.string().min(10).max(500),
+    signup_source: z.string().max(64).optional(),
+    health_disclaimer_accepted: z.literal(true),
+  })
   .superRefine((data, ctx) => {
-    if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
+    if (data.primary_goal === "sport_performance") {
+      if (!data.sport_id || !isValidSportId(data.sport_id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a sport.",
+          path: ["sport_id"],
+        });
+      }
+      if (
+        data.sport_id &&
+        sportRequiresPosition(data.sport_id) &&
+        (!data.sport_position_id ||
+          !isValidSportPositionId(data.sport_id, data.sport_position_id))
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select your position.",
+          path: ["sport_position_id"],
+        });
+      }
+      if (
+        !data.sport_season_phase ||
+        !isValidSeasonPhase(data.sport_season_phase)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a season phase.",
+          path: ["sport_season_phase"],
+        });
+      }
+      if (data.secondary_goal === "sport_performance") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Secondary goal cannot be sport performance.",
+          path: ["secondary_goal"],
+        });
+      }
+    } else {
+      if (data.primary_goal === "fat_loss" && !data.fat_loss_pace) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a fat-loss pace.",
+          path: ["fat_loss_pace"],
+        });
+      }
+      if (data.primary_goal === "recomposition" && !data.recomp_priority) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Select a recomp priority.",
+          path: ["recomp_priority"],
+        });
+      }
+    }
+
+    const needsFatLossPace =
+      data.primary_goal === "fat_loss" ||
+      (data.primary_goal === "sport_performance" &&
+        data.secondary_goal === "fat_loss");
+    if (needsFatLossPace && !data.fat_loss_pace) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Select a fat-loss pace.",
         path: ["fat_loss_pace"],
       });
     }
-    if (data.primary_goal === "recomposition" && !data.recomp_priority) {
+
+    const needsRecomp =
+      data.primary_goal === "recomposition" ||
+      (data.primary_goal === "sport_performance" &&
+        data.secondary_goal === "recomposition");
+    if (needsRecomp && !data.recomp_priority) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Select a recomp priority.",
         path: ["recomp_priority"],
       });
     }
+
     if (
       data.goal_weight_kg != null &&
       data.goal_weight_kg >= data.weight_kg
@@ -87,6 +176,38 @@ export async function completeOnboarding(data: OnboardingData) {
     return { error: "You must be at least 13 years old to use ForgeRep." };
   }
 
+  const age = computeAgeFromDateOfBirth(parsed.data.date_of_birth);
+  const experience = capExperienceForAge(parsed.data.experience_level, age);
+
+  const ageError = validateGoalsForAge({
+    age,
+    primary_goal: parsed.data.primary_goal,
+    secondary_goal: parsed.data.secondary_goal,
+    fat_loss_pace: parsed.data.fat_loss_pace,
+  });
+  if (ageError) {
+    return { error: ageError };
+  }
+
+  if (requiresParentConsent(age)) {
+    if (
+      !parsed.data.parent_consent_acknowledged ||
+      !parsed.data.parent_consent_name?.trim() ||
+      !parsed.data.parent_consent_email?.trim()
+    ) {
+      return {
+        error: "Parent or guardian sign-off is required for users under 16.",
+      };
+    }
+  }
+
+  if (parsed.data.sessions_per_week > maxSessionsPerWeekForAge(age)) {
+    return { error: "Sessions per week exceeds the limit for your age." };
+  }
+  if (parsed.data.minutes_per_session > maxMinutesPerSessionForAge(age)) {
+    return { error: "Session length exceeds the limit for your age." };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -104,26 +225,47 @@ export async function completeOnboarding(data: OnboardingData) {
     first_name,
     last_name,
     date_of_birth,
+    sport_id,
+    sport_position_id,
+    sport_season_phase,
+    secondary_goal,
+    parent_consent_name,
+    parent_consent_email,
+    parent_consent_acknowledged: _parentAck,
     ...profileFields
   } = parsed.data;
 
-  const age = computeAgeFromDateOfBirth(date_of_birth);
   const display_name =
     profileFullName({ first_name, last_name }) ?? `${first_name} ${last_name}`;
+
+  const isSport = parsed.data.primary_goal === "sport_performance";
+  const parentConsentAt = requiresParentConsent(age)
+    ? new Date().toISOString()
+    : null;
 
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
       ...profileFields,
+      experience_level: experience,
       fat_loss_pace:
-        parsed.data.primary_goal === "fat_loss"
+        parsed.data.primary_goal === "fat_loss" ||
+        parsed.data.secondary_goal === "fat_loss"
           ? parsed.data.fat_loss_pace ?? null
           : null,
       recomp_priority:
-        parsed.data.primary_goal === "recomposition"
+        parsed.data.primary_goal === "recomposition" ||
+        parsed.data.secondary_goal === "recomposition"
           ? parsed.data.recomp_priority ?? null
           : null,
       goal_weight_kg: parsed.data.goal_weight_kg ?? null,
+      sport_id: isSport ? sport_id ?? null : null,
+      sport_position_id: isSport ? sport_position_id ?? null : null,
+      sport_season_phase: isSport ? sport_season_phase ?? null : null,
+      secondary_goal: isSport ? secondary_goal ?? null : null,
+      parent_consent_at: parentConsentAt,
+      parent_consent_name: parentConsentAt ? parent_consent_name ?? null : null,
+      parent_consent_email: parentConsentAt ? parent_consent_email ?? null : null,
       first_name,
       last_name,
       date_of_birth,

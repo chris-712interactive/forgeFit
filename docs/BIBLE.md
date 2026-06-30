@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-30 · **Current phase:** Phase 8 complete · Phase 7 billing/infra on production
+**Last updated:** 2026-06-30 · **Current phase:** Phase 9 in progress (9A + 9B shipped)
 
 ---
 
@@ -152,7 +152,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 1. **Research-backed strategies** — evidence-kb + program-engine
 2. **Mobile PWA + offline** — Serwist + Dexie
 3. **Beginner → advanced** — experience multipliers + adherence-based promotion (regenerates program on level-up)
-4. **All goal types** — fat_loss, bodybuilding, powerlifting, general_strength, recomposition
+4. **All goal types** — fat_loss, bodybuilding, powerlifting, general_strength, recomposition, **sport_performance** (US catalog; hybrid optional secondary goal)
 5. **Body measurements + calipers** — onboarding + Jackson-Pollock
 6. **Calorie tracking** — USDA/OFF free; Pro+ restaurant quick-log + saved meals
 7. **Sets/reps tracking** — active workout UI, offline-first, RIR autoregulated load progression
@@ -204,8 +204,7 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 6 | Exercise library UI | Complete |
 | 7 | Pro integrations (Stripe, OAuth) | Partial — billing + DB on prod; Withings QA + Strava launch |
 | 8 | Motivation + gamification + community (Phases 1–2) | Complete |
-
-See `docs/phases/` for per-phase acceptance criteria. Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
+| 9 | Youth & sport performance (onboarding, age policy, US catalog) | In progress — 9A + 9B shipped | Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
 
 ---
 

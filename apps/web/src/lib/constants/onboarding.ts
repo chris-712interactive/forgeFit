@@ -1,5 +1,12 @@
 import type { ExperienceLevel, FatLossPace, FitnessGoal, RecompPriority } from "@/lib/types/profile";
 
+export const SPORT_PERFORMANCE_GOAL = {
+  value: "sport_performance" as const,
+  label: "Sport performance",
+  description:
+    "Train for your sport — position, season, and age-appropriate strength & power",
+};
+
 export const FITNESS_GOALS: {
   value: FitnessGoal;
   label: string;
@@ -31,6 +38,13 @@ export const FITNESS_GOALS: {
     description: "Build muscle and lose fat at the same time",
   },
 ];
+
+/** Optional physique emphasis when primary goal is sport. */
+export const SECONDARY_GOALS: {
+  value: FitnessGoal;
+  label: string;
+  description: string;
+}[] = FITNESS_GOALS;
 
 export const FAT_LOSS_PACE_OPTIONS: {
   value: FatLossPace;
@@ -165,6 +179,7 @@ export const HEALTH_DISCLAIMER = {
   paragraphs: [
     "ForgeRep provides workout plans, nutrition targets, and progress estimates for informational and educational purposes only. Nothing in this app is medical advice, diagnosis, or treatment.",
     "Exercise and nutrition programs affect everyone differently. If you have any health condition, injury, are pregnant, take prescription medications, or have questions about whether this program is appropriate for you, consult a qualified physician or healthcare provider before starting.",
+    "If you are under 18, use ForgeRep with a parent, guardian, or coach. Sport and nutrition plans are educational — not a substitute for your team's medical staff or school requirements.",
     "By continuing, you agree that you use ForgeRep at your own risk and that you are responsible for stopping any activity that causes pain, dizziness, or other concerning symptoms.",
   ],
   checkboxLabel:

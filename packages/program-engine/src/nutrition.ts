@@ -109,7 +109,8 @@ function legacyNutrition(
     calorieRuleId = "deficit_calories_fat_loss";
   } else if (
     profile.goal === "bodybuilding" ||
-    profile.goal === "general_strength"
+    profile.goal === "general_strength" ||
+    profile.goal === "sport_performance"
   ) {
     calories = tdee + 250;
     calorieRuleId = "lean_gain_rate";
@@ -186,7 +187,8 @@ export function computeNutrition(
     effectiveDeficitKcal = Math.round(grossTdee - calories);
   } else if (
     profile.goal === "bodybuilding" ||
-    profile.goal === "general_strength"
+    profile.goal === "general_strength" ||
+    profile.goal === "sport_performance"
   ) {
     const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
     calories = grossTdee + 250 + trainingKcalPerDay * eatBack;

@@ -23,9 +23,9 @@ supabase/         → PostgreSQL migrations + RLS
 | Package | Responsibility | Phase |
 |---------|----------------|-------|
 | `@forgefit/ui` | CSS tokens, shared components | 0 |
-| `apps/web` auth + onboarding | Supabase Auth, 7-step wizard, bottom nav | 1 |
-| `@forgefit/evidence-kb` | Citable fitness/nutrition rules | 0–2 |
-| `@forgefit/program-engine` | Goal templates, volume, scheduling | 2 |
+| `apps/web` auth + onboarding | Supabase Auth, dynamic onboarding wizard (sport + age gates), bottom nav | 1, 9 |
+| `@forgefit/evidence-kb` | Citable fitness/nutrition rules, **US sport catalog** | 0–2, 9 |
+| `@forgefit/program-engine` | Goal templates, volume, scheduling, **age policy** | 2, 9 |
 | `@forgefit/projection-engine` | Weight/strength forecasts | 5 |
 | `@forgefit/exercise-db` | 873-exercise catalog, demos, substitutions | 2, 6 |
 | `@forgefit/nutrition-core` | USDA/OFF diary | 4 |
@@ -36,7 +36,7 @@ supabase/         → PostgreSQL migrations + RLS
 
 ## Data Flow
 
-1. User completes onboarding → `profiles` + equipment + goals in Supabase
+1. User completes onboarding → `profiles` + equipment + goals (+ sport fields, parent consent if 13–15) in Supabase
 2. `program-engine` reads `evidence-kb` + profile → `ProgramPlan` JSON stored in `programs`
 3. Workout UI writes `exercise_sets` to Dexie offline → syncs to Supabase on reconnect
 4. `projection-engine` reads measurement history → `projections` table

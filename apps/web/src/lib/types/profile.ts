@@ -3,7 +3,10 @@ export type FitnessGoal =
   | "bodybuilding"
   | "powerlifting"
   | "general_strength"
-  | "recomposition";
+  | "recomposition"
+  | "sport_performance";
+
+export type SportSeasonPhase = "in_season" | "off_season" | "general_prep";
 
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
@@ -28,6 +31,13 @@ export interface Profile {
   age: number | null;
   experience_level: ExperienceLevel | null;
   primary_goal: FitnessGoal | null;
+  sport_id: string | null;
+  sport_position_id: string | null;
+  sport_season_phase: SportSeasonPhase | null;
+  secondary_goal: FitnessGoal | null;
+  parent_consent_at: string | null;
+  parent_consent_name: string | null;
+  parent_consent_email: string | null;
   fat_loss_pace: FatLossPace | null;
   recomp_priority: RecompPriority | null;
   goal_weight_kg: number | null;
@@ -69,6 +79,14 @@ export interface Profile {
 
 export interface OnboardingData {
   primary_goal: FitnessGoal;
+  sport_category_id?: string;
+  sport_id?: string;
+  sport_position_id?: string;
+  sport_season_phase?: SportSeasonPhase;
+  secondary_goal?: FitnessGoal;
+  parent_consent_name?: string;
+  parent_consent_email?: string;
+  parent_consent_acknowledged?: boolean;
   fat_loss_pace?: FatLossPace;
   recomp_priority?: RecompPriority;
   goal_weight_kg?: number;

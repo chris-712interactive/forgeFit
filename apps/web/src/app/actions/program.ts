@@ -23,6 +23,7 @@ const planSettingsSchema = z
       "powerlifting",
       "general_strength",
       "recomposition",
+      "sport_performance",
     ]),
     fat_loss_pace: z.enum(["steady", "moderate", "aggressive"]).optional(),
     recomp_priority: z.enum(["muscle", "balanced", "lean_out"]).optional(),

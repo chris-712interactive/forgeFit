@@ -397,19 +397,27 @@ function fillSessionToTimeBudget(
 function repsForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): string {
   const hypertrophy = getRecommendationValue<string>(rules, "reps_range", "optimal");
   if (goal === "powerlifting") return "3-5";
-  if (goal === "general_strength") return hypertrophy === "8-15" ? "5-8" : "5-8";
+  if (goal === "general_strength" || goal === "sport_performance") {
+    return hypertrophy === "8-15" ? "5-8" : "5-8";
+  }
   if (goal === "bodybuilding" || goal === "recomposition") return hypertrophy ?? "8-12";
   return "8-12";
 }
 
 function restForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): number {
   const key =
-    goal === "powerlifting" || goal === "general_strength"
+    goal === "powerlifting" ||
+    goal === "general_strength" ||
+    goal === "sport_performance"
       ? "rest_seconds"
       : "rest_seconds";
   const fromRules = getRecommendationValue<number>(rules, key, "optimal");
   if (fromRules) return fromRules;
-  return goal === "powerlifting" || goal === "general_strength" ? 180 : 90;
+  return goal === "powerlifting" ||
+    goal === "general_strength" ||
+    goal === "sport_performance"
+    ? 180
+    : 90;
 }
 
 const RECOVERY_BLOCK_PRIORITY: {

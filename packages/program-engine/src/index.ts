@@ -23,6 +23,22 @@ export type {
   LoggedSessionSummary,
   LoggedSetSummary,
 } from "./logged-session-expenditure";
+export {
+  capExperienceForAge,
+  fatLossPaceBlockedReason,
+  isFatLossPaceAllowedForAge,
+  isPrimaryGoalAllowedForAge,
+  isSecondaryGoalAllowedForAge,
+  maxMinutesPerSessionForAge,
+  maxSessionsPerWeekForAge,
+  minAgeForPrimaryGoal,
+  PARENT_CONSENT_MAX_AGE,
+  primaryGoalBlockedReason,
+  requiresParentConsent,
+  resolveAgeBand,
+  resolveAgeCohort,
+} from "./age-policy";
+export type { AgeBand, AgeCohort } from "./age-policy";
 export { applyDeloadWeek, isDeloadTrainingWeek } from "./deload";
 export { computeTrainingLoad } from "./training-load";
 export { estimateTrainingExpenditure } from "./training-expenditure";
@@ -49,5 +65,6 @@ export type {
   ExperienceLevel,
   FatLossPace,
   RecompPriority,
+  SportSeasonPhase,
   GenerateProgramOptions,
 } from "./types";

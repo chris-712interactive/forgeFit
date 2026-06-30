@@ -5,6 +5,11 @@ import {
   type ProgramPlan,
   type ProgramUserProfile,
 } from "@forgefit/program-engine";
+import {
+  capExperienceForAge,
+  maxMinutesPerSessionForAge,
+  maxSessionsPerWeekForAge,
+} from "@forgefit/program-engine";
 import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,9 +36,18 @@ export async function loadUserProgramContext(userId: string) {
 
   const userProfile: ProgramUserProfile = {
     goal: profile.primary_goal!,
-    experience: profile.experience_level!,
-    sessionsPerWeek: profile.sessions_per_week!,
-    minutesPerSession: profile.minutes_per_session!,
+    experience: capExperienceForAge(
+      profile.experience_level!,
+      resolveProfileAge(profile) ?? profile.age ?? 18
+    ),
+    sessionsPerWeek: Math.min(
+      profile.sessions_per_week!,
+      maxSessionsPerWeekForAge(resolveProfileAge(profile) ?? profile.age ?? 18)
+    ),
+    minutesPerSession: Math.min(
+      profile.minutes_per_session!,
+      maxMinutesPerSessionForAge(resolveProfileAge(profile) ?? profile.age ?? 18)
+    ),
     weightKg: Number(profile.weight_kg),
     heightCm: Number(profile.height_cm),
     age: resolveProfileAge(profile) ?? profile.age!,
@@ -46,6 +60,10 @@ export async function loadUserProgramContext(userId: string) {
       profile.goal_weight_kg != null
         ? Number(profile.goal_weight_kg)
         : undefined,
+    sportId: profile.sport_id ?? undefined,
+    sportPositionId: profile.sport_position_id ?? undefined,
+    sportSeasonPhase: profile.sport_season_phase ?? undefined,
+    secondaryGoal: profile.secondary_goal ?? undefined,
   };
 
   return { profile, userProfile };

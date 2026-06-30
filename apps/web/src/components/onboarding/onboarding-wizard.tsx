@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { completeOnboarding } from "@/app/actions/onboarding";
 import {
   CARDIO_EQUIPMENT,
@@ -11,9 +11,29 @@ import {
   RECOVERY_EQUIPMENT,
   SESSIONS_PER_WEEK_OPTIONS,
   SIGNUP_SOURCE_OPTIONS,
+  SPORT_PERFORMANCE_GOAL,
   STRENGTH_EQUIPMENT,
 } from "@/lib/constants/onboarding";
 import { pushSignupSourceEvent } from "@/lib/analytics/events";
+import {
+  filterPrimaryGoalsForAge,
+  validateGoalsForAge,
+} from "@/lib/onboarding/age-gates";
+import {
+  buildOnboardingSteps,
+  canProceedStep,
+  clampTimeBudgetForData,
+  resolveProfileAgeFromData,
+  stepSubtitle,
+  stepTitle,
+  type OnboardingStepId,
+} from "@/lib/onboarding/steps";
+import {
+  capExperienceForAge,
+  maxMinutesPerSessionForAge,
+  maxSessionsPerWeekForAge,
+  minAgeForPrimaryGoal,
+} from "@forgefit/program-engine";
 import type {
   EquipmentLocation,
   ExperienceLevel,
@@ -23,13 +43,18 @@ import type {
 import { AboutYouStep } from "@/components/onboarding/about-you-step";
 import {
   BodyCompositionTargetStep,
-  bodyCompositionStepValid,
 } from "@/components/onboarding/body-composition-target-step";
 import { HealthDisclaimerStep } from "@/components/onboarding/health-disclaimer-step";
 import { MeasurementStep } from "@/components/onboarding/measurement-step";
+import { ParentConsentStep } from "@/components/onboarding/parent-consent-step";
+import {
+  SecondaryGoalStep,
+  SportCategoryStep,
+  SportPositionStep,
+  SportSeasonStep,
+  SportSelectStep,
+} from "@/components/onboarding/sport-steps";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
-
-const TOTAL_STEPS = 11;
 
 const initialData: Partial<OnboardingData> = {
   equipment: [],
@@ -41,13 +66,29 @@ const initialData: Partial<OnboardingData> = {
 };
 
 export function OnboardingWizard() {
-  const [step, setStep] = useState(1);
+  const [currentStepId, setCurrentStepId] =
+    useState<OnboardingStepId>("disclaimer");
   const [data, setData] = useState<Partial<OnboardingData>>(initialData);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const steps = useMemo(() => buildOnboardingSteps(data), [data]);
+  const stepIndex = Math.max(0, steps.indexOf(currentStepId));
+  const progressPct = Math.round(((stepIndex + 1) / steps.length) * 100);
+  const profileAge = resolveProfileAgeFromData(data);
+
   function update(patch: Partial<OnboardingData>) {
-    setData((prev) => ({ ...prev, ...patch }));
+    setData((prev) => {
+      let next = { ...prev, ...patch };
+      const age = resolveProfileAgeFromData(next);
+      if (age != null && next.experience_level) {
+        next.experience_level = capExperienceForAge(
+          next.experience_level,
+          age
+        );
+      }
+      return clampTimeBudgetForData(next);
+    });
     setError(null);
   }
 
@@ -63,39 +104,35 @@ export function OnboardingWizard() {
   }
 
   function canProceed(): boolean {
-    switch (step) {
-      case 1:
-        return data.health_disclaimer_accepted === true;
-      case 2:
-        return !!data.primary_goal;
-      case 3:
-        return !!data.experience_level;
-      case 4:
-        return (
-          !!data.first_name?.trim() &&
-          !!data.last_name?.trim() &&
-          !!data.date_of_birth
-        );
-      case 5:
-        return (
-          !!data.sex &&
-          !!data.height_cm &&
-          !!data.weight_kg
-        );
-      case 6:
-        return bodyCompositionStepValid(data);
-      case 7:
-        return (data.equipment?.length ?? 0) > 0;
-      case 8:
-        return true;
-      case 9:
-        return !!data.sessions_per_week && !!data.minutes_per_session;
-      case 10:
-        return (data.why_started?.trim().length ?? 0) >= 10;
-      case 11:
-        return true;
-      default:
-        return false;
+    return canProceedStep(currentStepId, data);
+  }
+
+  function goNext() {
+    if (!canProceed()) return;
+
+    if (currentStepId === "about_you" && profileAge != null) {
+      const goalError = validateGoalsForAge({
+        age: profileAge,
+        primary_goal: data.primary_goal!,
+        secondary_goal: data.secondary_goal,
+        fat_loss_pace: data.fat_loss_pace,
+      });
+      if (goalError) {
+        setError(goalError);
+        return;
+      }
+    }
+
+    const idx = steps.indexOf(currentStepId);
+    if (idx >= 0 && idx < steps.length - 1) {
+      setCurrentStepId(steps[idx + 1]!);
+    }
+  }
+
+  function goBack() {
+    const idx = steps.indexOf(currentStepId);
+    if (idx > 0) {
+      setCurrentStepId(steps[idx - 1]!);
     }
   }
 
@@ -115,177 +152,211 @@ export function OnboardingWizard() {
     }
   }
 
+  const physiqueGoals = filterPrimaryGoalsForAge(FITNESS_GOALS, profileAge);
+  const maxSessions = profileAge
+    ? maxSessionsPerWeekForAge(profileAge)
+    : 6;
+  const maxMinutes = profileAge
+    ? maxMinutesPerSessionForAge(profileAge)
+    : 90;
+  const sessionOptions = SESSIONS_PER_WEEK_OPTIONS.filter((n) => n <= maxSessions);
+  const minuteOptions = MINUTES_PER_SESSION_OPTIONS.filter((n) => n <= maxMinutes);
+
   return (
     <div className="flex min-h-dvh flex-col bg-forge-surface">
       <header className="px-6 pt-8">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-sm font-medium text-forge-muted">
-            Step {step} of {TOTAL_STEPS}
+            Step {stepIndex + 1} of {steps.length}
           </span>
           <span className="font-display text-sm font-bold text-forge-gold">
-            {Math.round((step / TOTAL_STEPS) * 100)}%
+            {progressPct}%
           </span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-forge-surface-raised">
           <div
             className="h-full rounded-full bg-forge-ember transition-all duration-300"
-            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+            style={{ width: `${progressPct}%` }}
           />
         </div>
       </header>
 
       <main className="flex flex-1 flex-col px-6 py-6">
-        {step === 1 && (
-          <StepShell
-            title={HEALTH_DISCLAIMER.title}
-            subtitle="Please read and acknowledge before continuing."
-          >
+        <StepShell
+          title={stepTitle(currentStepId)}
+          subtitle={stepSubtitle(currentStepId)}
+        >
+          {currentStepId === "disclaimer" && (
             <HealthDisclaimerStep
               accepted={data.health_disclaimer_accepted === true}
               onAcceptedChange={(accepted) =>
                 update({ health_disclaimer_accepted: accepted })
               }
             />
-          </StepShell>
-        )}
+          )}
 
-        {step === 2 && (
-          <StepShell
-            title="What's your main goal?"
-            subtitle="We'll build your program around this."
-          >
+          {currentStepId === "goal" && (
             <div className="space-y-3">
-              {FITNESS_GOALS.map((goal) => (
+              <p className="text-sm font-medium text-forge-muted">Sport</p>
+              <OptionCard
+                selected={data.primary_goal === SPORT_PERFORMANCE_GOAL.value}
+                onClick={() =>
+                  update({
+                    primary_goal: SPORT_PERFORMANCE_GOAL.value,
+                    secondary_goal: undefined,
+                    fat_loss_pace: undefined,
+                    recomp_priority: undefined,
+                  })
+                }
+                title={SPORT_PERFORMANCE_GOAL.label}
+                description={SPORT_PERFORMANCE_GOAL.description}
+              />
+
+              <p className="pt-2 text-sm font-medium text-forge-muted">
+                Physique & strength
+              </p>
+              {physiqueGoals.map((goal) => (
                 <OptionCard
                   key={goal.value}
                   selected={data.primary_goal === goal.value}
-                  onClick={() =>
+                  disabled={goal.disabled}
+                  onClick={() => {
+                    if (goal.disabled) return;
                     update({
                       primary_goal: goal.value as FitnessGoal,
+                      sport_id: undefined,
+                      sport_position_id: undefined,
+                      sport_season_phase: undefined,
+                      sport_category_id: undefined,
+                      secondary_goal: undefined,
                       fat_loss_pace:
                         goal.value === "fat_loss" ? data.fat_loss_pace : undefined,
                       recomp_priority:
                         goal.value === "recomposition"
                           ? data.recomp_priority
                           : undefined,
-                    })
+                    });
+                  }}
+                  title={
+                    profileAge == null &&
+                    minAgeForPrimaryGoal(goal.value) > 13
+                      ? `${goal.label} (${minAgeForPrimaryGoal(goal.value)}+)`
+                      : goal.label
                   }
-                  title={goal.label}
-                  description={goal.description}
+                  description={
+                    goal.blockedReason ?? goal.description
+                  }
                 />
               ))}
             </div>
-          </StepShell>
-        )}
+          )}
 
-        {step === 3 && (
-          <StepShell
-            title="How experienced are you?"
-            subtitle="No wrong answer — we'll meet you where you are."
-          >
+          {currentStepId === "sport_category" && (
+            <SportCategoryStep data={data} onChange={update} />
+          )}
+          {currentStepId === "sport" && (
+            <SportSelectStep data={data} onChange={update} />
+          )}
+          {currentStepId === "sport_position" && (
+            <SportPositionStep data={data} onChange={update} />
+          )}
+          {currentStepId === "sport_season" && (
+            <SportSeasonStep data={data} onChange={update} />
+          )}
+          {currentStepId === "secondary_goal" && (
+            <SecondaryGoalStep data={data} onChange={update} />
+          )}
+
+          {currentStepId === "experience" && (
             <div className="space-y-3">
-              {EXPERIENCE_LEVELS.map((level) => (
-                <OptionCard
-                  key={level.value}
-                  selected={data.experience_level === level.value}
-                  onClick={() =>
-                    update({
-                      experience_level: level.value as ExperienceLevel,
-                    })
-                  }
-                  title={level.label}
-                  description={level.description}
-                />
-              ))}
+              {EXPERIENCE_LEVELS.map((level) => {
+                const capped =
+                  profileAge != null
+                    ? capExperienceForAge(
+                        level.value as ExperienceLevel,
+                        profileAge
+                      ) !== level.value
+                    : false;
+                return (
+                  <OptionCard
+                    key={level.value}
+                    selected={data.experience_level === level.value}
+                    disabled={capped}
+                    onClick={() =>
+                      update({
+                        experience_level: level.value as ExperienceLevel,
+                      })
+                    }
+                    title={level.label}
+                    description={
+                      capped
+                        ? "Available at age 16+ — we'll start you at intermediate."
+                        : level.description
+                    }
+                  />
+                );
+              })}
             </div>
-          </StepShell>
-        )}
+          )}
 
-        {step === 4 && (
-          <StepShell
-            title="About you"
-            subtitle="We'll personalize your plan and milestones."
-          >
+          {currentStepId === "about_you" && (
             <AboutYouStep data={data} onChange={update} />
-          </StepShell>
-        )}
+          )}
 
-        {step === 5 && (
-          <StepShell
-            title="Your measurements"
-            subtitle="Choose your units once — we handle conversions behind the scenes."
-          >
+          {currentStepId === "parent_consent" && (
+            <ParentConsentStep data={data} onChange={update} />
+          )}
+
+          {currentStepId === "measurements" && (
             <MeasurementStep data={data} onChange={update} />
-          </StepShell>
-        )}
+          )}
 
-        {step === 6 && (
-          <StepShell
-            title={
-              data.primary_goal === "fat_loss"
-                ? "How fast do you want to lose fat?"
-                : data.primary_goal === "recomposition"
-                  ? "Recomp priorities"
-                  : "Body composition"
-            }
-            subtitle={
-              data.primary_goal === "fat_loss" ||
-              data.primary_goal === "recomposition"
-                ? "We tailor your calorie deficit from evidence — not a one-size 500 kcal cut."
-                : "Your goal focuses on building strength and muscle."
-            }
-          >
+          {currentStepId === "body_comp" && (
             <BodyCompositionTargetStep data={data} onChange={update} />
-          </StepShell>
-        )}
+          )}
 
-        {step === 7 && (
-          <StepShell
-            title="What equipment do you have?"
-            subtitle="Select everything available to you."
-          >
-            <SelectField
-              label="Primary location"
-              value={data.equipment_location ?? "gym"}
-              onChange={(v) =>
-                update({ equipment_location: v as EquipmentLocation })
-              }
-              options={[
-                { value: "gym", label: "Commercial gym" },
-                { value: "home", label: "Home gym" },
-                { value: "both", label: "Both" },
-              ]}
-            />
-            <p className="mt-4 mb-2 text-sm text-forge-muted">Strength & accessories</p>
-            <div className="grid grid-cols-2 gap-2">
-              {STRENGTH_EQUIPMENT.map((item) => (
-                <Chip
-                  key={item.value}
-                  label={item.label}
-                  selected={data.equipment?.includes(item.value) ?? false}
-                  onClick={() => toggleItem("equipment", item.value)}
-                />
-              ))}
-            </div>
-            <p className="mt-4 mb-2 text-sm text-forge-muted">Cardio machines</p>
-            <div className="grid grid-cols-2 gap-2">
-              {CARDIO_EQUIPMENT.map((item) => (
-                <Chip
-                  key={item.value}
-                  label={item.label}
-                  selected={data.equipment?.includes(item.value) ?? false}
-                  onClick={() => toggleItem("equipment", item.value)}
-                />
-              ))}
-            </div>
-          </StepShell>
-        )}
+          {currentStepId === "equipment" && (
+            <>
+              <SelectField
+                label="Primary location"
+                value={data.equipment_location ?? "gym"}
+                onChange={(v) =>
+                  update({ equipment_location: v as EquipmentLocation })
+                }
+                options={[
+                  { value: "gym", label: "Commercial gym" },
+                  { value: "home", label: "Home gym" },
+                  { value: "both", label: "Both" },
+                ]}
+              />
+              <p className="mt-4 mb-2 text-sm text-forge-muted">
+                Strength & accessories
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {STRENGTH_EQUIPMENT.map((item) => (
+                  <Chip
+                    key={item.value}
+                    label={item.label}
+                    selected={data.equipment?.includes(item.value) ?? false}
+                    onClick={() => toggleItem("equipment", item.value)}
+                  />
+                ))}
+              </div>
+              <p className="mt-4 mb-2 text-sm text-forge-muted">Cardio machines</p>
+              <div className="grid grid-cols-2 gap-2">
+                {CARDIO_EQUIPMENT.map((item) => (
+                  <Chip
+                    key={item.value}
+                    label={item.label}
+                    selected={data.equipment?.includes(item.value) ?? false}
+                    onClick={() => toggleItem("equipment", item.value)}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
-        {step === 8 && (
-          <StepShell
-            title="Recovery tools"
-            subtitle="Optional — we'll weave these into your plan."
-          >
+          {currentStepId === "recovery" && (
             <div className="grid grid-cols-2 gap-2">
               {RECOVERY_EQUIPMENT.map((item) => (
                 <Chip
@@ -294,104 +365,93 @@ export function OnboardingWizard() {
                   selected={
                     data.recovery_equipment?.includes(item.value) ?? false
                   }
-                  onClick={() =>
-                    toggleItem("recovery_equipment", item.value)
-                  }
+                  onClick={() => toggleItem("recovery_equipment", item.value)}
                 />
               ))}
             </div>
-          </StepShell>
-        )}
+          )}
 
-        {step === 9 && (
-          <StepShell
-            title="How much time do you have?"
-            subtitle="Any amount works — we'll make it count."
-          >
-            <p className="mb-2 text-sm text-forge-muted">Sessions per week</p>
-            <div className="mb-6 flex flex-wrap gap-2">
-              {SESSIONS_PER_WEEK_OPTIONS.map((n) => (
-                <Chip
-                  key={n}
-                  label={`${n}×`}
-                  selected={data.sessions_per_week === n}
-                  onClick={() => update({ sessions_per_week: n })}
-                />
-              ))}
-            </div>
-            <p className="mb-2 text-sm text-forge-muted">Minutes per session</p>
-            <div className="flex flex-wrap gap-2">
-              {MINUTES_PER_SESSION_OPTIONS.map((n) => (
-                <Chip
-                  key={n}
-                  label={`${n} min`}
-                  selected={data.minutes_per_session === n}
-                  onClick={() => update({ minutes_per_session: n })}
-                />
-              ))}
-            </div>
-          </StepShell>
-        )}
-
-        {step === 10 && (
-          <StepShell
-            title="Why did you start?"
-            subtitle="We'll remind you of this when you need it most."
-          >
-            <textarea
-              value={data.why_started ?? ""}
-              onChange={(e) => update({ why_started: e.target.value })}
-              rows={5}
-              maxLength={500}
-              placeholder="I want to feel stronger, more confident, and show up for myself every day…"
-              className="w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
-            />
-            <p className="mt-2 text-right text-xs text-forge-muted">
-              {(data.why_started?.length ?? 0)}/500
-            </p>
-          </StepShell>
-        )}
-
-        {step === 11 && (
-          <StepShell
-            title="Almost done"
-            subtitle="Add ForgeRep to your home screen for faster access and offline workouts — optional."
-          >
-            <PwaInstallPrompt showAfterOnboarding />
-
-            <div className="mt-6">
-              <p className="text-sm font-medium text-forge-text">
-                What were you using before?{" "}
-                <span className="font-normal text-forge-muted">(optional)</span>
-              </p>
-              <p className="mt-1 text-xs text-forge-muted">
-                Helps us improve — won&apos;t change your plan.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {SIGNUP_SOURCE_OPTIONS.map((option) => (
+          {currentStepId === "time" && (
+            <>
+              {profileAge != null && profileAge <= 17 ? (
+                <p className="mb-4 text-sm text-forge-muted">
+                  Age-appropriate caps: up to {maxSessions} sessions/week and{" "}
+                  {maxMinutes} minutes per session.
+                </p>
+              ) : null}
+              <p className="mb-2 text-sm text-forge-muted">Sessions per week</p>
+              <div className="mb-6 flex flex-wrap gap-2">
+                {sessionOptions.map((n) => (
                   <Chip
-                    key={option.value}
-                    label={option.label}
-                    selected={data.signup_source === option.value}
-                    onClick={() =>
-                      update({
-                        signup_source:
-                          data.signup_source === option.value
-                            ? undefined
-                            : option.value,
-                      })
-                    }
+                    key={n}
+                    label={`${n}×`}
+                    selected={data.sessions_per_week === n}
+                    onClick={() => update({ sessions_per_week: n })}
                   />
                 ))}
               </div>
-            </div>
+              <p className="mb-2 text-sm text-forge-muted">Minutes per session</p>
+              <div className="flex flex-wrap gap-2">
+                {minuteOptions.map((n) => (
+                  <Chip
+                    key={n}
+                    label={`${n} min`}
+                    selected={data.minutes_per_session === n}
+                    onClick={() => update({ minutes_per_session: n })}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
-            <p className="mt-4 text-sm text-forge-muted">
-              You can always install later from Home. Tap finish to generate your
-              program.
-            </p>
-          </StepShell>
-        )}
+          {currentStepId === "why" && (
+            <>
+              <textarea
+                value={data.why_started ?? ""}
+                onChange={(e) => update({ why_started: e.target.value })}
+                rows={5}
+                maxLength={500}
+                placeholder="I want to feel stronger, more confident, and show up for myself every day…"
+                className="w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
+              />
+              <p className="mt-2 text-right text-xs text-forge-muted">
+                {(data.why_started?.length ?? 0)}/500
+              </p>
+            </>
+          )}
+
+          {currentStepId === "finish" && (
+            <>
+              <PwaInstallPrompt showAfterOnboarding />
+              <div className="mt-6">
+                <p className="text-sm font-medium text-forge-text">
+                  What were you using before?{" "}
+                  <span className="font-normal text-forge-muted">(optional)</span>
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {SIGNUP_SOURCE_OPTIONS.map((option) => (
+                    <Chip
+                      key={option.value}
+                      label={option.label}
+                      selected={data.signup_source === option.value}
+                      onClick={() =>
+                        update({
+                          signup_source:
+                            data.signup_source === option.value
+                              ? undefined
+                              : option.value,
+                        })
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-forge-muted">
+                Tap finish to generate your program.
+              </p>
+            </>
+          )}
+        </StepShell>
 
         {error && (
           <p className="mt-4 text-sm text-forge-coral" role="alert">
@@ -401,23 +461,23 @@ export function OnboardingWizard() {
       </main>
 
       <footer className="flex gap-3 border-t border-[var(--border)] px-6 py-4 pb-8">
-        {step > 1 && (
+        {stepIndex > 0 && (
           <button
             type="button"
-            onClick={() => setStep((s) => s - 1)}
+            onClick={goBack}
             className="min-h-[52px] flex-1 rounded-xl border border-[var(--border)] font-medium text-forge-muted"
           >
             Back
           </button>
         )}
-        {step < TOTAL_STEPS ? (
+        {currentStepId !== "finish" ? (
           <button
             type="button"
             disabled={!canProceed()}
-            onClick={() => setStep((s) => s + 1)}
+            onClick={goNext}
             className="min-h-[52px] flex-[2] rounded-xl bg-forge-ember font-display font-bold text-white disabled:opacity-40"
           >
-            {step === 1 ? "I agree — continue" : "Continue"}
+            {currentStepId === "disclaimer" ? "I agree — continue" : "Continue"}
           </button>
         ) : (
           <button
@@ -456,11 +516,13 @@ function StepShell({
 
 function OptionCard({
   selected,
+  disabled,
   onClick,
   title,
   description,
 }: {
   selected: boolean;
+  disabled?: boolean;
   onClick: () => void;
   title: string;
   description: string;
@@ -468,8 +530,9 @@ function OptionCard({
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={onClick}
-      className={`w-full rounded-xl border p-4 text-left transition-colors ${
+      className={`w-full rounded-xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
         selected
           ? "border-forge-ember bg-forge-ember/10"
           : "border-[var(--border)] bg-forge-surface-raised"
@@ -524,9 +587,6 @@ function SelectField({
         onChange={(e) => onChange(e.target.value)}
         className="min-h-[52px] w-full rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 text-forge-text outline-none focus:border-forge-ember"
       >
-        <option value="" disabled>
-          Select…
-        </option>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

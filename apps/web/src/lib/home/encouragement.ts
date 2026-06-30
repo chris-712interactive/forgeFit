@@ -36,6 +36,11 @@ const GOAL_MESSAGES: Record<FitnessGoal, string[]> = {
     "Recomp is a marathon of good days. You're stacking them.",
     "Lift, fuel, recover — you're covering the bases.",
   ],
+  sport_performance: [
+    "Sport fitness is built in the sessions you finish. Stay consistent.",
+    "Strong in the gym, sharp on the field — keep stacking good weeks.",
+    "Fuel the work, recover smart, show up for practice and training.",
+  ],
 };
 
 function hashPick<T>(items: T[], seed: number): T {

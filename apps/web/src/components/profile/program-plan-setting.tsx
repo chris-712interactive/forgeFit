@@ -12,6 +12,7 @@ import {
   MINUTES_PER_SESSION_OPTIONS,
   RECOMP_PRIORITY_OPTIONS,
   SESSIONS_PER_WEEK_OPTIONS,
+  SPORT_PERFORMANCE_GOAL,
 } from "@/lib/constants/onboarding";
 import { todayScheduleStartIso } from "@/lib/programs/start-date";
 import type {
@@ -152,6 +153,9 @@ export function ProgramPlanSetting({
             onChange={(event) => setGoal(event.target.value as FitnessGoal)}
             className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
           >
+            <option value={SPORT_PERFORMANCE_GOAL.value}>
+              {SPORT_PERFORMANCE_GOAL.label}
+            </option>
             {FITNESS_GOALS.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}

@@ -194,3 +194,24 @@ export function getRulesByIds(ids: string[]): EvidenceRule[] {
       return true;
     });
 }
+
+export {
+  getSportById,
+  getSportCategories,
+  getSeasonPhases,
+  getSportsByCategory,
+  isValidSeasonPhase,
+  isValidSportId,
+  isValidSportPositionId,
+  sportRequiresPosition,
+  SPORTS_CATALOG,
+  SPORTS_CATALOG_VERSION,
+} from "./sports-catalog";
+export type {
+  SportCategory,
+  SportDefinition,
+  SportPosition,
+  SportSeasonPhase,
+  SeasonPhaseDefinition,
+  SportsCatalog,
+} from "./sports-catalog";

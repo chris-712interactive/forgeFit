@@ -67,6 +67,16 @@ export function getWeeklySplit(
     return base.slice(0, n);
   }
 
+  if (goal === "sport_performance") {
+    const athletic: SessionTemplate[] = [
+      session("Athletic A", ["squat", "horizontal_push", "horizontal_pull"]),
+      session("Athletic B", ["hinge", "vertical_push", "vertical_pull"]),
+      session("Athletic C", ["lunge", "carry", "core"]),
+      session("Athletic D", ["squat", "hinge", "core"]),
+    ];
+    return athletic.slice(0, n);
+  }
+
   if (goal === "recomposition") {
     if (n <= 3) {
       return [

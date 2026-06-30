@@ -3,7 +3,10 @@ export type FitnessGoal =
   | "bodybuilding"
   | "powerlifting"
   | "general_strength"
-  | "recomposition";
+  | "recomposition"
+  | "sport_performance";
+
+export type SportSeasonPhase = "in_season" | "off_season" | "general_prep";
 
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
@@ -27,6 +30,10 @@ export interface ProgramUserProfile {
   fatLossPace?: FatLossPace;
   recompPriority?: RecompPriority;
   goalWeightKg?: number;
+  sportId?: string;
+  sportPositionId?: string;
+  sportSeasonPhase?: SportSeasonPhase;
+  secondaryGoal?: FitnessGoal;
 }
 
 export interface PlannedExercise {
