@@ -38,7 +38,7 @@
 
 **What was done:**
 - Week plan phase bar uses large low-opacity background icons (flame, lifter, recovery) with bold duration text centered in each equal column
-- Matches mockup direction: scannable times, color-coded gold/green/steel, expectation sentence below
+- Replaced inline SVG watermarks with user-provided PNG assets (`public/icons/workout-phases/`), left-aligned and clipped on the left edge only
 
 **Blockers:** None
 

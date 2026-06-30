@@ -4,84 +4,35 @@ import type { WorkoutSession } from "@forgefit/program-engine";
 
 type PhaseTone = "warmup" | "workout" | "recovery";
 
-const phaseStyles: Record<
-  PhaseTone,
-  { text: string; watermark: string }
-> = {
+const phaseStyles: Record<PhaseTone, { text: string; icon: string }> = {
   warmup: {
     text: "text-forge-gold",
-    watermark: "text-forge-gold",
+    icon: "/icons/workout-phases/warmup.png",
   },
   workout: {
     text: "text-forge-success",
-    watermark: "text-forge-success",
+    icon: "/icons/workout-phases/workout.png",
   },
   recovery: {
     text: "text-forge-steel",
-    watermark: "text-forge-steel",
+    icon: "/icons/workout-phases/recovery.png",
   },
 };
 
-function PhaseWatermark({
-  tone,
-  children,
-}: {
-  tone: PhaseTone;
-  children: React.ReactNode;
-}) {
+function PhaseWatermark({ tone }: { tone: PhaseTone }) {
+  const { icon } = phaseStyles[tone];
+
   return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    // eslint-disable-next-line @next/next/no-img-element -- decorative watermark; clipped left edge
+    <img
+      src={icon}
+      alt=""
       aria-hidden
-      className={`pointer-events-none absolute left-1/2 top-1/2 h-[3.25rem] w-[3.25rem] -translate-x-[58%] -translate-y-1/2 opacity-[0.18] sm:h-14 sm:w-14 ${phaseStyles[tone].watermark}`}
-    >
-      {children}
-    </svg>
+      draggable={false}
+      className="pointer-events-none absolute left-0 top-0 h-full w-auto max-w-none select-none mix-blend-lighten"
+    />
   );
 }
-
-function WarmupWatermark() {
-  return (
-    <PhaseWatermark tone="warmup">
-      <path d="M24 40c4.5 0 7.5-3 7.5-6.5 0-3-3-6-3-10 4.5 0 9 5.5 9 11.5a8.5 8.5 0 1 1-17 0c0 3.5 2.5 5.5 3.5 5.5Z" />
-    </PhaseWatermark>
-  );
-}
-
-function WorkoutWatermark() {
-  return (
-    <PhaseWatermark tone="workout">
-      <circle cx="24" cy="11" r="3.5" />
-      <path d="M24 14.5V24" />
-      <path d="M18 19h12" />
-      <path d="M15 19v3.5M33 19v3.5" />
-      <path d="M12 22.5h24" />
-      <path d="M20 24v8M28 24v8" />
-      <path d="M17 32h14" />
-    </PhaseWatermark>
-  );
-}
-
-function RecoveryWatermark() {
-  return (
-    <PhaseWatermark tone="recovery">
-      <path d="M24 9a13 13 0 1 1 0 26 13 13 0 0 1 0-26Z" />
-      <path d="M24 17v14M17 24h14" strokeWidth="2" />
-      <path d="M33.5 11.5l2-2M33.5 11.5l-2 2" strokeWidth="1.75" />
-    </PhaseWatermark>
-  );
-}
-
-const phaseWatermarks: Record<PhaseTone, () => React.JSX.Element> = {
-  warmup: WarmupWatermark,
-  workout: WorkoutWatermark,
-  recovery: RecoveryWatermark,
-};
 
 function totalPlannedSets(session: WorkoutSession): number {
   return session.exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
@@ -126,23 +77,21 @@ function PhaseSegment({
   ariaLabel,
   duration,
   showDivider,
-  Watermark,
 }: {
   tone: PhaseTone;
   ariaLabel: string;
   duration: string;
   showDivider: boolean;
-  Watermark: () => React.JSX.Element;
 }) {
   return (
     <div
-      className={`relative flex min-w-0 flex-1 items-center justify-center overflow-hidden px-1 py-3.5 sm:py-4 ${
+      className={`relative flex min-h-[4.25rem] min-w-0 flex-1 items-center justify-center overflow-hidden sm:min-h-[4.5rem] ${
         showDivider ? "border-l border-[var(--border)]" : ""
       }`}
     >
-      <Watermark />
+      <PhaseWatermark tone={tone} />
       <span
-        className={`relative z-10 whitespace-nowrap font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${phaseStyles[tone].text}`}
+        className={`relative z-10 whitespace-nowrap px-1 font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${phaseStyles[tone].text}`}
       >
         {duration}
       </span>
@@ -201,7 +150,6 @@ export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
             ariaLabel={phase.ariaLabel}
             duration={phase.duration}
             showDivider={index > 0}
-            Watermark={phaseWatermarks[phase.tone]}
           />
         ))}
       </div>
