@@ -25,5 +25,16 @@ describe("sport splits", () => {
   it("resolves position modifiers from catalog", () => {
     assert.equal(modifierForPosition("basketball", "post"), "lower_power_post_strength");
     assert.equal(modifierForPosition("softball", "pitcher"), "softball_pitcher_arm_care");
+    assert.equal(modifierForPosition("competitive_cheer", "base"), "stunting_base_strength");
+  });
+
+  it("competitive cheer uses dedicated split and position modifiers", () => {
+    const base = getSportWeeklySplit("competitive_cheer", "base", 3);
+    const tumbler = getSportWeeklySplit("competitive_cheer", "tumbler", 3);
+    assert.equal(base[0]?.name, "Jump & Land");
+    assert.equal(base[1]?.name, "Stunt Prep");
+    assert.notDeepEqual(base, tumbler);
+    assert.ok(base.some((session) => session.patterns.includes("horizontal_push")));
+    assert.ok(tumbler.some((session) => session.patterns.includes("squat")));
   });
 });

@@ -79,7 +79,7 @@ export function OnboardingWizard() {
 
   function update(patch: Partial<OnboardingData>) {
     setData((prev) => {
-      let next = { ...prev, ...patch };
+      const next = { ...prev, ...patch };
       const age = resolveProfileAgeFromData(next);
       if (age != null && next.experience_level) {
         next.experience_level = capExperienceForAge(

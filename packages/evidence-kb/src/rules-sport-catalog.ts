@@ -148,17 +148,100 @@ export const SPORT_CATALOG_RULES: EvidenceRule[] = [
     applies_to: ["sport:competitive_cheer"],
     recommendation: {
       priority_patterns: ["squat", "lunge", "core"],
+      reps_range: "5-8",
       neuromuscular_warmup_minutes: { min: 5, optimal: 8, max: 10 },
       focus: "landing_mechanics_single_leg_stability",
+      session_template_note:
+        "Jump & Land, Stunt Prep, Core Stability, Power Maintenance weekly split",
     },
     citations: [
       {
         doi: "10.1136/bjsports-2014-094442",
         summary:
-          "Neuromuscular warm-ups reduce lower-limb injury risk in jumping and tumbling athletes",
+          "Neuromuscular warm-ups reduce lower-limb injury rates in jumping athletes",
+      },
+      {
+        doi: "10.1542/peds.2019-1285",
+        summary:
+          "AAP: cheerleading injury prevention emphasizes proper landing technique and supervised progressions",
       },
     ],
     confidence: "high",
+  },
+  {
+    id: "competitive_cheer_stunting_shoulder_care",
+    domain: "training",
+    applies_to: ["sport:competitive_cheer"],
+    recommendation: {
+      priority_patterns: ["horizontal_pull", "vertical_push", "core"],
+      scapular_stability_sets_per_week: { min: 4, optimal: 6, max: 8 },
+      min_compound_exercises: 2,
+    },
+    citations: [
+      {
+        doi: "10.1177/0363546516651497",
+        summary:
+          "Overhead and pressing athletes need scapular stability and rotator cuff balance for shoulder health",
+      },
+      {
+        url: "https://www.nsca.com/education/articles/nsca-coach/strength-training-for-cheerleading/",
+        summary:
+          "Cheer S&C programs include shoulder prehab for bases and flyers during stunting",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "competitive_cheer_volume_cap",
+    domain: "training",
+    applies_to: ["sport:competitive_cheer"],
+    recommendation: {
+      volume_multiplier: 0.75,
+      max_sets_per_session: 12,
+      note: "Conservative gym volume — tumbling and stunting practice carry high neuromuscular load",
+    },
+    citations: [
+      {
+        doi: "10.1519/JSC.0b013e3181e3807b",
+        summary:
+          "Youth and aesthetic sport athletes need load-managed S&C alongside high skill-practice volume",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "competitive_cheer_in_season_load",
+    domain: "training",
+    applies_to: ["sport:competitive_cheer", "season:in_season"],
+    recommendation: {
+      volume_multiplier: 0.65,
+      max_gym_sessions_per_week: 2,
+      note: "Competition season — maintain strength, prioritize recovery between performances",
+    },
+    citations: [
+      {
+        doi: "10.3390/nu13093255",
+        summary:
+          "In-season athletes reduce auxiliary training volume to preserve performance and reduce overuse injury",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "protein_competitive_cheer",
+    domain: "nutrition",
+    applies_to: ["sport:competitive_cheer"],
+    recommendation: {
+      protein_g_per_kg: { min: 1.6, optimal: 1.8, max: 2.2 },
+    },
+    citations: [
+      {
+        doi: "10.1186/s12970-017-0177-8",
+        summary:
+          "Intermittent high-intensity athletes benefit from 1.6–2.2 g/kg/day for recovery between sessions",
+      },
+    ],
+    confidence: "moderate",
   },
   {
     id: "gymnastics_relative_strength",

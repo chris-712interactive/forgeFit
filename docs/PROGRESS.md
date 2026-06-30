@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 9 in progress (9A–9G shipped) |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Evidence KB gap fill + sport rule wiring (9I) |
+| **Last session focus** | Competitive cheer evidence + Vercel build fix |
 
 ---
 
@@ -34,6 +34,21 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — Competitive cheer evidence + Vercel build fix
+
+**What was done:**
+- Fixed Vercel build: `prefer-const` in `onboarding-wizard.tsx` (`let next` → `const next`)
+- **Competitive cheer:** dedicated weekly split (Jump & Land, Stunt Prep, Core Stability, Power Maintenance)
+- Catalog v1.1.0: base / flyer / tumbler positions with modifiers
+- Added 4 evidence rules: stunting shoulder care, volume cap, in-season load, sport-specific protein (KB v0.5.1)
+- Expanded `competitive_cheer_tumbling` with AAP injury-prevention citation and reps range
+
+**What's next:** Wire scapular volume counts · migrate remaining hardcoded templates to KB · 9H catalog completion
+
+**Blockers:** None
+
+**Files touched:** `apps/web/src/components/onboarding/onboarding-wizard.tsx`, `packages/evidence-kb/data/sports-catalog.json`, `rules-sport-catalog.ts`, `packages/program-engine/src/sport/splits.ts`, `docs/PROGRESS.md`
 
 ### 2026-06-30 — Evidence KB gap audit + sport rule wiring
 

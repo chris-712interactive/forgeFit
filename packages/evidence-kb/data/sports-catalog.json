@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "categories": [
     { "id": "court_field", "label": "Court & field team" },
     { "id": "racquet_rotational", "label": "Racquet & rotational" },
@@ -195,8 +195,12 @@
       "label": "Competitive cheer",
       "categoryId": "performance_spirit",
       "description": "Tumbling, stunting, and landing mechanics",
-      "positionAffectsProgram": false,
-      "positions": []
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "base", "label": "Base", "modifier": "stunting_base_strength" },
+        { "id": "flyer", "label": "Flyer", "modifier": "flyer_relative_power" },
+        { "id": "tumbler", "label": "Tumbler", "modifier": "tumbling_landing_power" }
+      ]
     },
     {
       "id": "gymnastics",

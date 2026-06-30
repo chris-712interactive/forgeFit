@@ -32,6 +32,9 @@ export const POSITION_PATTERN_BOOSTS: Record<string, MovementPattern[]> = {
   strength_agility: ["hinge", "lunge"],
   elastic_power: ["squat", "lunge"],
   max_strength_power: ["squat", "hinge"],
+  stunting_base_strength: ["horizontal_push", "horizontal_pull", "core"],
+  flyer_relative_power: ["vertical_pull", "lunge", "core"],
+  tumbling_landing_power: ["squat", "lunge", "core"],
 };
 
 export function applyPositionModifier(
@@ -105,6 +108,13 @@ const SOFTBALL: SessionTemplate[] = [
   session("Arm Care", ["horizontal_pull", "core", "vertical_pull"]),
 ];
 
+const CHEER: SessionTemplate[] = [
+  session("Jump & Land", ["squat", "lunge", "core"]),
+  session("Stunt Prep", ["horizontal_push", "horizontal_pull", "vertical_push"]),
+  session("Core Stability", ["core", "vertical_pull", "carry"]),
+  session("Power Maintenance", ["squat", "hinge", "lunge"]),
+];
+
 const GENERAL: SessionTemplate[] = [
   session("Athletic A", ["squat", "horizontal_push", "horizontal_pull"]),
   session("Athletic B", ["hinge", "vertical_push", "vertical_pull"]),
@@ -119,6 +129,7 @@ const SPORT_TEMPLATES: Record<string, SessionTemplate[]> = {
   volleyball: VOLLEYBALL,
   baseball: BASEBALL,
   softball: SOFTBALL,
+  competitive_cheer: CHEER,
   general_athleticism: GENERAL,
 };
 

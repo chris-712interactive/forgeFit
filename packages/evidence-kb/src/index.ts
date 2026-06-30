@@ -12,7 +12,7 @@ export {
 export type { AgeBand, RuleContext } from "./match";
 
 /** Evidence KB version — bump when rules change materially */
-export const EVIDENCE_KB_VERSION = "0.5.0";
+export const EVIDENCE_KB_VERSION = "0.5.1";
 
 const SEED_RULES: EvidenceRule[] = [
   {
