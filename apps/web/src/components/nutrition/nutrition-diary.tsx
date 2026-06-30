@@ -4,6 +4,8 @@ import type { TdeeDashboard } from "@/lib/nutrition/tdee-service";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { appSectionStack } from "@/components/layout/page-layout";
+import { MfpImportPanel } from "@/components/nutrition/mfp-import-panel";
+import { PackagedFoodPanel } from "@/components/nutrition/packaged-food-panel";
 import { NutritionDatePicker } from "@/components/nutrition/nutrition-date-picker";
 import { CopyDayPanel } from "@/components/nutrition/copy-day-panel";
 import { DiaryQuickLog } from "@/components/nutrition/diary-quick-log";
@@ -236,6 +238,10 @@ export function NutritionDiary({
               unlocked={restaurantSearchUnlocked}
               onSaveMeal={setSaveDraft}
             />
+
+            <PackagedFoodPanel loggedDate={initialSummary.date} />
+
+            <MfpImportPanel />
 
             <CollapsibleSection title="Example plates" hint="Scaled to your targets">
               <MealPlateExamples targets={initialSummary.targets} embedded />

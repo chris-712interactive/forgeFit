@@ -11,9 +11,11 @@ interface FoodSearchProps {
   adding: boolean;
   /** Omit card chrome when nested inside FoodSearchPanel */
   embedded?: boolean;
+  /** Search Open Food Facts only (packaged food mode) */
+  offOnly?: boolean;
 }
 
-export function FoodSearch({ onAdd, adding, embedded = false }: FoodSearchProps) {
+export function FoodSearch({ onAdd, adding, embedded = false, offOnly = false }: FoodSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,9 +33,14 @@ export function FoodSearch({ onAdd, adding, embedded = false }: FoodSearchProps)
     const timer = window.setTimeout(() => {
       setLoading(true);
       setError(null);
-      void fetch(`/api/nutrition/search?q=${encodeURIComponent(query.trim())}`, {
+      void fetch(
+        `/api/nutrition/search?q=${encodeURIComponent(query.trim())}${
+          offOnly ? "&source=off" : ""
+        }`,
+        {
         signal: controller.signal,
-      })
+      }
+      )
         .then(async (response) => {
           if (!response.ok) {
             throw new Error("Search failed");
@@ -59,7 +66,7 @@ export function FoodSearch({ onAdd, adding, embedded = false }: FoodSearchProps)
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, offOnly]);
 
   const content = (
     <>
@@ -72,12 +79,16 @@ export function FoodSearch({ onAdd, adding, embedded = false }: FoodSearchProps)
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search chicken, oats, yogurt…"
+        placeholder={
+          offOnly ? "Search yogurt, protein bar, cereal…" : "Search chicken, oats, yogurt…"
+        }
         className={`${embedded ? "" : "mt-3 "}min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-base text-forge-text outline-none focus:border-forge-ember`}
       />
-      {!usdaEnabled && query.length >= 2 && (
+      {(offOnly || !usdaEnabled) && query.length >= 2 && (
         <p className="mt-2 text-xs text-forge-muted">
-          Searching Open Food Facts. Add USDA_FDC_API_KEY for branded US foods.
+          {offOnly
+            ? "Searching Open Food Facts for packaged products."
+            : "Searching Open Food Facts. Add USDA_FDC_API_KEY for branded US foods."}
         </p>
       )}
       {loading && <p className="mt-3 text-sm text-forge-steel">Searching…</p>}

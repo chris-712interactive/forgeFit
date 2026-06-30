@@ -36,4 +36,5 @@ export interface HomeDashboardData {
   sleep: SleepContext;
   gamification: GamificationContext;
   weighInReminder: WeighInReminder | null;
+  isPro: boolean;
 }

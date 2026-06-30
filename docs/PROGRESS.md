@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | MFP Q3 loop — Home train & fuel, post-workout nudge, signup source |
+| **Last session focus** | MFP Q4 — CSV import, OFF barcode, Pro upgrade moments |
 
 ---
 
@@ -33,6 +33,34 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — MFP Q4 (switcher tools + Pro upgrade moments)
+
+**What was done:**
+- **MFP CSV import** — parser (`mfp-csv-parser.ts`), POST `/api/nutrition/import` (500 rows, 90-day lookback), Browse tab panel with GTM `forge_mfp_import_completed`
+- **Selective barcode / Open Food Facts** — OFF lookup in `nutrition-core`, `/api/nutrition/barcode`, `?source=off` search, `PackagedFoodPanel` on Browse tab (barcode + OFF-only search)
+- **Pro upgrade moments** — Home teaser for free users (`HomeProUpgradeTeaser`), nutrition adherence banner after 28+ logged days, stronger progress projection CTA when trend exists
+- **`getDistinctNutritionLogDayCount()`** — powers adherence milestone banner on nutrition page
+
+**What's next (from mfp-differentiation.md):**
+- Q4 P1: Pro+ restaurant quick-log polish (saved meals, line items)
+- Q4 P2: Landing hero refresh, onboarding drip
+- MFP CSV import help article (support + SEO)
+- Apply migration #46 on hosted Supabase if onboarding save fails
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/nutrition/mfp-csv-parser.ts`, `mfp-csv-parser.test.ts`
+- `apps/web/src/app/api/nutrition/import/route.ts`, `barcode/route.ts`, `search/route.ts`
+- `packages/nutrition-core/src/open-food-facts.ts`, `search.ts`
+- `apps/web/src/components/nutrition/mfp-import-panel.tsx`, `packaged-food-panel.tsx`, `nutrition-adherence-upgrade-banner.tsx`, `nutrition-diary.tsx`, `food-search.tsx`
+- `apps/web/src/components/home/home-pro-upgrade-teaser.tsx`, `home-dashboard.tsx`
+- `apps/web/src/components/progress/progress-dashboard.tsx`
+- `apps/web/src/lib/nutrition/service.ts`, `page-data.ts`, `log-entry.ts`
+- `apps/web/src/lib/home/types.ts`, `service.ts`
+- `apps/web/src/lib/analytics/events.ts`
+- `docs/marketing/mfp-differentiation.md`, `docs/PROGRESS.md`
 
 ### 2026-06-30 — MFP Q3 loop (train + fuel integration)
 

@@ -148,3 +148,24 @@ export async function getRecentMacroEntries(
 
   return recent;
 }
+
+export async function getDistinctNutritionLogDayCount(
+  userId: string,
+  lookbackDays = 90
+): Promise<number> {
+  const supabase = await createClient();
+  const timeZone = await getUserTimeZone();
+  const sinceDate = addDaysIso(
+    todayLocalIsoDate(new Date(), timeZone),
+    -lookbackDays
+  );
+
+  const { data, error } = await supabase
+    .from("nutrition_logs")
+    .select("logged_date")
+    .eq("user_id", userId)
+    .gte("logged_date", sinceDate);
+
+  if (error || !data) return 0;
+  return new Set(data.map((row) => row.logged_date as string)).size;
+}

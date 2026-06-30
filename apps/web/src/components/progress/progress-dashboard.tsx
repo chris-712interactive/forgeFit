@@ -152,8 +152,16 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
             {!isPro && (
               <div className="mt-4">
                 <UpgradePrompt
-                  title="See 90 days ahead"
-                  description="Pro unlocks 90-day projections, confidence bands, and goal-date forecasts."
+                  title={
+                    data.projection
+                      ? "Your trend is building — see 90 days ahead"
+                      : "See 90 days ahead"
+                  }
+                  description={
+                    data.projection
+                      ? "Pro unlocks 90-day weight projections with confidence bands and a goal-date forecast tied to your plan."
+                      : "Pro unlocks 90-day projections, confidence bands, and goal-date forecasts."
+                  }
                   suggestedTier="pro"
                 />
               </div>

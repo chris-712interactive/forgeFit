@@ -20,12 +20,14 @@ export async function GET(request: Request) {
   }
 
   const usdaApiKey = process.env.USDA_FDC_API_KEY;
-  const results = await searchFoods(query, { usdaApiKey });
+  const source = searchParams.get("source");
+  const offOnly = source === "off";
+  const results = await searchFoods(query, { usdaApiKey, offOnly });
 
   return NextResponse.json({
     results,
     sources: {
-      usda: Boolean(usdaApiKey),
+      usda: Boolean(usdaApiKey) && !offOnly,
       openFoodFacts: true,
     },
   });

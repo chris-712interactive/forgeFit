@@ -6,6 +6,7 @@ import {
   appSectionStack,
 } from "@/components/layout/page-layout";
 import { NutritionAdherenceCard } from "@/components/nutrition/nutrition-adherence-card";
+import { NutritionAdherenceUpgradeBanner } from "@/components/nutrition/nutrition-adherence-upgrade-banner";
 import { NutritionDiary } from "@/components/nutrition/nutrition-diary";
 import { NutritionFab } from "@/components/nutrition/nutrition-fab";
 import { getNutritionAdherenceForUser } from "@/lib/analytics/service";
@@ -49,6 +50,7 @@ export default async function NutritionPage({
     yesterdayDate,
     restaurantSearchUnlocked,
     tdeeDashboard,
+    nutritionLoggedDayCount,
   } = pageData;
 
   const subscription = user ? await getSubscriptionForUser(user.id) : null;
@@ -88,6 +90,11 @@ export default async function NutritionPage({
               tdeeDashboard={tdeeDashboard}
             />
           </Suspense>
+
+          <NutritionAdherenceUpgradeBanner
+            loggedDayCount={nutritionLoggedDayCount}
+            unlocked={adherenceUnlocked}
+          />
 
           <CollapsibleSection title="Nutrition adherence" hint="Pro · 7/30/90 days">
             {adherenceUnlocked ? (

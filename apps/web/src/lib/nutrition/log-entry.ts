@@ -1,3 +1,5 @@
+import type { FoodSearchResult } from "@forgefit/nutrition-core";
+import { scaleMacrosFrom100g } from "@forgefit/nutrition-core";
 import { browserTodayIsoDate } from "@/lib/datetime/local-date";
 import type { MealType } from "@/lib/nutrition/meal-types";
 import {
@@ -44,6 +46,47 @@ export async function postMacroLogEntry(
       fatG: input.fatG ?? 0,
       lineItems: input.lineItems,
       servingsLogged: input.servingsLogged,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = (await response.json()) as { error?: string };
+    throw new Error(err.error ?? "Could not log entry");
+  }
+
+  persistPreferredMealType(mealType);
+}
+
+export async function postFoodSearchLogEntry(input: {
+  loggedDate: string;
+  mealType?: MealType;
+  food: FoodSearchResult;
+  quantity?: number;
+  servingGrams?: number;
+}): Promise<void> {
+  const mealType = resolveMealType(input.mealType);
+  const quantity = input.quantity ?? 1;
+  const servingGrams = input.servingGrams ?? 100;
+  const scaled = scaleMacrosFrom100g(input.food.per100g, servingGrams * quantity);
+
+  const response = await fetch("/api/nutrition/logs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clientId: crypto.randomUUID(),
+      loggedDate: input.loggedDate,
+      mealType,
+      foodName: input.food.name,
+      foodSource: input.food.source,
+      externalFoodId: input.food.id,
+      brand: input.food.brand,
+      servingDescription: input.food.servingDescription,
+      quantity,
+      servingGrams,
+      calories: scaled.calories,
+      proteinG: scaled.proteinG,
+      carbsG: scaled.carbsG,
+      fatG: scaled.fatG,
     }),
   });
 

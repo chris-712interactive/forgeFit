@@ -111,11 +111,11 @@ Assumes **Y1** = Jul 2026 – Jun 2027 (per business plan). Status as of 2026-06
 
 | Priority | Initiative | Type | Success signal |
 |:--:|------------|------|----------------|
-| P0 | **Tier 3 nutrition (switching)** — see backlog below | Product | ↓ nutrition-tab-only churn |
-| P0 | **90-day projections + adherence analytics** — surface Pro value in upgrade moments | Product | Free→Pro conversion on projection lock |
+| P0 | **Tier 3 nutrition (switching)** — see backlog below | Product | ↓ nutrition-tab-only churn | ✅ Shipped 2026-06-30 |
+| P0 | **90-day projections + adherence analytics** — surface Pro value in upgrade moments | Product | Free→Pro conversion on projection lock | ✅ Shipped 2026-06-30 |
 | P1 | **Pro+ restaurant quick-log polish** — saved meals, line items, eating-out workflow | Product | Pro+ retention; “MFP for eating out” replacement |
-| P1 | **MFP export import (CSV)** — one-time diary migration | Product | Completed imports / new signups |
-| P2 | **Selective barcode / OFF** — packaged staples only (yogurt, protein bar, etc.) | Product | Barcode logs without DB sprawl |
+| P1 | **MFP export import (CSV)** — one-time diary migration | Product | Completed imports / new signups | ✅ Shipped 2026-06-30 |
+| P2 | **Selective barcode / OFF** — packaged staples only (yogurt, protein bar, etc.) | Product | Barcode logs without DB sprawl | ✅ Shipped 2026-06-30 |
 | P2 | **Landing page hero refresh** — lead with unified loop, not feature laundry list | Marketing | ↑ signup from comparison pages |
 | P2 | **Email/onboarding drip** — “Day 3: log your first workout offline” | Marketing | D7 retention |
 
@@ -160,8 +160,8 @@ Assumes **Y1** = Jul 2026 – Jun 2027 (per business plan). Status as of 2026-06
 | Home nutrition ↔ training card | M | Q3 2026 | Pillar 1 flagship |
 | Post-workout diary nudge | S | Q3 2026 | Deep link to nutrition + meal slot |
 | Training-day macro hint copy | S | Q3 2026 | No engine change required v1 |
-| MFP CSV import | M | Q4 2026 | Export instructions in guide article |
-| Selective barcode (OFF subset) | L | Q4 2026 | Gate behind “packaged food” search mode |
+| MFP CSV import | M | Q4 2026 | ✅ Shipped — Browse tab panel + `/api/nutrition/import` |
+| Selective barcode (OFF subset) | L | Q4 2026 | ✅ Shipped — `PackagedFoodPanel` + barcode API |
 | Combined logging streak (Home) | S | Q1 2027 | Workout OR nutrition day counts — define rules |
 | MFP partner API | L | Q2 2027+ | Blocked on partnership; optional |
 
@@ -171,9 +171,9 @@ Assumes **Y1** = Jul 2026 – Jun 2027 (per business plan). Status as of 2026-06
 
 | Item | Effort | Quarter | Notes |
 |------|--------|---------|-------|
-| Projection lock → upgrade CTA | S | Q4 2026 | Already gated; polish moment |
+| Projection lock → upgrade CTA | S | Q4 2026 | ✅ Shipped — progress dashboard copy when trend exists |
 | 90-day projections surfacing | S | Q4 2026 | Pro tier |
-| Adherence analytics bundle | M | Q4 2026 | Strength + volume + nutrition |
+| Adherence analytics bundle | M | Q4 2026 | ✅ Partial — 28-day nutrition milestone banner; full bundle Pro-gated |
 | Restaurant quick-log + saved meals | M | Q4 2026 | Pro+ — partial today |
 | Device integrations (Withings, Strava) | M | Q3 2026 | Pro+ — Phase 7 |
 
@@ -243,6 +243,7 @@ Track monthly. Segments: all users, “from MFP” (onboarding answer), nutritio
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-06-30 | Ship Q4 switcher tools (MFP CSV, OFF barcode) + Pro upgrade moments | MFP differentiation roadmap execution |
 | 2026-06-30 | Ship Q3 loop items (Home train & fuel, post-workout nudge, signup_source) | MFP differentiation roadmap execution |
 | 2026-06-19 | Whole-foods library over USDA/OFF-at-scale | $0 ops cost; lifter workflow |
 | 2026-06-28 | Tier 1 + 2 MFP-inspired diary UX | Parity on *workflow*, not database |
@@ -273,8 +274,9 @@ When picking up MFP-differentiation work, prefer this order:
 1. ~~**Q3 P0:** Home integrated dashboard~~ ✅
 2. ~~**Q3 P0:** Post-workout diary nudge~~ ✅
 3. ~~**Q3 P1:** Onboarding “previous app” question~~ ✅
-4. **Q4 P0:** Tier 3 items (CSV import, then selective barcode)
-5. **Q4 P0:** Pro upgrade moments on projection/adherence
+4. ~~**Q4 P0:** Tier 3 items (CSV import, then selective barcode)~~ ✅
+5. ~~**Q4 P0:** Pro upgrade moments on projection/adherence~~ ✅
 6. **Q3 P1:** Comparison + guide traffic (marketing)
+7. **Q4 P1:** Pro+ restaurant quick-log polish
 
 Update this doc’s decision log and quarter tables when priorities shift. Update [PROGRESS.md](../PROGRESS.md) after each shipped initiative.

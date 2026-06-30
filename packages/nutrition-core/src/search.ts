@@ -1,10 +1,13 @@
-import { searchOpenFoodFacts } from "./open-food-facts";
+import { lookupOpenFoodFactsByBarcode, searchOpenFoodFacts } from "./open-food-facts";
 import type { FoodSearchResult } from "./types";
 import { searchUsdaFoods } from "./usda";
+
+export { lookupOpenFoodFactsByBarcode } from "./open-food-facts";
 
 export interface SearchFoodsOptions {
   usdaApiKey?: string;
   limitPerSource?: number;
+  offOnly?: boolean;
 }
 
 export async function searchFoods(
@@ -15,8 +18,10 @@ export async function searchFoods(
   if (trimmed.length < 2) return [];
 
   const limit = options.limitPerSource ?? 10;
+  const offOnly = options.offOnly === true;
+
   const [usda, off] = await Promise.all([
-    options.usdaApiKey
+    !offOnly && options.usdaApiKey
       ? searchUsdaFoods(trimmed, options.usdaApiKey, limit)
       : Promise.resolve([]),
     searchOpenFoodFacts(trimmed, limit),

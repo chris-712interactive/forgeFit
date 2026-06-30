@@ -2,6 +2,7 @@
 
 import { WeighInReminderBanner } from "@/components/measurements/weigh-in-reminder-banner";
 import { HomeIntegratedLoop } from "@/components/home/home-integrated-loop";
+import { HomeProUpgradeTeaser } from "@/components/home/home-pro-upgrade-teaser";
 import { HomeProgressShortcut } from "@/components/home/home-progress-shortcut";
 import { CommunitySection } from "@/components/home/community-section";
 import { HomeNotificationsStrip } from "@/components/home/home-notifications-strip";
@@ -64,6 +65,8 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
       {data.proInsights.length > 0 && (
         <ProInsightsStrip insights={data.proInsights} />
       )}
+
+      {!data.isPro && <HomeProUpgradeTeaser />}
 
       <PwaInstallPrompt />
 

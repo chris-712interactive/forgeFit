@@ -37,3 +37,15 @@ export function pushSignupSourceEvent(source: string): void {
     signup_source: source.trim(),
   });
 }
+
+export function pushMfpImportCompletedEvent(imported: number): void {
+  if (typeof window === "undefined" || imported <= 0) {
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: "forge_mfp_import_completed",
+    imported_count: imported,
+  });
+}

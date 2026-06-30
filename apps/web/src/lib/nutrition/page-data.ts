@@ -3,6 +3,7 @@ import { hasFeature } from "@/lib/billing/gates";
 import {
   getDailyNutritionSummary,
   getDayLogCount,
+  getDistinctNutritionLogDayCount,
   getRecentMacroEntries,
   todayIsoDate,
   yesterdayIsoDate,
@@ -25,6 +26,7 @@ export interface NutritionPageData {
   yesterdayDate: string;
   restaurantSearchUnlocked: boolean;
   tdeeDashboard: TdeeDashboard | null;
+  nutritionLoggedDayCount: number;
 }
 
 export async function getNutritionPageData(
@@ -53,6 +55,7 @@ export async function getNutritionPageData(
       yesterdayDate: yesterdayIso,
       restaurantSearchUnlocked: false,
       tdeeDashboard: null,
+      nutritionLoggedDayCount: 0,
     };
   }
 
@@ -62,12 +65,14 @@ export async function getNutritionPageData(
     previousDayEntryCount,
     yesterdayEntryCount,
     subscription,
+    nutritionLoggedDayCount,
   ] = await Promise.all([
     getDailyNutritionSummary(userId, selectedDate),
     getRecentMacroEntries(userId),
     getDayLogCount(userId, previousDayDate),
     getDayLogCount(userId, yesterdayIso),
     getSubscriptionForUser(userId),
+    getDistinctNutritionLogDayCount(userId),
   ]);
 
   const restaurantSearchUnlocked =
@@ -91,5 +96,6 @@ export async function getNutritionPageData(
     yesterdayDate: yesterdayIso,
     restaurantSearchUnlocked,
     tdeeDashboard,
+    nutritionLoggedDayCount,
   };
 }

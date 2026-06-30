@@ -120,5 +120,6 @@ export async function getHomeDashboardData(
     sleep,
     gamification,
     weighInReminder,
+    isPro: hasProAccess(subscription),
   };
 }
