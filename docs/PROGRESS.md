@@ -35,6 +35,18 @@
 
 ## Session Log
 
+### 2026-06-30 — Workout phase card flip preview
+
+**What was done:**
+- Phase bars (warm-up / workout / recovery) flip on tap to preview planned activities without starting the workout
+- Warm-up: movement list + prescriptions · Workout: exercises with sets×reps · Recovery: equipment + guidance steps
+
+**What's next:** —
+
+**Blockers:** None
+
+**Files touched:** `apps/web/src/components/workout/workout-phase-cards.tsx`, `docs/PROGRESS.md`
+
 ### 2026-06-30 — Competitive cheer evidence + Vercel build fix
 
 **What was done:**
