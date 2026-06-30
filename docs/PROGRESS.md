@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Start date on equipment and promotion regenerations |
+| **Last session focus** | Goal weight imperial units in profile settings |
 
 ---
 
@@ -33,6 +33,17 @@
 ---
 
 ## Session Log
+
+### 2026-06-28 — Goal weight uses unit preference in profile settings
+
+**What was done:**
+- Program plan **Goal weight** field in Profile → Program & equipment now displays and accepts lb when unit preference is imperial (still stored as kg)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/profile/program-plan-setting.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-28 — Tier 2 nutrition diary UX
 

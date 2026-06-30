@@ -5,6 +5,7 @@ import {
   updatePlanSettings,
 } from "@/app/actions/program";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
   FAT_LOSS_PACE_OPTIONS,
   FITNESS_GOALS,
@@ -18,6 +19,12 @@ import type {
   FitnessGoal,
   RecompPriority,
 } from "@/lib/types/profile";
+import {
+  formatWeight,
+  kgFromDisplayValue,
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -41,6 +48,8 @@ export function ProgramPlanSetting({
   initialMinutesPerSession,
 }: ProgramPlanSettingProps) {
   const router = useRouter();
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [changes, setChanges] = useState<string[] | null>(null);
@@ -103,7 +112,11 @@ export function ProgramPlanSetting({
 
   function saveSettings() {
     if (goalWeightInvalid) {
-      setError("Goal weight must be below your current weight.");
+      setError(
+        initialCurrentWeightKg != null
+          ? `Goal weight must be below your current weight (${formatWeight(initialCurrentWeightKg, unit)}).`
+          : "Goal weight must be below your current weight."
+      );
       return;
     }
 
@@ -184,25 +197,35 @@ export function ProgramPlanSetting({
         {showBodyComposition && (
           <div>
             <label className="mb-1.5 block text-sm text-forge-muted">
-              Goal weight (optional, kg)
+              Goal weight (optional, {weightLabel})
             </label>
             <input
               type="number"
-              min={30}
-              max={300}
-              step={0.1}
-              value={goalWeightKg ?? ""}
-              onChange={(event) =>
-                setGoalWeightKg(
-                  event.target.value ? Number(event.target.value) : null
-                )
+              min={unit === "metric" ? 30 : 66}
+              max={unit === "metric" ? 300 : 661}
+              step={unit === "metric" ? 0.1 : 0.5}
+              value={
+                goalWeightKg != null
+                  ? kgToDisplayValue(goalWeightKg, unit)
+                  : ""
               }
-              placeholder="For Pro goal-date forecasts"
+              onChange={(event) => {
+                const raw = event.target.value;
+                if (!raw) {
+                  setGoalWeightKg(null);
+                  return;
+                }
+                const parsed = Number(raw);
+                if (!Number.isFinite(parsed)) return;
+                setGoalWeightKg(kgFromDisplayValue(parsed, unit));
+              }}
+              placeholder={`For Pro goal-date forecasts (${weightLabel})`}
               className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
             />
-            {goalWeightInvalid && (
+            {goalWeightInvalid && initialCurrentWeightKg != null && (
               <p className="mt-2 text-sm text-forge-coral" role="alert">
-                Goal weight must be below your current weight.
+                Goal weight must be below your current weight (
+                {formatWeight(initialCurrentWeightKg, unit)}).
               </p>
             )}
           </div>
