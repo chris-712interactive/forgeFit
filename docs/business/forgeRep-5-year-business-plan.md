@@ -1,5 +1,7 @@
 # ForgeRep — 5-Year Business Plan
 
+> **Printable / mobile:** [forge-rep.com/docs/business/5yr](https://forge-rep.com/docs/business/5yr) — open on phone or desktop → Print (⌘P). Regenerate from markdown: `node docs/business/generate-pdf.mjs --html-only`
+
 **Prepared:** June 25, 2026  
 **Horizon:** July 2026 – June 2031  
 **Product:** [ForgeRep](https://forge-rep.com) — evidence-based fitness & nutrition PWA  

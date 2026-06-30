@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
 <title>ForgeRep — 5-Year Business Plan</title>
 <style>
   @page { margin: 18mm 16mm; size: letter; }
@@ -10,7 +12,6 @@
     font-size: 10.5pt;
     line-height: 1.45;
     color: #1c1917;
-    max-width: 100%;
     margin: 0;
     padding: 0;
   }
@@ -31,9 +32,58 @@
   a { color: #ff6b35; text-decoration: none; }
   strong { font-weight: 600; }
 
+  .page {
+    max-width: 8.5in;
+    margin: 0 auto;
+    padding: 0.5in 0.55in;
+    background: #fff;
+  }
+  .confidential {
+    font-size: 9pt;
+    color: #57534e;
+    margin-top: 24pt;
+    padding-top: 12pt;
+    border-top: 1px solid #e7e5e4;
+  }
+  @media print {
+    .no-print { display: none !important; }
+    .page { max-width: none; padding: 0; }
+  }
+  @media screen {
+    body { background: #ececec; padding: 1rem 0 2rem; }
+    .page { box-shadow: 0 2px 12px rgba(0,0,0,0.12); margin-bottom: 1.5rem; }
+    .print-bar {
+      max-width: 8.5in;
+      margin: 0 auto 1rem;
+      padding: 0.75rem 1rem;
+      background: #1c1917;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .print-bar button {
+      background: #ff6b35;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  }
 </style>
 </head>
 <body>
+  <div class="print-bar no-print">
+    <span>ForgeRep 5-Year Plan — confidential · Print (⌘P) · not indexed</span>
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+  <div class="page">
 <h1>ForgeRep — 5-Year Business Plan</h1>
 <p>&gt; <strong>Printable / mobile:</strong> <a href="https://forge-rep.com/docs/business/5yr">forge-rep.com/docs/business/5yr</a> — open on phone or desktop → Print (⌘P). Regenerate from markdown: <code>node docs/business/generate-pdf.mjs --html-only</code></p>
 <p><strong>Prepared:</strong> June 25, 2026  </p>
@@ -481,5 +531,7 @@
 </table>
 <hr />
 <p>*Confidential — ForgeRep / forgeFit. For internal planning and investor review.*</p>
+    <p class="confidential">Confidential — ForgeRep / forgeFit. Internal planning only.</p>
+  </div>
 </body>
 </html>

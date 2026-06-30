@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Instagram calendar — production specs per post |
+| **Last session focus** | 5-year business plan printable URL |
 
 ---
 
@@ -33,6 +33,19 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — 5-year business plan printable URL
+
+**What was done:**
+- Business plan served at **`/docs/business/5yr`** (noindex, same pattern as IG calendar)
+- `generate-pdf.mjs` now writes `apps/web/content/business/5yr-print.html` for web + print bar
+- `--html-only` flag skips Chrome PDF step when regenerating deploy HTML
+
+**What's next:** Deploy · run full `generate-pdf.mjs` when PDF export needed
+
+**Blockers:** None
+
+**Files touched:** `docs/business/generate-pdf.mjs`, `docs/business/forgeRep-5-year-business-plan.md`, `apps/web/content/business/5yr-print.html`, `apps/web/src/app/docs/business/5yr/route.ts`, `docs/PROGRESS.md`
 
 ### 2026-06-30 — Instagram production specs (batch + audio + phone)
 
