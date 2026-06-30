@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 8 complete |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Fix stale workout completion after plan regen |
+| **Last session focus** | Compact workout schedule phase row |
 
 ---
 
@@ -33,6 +33,18 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — Compact workout schedule cards
+
+**What was done:**
+- Week plan cards show warm-up, main work, and recovery durations on **one line** with color-coded icons (flame, dumbbell, cool-down)
+- Short expectation sentence below (e.g. push prep → upper work with exercise/set counts → recovery)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/components/workout/workout-phase-cards.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-30 — Fix stale completions after schedule regeneration
 

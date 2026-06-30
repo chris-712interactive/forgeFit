@@ -4,55 +4,73 @@ import type { WorkoutSession } from "@forgefit/program-engine";
 
 type PhaseTone = "warmup" | "workout" | "recovery";
 
-const toneClasses: Record<
-  PhaseTone,
-  { container: string; label: string }
-> = {
-  warmup: {
-    container: "border-forge-gold/30 bg-forge-gold/5",
-    label: "text-forge-gold",
-  },
-  workout: {
-    container: "border-forge-success/30 bg-forge-success/5",
-    label: "text-forge-success",
-  },
-  recovery: {
-    container: "border-forge-steel/30 bg-forge-steel/5",
-    label: "text-forge-steel",
-  },
+const toneClasses: Record<PhaseTone, string> = {
+  warmup: "text-forge-gold",
+  workout: "text-forge-success",
+  recovery: "text-forge-steel",
 };
 
-function PhaseCard({
-  tone,
-  label,
-  duration,
-  detail,
-}: {
-  tone: PhaseTone;
-  label: string;
-  duration: string;
-  detail: string;
-}) {
-  const styles = toneClasses[tone];
-
+function WarmupIcon({ className = "" }: { className?: string }) {
   return (
-    <div
-      className={`min-w-0 flex-1 rounded-xl border p-2.5 sm:p-3 ${styles.container}`}
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`h-4 w-4 shrink-0 ${className}`}
+      aria-hidden
     >
-      <p
-        className={`text-[11px] font-semibold uppercase tracking-wider ${styles.label}`}
-      >
-        {label}
-      </p>
-      <p className="font-display text-lg font-semibold leading-tight text-forge-text sm:text-xl">
-        {duration}
-      </p>
-      <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-forge-muted">
-        {detail}
-      </p>
-    </div>
+      <path d="M8 14.5a2 2 0 0 0 2-2.5c0-1.2-1.2-2.4-1.2-4 1.6 0 3.2 2 3.2 4.4a3.2 3.2 0 1 1-6.4 0 2 2 0 0 0 2 2.1Z" />
+    </svg>
   );
 }
+
+function WorkoutIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`h-4 w-4 shrink-0 ${className}`}
+      aria-hidden
+    >
+      <path d="M1.5 6.5h2.5l1-2h6l1 2h2.5" />
+      <path d="M4 6.5v3M12 6.5v3" />
+      <path d="M2.5 9.5h11" />
+    </svg>
+  );
+}
+
+function RecoveryIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`h-4 w-4 shrink-0 ${className}`}
+      aria-hidden
+    >
+      <path d="M3 10c1.5-2 2.5-4 5-4s3.5 2 5 4" />
+      <path d="M2 12.5h12" />
+      <path d="M8 3.5v2" />
+      <path d="M6 5.5h4" />
+    </svg>
+  );
+}
+
+const phaseIcons: Record<PhaseTone, typeof WarmupIcon> = {
+  warmup: WarmupIcon,
+  workout: WorkoutIcon,
+  recovery: RecoveryIcon,
+};
 
 function totalPlannedSets(session: WorkoutSession): number {
   return session.exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
@@ -61,68 +79,106 @@ function totalPlannedSets(session: WorkoutSession): number {
 function mainWorkoutMinutes(session: WorkoutSession): number {
   const warmupMins = session.warmupBlock?.durationMinutes ?? 0;
   const recoveryMins = session.recoveryBlock?.durationMinutes ?? 0;
-  return Math.max(
-    1,
-    session.estimatedMinutes - warmupMins - recoveryMins
+  return Math.max(1, session.estimatedMinutes - warmupMins - recoveryMins);
+}
+
+function buildSessionExpectation(
+  session: WorkoutSession,
+  setCount: number
+): string {
+  const exerciseCount = session.exercises.length;
+  const exercisePhrase =
+    exerciseCount === 1 ? "1 exercise" : `${exerciseCount} exercises`;
+  const setPhrase = setCount === 1 ? "1 set" : `${setCount} sets`;
+  const workName = session.name.toLowerCase();
+  const segments: string[] = [];
+
+  if (session.warmupBlock) {
+    segments.push(`Start with ${session.warmupBlock.name.toLowerCase()}`);
+  }
+
+  segments.push(
+    session.warmupBlock
+      ? `then ${workName} work (${exercisePhrase} · ${setPhrase})`
+      : `${workName} session (${exercisePhrase} · ${setPhrase})`
   );
+
+  if (session.recoveryBlock) {
+    segments.push(`finish with ${session.recoveryBlock.name.toLowerCase()}`);
+  }
+
+  return `${segments.join(", ")}.`;
 }
 
 export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
-  const exerciseCount = session.exercises.length;
   const setCount = totalPlannedSets(session);
-  const exerciseLabel =
-    exerciseCount === 1 ? "1 exercise" : `${exerciseCount} exercises`;
-  const setLabel = setCount === 1 ? "1 set" : `${setCount} sets`;
 
-  const tiles: Array<{
+  const phases: Array<{
     key: string;
     tone: PhaseTone;
-    label: string;
+    ariaLabel: string;
     duration: string;
-    detail: string;
   }> = [];
 
   if (session.warmupBlock) {
-    const moveCount = session.warmupBlock.movements.length;
-    const moveLabel = moveCount === 1 ? "1 move" : `${moveCount} moves`;
-    tiles.push({
+    phases.push({
       key: "warmup",
       tone: "warmup",
-      label: "Warm-up",
+      ariaLabel: "Warm-up",
       duration: formatWarmupDuration(session.warmupBlock.durationMinutes),
-      detail: `${session.warmupBlock.name} · ${moveLabel}`,
     });
   }
 
-  tiles.push({
+  phases.push({
     key: "workout",
     tone: "workout",
-    label: "Workout",
+    ariaLabel: "Main workout",
     duration: `~${mainWorkoutMinutes(session)} min`,
-    detail: `${exerciseLabel} · ${setLabel}`,
   });
 
   if (session.recoveryBlock) {
-    tiles.push({
+    phases.push({
       key: "recovery",
       tone: "recovery",
-      label: "Recovery",
+      ariaLabel: "Recovery",
       duration: formatRecoveryDuration(session.recoveryBlock.durationMinutes),
-      detail: session.recoveryBlock.name,
     });
   }
 
+  const expectation = buildSessionExpectation(session, setCount);
+
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
-      {tiles.map((tile) => (
-        <PhaseCard
-          key={tile.key}
-          tone={tile.tone}
-          label={tile.label}
-          duration={tile.duration}
-          detail={tile.detail}
-        />
-      ))}
+    <div>
+      <div
+        className="flex flex-wrap items-center gap-2"
+        aria-label={expectation}
+      >
+        {phases.map((phase, index) => {
+          const Icon = phaseIcons[phase.tone];
+
+          return (
+            <div key={phase.key} className="flex items-center gap-2">
+              {index > 0 && (
+                <span className="text-forge-muted/50" aria-hidden>
+                  ·
+                </span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <span className="sr-only">{phase.ariaLabel}</span>
+                <Icon className={toneClasses[phase.tone]} />
+                <span
+                  className={`font-display text-sm font-semibold tabular-nums ${toneClasses[phase.tone]}`}
+                >
+                  {phase.duration}
+                </span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-1.5 text-xs leading-snug text-forge-muted">
+        {expectation}
+      </p>
     </div>
   );
 }
