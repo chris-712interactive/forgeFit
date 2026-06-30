@@ -19,7 +19,7 @@ function WarmupIcon({ className = "" }: { className?: string }) {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`h-4 w-4 shrink-0 ${className}`}
+      className={`h-5 w-5 shrink-0 ${className}`}
       aria-hidden
     >
       <path d="M8 14.5a2 2 0 0 0 2-2.5c0-1.2-1.2-2.4-1.2-4 1.6 0 3.2 2 3.2 4.4a3.2 3.2 0 1 1-6.4 0 2 2 0 0 0 2 2.1Z" />
@@ -36,7 +36,7 @@ function WorkoutIcon({ className = "" }: { className?: string }) {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`h-4 w-4 shrink-0 ${className}`}
+      className={`h-5 w-5 shrink-0 ${className}`}
       aria-hidden
     >
       <path d="M1.5 6.5h2.5l1-2h6l1 2h2.5" />
@@ -55,7 +55,7 @@ function RecoveryIcon({ className = "" }: { className?: string }) {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`h-4 w-4 shrink-0 ${className}`}
+      className={`h-5 w-5 shrink-0 ${className}`}
       aria-hidden
     >
       <path d="M3 10c1.5-2 2.5-4 5-4s3.5 2 5 4" />
@@ -150,27 +150,25 @@ export function WorkoutPhaseCards({ session }: { session: WorkoutSession }) {
   return (
     <div>
       <div
-        className="flex flex-wrap items-center gap-2"
+        className="flex w-full items-stretch rounded-xl border border-[var(--border)] bg-forge-surface/40"
         aria-label={expectation}
       >
         {phases.map((phase, index) => {
           const Icon = phaseIcons[phase.tone];
 
           return (
-            <div key={phase.key} className="flex items-center gap-2">
-              {index > 0 && (
-                <span className="text-forge-muted/50" aria-hidden>
-                  ·
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <span className="sr-only">{phase.ariaLabel}</span>
-                <Icon className={toneClasses[phase.tone]} />
-                <span
-                  className={`font-display text-sm font-semibold tabular-nums ${toneClasses[phase.tone]}`}
-                >
-                  {phase.duration}
-                </span>
+            <div
+              key={phase.key}
+              className={`flex min-w-0 flex-1 items-center justify-center gap-2 px-2 py-3 ${
+                index > 0 ? "border-l border-[var(--border)]" : ""
+              }`}
+            >
+              <span className="sr-only">{phase.ariaLabel}</span>
+              <Icon className={toneClasses[phase.tone]} />
+              <span
+                className={`font-display text-base font-semibold tabular-nums leading-none sm:text-lg ${toneClasses[phase.tone]}`}
+              >
+                {phase.duration}
               </span>
             </div>
           );
