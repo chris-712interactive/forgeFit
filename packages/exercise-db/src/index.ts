@@ -1,5 +1,6 @@
 import { isExerciseAvailable } from "./availability";
 import { EXERCISES } from "./exercises";
+import { scoreExerciseForPick, type FunctionalBias } from "./functional";
 import type { Exercise, ExerciseDifficulty, MovementPattern } from "./types";
 
 export type {
@@ -63,6 +64,12 @@ export {
   toHighlighterMuscles,
   VALID_HIGHLIGHTER_MUSCLES,
 } from "./muscle-map";
+export {
+  FUNCTIONAL_PATTERNS,
+  isFunctionalPattern,
+  scoreExerciseForPick,
+  type FunctionalBias,
+} from "./functional";
 
 const DIFFICULTY_RANK: Record<ExerciseDifficulty, number> = {
   beginner: 1,
@@ -74,12 +81,22 @@ export function getExercises(): Exercise[] {
   return EXERCISES;
 }
 
+export function getExerciseById(id: string): Exercise | undefined {
+  return EXERCISES.find((exercise) => exercise.id === id);
+}
+
+export interface PickExerciseOptions {
+  functionalBias?: FunctionalBias;
+}
+
 export function pickExerciseForPattern(
   pattern: MovementPattern,
   userEquipment: string[],
   maxDifficulty: ExerciseDifficulty,
-  excludeIds: string[] = []
+  excludeIds: string[] = [],
+  options: PickExerciseOptions = {}
 ): Exercise | undefined {
+  const functionalBias = options.functionalBias ?? "moderate";
   const maxRank = DIFFICULTY_RANK[maxDifficulty];
   const candidates = EXERCISES.filter(
     (ex) =>
@@ -91,5 +108,9 @@ export function pickExerciseForPattern(
 
   if (candidates.length === 0) return undefined;
 
-  return candidates.sort((a, b) => b.priority - a.priority)[0];
+  return candidates.sort(
+    (a, b) =>
+      scoreExerciseForPick(b, functionalBias) -
+      scoreExerciseForPick(a, functionalBias)
+  )[0];
 }

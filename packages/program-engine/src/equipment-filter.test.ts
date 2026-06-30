@@ -59,3 +59,23 @@ test("bodyweight-only users can still get walking lunges", () => {
     true
   );
 });
+
+test("high functional bias prefers bodyweight squats over leg press when both available", () => {
+  const high = pickExerciseForPattern(
+    "squat",
+    ["bodyweight_only", "machines"],
+    "beginner",
+    [],
+    { functionalBias: "high" }
+  );
+  const low = pickExerciseForPattern(
+    "squat",
+    ["bodyweight_only", "machines"],
+    "beginner",
+    [],
+    { functionalBias: "low" }
+  );
+
+  assert.equal(high?.id, "bodyweight_squat");
+  assert.equal(low?.id, "leg_press");
+});

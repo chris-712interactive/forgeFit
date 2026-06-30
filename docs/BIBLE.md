@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-06-19 · **Current phase:** Phase 8 complete · Phase 7 billing/infra on production
+**Last updated:** 2026-06-30 · **Current phase:** Phase 8 complete · Phase 7 billing/infra on production
 
 ---
 
@@ -133,6 +133,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 | Exercise + deficit | RT preserves FFM (SMD 0.40), increases fat loss |
 | Hypertrophy volume | ~10–20 hard sets/muscle/week; diminishing returns above |
 | Recovery | Sleep 7–9h; deload every 4–8 weeks |
+| Functional compounds | Bodybuilding: ≥2 multi-joint patterns/session; strength goals: prioritize free-weight compounds + carries |
 
 ---
 

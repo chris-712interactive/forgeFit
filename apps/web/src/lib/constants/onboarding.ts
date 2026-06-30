@@ -13,7 +13,7 @@ export const FITNESS_GOALS: {
   {
     value: "bodybuilding",
     label: "Bodybuilding",
-    description: "Maximize muscle size with hypertrophy-focused programming",
+    description: "Maximize muscle size with hypertrophy volume, anchored by compound lifts for joint health",
   },
   {
     value: "powerlifting",

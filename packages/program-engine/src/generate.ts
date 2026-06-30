@@ -6,14 +6,22 @@ import {
 } from "@forgefit/evidence-kb";
 import {
   expandUserEquipment,
+  getExerciseById,
   holdDurationPrescription,
   isDurationHoldExercise,
+  isFunctionalPattern,
   pickCardioExercise,
   pickExerciseForPattern,
   type ExerciseDifficulty,
   type MovementPattern,
 } from "@forgefit/exercise-db";
 import { applyDeloadWeek } from "./deload";
+import {
+  COMPOUND_FLOOR_PATTERNS,
+  fillerPatternsForGoal,
+  functionalBiasForGoal,
+  minCompoundExercisesForGoal,
+} from "./functional";
 import { computeNutrition, getMatchedRules } from "./nutrition";
 import {
   estimateExerciseMinutes,
@@ -112,11 +120,78 @@ const MAX_SETS_PER_EXERCISE: Record<ExperienceLevel, number> = {
   advanced: 6,
 };
 
-const FILLER_PATTERNS: MovementPattern[] = [
-  "core",
-  "isolation_arms",
-  "isolation_legs",
-];
+function countCompoundExercises(exercises: PlannedExercise[]): number {
+  return exercises.filter((exercise) => {
+    const picked = getExerciseById(exercise.exerciseId);
+    return picked ? isFunctionalPattern(picked.movementPattern) : false;
+  }).length;
+}
+
+function sessionHasPattern(
+  exercises: PlannedExercise[],
+  pattern: MovementPattern
+): boolean {
+  return exercises.some((exercise) => {
+    const picked = getExerciseById(exercise.exerciseId);
+    return picked?.movementPattern === pattern;
+  });
+}
+
+function minCompoundExercises(
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[]
+): number {
+  const fromGoalRule = getRecommendationValue<number>(
+    rules,
+    "min_compound_exercises_per_session",
+    "optimal"
+  );
+  if (fromGoalRule) return fromGoalRule;
+
+  const fromGeneralRule = getRecommendationValue<number>(
+    rules,
+    "min_compound_exercises",
+    "optimal"
+  );
+  return fromGeneralRule ?? minCompoundExercisesForGoal(profile.goal);
+}
+
+function ensureCompoundFloor(
+  exercises: PlannedExercise[],
+  usedIds: string[],
+  equipment: string[],
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[],
+  sets: number,
+  reps: string,
+  rest: number,
+  rampSets: number | null
+): void {
+  const target = minCompoundExercises(profile, rules);
+  let compoundCount = countCompoundExercises(exercises);
+  if (compoundCount >= target) return;
+
+  for (const pattern of COMPOUND_FLOOR_PATTERNS) {
+    if (compoundCount >= target) break;
+    if (sessionHasPattern(exercises, pattern)) continue;
+
+    appendExerciseFromPattern(
+      pattern,
+      exercises,
+      usedIds,
+      equipment,
+      profile.experience,
+      sets,
+      reps,
+      rest,
+      profile,
+      rampSets,
+      { insertAtStart: true }
+    );
+
+    compoundCount = countCompoundExercises(exercises);
+  }
+}
 
 function totalWorkingSets(exercises: PlannedExercise[]): number {
   return exercises.reduce((acc, ex) => acc + ex.sets, 0);
@@ -172,13 +247,15 @@ function appendExerciseFromPattern(
   reps: string,
   rest: number,
   profile: ProgramUserProfile,
-  rampSets: number | null
+  rampSets: number | null,
+  options: { insertAtStart?: boolean } = {}
 ): boolean {
   const picked = pickExerciseForPattern(
     pattern,
     equipment,
     maxDifficultyForPattern(experience, pattern),
-    usedIds
+    usedIds,
+    { functionalBias: functionalBiasForGoal(profile.goal, pattern) }
   );
   if (!picked) return false;
 
@@ -200,7 +277,7 @@ function appendExerciseFromPattern(
     notes = appendRampSetNote(notes, rampSets);
   }
 
-  exercises.push({
+  const planned: PlannedExercise = {
     exerciseId: picked.id,
     name: picked.name,
     primaryMuscles: picked.primaryMuscles,
@@ -208,7 +285,13 @@ function appendExerciseFromPattern(
     reps: exerciseReps,
     restSeconds: isDurationHoldExercise(picked.id) ? 60 : rest,
     notes,
-  });
+  };
+
+  if (options.insertAtStart) {
+    exercises.unshift(planned);
+  } else {
+    exercises.push(planned);
+  }
   return true;
 }
 
@@ -230,7 +313,7 @@ function fillSessionToTimeBudget(
   const targetMinutes = mainBudgetMinutes * 0.92;
   const patternQueue = [
     ...templatePatterns,
-    ...FILLER_PATTERNS.filter((pattern) => !templatePatterns.includes(pattern)),
+    ...fillerPatternsForGoal(profile.goal, templatePatterns),
   ];
 
   while (
@@ -434,7 +517,10 @@ function buildSession(
       pattern,
       equipment,
       maxDifficultyForPattern(profile.experience, pattern),
-      usedIds
+      usedIds,
+      {
+        functionalBias: functionalBiasForGoal(profile.goal, pattern),
+      }
     );
     if (!picked) continue;
     usedIds.push(picked.id);
@@ -482,6 +568,18 @@ function buildSession(
     profile.minutesPerSession -
       warmupBlock.durationMinutes -
       recoveryMins
+  );
+
+  ensureCompoundFloor(
+    exercises,
+    usedIds,
+    equipment,
+    profile,
+    rules,
+    sets,
+    reps,
+    rest,
+    rampSets
   );
 
   fillSessionToTimeBudget(

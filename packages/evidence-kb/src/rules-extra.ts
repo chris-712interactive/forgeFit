@@ -222,6 +222,52 @@ export const EXTRA_RULES: EvidenceRule[] = [
     confidence: "moderate",
   },
   {
+    id: "functional_compound_floor_bodybuilding",
+    domain: "training",
+    applies_to: ["goal:bodybuilding"],
+    recommendation: {
+      min_compound_exercises_per_session: 2,
+      note: "Hypertrophy plans anchor each session with multi-joint compounds for joint health and balanced development; isolation fills remaining volume",
+    },
+    citations: [
+      {
+        url: "https://elementssystem.com/wp-content/uploads/2018/08/Schoenfeld-volumen-review.pdf",
+        summary: "Compound lifts contribute to hypertrophy while supporting structural balance across joints",
+      },
+      {
+        doi: "10.1136/bmjsem-2024-002363",
+        summary: "Multi-joint resistance training supports musculoskeletal health beyond isolated muscle work",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "functional_movement_priority_strength",
+    domain: "training",
+    applies_to: [
+      "goal:general_strength",
+      "goal:recomposition",
+      "goal:fat_loss",
+      "goal:powerlifting",
+    ],
+    recommendation: {
+      functional_bias: "high",
+      min_compound_exercises_per_session: 3,
+      note: "Free-weight and bodyweight compounds develop strength that transfers to daily movement",
+    },
+    citations: [
+      {
+        url: "https://sportrxiv.org/index.php/server/preprint/view/460",
+        summary: "Multi-joint training improves strength outcomes that generalize beyond single-joint work",
+      },
+      {
+        url: "https://www.acsm.org",
+        summary: "ACSM guidelines emphasize functional movement patterns for general fitness",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
     id: "progressive_overload",
     domain: "training",
     applies_to: ["*"],

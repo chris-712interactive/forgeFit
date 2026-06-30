@@ -53,7 +53,7 @@ export function getWeeklySplit(
       session("Legs", ["squat", "hinge", "isolation_legs"]),
       session("Upper", ["horizontal_push", "horizontal_pull", "vertical_pull"]),
       session("Lower", ["squat", "hinge", "core"]),
-      session("Arms & Core", ["isolation_arms", "core"]),
+      session("Arms & Core", ["horizontal_pull", "isolation_arms", "core"]),
     ].slice(0, n);
   }
 
@@ -79,7 +79,7 @@ export function getWeeklySplit(
       session("Upper", ["horizontal_push", "horizontal_pull", "vertical_push"]),
       session("Lower", ["squat", "hinge", "isolation_legs"]),
       session("Upper", ["vertical_pull", "horizontal_push", "isolation_arms"]),
-      session("Lower", ["lunge", "hinge", "core"]),
+      session("Lower", ["lunge", "hinge", "carry"]),
     ].slice(0, n);
   }
 
@@ -88,7 +88,7 @@ export function getWeeklySplit(
     session("Full Body A", ["squat", "horizontal_push", "horizontal_pull"]),
     session("Full Body B", ["hinge", "vertical_push", "vertical_pull"]),
     session("Full Body C", ["squat", "hinge", "core"]),
-    session("Full Body D", ["lunge", "horizontal_push", "horizontal_pull"]),
+    session("Full Body D", ["lunge", "horizontal_push", "carry"]),
   ];
   return strength.slice(0, n);
 }

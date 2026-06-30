@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 8 complete |
-| **Last updated** | 2026-06-28 |
-| **Last session focus** | Tier 2 nutrition diary UX |
+| **Last updated** | 2026-06-30 |
+| **Last session focus** | Functional movement prioritization in program engine |
 
 ---
 
@@ -1650,7 +1650,29 @@
 
 ---
 
-### 2026-06-08 — Onboarding unit system tiles
+### 2026-06-30 — Functional movement prioritization
+
+**What was done:**
+- Added goal-aware functional bias to `pickExerciseForPattern` — strength/recomp/fat-loss goals prefer free-weight compounds; bodybuilding uses moderate bias on compounds and low bias on isolation fillers
+- Enforced evidence-backed compound floor per session (≥2 for bodybuilding, ≥3 for general strength/powerlifting)
+- Updated bodybuilding 6-day split so Arms & Core includes a horizontal pull for joint balance
+- Added carry pattern to general strength and recomposition lower sessions; seeded farmer's and suitcase carries
+- Added evidence-kb rules `functional_compound_floor_bodybuilding` and `functional_movement_priority_strength` (KB v0.3.2)
+
+**What's next:**
+- Consider rotation/anti-rotation patterns for advanced functional blocks
+- Wire full catalog into program generation when curated seed list is insufficient
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/exercise-db/src/functional.ts`, `index.ts`, `exercises.ts`
+- `packages/program-engine/src/functional.ts`, `generate.ts`, `splits.ts`, `equipment-filter.test.ts`, `functional.test.ts`
+- `packages/evidence-kb/src/index.ts`, `rules-extra.ts`
+- `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
+
 
 **What was done:**
 - Replaced per-field dropdowns with one tile row: Metric (cm/kg) vs Imperial (ft/in/lbs)
