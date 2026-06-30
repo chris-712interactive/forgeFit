@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 9 in progress (9A–9I shipped) |
 | **Last updated** | 2026-06-30 |
-| **Last session focus** | Sport practice days + schedule blocking (9I) |
+| **Last session focus** | Profile program/equipment section redesign |
 
 ---
 
@@ -34,6 +34,23 @@
 ---
 
 ## Session Log
+
+### 2026-06-30 — Profile program section redesign
+
+**What was done:**
+- Split “Program & equipment” into separate collapsible sections with summary hints (e.g. `Football · 3×45 min`)
+- Program plan uses nested sub-sections: Goal & time (open by default), Sport profile, Practice schedule, Body composition, Rebuild options
+- Save / Rebuild actions stay visible without expanding rebuild options
+- Equipment split into Training gear, Recovery tools, Save options + always-visible save bar
+
+**Files touched:**
+- `apps/web/src/components/profile/profile-subsection.tsx` (new)
+- `apps/web/src/components/profile/program-plan-setting.tsx`
+- `apps/web/src/components/profile/sport-plan-fields.tsx`
+- `apps/web/src/components/profile/equipment-setting.tsx`
+- `apps/web/src/components/profile/profile-settings-hub.tsx`
+- `apps/web/src/lib/profile/plan-hints.ts` (new)
+- `docs/PROGRESS.md`
 
 ### 2026-06-30 — Sport practice days + schedule blocking (9I)
 

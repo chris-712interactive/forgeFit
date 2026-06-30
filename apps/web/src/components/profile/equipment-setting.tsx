@@ -6,6 +6,7 @@ import {
   saveUserEquipment,
 } from "@/app/actions/equipment";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { ProfileSubSection } from "@/components/profile/profile-subsection";
 import {
   CARDIO_EQUIPMENT,
   RECOVERY_EQUIPMENT,
@@ -125,17 +126,7 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
   }
 
   return (
-    <section className="space-y-4 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5 text-sm">
-      <div>
-        <p className="font-display font-semibold text-forge-text">
-          Available equipment
-        </p>
-        <p className="mt-1 text-forge-muted">
-          Update what you can use for exercises and recovery. Switch to travel
-          mode when you are away from your usual setup.
-        </p>
-      </div>
-
+    <div className="space-y-4 text-sm">
       {!initialSettings.travelModeReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/10 px-3 py-2 text-xs text-forge-gold">
           Apply the equipment_travel_mode migration in Supabase to enable travel
@@ -161,62 +152,75 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
         </div>
       )}
 
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
-          Primary location
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {LOCATION_OPTIONS.map((option) => (
-            <Chip
-              key={option.value}
-              label={option.label}
-              selected={equipmentLocation === option.value}
-              onClick={() => {
-                setEquipmentLocation(option.value);
-                setSaved(false);
-                setError(null);
-              }}
-            />
-          ))}
+      <ProfileSubSection
+        title="Training gear"
+        hint={
+          LOCATION_OPTIONS.find((option) => option.value === equipmentLocation)
+            ?.label ?? "Location"
+        }
+        defaultOpen
+      >
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
+            Primary location
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {LOCATION_OPTIONS.map((option) => (
+              <Chip
+                key={option.value}
+                label={option.label}
+                selected={equipmentLocation === option.value}
+                onClick={() => {
+                  setEquipmentLocation(option.value);
+                  setSaved(false);
+                  setError(null);
+                }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
-          Strength & accessories
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {STRENGTH_EQUIPMENT.map((item) => (
-            <Chip
-              key={item.value}
-              label={item.label}
-              selected={equipment.includes(item.value)}
-              onClick={() => toggleEquipment(item.value)}
-            />
-          ))}
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
+            Strength & accessories
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {STRENGTH_EQUIPMENT.map((item) => (
+              <Chip
+                key={item.value}
+                label={item.label}
+                selected={equipment.includes(item.value)}
+                onClick={() => toggleEquipment(item.value)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
-          Cardio machines
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {CARDIO_EQUIPMENT.map((item) => (
-            <Chip
-              key={item.value}
-              label={item.label}
-              selected={equipment.includes(item.value)}
-              onClick={() => toggleEquipment(item.value)}
-            />
-          ))}
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
+            Cardio machines
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {CARDIO_EQUIPMENT.map((item) => (
+              <Chip
+                key={item.value}
+                label={item.label}
+                selected={equipment.includes(item.value)}
+                onClick={() => toggleEquipment(item.value)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </ProfileSubSection>
 
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-forge-muted">
-          Recovery tools
-        </p>
+      <ProfileSubSection
+        title="Recovery tools"
+        hint={
+          recoveryEquipment.length === 0
+            ? "None selected"
+            : `${recoveryEquipment.length} selected`
+        }
+      >
         <div className="grid grid-cols-2 gap-2">
           {RECOVERY_EQUIPMENT.map((item) => (
             <Chip
@@ -227,66 +231,73 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
             />
           ))}
         </div>
-      </div>
+      </ProfileSubSection>
 
-      <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface px-3 py-3">
-        <input
-          type="checkbox"
-          checked={regenerateProgram}
-          onChange={(event) => setRegenerateProgram(event.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-[var(--border)]"
-        />
-        <span>
-          <span className="font-medium text-forge-text">
-            Regenerate program with this equipment
+      <ProfileSubSection
+        title="Save options"
+        hint={regenerateProgram ? "Regenerate on save" : "Save only"}
+      >
+        <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface-raised px-3 py-3">
+          <input
+            type="checkbox"
+            checked={regenerateProgram}
+            onChange={(event) => setRegenerateProgram(event.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-[var(--border)]"
+          />
+          <span>
+            <span className="font-medium text-forge-text">
+              Regenerate program with this equipment
+            </span>
+            <span className="mt-1 block text-xs text-forge-muted">
+              Rebuilds workouts to match your current gear. Turn off to save
+              equipment without changing this week&apos;s plan layout.
+            </span>
           </span>
-          <span className="mt-1 block text-xs text-forge-muted">
-            Rebuilds workouts to match your current gear. Turn off to save
-            equipment without changing this week&apos;s plan layout.
-          </span>
-        </span>
-      </label>
+        </label>
 
-      {regenerateProgram && (
-        <PlanScheduleStartField
-          id="equipment-schedule-start-date"
-          value={scheduleStartDate}
-          onChange={setScheduleStartDate}
-          description="Used when regenerating your plan for new equipment or travel mode."
-        />
-      )}
+        {regenerateProgram && (
+          <PlanScheduleStartField
+            id="equipment-schedule-start-date"
+            value={scheduleStartDate}
+            onChange={setScheduleStartDate}
+            description="Used when regenerating your plan for new equipment or travel mode."
+          />
+        )}
+      </ProfileSubSection>
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={pending || equipment.length === 0}
-          onClick={handleSave}
-          className="min-h-[48px] flex-1 rounded-xl bg-forge-ember px-4 py-2 font-semibold text-white disabled:opacity-50"
-        >
-          {pending ? "Saving…" : "Save equipment"}
-        </button>
-
-        {!isTravelMode && initialSettings.travelModeReady && (
+      <div className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={pending}
-            onClick={handleEnterTravelMode}
-            className="min-h-[48px] rounded-xl border border-[var(--border)] px-4 py-2 font-semibold text-forge-text disabled:opacity-50"
+            disabled={pending || equipment.length === 0}
+            onClick={handleSave}
+            className="min-h-[48px] flex-1 rounded-xl bg-forge-ember px-4 py-2 font-semibold text-white disabled:opacity-50"
           >
-            I&apos;m traveling
+            {pending ? "Saving…" : "Save equipment"}
           </button>
+
+          {!isTravelMode && initialSettings.travelModeReady && (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={handleEnterTravelMode}
+              className="min-h-[48px] rounded-xl border border-[var(--border)] px-4 py-2 font-semibold text-forge-text disabled:opacity-50"
+            >
+              I&apos;m traveling
+            </button>
+          )}
+        </div>
+
+        {saved && !error && (
+          <p className="mt-3 text-xs text-forge-success">Equipment updated.</p>
+        )}
+        {error && (
+          <p className="mt-3 text-xs text-forge-coral" role="alert">
+            {error}
+          </p>
         )}
       </div>
-
-      {saved && !error && (
-        <p className="text-xs text-forge-success">Equipment updated.</p>
-      )}
-      {error && (
-        <p className="text-xs text-forge-coral" role="alert">
-          {error}
-        </p>
-      )}
-    </section>
+    </div>
   );
 }
 

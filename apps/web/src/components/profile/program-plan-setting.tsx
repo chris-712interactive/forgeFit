@@ -5,6 +5,7 @@ import {
   updatePlanSettings,
 } from "@/app/actions/program";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { ProfileSubSection } from "@/components/profile/profile-subsection";
 import { SportPlanFields } from "@/components/profile/sport-plan-fields";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { getSportById } from "@forgefit/evidence-kb";
@@ -30,8 +31,9 @@ import {
   kgToDisplayValue,
   weightUnitLabel,
 } from "@/lib/units/measurements";
+import { DAY_LABELS } from "@forgefit/program-engine";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 
 interface ProgramPlanSettingProps {
   initialGoal: FitnessGoal | null;
@@ -120,15 +122,33 @@ export function ProgramPlanSetting({
     initialSecondaryGoal ?? ""
   );
 
-  const showBodyComposition =
-    goal === "fat_loss" ||
-    goal === "recomposition" ||
-    (goal === "sport_performance" && secondaryGoal === "fat_loss") ||
-    (goal === "sport_performance" && secondaryGoal === "recomposition");
+  const isSport = goal === "sport_performance";
+  const showFatLossPace =
+    goal === "fat_loss" || (isSport && secondaryGoal === "fat_loss");
+  const showRecompPriority =
+    goal === "recomposition" || (isSport && secondaryGoal === "recomposition");
+  const showBodyComposition = showFatLossPace || showRecompPriority;
   const goalWeightInvalid =
     goalWeightKg != null &&
     initialCurrentWeightKg != null &&
     goalWeightKg >= initialCurrentWeightKg;
+
+  const goalScheduleHint = `${sessionsPerWeek}×${minutesPerSession} min`;
+  const sportHint = useMemo(() => {
+    const sport = getSportById(sportId || undefined);
+    if (!sport) return "Select sport";
+    return sport.label;
+  }, [sportId]);
+  const practiceHint = useMemo(() => {
+    if (sportPracticeScheduleVaries) return "Varies weekly";
+    if (sportPracticeDays.length === 0) return "No days set";
+    return sportPracticeDays.map((day) => DAY_LABELS[day]).join(", ");
+  }, [sportPracticeDays, sportPracticeScheduleVaries]);
+  const bodyHint =
+    goalWeightKg != null
+      ? formatWeight(goalWeightKg, unit)
+      : "No target weight";
+  const rebuildHint = regenerateOnSave ? "Regenerate on save" : "Save only";
 
   function runAction(action: () => Promise<unknown>) {
     startTransition(async () => {
@@ -169,35 +189,18 @@ export function ProgramPlanSetting({
     runAction(() =>
       updatePlanSettings({
         primary_goal: goal,
-        sport_id: goal === "sport_performance" ? sportId : undefined,
-        sport_position_id:
-          goal === "sport_performance" ? sportPositionId || undefined : undefined,
-        sport_season_phase:
-          goal === "sport_performance" ? sportSeasonPhase : undefined,
-        sport_practice_days:
-          goal === "sport_performance" ? sportPracticeDays : undefined,
+        sport_id: isSport ? sportId : undefined,
+        sport_position_id: isSport ? sportPositionId || undefined : undefined,
+        sport_season_phase: isSport ? sportSeasonPhase : undefined,
+        sport_practice_days: isSport ? sportPracticeDays : undefined,
         sport_practice_gym_policy:
-          goal === "sport_performance" && sportPracticeGymPolicy
-            ? sportPracticeGymPolicy
-            : undefined,
-        sport_practice_schedule_varies:
-          goal === "sport_performance"
-            ? sportPracticeScheduleVaries
-            : undefined,
-        secondary_goal:
-          goal === "sport_performance" && secondaryGoal
-            ? secondaryGoal
-            : undefined,
-        fat_loss_pace:
-          goal === "fat_loss" ||
-          (goal === "sport_performance" && secondaryGoal === "fat_loss")
-            ? fatLossPace
-            : undefined,
-        recomp_priority:
-          goal === "recomposition" ||
-          (goal === "sport_performance" && secondaryGoal === "recomposition")
-            ? recompPriority
-            : undefined,
+          isSport && sportPracticeGymPolicy ? sportPracticeGymPolicy : undefined,
+        sport_practice_schedule_varies: isSport
+          ? sportPracticeScheduleVaries
+          : undefined,
+        secondary_goal: isSport && secondaryGoal ? secondaryGoal : undefined,
+        fat_loss_pace: showFatLossPace ? fatLossPace : undefined,
+        recomp_priority: showRecompPriority ? recompPriority : undefined,
         goal_weight_kg: showBodyComposition ? goalWeightKg : null,
         sessions_per_week: sessionsPerWeek,
         minutes_per_session: minutesPerSession,
@@ -208,22 +211,19 @@ export function ProgramPlanSetting({
   }
 
   return (
-    <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
-      <h2 className="font-display text-lg font-semibold text-forge-text">
-        Program plan
-      </h2>
-      <p className="mt-1 text-sm text-forge-muted">
-        Update your goal and schedule, or rebuild your plan with the latest
-        engine and evidence rules.
+    <div className="space-y-4">
+      <p className="text-xs text-forge-muted">
+        Expand a section to edit. Goal and weekly time budget stay open by
+        default.
       </p>
 
-      <div className="mt-4 space-y-4">
+      <ProfileSubSection title="Goal & weekly time" hint={goalScheduleHint} defaultOpen>
         <div>
           <label className="mb-1.5 block text-sm text-forge-muted">Goal</label>
           <select
             value={goal}
             onChange={(event) => setGoal(event.target.value as FitnessGoal)}
-            className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
+            className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 text-forge-text outline-none focus:border-forge-ember"
           >
             <option value={SPORT_PERFORMANCE_GOAL.value}>
               {SPORT_PERFORMANCE_GOAL.label}
@@ -236,29 +236,7 @@ export function ProgramPlanSetting({
           </select>
         </div>
 
-        {goal === "sport_performance" ? (
-          <SportPlanFields
-            sportCategoryId={sportCategoryId}
-            sportId={sportId}
-            sportPositionId={sportPositionId}
-            sportSeasonPhase={sportSeasonPhase}
-            sportPracticeDays={sportPracticeDays}
-            sportPracticeGymPolicy={sportPracticeGymPolicy}
-            sportPracticeScheduleVaries={sportPracticeScheduleVaries}
-            secondaryGoal={secondaryGoal}
-            onSportCategoryChange={setSportCategoryId}
-            onSportIdChange={setSportId}
-            onSportPositionChange={setSportPositionId}
-            onSeasonPhaseChange={setSportSeasonPhase}
-            onSportPracticeDaysChange={setSportPracticeDays}
-            onSportPracticeGymPolicyChange={setSportPracticeGymPolicy}
-            onSportPracticeScheduleVariesChange={setSportPracticeScheduleVaries}
-            onSecondaryGoalChange={setSecondaryGoal}
-          />
-        ) : null}
-
-        {(goal === "fat_loss" ||
-          (goal === "sport_performance" && secondaryGoal === "fat_loss")) && (
+        {showFatLossPace && (
           <div>
             <p className="mb-2 text-sm text-forge-muted">Fat-loss pace</p>
             <div className="space-y-2">
@@ -275,8 +253,7 @@ export function ProgramPlanSetting({
           </div>
         )}
 
-        {(goal === "recomposition" ||
-          (goal === "sport_performance" && secondaryGoal === "recomposition")) && (
+        {showRecompPriority && (
           <div>
             <p className="mb-2 text-sm text-forge-muted">Recomp priority</p>
             <div className="space-y-2">
@@ -290,43 +267,6 @@ export function ProgramPlanSetting({
                 />
               ))}
             </div>
-          </div>
-        )}
-
-        {showBodyComposition && (
-          <div>
-            <label className="mb-1.5 block text-sm text-forge-muted">
-              Goal weight (optional, {weightLabel})
-            </label>
-            <input
-              type="number"
-              min={unit === "metric" ? 30 : 66}
-              max={unit === "metric" ? 300 : 661}
-              step={unit === "metric" ? 0.1 : 0.5}
-              value={
-                goalWeightKg != null
-                  ? kgToDisplayValue(goalWeightKg, unit)
-                  : ""
-              }
-              onChange={(event) => {
-                const raw = event.target.value;
-                if (!raw) {
-                  setGoalWeightKg(null);
-                  return;
-                }
-                const parsed = Number(raw);
-                if (!Number.isFinite(parsed)) return;
-                setGoalWeightKg(kgFromDisplayValue(parsed, unit));
-              }}
-              placeholder={`For Pro goal-date forecasts (${weightLabel})`}
-              className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-4 text-forge-text outline-none focus:border-forge-ember"
-            />
-            {goalWeightInvalid && initialCurrentWeightKg != null && (
-              <p className="mt-2 text-sm text-forge-coral" role="alert">
-                Goal weight must be below your current weight (
-                {formatWeight(initialCurrentWeightKg, unit)}).
-              </p>
-            )}
           </div>
         )}
 
@@ -357,14 +297,105 @@ export function ProgramPlanSetting({
             ))}
           </div>
         </div>
+      </ProfileSubSection>
 
+      {isSport ? (
+        <>
+          <ProfileSubSection title="Sport profile" hint={sportHint}>
+            <SportPlanFields
+              sportCategoryId={sportCategoryId}
+              sportId={sportId}
+              sportPositionId={sportPositionId}
+              sportSeasonPhase={sportSeasonPhase}
+              sportPracticeDays={sportPracticeDays}
+              sportPracticeGymPolicy={sportPracticeGymPolicy}
+              sportPracticeScheduleVaries={sportPracticeScheduleVaries}
+              secondaryGoal={secondaryGoal}
+              onSportCategoryChange={setSportCategoryId}
+              onSportIdChange={setSportId}
+              onSportPositionChange={setSportPositionId}
+              onSeasonPhaseChange={setSportSeasonPhase}
+              onSportPracticeDaysChange={setSportPracticeDays}
+              onSportPracticeGymPolicyChange={setSportPracticeGymPolicy}
+              onSportPracticeScheduleVariesChange={
+                setSportPracticeScheduleVaries
+              }
+              onSecondaryGoalChange={setSecondaryGoal}
+              sections="identity"
+            />
+          </ProfileSubSection>
+
+          <ProfileSubSection title="Practice schedule" hint={practiceHint}>
+            <SportPlanFields
+              sportCategoryId={sportCategoryId}
+              sportId={sportId}
+              sportPositionId={sportPositionId}
+              sportSeasonPhase={sportSeasonPhase}
+              sportPracticeDays={sportPracticeDays}
+              sportPracticeGymPolicy={sportPracticeGymPolicy}
+              sportPracticeScheduleVaries={sportPracticeScheduleVaries}
+              secondaryGoal={secondaryGoal}
+              onSportCategoryChange={setSportCategoryId}
+              onSportIdChange={setSportId}
+              onSportPositionChange={setSportPositionId}
+              onSeasonPhaseChange={setSportSeasonPhase}
+              onSportPracticeDaysChange={setSportPracticeDays}
+              onSportPracticeGymPolicyChange={setSportPracticeGymPolicy}
+              onSportPracticeScheduleVariesChange={
+                setSportPracticeScheduleVaries
+              }
+              onSecondaryGoalChange={setSecondaryGoal}
+              sections="practice"
+            />
+          </ProfileSubSection>
+        </>
+      ) : null}
+
+      {showBodyComposition ? (
+        <ProfileSubSection title="Body composition" hint={bodyHint}>
+          <div>
+            <label className="mb-1.5 block text-sm text-forge-muted">
+              Goal weight (optional, {weightLabel})
+            </label>
+            <input
+              type="number"
+              min={unit === "metric" ? 30 : 66}
+              max={unit === "metric" ? 300 : 661}
+              step={unit === "metric" ? 0.1 : 0.5}
+              value={
+                goalWeightKg != null ? kgToDisplayValue(goalWeightKg, unit) : ""
+              }
+              onChange={(event) => {
+                const raw = event.target.value;
+                if (!raw) {
+                  setGoalWeightKg(null);
+                  return;
+                }
+                const parsed = Number(raw);
+                if (!Number.isFinite(parsed)) return;
+                setGoalWeightKg(kgFromDisplayValue(parsed, unit));
+              }}
+              placeholder={`For Pro goal-date forecasts (${weightLabel})`}
+              className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-forge-surface-raised px-4 text-forge-text outline-none focus:border-forge-ember"
+            />
+            {goalWeightInvalid && initialCurrentWeightKg != null && (
+              <p className="mt-2 text-sm text-forge-coral" role="alert">
+                Goal weight must be below your current weight (
+                {formatWeight(initialCurrentWeightKg, unit)}).
+              </p>
+            )}
+          </div>
+        </ProfileSubSection>
+      ) : null}
+
+      <ProfileSubSection title="Rebuild options" hint={rebuildHint}>
         <PlanScheduleStartField
           value={scheduleStartDate}
           onChange={setScheduleStartDate}
           description="Used when you rebuild or save with regeneration. Workouts stay locked until this date."
         />
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface p-3">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--border)] bg-forge-surface-raised p-3">
           <input
             type="checkbox"
             checked={regenerateOnSave}
@@ -376,50 +407,52 @@ export function ProgramPlanSetting({
             and projections)
           </span>
         </label>
-      </div>
+      </ProfileSubSection>
 
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={saveSettings}
-          className="min-h-[48px] flex-1 rounded-xl bg-forge-ember px-4 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {pending ? "Saving…" : "Save plan settings"}
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() =>
-            runAction(() =>
-              rebuildProgram({ schedule_start_date: scheduleStartDate })
-            )
-          }
-          className="min-h-[48px] flex-1 rounded-xl border border-forge-ember/40 px-4 text-sm font-semibold text-forge-ember disabled:opacity-50"
-        >
-          Rebuild plan
-        </button>
-      </div>
-
-      {changes && (
-        <div className="mt-4 rounded-xl border border-forge-success/30 bg-forge-success/5 p-3">
-          <p className="text-sm font-semibold text-forge-success">
-            {isDeloadWeek ? "Deload plan generated" : "Plan updated"}
-          </p>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-forge-muted">
-            {changes.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
+      <div className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={saveSettings}
+            className="min-h-[48px] flex-1 rounded-xl bg-forge-ember px-4 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {pending ? "Saving…" : "Save plan settings"}
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              runAction(() =>
+                rebuildProgram({ schedule_start_date: scheduleStartDate })
+              )
+            }
+            className="min-h-[48px] flex-1 rounded-xl border border-forge-ember/40 px-4 text-sm font-semibold text-forge-ember disabled:opacity-50"
+          >
+            Rebuild plan
+          </button>
         </div>
-      )}
 
-      {error && (
-        <p className="mt-3 text-sm text-forge-coral" role="alert">
-          {error}
-        </p>
-      )}
-    </section>
+        {changes && (
+          <div className="mt-4 rounded-xl border border-forge-success/30 bg-forge-success/5 p-3">
+            <p className="text-sm font-semibold text-forge-success">
+              {isDeloadWeek ? "Deload plan generated" : "Plan updated"}
+            </p>
+            <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-forge-muted">
+              {changes.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {error && (
+          <p className="mt-3 text-sm text-forge-coral" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -441,7 +474,7 @@ function ChipButton({
       className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition-colors ${
         selected
           ? "border-forge-ember bg-forge-ember/15 text-forge-ember"
-          : "border-[var(--border)] bg-forge-surface text-forge-muted"
+          : "border-[var(--border)] bg-forge-surface-raised text-forge-muted"
       }`}
     >
       <span>{label}</span>

@@ -21,6 +21,10 @@ import type { SpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { hasProAccess, hasProPlusAccess } from "@/lib/billing/types";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
+import {
+  formatEquipmentHint,
+  formatProgramPlanHint,
+} from "@/lib/profile/plan-hints";
 import type { IntegrationPublicStatus } from "@/lib/integrations/types";
 import type { UserOneRepMaxRow } from "@/lib/progression/user-maxes";
 import type {
@@ -137,6 +141,14 @@ export function ProfileSettingsHub({
       ? "Spotify connected"
       : "Not connected";
 
+  const programPlanHint = formatProgramPlanHint({
+    goal: initialGoal,
+    sessionsPerWeek: initialSessionsPerWeek,
+    minutesPerSession: initialMinutesPerSession,
+    sportId: initialSportId,
+  });
+  const equipmentHint = formatEquipmentHint(equipmentSettings);
+
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
       <div className="grid grid-cols-2 gap-2">
@@ -221,26 +233,35 @@ export function ProfileSettingsHub({
         </div>
       </CollapsibleSection>
 
-      <CollapsibleSection title="Program & equipment" hint="Goal, schedule, gear">
-        <div className="space-y-4">
-          <ProgramPlanSetting
-            initialGoal={initialGoal}
-            initialFatLossPace={initialFatLossPace}
-            initialRecompPriority={initialRecompPriority}
-            initialGoalWeightKg={initialGoalWeightKg}
-            initialCurrentWeightKg={initialCurrentWeightKg}
-            initialSessionsPerWeek={initialSessionsPerWeek}
-            initialMinutesPerSession={initialMinutesPerSession}
-            initialSportId={initialSportId}
-            initialSportPositionId={initialSportPositionId}
-            initialSportSeasonPhase={initialSportSeasonPhase}
-            initialSportPracticeDays={initialSportPracticeDays}
-            initialSportPracticeGymPolicy={initialSportPracticeGymPolicy}
-            initialSportPracticeScheduleVaries={initialSportPracticeScheduleVaries}
-            initialSecondaryGoal={initialSecondaryGoal}
-          />
-          <EquipmentSetting initialSettings={equipmentSettings} />
-        </div>
+      <CollapsibleSection
+        title="Program plan"
+        hint={programPlanHint}
+        id="program-plan"
+      >
+        <ProgramPlanSetting
+          initialGoal={initialGoal}
+          initialFatLossPace={initialFatLossPace}
+          initialRecompPriority={initialRecompPriority}
+          initialGoalWeightKg={initialGoalWeightKg}
+          initialCurrentWeightKg={initialCurrentWeightKg}
+          initialSessionsPerWeek={initialSessionsPerWeek}
+          initialMinutesPerSession={initialMinutesPerSession}
+          initialSportId={initialSportId}
+          initialSportPositionId={initialSportPositionId}
+          initialSportSeasonPhase={initialSportSeasonPhase}
+          initialSportPracticeDays={initialSportPracticeDays}
+          initialSportPracticeGymPolicy={initialSportPracticeGymPolicy}
+          initialSportPracticeScheduleVaries={initialSportPracticeScheduleVaries}
+          initialSecondaryGoal={initialSecondaryGoal}
+        />
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Equipment"
+        hint={equipmentHint}
+        id="equipment"
+      >
+        <EquipmentSetting initialSettings={equipmentSettings} />
       </CollapsibleSection>
 
       <CollapsibleSection title="Training maxes" hint="1RM declarations">
