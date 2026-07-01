@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Functional conditioning goal (10A) |
+| **Last session focus** | Regenerate dedup vs recent completions |
 
 ---
 
@@ -35,6 +35,23 @@
 ---
 
 ## Session Log
+
+### 2026-07-01 — Regenerate plan respects recent completed workouts
+
+**What was done:**
+- Program regeneration now loads completed sessions from the prior plan week (before the new start date) and passes them to the engine
+- Engine seeds week-level exercise memory from recent completions and carries it forward across newly generated sessions
+- Exercise picker deprioritizes primary muscles trained on recent days to reduce duplicate muscle-group stress
+
+**What's next:** Manual QA mid-week regenerate after completing Mon/Tue sessions; apply migrations `#47` / `#48` on hosted Supabase if pending
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/program-engine/src/generate.ts`, `recent-training.ts`, `conditioning.ts`, `types.ts`, `recent-training.test.ts`
+- `packages/exercise-db/src/index.ts`
+- `apps/web/src/lib/programs/service.ts`, `recent-training.ts`, `recent-training.test.ts`
+- `docs/PROGRESS.md`
 
 ### 2026-07-01 — Functional conditioning goal (10A)
 

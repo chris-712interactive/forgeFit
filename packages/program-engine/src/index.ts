@@ -76,4 +76,5 @@ export type {
   ConditioningMovement,
   ConditioningFormat,
   GenerateProgramOptions,
+  RecentTrainingContext,
 } from "./types";

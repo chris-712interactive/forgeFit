@@ -154,6 +154,12 @@ export interface ProgramPlan {
   isDeloadWeek?: boolean;
 }
 
+/** Completed work before a regenerate — avoids repeating exercises and muscle groups. */
+export interface RecentTrainingContext {
+  exerciseIds: string[];
+  muscleGroups: string[];
+}
+
 export interface GenerateProgramOptions {
   /** Defaults to now — first session is scheduled from this calendar day */
   startDate?: Date;
@@ -161,4 +167,6 @@ export interface GenerateProgramOptions {
   deloadVolumeReductionPct?: number;
   /** Regenerate: avoid placing sessions on weekdays before startDate when possible */
   scheduleFromTodayOnly?: boolean;
+  /** Regenerate: exercises and muscles from recent completed sessions before startDate */
+  recentTraining?: RecentTrainingContext;
 }

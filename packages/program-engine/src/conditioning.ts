@@ -12,6 +12,7 @@ import type {
   ExperienceLevel,
   ProgramUserProfile,
 } from "./types";
+import type { WeekExerciseMemory } from "./recent-training";
 
 const DEFAULT_CONDITIONING_PATTERNS: MovementPattern[] = [
   "squat",
@@ -68,10 +69,12 @@ export function buildConditioningBlock(
   sessionName: string,
   patterns: MovementPattern[],
   profile: ProgramUserProfile,
-  rules: EvidenceRule[]
+  rules: EvidenceRule[],
+  memory?: WeekExerciseMemory
 ): ConditioningBlock {
   const equipment = expandUserEquipment(profile.equipment);
-  const usedIds: string[] = [];
+  const usedIds = [...(memory?.usedExerciseIds ?? [])];
+  const recentMuscleGroups = [...(memory?.recentMuscleGroups ?? [])];
   const movements: ConditioningMovement[] = [];
   const patternQueue =
     patterns.length >= 3 ? patterns.slice(0, 5) : DEFAULT_CONDITIONING_PATTERNS;
@@ -83,7 +86,7 @@ export function buildConditioningBlock(
       equipment,
       maxDifficulty(profile.experience),
       usedIds,
-      { functionalBias: "high" }
+      { functionalBias: "high", recentMuscleGroups }
     );
     if (!picked) continue;
     usedIds.push(picked.id);

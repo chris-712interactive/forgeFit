@@ -12,6 +12,12 @@ import {
 } from "@forgefit/program-engine";
 import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
+import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
+import {
+  buildRecentTrainingContextFromSessions,
+  planReferenceDateForRecentTraining,
+  priorPlanSupportsRecentTraining,
+} from "./recent-training";
 
 export async function loadUserProgramContext(userId: string) {
   const supabase = await createClient();
@@ -130,12 +136,24 @@ export async function generateAndSaveProgram(
   const isFutureStart = startIso > todayIso;
   const isRegenerate = priorPlan != null;
 
+  let recentTraining;
+  if (priorPlanSupportsRecentTraining(priorPlan)) {
+    const { records } = await getServerSessionRecords(userId, 40);
+    recentTraining = buildRecentTrainingContextFromSessions(
+      records,
+      priorPlan,
+      startDate,
+      planReferenceDateForRecentTraining(priorPlan, startDate)
+    );
+  }
+
   const plan = generateProgram(ctx.userProfile, {
     startDate,
     isDeloadWeek,
     deloadVolumeReductionPct: 40,
     scheduleFromTodayOnly:
       isRegenerate && !isFutureStart && startIso === todayIso,
+    recentTraining,
   });
 
   const supabase = await createClient();

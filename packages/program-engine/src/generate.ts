@@ -28,6 +28,11 @@ import {
   estimateMainWorkMinutes,
 } from "./session-time";
 import { buildConditioningBlock } from "./conditioning";
+import {
+  absorbSessionIntoMemory,
+  createWeekExerciseMemory,
+  type WeekExerciseMemory,
+} from "./recent-training";
 import { blockedWeekdaysForProfile } from "./sport/practice-schedule";
 import {
   assignSessionWeekdays,
@@ -182,7 +187,8 @@ function ensureCompoundFloor(
   sets: number,
   reps: string,
   rest: number,
-  rampSets: number | null
+  rampSets: number | null,
+  recentMuscleGroups: string[]
 ): void {
   const target = minCompoundExercises(profile, rules);
   let compoundCount = countCompoundExercises(exercises);
@@ -203,7 +209,7 @@ function ensureCompoundFloor(
       rest,
       profile,
       rampSets,
-      { insertAtStart: true }
+      { insertAtStart: true, recentMuscleGroups }
     );
 
     compoundCount = countCompoundExercises(exercises);
@@ -265,14 +271,18 @@ function appendExerciseFromPattern(
   rest: number,
   profile: ProgramUserProfile,
   rampSets: number | null,
-  options: { insertAtStart?: boolean } = {}
+  options: { insertAtStart?: boolean; recentMuscleGroups?: string[] } = {}
 ): boolean {
+  const recentMuscleGroups = options.recentMuscleGroups ?? [];
   const picked = pickExerciseForPattern(
     pattern,
     equipment,
     maxDifficultyForPattern(experience, pattern),
     usedIds,
-    { functionalBias: functionalBiasForGoal(profile.goal, pattern) }
+    {
+      functionalBias: functionalBiasForGoal(profile.goal, pattern),
+      recentMuscleGroups,
+    }
   );
   if (!picked) return false;
 
@@ -324,7 +334,8 @@ function fillSessionToTimeBudget(
   reps: string,
   rest: number,
   rampSets: number | null,
-  templatePatterns: MovementPattern[]
+  templatePatterns: MovementPattern[],
+  recentMuscleGroups: string[]
 ): void {
   const maxSets = maxSetsForSession(profile, rules, mainBudgetMinutes);
   const targetMinutes = mainBudgetMinutes * 0.92;
@@ -350,7 +361,8 @@ function fillSessionToTimeBudget(
         reps,
         rest,
         profile,
-        rampSets
+        rampSets,
+        { recentMuscleGroups }
       )) {
         added = true;
         break;
@@ -527,14 +539,16 @@ function buildConditioningSession(
   template: SessionTemplate,
   dayIndex: number,
   profile: ProgramUserProfile,
-  rules: EvidenceRule[]
+  rules: EvidenceRule[],
+  memory?: WeekExerciseMemory
 ): WorkoutSession {
   const warmupBlock = buildWarmupBlock(template, profile, rules);
   const conditioningBlock = buildConditioningBlock(
     template.name,
     template.patterns,
     profile,
-    rules
+    rules,
+    memory
   );
   const recoveryBlock = buildRecoveryBlock(profile.recoveryEquipment, rules);
   const recoveryMins = recoveryBlock
@@ -569,14 +583,23 @@ function buildSession(
   dayIndex: number,
   profile: ProgramUserProfile,
   rules: EvidenceRule[],
-  volumeMult: number
+  volumeMult: number,
+  memory: WeekExerciseMemory,
+  useWeekMemory: boolean
 ): WorkoutSession {
   if (template.sessionType === "conditioning") {
-    return buildConditioningSession(template, dayIndex, profile, rules);
+    return buildConditioningSession(
+      template,
+      dayIndex,
+      profile,
+      rules,
+      useWeekMemory ? memory : undefined
+    );
   }
 
   const equipment = expandUserEquipment(profile.equipment);
-  const usedIds: string[] = [];
+  const usedIds = useWeekMemory ? [...memory.usedExerciseIds] : [];
+  const recentMuscleGroups = useWeekMemory ? [...memory.recentMuscleGroups] : [];
   const maxExercises = exercisesPerSession(profile.minutesPerSession);
   const sets = setsPerExercise(
     profile.minutesPerSession,
@@ -600,6 +623,7 @@ function buildSession(
       usedIds,
       {
         functionalBias: functionalBiasForGoal(profile.goal, pattern),
+        recentMuscleGroups,
       }
     );
     if (!picked) continue;
@@ -659,7 +683,8 @@ function buildSession(
     sets,
     reps,
     rest,
-    rampSets
+    rampSets,
+    recentMuscleGroups
   );
 
   fillSessionToTimeBudget(
@@ -674,7 +699,8 @@ function buildSession(
     reps,
     rest,
     rampSets,
-    sessionPatterns
+    sessionPatterns,
+    recentMuscleGroups
   );
 
   if (template.includeCardio) {
@@ -738,17 +764,30 @@ export function generateProgram(
     blockedWeekdays: blockedWeekdaysForProfile(profile),
   });
 
-  const week = split
-    .map((template, i) =>
-      buildSession(
-        template,
-        sessionWeekdays[i] ?? anchorWeekday,
-        profile,
-        matchedRules,
-        volumeMult
-      )
-    )
+  const useWeekMemory = options.recentTraining != null;
+  const memory = createWeekExerciseMemory(options.recentTraining);
+  const templatesWithDays = split
+    .map((template, i) => ({
+      template,
+      dayIndex: sessionWeekdays[i] ?? anchorWeekday,
+    }))
     .sort((a, b) => a.dayIndex - b.dayIndex);
+
+  const week = templatesWithDays.map(({ template, dayIndex }) => {
+    const session = buildSession(
+      template,
+      dayIndex,
+      profile,
+      matchedRules,
+      volumeMult,
+      memory,
+      useWeekMemory
+    );
+    if (useWeekMemory) {
+      absorbSessionIntoMemory(memory, session);
+    }
+    return session;
+  });
 
   const trainingLoad = computeTrainingLoad(week);
   const trainingExpenditure = estimateTrainingExpenditure(

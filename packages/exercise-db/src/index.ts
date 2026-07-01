@@ -88,6 +88,29 @@ export function getExerciseById(id: string): Exercise | undefined {
 
 export interface PickExerciseOptions {
   functionalBias?: FunctionalBias;
+  /** Primary muscles trained recently — overlapping candidates rank lower */
+  recentMuscleGroups?: string[];
+}
+
+function muscleOverlapPenalty(
+  exercise: Exercise,
+  recentMuscleGroups: string[] | undefined
+): number {
+  if (!recentMuscleGroups?.length) return 0;
+  return exercise.primaryMuscles.filter((muscle) =>
+    recentMuscleGroups.includes(muscle)
+  ).length;
+}
+
+function scoreCandidate(
+  exercise: Exercise,
+  functionalBias: FunctionalBias,
+  recentMuscleGroups: string[] | undefined
+): number {
+  return (
+    scoreExerciseForPick(exercise, functionalBias) -
+    muscleOverlapPenalty(exercise, recentMuscleGroups) * 8
+  );
 }
 
 export function pickExerciseForPattern(
@@ -111,7 +134,7 @@ export function pickExerciseForPattern(
 
   return candidates.sort(
     (a, b) =>
-      scoreExerciseForPick(b, functionalBias) -
-      scoreExerciseForPick(a, functionalBias)
+      scoreCandidate(b, functionalBias, options.recentMuscleGroups) -
+      scoreCandidate(a, functionalBias, options.recentMuscleGroups)
   )[0];
 }
