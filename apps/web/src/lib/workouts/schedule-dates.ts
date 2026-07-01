@@ -77,24 +77,36 @@ export function scheduledDateIsoForPlanDay(
   );
 }
 
+/** Local calendar date when the session was logged (matches toScheduleStartIso semantics). */
 export function sessionDateIso(session: {
   startedAt: string;
   completedAt: string | null;
 }): string {
-  return (session.completedAt ?? session.startedAt).slice(0, 10);
+  return toScheduleStartIso(new Date(session.completedAt ?? session.startedAt));
 }
 
-/** True when a logged session belongs to this plan week's calendar slot (not just weekday index). */
+/** True when a logged session belongs to this plan week's slot (not a prior week). */
 export function sessionMatchesScheduledPlanDay(
-  session: { startedAt: string; completedAt: string | null },
+  session: {
+    startedAt: string;
+    completedAt: string | null;
+    dayIndex: number;
+  },
   dayIndex: number,
   plan: ProgramPlan,
   referenceDate = new Date()
 ): boolean {
-  return (
-    sessionDateIso(session) ===
-    scheduledDateIsoForPlanDay(dayIndex, plan, referenceDate)
-  );
+  if (session.dayIndex !== dayIndex) {
+    return false;
+  }
+
+  const ref = planScheduleReferenceDate(plan, referenceDate);
+  const { start, end } = getWeekBounds(ref);
+  const sessionTime = new Date(
+    session.completedAt ?? session.startedAt
+  ).getTime();
+
+  return sessionTime >= start.getTime() && sessionTime <= end.getTime();
 }
 
 export function isPlanScheduleStarted(

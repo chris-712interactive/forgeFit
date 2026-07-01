@@ -35,6 +35,23 @@
 
 ## Session Log
 
+### 2026-07-01 — Fix completed workout still showing Start button
+
+**What was done:**
+- Fixed week plan cards showing **Start** after logging a workout when completion fell on a different calendar day than the scheduled slot (e.g. Tuesday session finished Wednesday) or when UTC timestamps crossed midnight vs local time
+- `sessionMatchesScheduledPlanDay` now matches by plan-week bounds + `dayIndex` instead of exact calendar-date equality
+- `sessionDateIso` uses local calendar dates (`toScheduleStartIso`) for consistency
+
+**What's next:**
+- Manual QA: log a past-day slot workout and confirm card switches to **Results**
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/workouts/schedule-dates.ts`
+- `apps/web/src/lib/workouts/sessions.test.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-07-01 — Per-dumbbell weight hint in workout logger
 
 **What was done:**

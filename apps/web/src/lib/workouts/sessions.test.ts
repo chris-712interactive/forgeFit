@@ -4,6 +4,7 @@ import type { ProgramPlan } from "@forgefit/program-engine";
 import { buildDayStatusMap, type WorkoutSessionRecord } from "./sessions";
 import {
   scheduledDateIsoForPlanDay,
+  sessionDateIso,
   sessionMatchesScheduledPlanDay,
 } from "./schedule-dates";
 
@@ -53,6 +54,101 @@ test("sessionMatchesScheduledPlanDay rejects prior-week completions with same we
     sessionMatchesScheduledPlanDay(oldLower, 3, regeneratedPlan, referenceDate),
     false
   );
+});
+
+test("sessionDateIso uses local calendar date, not UTC slice", () => {
+  const originalTz = process.env.TZ;
+  process.env.TZ = "America/Los_Angeles";
+
+  try {
+    // Tuesday July 1 8pm PDT → UTC July 2; scheduled slot is still July 1 locally.
+    assert.equal(
+      sessionDateIso({
+        startedAt: "2026-07-02T02:00:00.000Z",
+        completedAt: "2026-07-02T03:00:00.000Z",
+      }),
+      "2026-07-01"
+    );
+  } finally {
+    if (originalTz === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTz;
+    }
+  }
+});
+
+test("sessionMatchesScheduledPlanDay accepts completions logged later in the plan week", () => {
+  const tuesdayPlan = {
+    scheduleStartDate: "2026-06-30",
+    generatedAt: "2026-06-29T12:00:00.000Z",
+    week: [{ dayIndex: 1, name: "Upper" }],
+  } as ProgramPlan;
+  const referenceDate = new Date(2026, 6, 1, 12, 0, 0, 0);
+  const completedTuesday = session({
+    clientId: "tuesday-late",
+    dayIndex: 1,
+    status: "completed",
+    startedAt: "2026-07-01T15:00:00.000Z",
+    completedAt: "2026-07-01T16:00:00.000Z",
+  });
+
+  assert.equal(
+    sessionMatchesScheduledPlanDay(
+      completedTuesday,
+      1,
+      tuesdayPlan,
+      referenceDate
+    ),
+    true
+  );
+
+  const map = buildDayStatusMap([completedTuesday], tuesdayPlan, referenceDate);
+  assert.equal(map.get(1)?.latestCompleted?.clientId, "tuesday-late");
+});
+
+test("sessionMatchesScheduledPlanDay accepts evening completions on the scheduled day", () => {
+  const originalTz = process.env.TZ;
+  process.env.TZ = "America/Los_Angeles";
+
+  try {
+    const tuesdayPlan = {
+      scheduleStartDate: "2026-06-30",
+      generatedAt: "2026-06-29T12:00:00.000Z",
+      week: [{ dayIndex: 1, name: "Upper" }],
+    } as ProgramPlan;
+    const referenceDate = new Date(2026, 6, 1, 20, 0, 0, 0);
+    const completedTuesday = session({
+      clientId: "tuesday-evening",
+      dayIndex: 1,
+      status: "completed",
+      startedAt: "2026-07-02T02:00:00.000Z",
+      completedAt: "2026-07-02T03:00:00.000Z",
+    });
+
+    assert.equal(
+      sessionMatchesScheduledPlanDay(
+        completedTuesday,
+        1,
+        tuesdayPlan,
+        referenceDate
+      ),
+      true
+    );
+
+    const map = buildDayStatusMap(
+      [completedTuesday],
+      tuesdayPlan,
+      referenceDate
+    );
+    assert.equal(map.get(1)?.latestCompleted?.clientId, "tuesday-evening");
+  } finally {
+    if (originalTz === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTz;
+    }
+  }
 });
 
 test("buildDayStatusMap only marks current plan week sessions as completed", () => {
