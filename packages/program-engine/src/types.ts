@@ -4,7 +4,8 @@ export type FitnessGoal =
   | "powerlifting"
   | "general_strength"
   | "recomposition"
-  | "sport_performance";
+  | "sport_performance"
+  | "functional_conditioning";
 
 export type SportSeasonPhase = "in_season" | "off_season" | "general_prep";
 
@@ -39,6 +40,24 @@ export interface ProgramUserProfile {
   sportPracticeDays?: number[];
   sportPracticeGymPolicy?: SportPracticeGymPolicy;
   sportPracticeScheduleVaries?: boolean;
+}
+
+export interface ConditioningMovement {
+  exerciseId: string;
+  name: string;
+  prescription: string;
+}
+
+export type ConditioningFormat = "fixed_rounds" | "amrap";
+
+export interface ConditioningBlock {
+  name: string;
+  format: ConditioningFormat;
+  rounds: number;
+  timeCapMinutes: number;
+  restBetweenRoundsSeconds: number;
+  movements: ConditioningMovement[];
+  notes?: string;
 }
 
 export interface PlannedExercise {
@@ -77,6 +96,7 @@ export interface WorkoutSession {
   estimatedMinutes: number;
   warmupBlock?: WarmupBlock;
   exercises: PlannedExercise[];
+  conditioningBlock?: ConditioningBlock;
   recoveryBlock?: RecoveryBlock;
   citationRuleIds: string[];
 }

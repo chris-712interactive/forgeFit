@@ -1,4 +1,8 @@
 export { generateProgram } from "./generate";
+export {
+  buildConditioningBlock,
+  conditioningRoundsForSession,
+} from "./conditioning";
 export { buildWarmupBlock } from "./warmup";
 export { computeNutrition, getMatchedRules } from "./nutrition";
 export {
@@ -68,5 +72,8 @@ export type {
   RecompPriority,
   SportSeasonPhase,
   SportPracticeGymPolicy,
+  ConditioningBlock,
+  ConditioningMovement,
+  ConditioningFormat,
   GenerateProgramOptions,
 } from "./types";

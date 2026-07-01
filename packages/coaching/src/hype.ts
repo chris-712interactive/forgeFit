@@ -26,6 +26,11 @@ const GOAL_HYPE: Record<CoachingGoal, string[]> = {
     "Lift hard, stay accountable. Recomp is won in weeks like this.",
     "Build muscle while you lean out. This session matters.",
   ],
+  functional_conditioning: [
+    "Strength and conditioning in one session — move with intent, breathe, repeat.",
+    "Every round builds work capacity. Stay sharp, stay moving.",
+    "Compound effort, full-body payoff. Let's run the circuit.",
+  ],
 };
 
 const EXPERIENCE_PREFIX: Record<

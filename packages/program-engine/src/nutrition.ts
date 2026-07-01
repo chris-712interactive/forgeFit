@@ -167,7 +167,8 @@ function resolveCalories(
 
   if (
     nutritionGoal === "bodybuilding" ||
-    nutritionGoal === "general_strength"
+    nutritionGoal === "general_strength" ||
+    nutritionGoal === "functional_conditioning"
   ) {
     const eatBack = eatBackPct(rules, "gain_eat_back_pct", 0.5);
     const calories = grossTdee + 250 + trainingKcalPerDay * eatBack;

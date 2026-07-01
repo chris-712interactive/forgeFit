@@ -27,6 +27,7 @@ import {
   estimateExerciseMinutes,
   estimateMainWorkMinutes,
 } from "./session-time";
+import { buildConditioningBlock } from "./conditioning";
 import { blockedWeekdaysForProfile } from "./sport/practice-schedule";
 import {
   assignSessionWeekdays,
@@ -36,7 +37,7 @@ import {
 } from "./schedule";
 import { computeTrainingLoad } from "./training-load";
 import { estimateTrainingExpenditure } from "./training-expenditure";
-import { getWeeklySplit } from "./splits";
+import { getWeeklySplit, type SessionTemplate } from "./splits";
 import {
   mergeSessionPatterns,
   sportRepsRange,
@@ -415,7 +416,7 @@ function repsForGoal(
 
   const hypertrophy = getRecommendationValue<string>(rules, "reps_range", "optimal");
   if (goal === "powerlifting") return "3-5";
-  if (goal === "general_strength") {
+  if (goal === "general_strength" || goal === "functional_conditioning") {
     return hypertrophy === "8-15" ? "5-8" : "5-8";
   }
   if (goal === "bodybuilding" || goal === "recomposition") return hypertrophy ?? "8-12";
@@ -426,6 +427,7 @@ function restForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): n
   const key =
     goal === "powerlifting" ||
     goal === "general_strength" ||
+    goal === "functional_conditioning" ||
     goal === "sport_performance"
       ? "rest_seconds"
       : "rest_seconds";
@@ -433,6 +435,7 @@ function restForGoal(goal: ProgramUserProfile["goal"], rules: EvidenceRule[]): n
   if (fromRules) return fromRules;
   return goal === "powerlifting" ||
     goal === "general_strength" ||
+    goal === "functional_conditioning" ||
     goal === "sport_performance"
     ? 180
     : 90;
@@ -520,13 +523,58 @@ function buildRecoveryBlock(
   return undefined;
 }
 
+function buildConditioningSession(
+  template: SessionTemplate,
+  dayIndex: number,
+  profile: ProgramUserProfile,
+  rules: EvidenceRule[]
+): WorkoutSession {
+  const warmupBlock = buildWarmupBlock(template, profile, rules);
+  const conditioningBlock = buildConditioningBlock(
+    template.name,
+    template.patterns,
+    profile,
+    rules
+  );
+  const recoveryBlock = buildRecoveryBlock(profile.recoveryEquipment, rules);
+  const recoveryMins = recoveryBlock
+    ? scaleRecoveryToSession(recoveryBlock.durationMinutes, profile)
+    : 0;
+  const scaledRecoveryBlock = recoveryBlock
+    ? { ...recoveryBlock, durationMinutes: recoveryMins }
+    : undefined;
+  const mainMins = Math.max(
+    10,
+    profile.minutesPerSession - warmupBlock.durationMinutes - recoveryMins
+  );
+
+  return {
+    dayIndex,
+    dayLabel: dayLabelForIndex(dayIndex),
+    name: template.name,
+    estimatedMinutes: warmupBlock.durationMinutes + mainMins + recoveryMins,
+    warmupBlock,
+    exercises: [],
+    conditioningBlock,
+    recoveryBlock: scaledRecoveryBlock,
+    citationRuleIds: [
+      "functional_conditioning_hybrid_split",
+      "functional_conditioning_rounds",
+    ],
+  };
+}
+
 function buildSession(
-  template: ReturnType<typeof getWeeklySplit>[number],
+  template: SessionTemplate,
   dayIndex: number,
   profile: ProgramUserProfile,
   rules: EvidenceRule[],
   volumeMult: number
 ): WorkoutSession {
+  if (template.sessionType === "conditioning") {
+    return buildConditioningSession(template, dayIndex, profile, rules);
+  }
+
   const equipment = expandUserEquipment(profile.equipment);
   const usedIds: string[] = [];
   const maxExercises = exercisesPerSession(profile.minutesPerSession);

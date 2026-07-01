@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 9 in progress (9A–9I shipped) |
+| **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Community PR weight units (imperial display) |
+| **Last session focus** | Functional conditioning goal (10A) |
 
 ---
 
@@ -29,11 +29,25 @@
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
 | 9 | Youth & Sport Performance | ⏳ In progress (9A–9I shipped) |
+| 10 | Functional Conditioning | ⏳ In progress (10A shipped) |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-07-01 — Functional conditioning goal (10A)
+
+**What was done:**
+- Phase doc `docs/phases/10-functional-conditioning.md`
+- Migration `#48` — `functional_conditioning` on `fitness_goal` enum
+- Engine: strength + conditioning circuit splits, `ConditioningBlock`, evidence rules
+- Onboarding/profile goal **Functional conditioning** (generic naming — no CrossFit trademark)
+- Workout UI: conditioning step, round logging, phase preview
+
+**What's next:** Apply migration `#48` on hosted Supabase; QA conditioning session flow
+
+**Files touched:** See `docs/phases/10-functional-conditioning.md` key files
 
 ### 2026-07-01 — Community PR weight units respect imperial preference
 

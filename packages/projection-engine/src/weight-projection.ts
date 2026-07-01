@@ -77,6 +77,7 @@ function goalRate(goal: FitnessGoal, options: GoalRateOptions = {}): GoalRate {
     case "powerlifting":
     case "general_strength":
     case "sport_performance":
+    case "functional_conditioning":
       return {
         weeklyPct: 0.15,
         minWeeklyPct: 0.1,

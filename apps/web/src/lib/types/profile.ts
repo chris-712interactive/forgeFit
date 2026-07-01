@@ -4,7 +4,8 @@ export type FitnessGoal =
   | "powerlifting"
   | "general_strength"
   | "recomposition"
-  | "sport_performance";
+  | "sport_performance"
+  | "functional_conditioning";
 
 export type SportSeasonPhase = "in_season" | "off_season" | "general_prep";
 

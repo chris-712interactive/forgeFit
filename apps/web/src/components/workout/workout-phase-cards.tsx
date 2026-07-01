@@ -41,6 +41,12 @@ function PhaseWatermark({ tone }: { tone: PhaseTone }) {
 }
 
 function totalPlannedSets(session: WorkoutSession): number {
+  if (session.conditioningBlock) {
+    return (
+      session.conditioningBlock.rounds *
+      session.conditioningBlock.movements.length
+    );
+  }
   return session.exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
 }
 
@@ -54,6 +60,11 @@ export function buildSessionExpectation(
   session: WorkoutSession,
   setCount: number
 ): string {
+  if (session.conditioningBlock) {
+    const block = session.conditioningBlock;
+    return `${block.rounds} rounds · ${block.movements.length} movements · ${block.restBetweenRoundsSeconds}s rest`;
+  }
+
   const exerciseCount = session.exercises.length;
   const exercisePhrase =
     exerciseCount === 1 ? "1 exercise" : `${exerciseCount} exercises`;
@@ -124,6 +135,32 @@ export function PhasePreviewContent({
   }
 
   if (tone === "workout") {
+    if (session.conditioningBlock) {
+      const block = session.conditioningBlock;
+      return (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-coral">
+            {block.rounds} rounds · {block.restBetweenRoundsSeconds}s rest
+          </p>
+          <ul className="space-y-2">
+            {block.movements.map((movement) => (
+              <li
+                key={movement.exerciseId}
+                className="flex items-baseline justify-between gap-3 rounded-lg border border-[var(--border)] bg-forge-surface px-3 py-2"
+              >
+                <span className="min-w-0 text-sm font-medium text-forge-text">
+                  {movement.name}
+                </span>
+                <span className="shrink-0 text-sm tabular-nums text-forge-muted">
+                  {movement.prescription}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
     return (
       <ul className="space-y-2">
         {session.exercises.map((exercise) => (

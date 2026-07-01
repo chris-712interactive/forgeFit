@@ -249,6 +249,7 @@ export const EXTRA_RULES: EvidenceRule[] = [
       "goal:recomposition",
       "goal:fat_loss",
       "goal:powerlifting",
+      "goal:functional_conditioning",
     ],
     recommendation: {
       functional_bias: "high",
@@ -263,6 +264,40 @@ export const EXTRA_RULES: EvidenceRule[] = [
       {
         url: "https://www.acsm.org",
         summary: "ACSM guidelines emphasize functional movement patterns for general fitness",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "functional_conditioning_hybrid_split",
+    domain: "training",
+    applies_to: ["goal:functional_conditioning"],
+    recommendation: {
+      strength_days_min: 1,
+      conditioning_days_min: 1,
+      note: "Alternate compound strength sessions with mixed-modal conditioning circuits to build transferable strength and work capacity",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Combined resistance and metabolic conditioning supports general fitness and time-efficient training",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "functional_conditioning_rounds",
+    domain: "training",
+    applies_to: ["goal:functional_conditioning"],
+    recommendation: {
+      conditioning_rounds: { min: 3, optimal: 4, max: 6 },
+      conditioning_rest_seconds: { min: 45, optimal: 60, max: 90 },
+      note: "Fixed-round circuits with brief rest preserve technique; scale rounds to session length and experience",
+    },
+    citations: [
+      {
+        url: "https://sportrxiv.org/index.php/server/preprint/view/460",
+        summary: "Circuit-style training improves conditioning when volume is matched to recovery capacity",
       },
     ],
     confidence: "moderate",

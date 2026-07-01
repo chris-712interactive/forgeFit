@@ -332,6 +332,7 @@ export function WorkoutHub({
           dayIndex: session.dayIndex,
           warmupBlock: session.warmupBlock,
           recoveryBlock: session.recoveryBlock,
+          conditioningBlock: session.conditioningBlock,
           exercises: session.exercises.map((ex) => {
             const progression = loadProgressions.get(ex.exerciseId);
             return {

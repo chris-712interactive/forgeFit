@@ -5,14 +5,16 @@ export interface SessionTemplate {
   name: string;
   patterns: MovementPattern[];
   includeCardio?: boolean;
+  sessionType?: "strength" | "conditioning";
 }
 
 function session(
   name: string,
   patterns: MovementPattern[],
-  includeCardio?: boolean
+  includeCardio?: boolean,
+  sessionType: SessionTemplate["sessionType"] = "strength"
 ): SessionTemplate {
-  return { name, patterns, includeCardio };
+  return { name, patterns, includeCardio, sessionType };
 }
 
 export function getWeeklySplit(
@@ -75,6 +77,29 @@ export function getWeeklySplit(
       session("Athletic D", ["squat", "hinge", "core"]),
     ];
     return athletic.slice(0, n);
+  }
+
+  if (goal === "functional_conditioning") {
+    const strengthDays: SessionTemplate[] = [
+      session("Strength A", ["squat", "horizontal_push", "horizontal_pull"]),
+      session("Strength B", ["hinge", "vertical_push", "vertical_pull"]),
+      session("Strength C", ["lunge", "carry", "core"]),
+      session("Strength D", ["squat", "hinge", "horizontal_pull"]),
+    ];
+    const conditioningDay = session(
+      "Conditioning circuit",
+      ["squat", "horizontal_push", "hinge", "core", "carry"],
+      false,
+      "conditioning"
+    );
+    const conditioningCount = n <= 2 ? 1 : n <= 5 ? 1 : 2;
+    const strengthCount = Math.max(1, n - conditioningCount);
+    const pickedStrength = strengthDays.slice(0, strengthCount);
+    const pickedConditioning = Array.from(
+      { length: conditioningCount },
+      () => conditioningDay
+    );
+    return [...pickedStrength, ...pickedConditioning].slice(0, n);
   }
 
   if (goal === "recomposition") {

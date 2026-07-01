@@ -15,6 +15,7 @@ export function functionalBiasForGoal(
     case "powerlifting":
     case "general_strength":
     case "sport_performance":
+    case "functional_conditioning":
     case "recomposition":
     case "fat_loss":
       return "high";
@@ -30,6 +31,7 @@ export function minCompoundExercisesForGoal(goal: FitnessGoal): number {
     case "powerlifting":
     case "general_strength":
     case "sport_performance":
+    case "functional_conditioning":
       return 3;
     case "recomposition":
     case "fat_loss":

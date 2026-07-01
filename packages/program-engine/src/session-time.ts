@@ -36,6 +36,12 @@ export function sessionActiveMinutes(session: WorkoutSession): number {
 }
 
 export function sessionWorkingSets(session: WorkoutSession): number {
+  if (session.conditioningBlock) {
+    return (
+      session.conditioningBlock.rounds *
+      session.conditioningBlock.movements.length
+    );
+  }
   return session.exercises
     .filter((exercise) => exercise.primaryMuscles[0] !== "cardio")
     .reduce((sum, exercise) => sum + exercise.sets, 0);

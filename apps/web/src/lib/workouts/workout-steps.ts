@@ -1,8 +1,9 @@
-import type { ExerciseSnapshot, LocalExerciseSet, LocalWorkoutSession } from "@forgefit/offline-sync";
+import type { LocalExerciseSet, LocalWorkoutSession } from "@forgefit/offline-sync";
 
 export type WorkoutStep =
   | { kind: "overview" }
   | { kind: "warmup" }
+  | { kind: "conditioning" }
   | { kind: "exercise"; exerciseIndex: number }
   | { kind: "recovery" }
   | { kind: "finish" };
@@ -12,6 +13,10 @@ export function buildWorkoutSteps(session: LocalWorkoutSession): WorkoutStep[] {
 
   if (session.warmupBlock) {
     steps.push({ kind: "warmup" });
+  }
+
+  if (session.conditioningBlock) {
+    steps.push({ kind: "conditioning" });
   }
 
   session.exercises.forEach((_, exerciseIndex) => {
@@ -35,6 +40,8 @@ export function stepLabel(
       return "Equipment check";
     case "warmup":
       return "Warm-up";
+    case "conditioning":
+      return session.conditioningBlock?.name ?? "Conditioning";
     case "exercise":
       return session.exercises[step.exerciseIndex]?.name ?? "Exercise";
     case "recovery":
@@ -52,6 +59,8 @@ export function initialStepIndex(
   const hasProgress =
     session.warmupStatus === "completed" ||
     session.warmupStatus === "skipped" ||
+    session.conditioningStatus === "completed" ||
+    session.conditioningStatus === "skipped" ||
     sets.some((set) => set.completed);
 
   if (!hasProgress) {
@@ -65,6 +74,16 @@ export function initialStepIndex(
   ) {
     const warmupIndex = steps.findIndex((step) => step.kind === "warmup");
     if (warmupIndex >= 0) return warmupIndex;
+  }
+
+  if (
+    session.conditioningBlock &&
+    (session.conditioningStatus === "pending" || !session.conditioningStatus)
+  ) {
+    const conditioningIndex = steps.findIndex(
+      (step) => step.kind === "conditioning"
+    );
+    if (conditioningIndex >= 0) return conditioningIndex;
   }
 
   for (const step of steps) {
@@ -102,6 +121,11 @@ export function canAdvanceFromStep(
         session.warmupStatus === "completed" ||
         session.warmupStatus === "skipped"
       );
+    case "conditioning":
+      return (
+        session.conditioningStatus === "completed" ||
+        session.conditioningStatus === "skipped"
+      );
     case "exercise":
       return true;
     case "recovery":
@@ -112,4 +136,11 @@ export function canAdvanceFromStep(
     case "finish":
       return true;
   }
+}
+
+export function parseConditioningReps(prescription: string): number | undefined {
+  const match = prescription.match(/(\d+)/);
+  if (!match) return undefined;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : undefined;
 }

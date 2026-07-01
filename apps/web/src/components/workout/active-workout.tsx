@@ -32,6 +32,7 @@ import {
   buildWorkoutSteps,
   canAdvanceFromStep,
   initialStepIndex,
+  parseConditioningReps,
   stepLabel,
   type WorkoutStep,
 } from "@/lib/workouts/workout-steps";
@@ -43,6 +44,7 @@ import {
   updateSet,
   updateWorkoutRecovery,
   updateWorkoutWarmup,
+  updateWorkoutConditioning,
   type LocalExerciseSet,
   type LocalWorkoutSession,
 } from "@forgefit/offline-sync";
@@ -65,6 +67,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HoldTimer } from "./hold-timer";
 import { RecoveryBlockCard } from "./recovery-block-card";
+import { ConditioningBlockCard } from "./conditioning-block-card";
 import { WarmupBlockCard } from "./warmup-block-card";
 import { RestTimer } from "./rest-timer";
 import { SetRow } from "./set-row";
@@ -501,6 +504,62 @@ export function ActiveWorkout({
     void handleRecoveryUpdate("completed", elapsedSeconds * 1000);
   }
 
+  async function handleConditioningUpdate(
+    status: "completed" | "skipped",
+    roundsCompleted?: number
+  ) {
+    const updated = await updateWorkoutConditioning(clientId, {
+      status,
+      roundsCompleted,
+    });
+    if (updated) {
+      setSession(updated);
+    }
+    void sync?.refreshPending();
+    if (navigator.onLine) {
+      void sync?.runSync();
+    }
+    if (status === "completed" || status === "skipped") {
+      goToNextStep();
+    }
+  }
+
+  async function handleLogConditioningRound() {
+    if (!session?.conditioningBlock || !session.userId) return;
+    const block = session.conditioningBlock;
+    const round = (session.conditioningRoundsCompleted ?? 0) + 1;
+    const timestamp = new Date().toISOString();
+
+    for (const movement of block.movements) {
+      const created = await appendExerciseSet({
+        sessionClientId: clientId,
+        userId: session.userId,
+        exerciseId: movement.exerciseId,
+        exerciseName: movement.name,
+        prefill: {
+          reps: parseConditioningReps(movement.prescription),
+        },
+      });
+      if (created) {
+        await updateSet(created.clientId, {
+          completed: true,
+          completedAt: timestamp,
+          reps: parseConditioningReps(movement.prescription),
+        });
+      }
+    }
+
+    const updated = await updateWorkoutConditioning(clientId, {
+      roundsCompleted: round,
+    });
+    if (updated) {
+      setSession(updated);
+    }
+    const setRows = await getSetsForSession(clientId);
+    setSets(setRows);
+    void sync?.refreshPending();
+  }
+
   async function handleFinish() {
     if (finishing || cancelling) return;
     setFinishing(true);
@@ -717,6 +776,23 @@ export function ActiveWorkout({
             onSkip={() => void handleWarmupUpdate("skipped")}
           />
         );
+      case "conditioning":
+        return (
+          <ConditioningBlockCard
+            block={session.conditioningBlock!}
+            status={session.conditioningStatus ?? "pending"}
+            roundsCompleted={session.conditioningRoundsCompleted ?? 0}
+            onLogRound={() => void handleLogConditioningRound()}
+            onMarkComplete={() =>
+              void handleConditioningUpdate(
+                "completed",
+                session.conditioningRoundsCompleted ??
+                  session.conditioningBlock!.rounds
+              )
+            }
+            onSkip={() => void handleConditioningUpdate("skipped", 0)}
+          />
+        );
       case "exercise":
         return renderExerciseStep(currentStep);
       case "recovery":
@@ -755,6 +831,18 @@ export function ActiveWorkout({
                     {session.warmupStatus === "completed"
                       ? "Done"
                       : session.warmupStatus === "skipped"
+                        ? "Skipped"
+                        : "Not logged"}
+                  </span>
+                </li>
+              )}
+              {session.conditioningBlock && (
+                <li>
+                  Conditioning:{" "}
+                  <span className="text-forge-text">
+                    {session.conditioningStatus === "completed"
+                      ? `Done · ${session.conditioningRoundsCompleted ?? 0}/${session.conditioningBlock.rounds} rounds`
+                      : session.conditioningStatus === "skipped"
                         ? "Skipped"
                         : "Not logged"}
                   </span>
@@ -803,8 +891,18 @@ export function ActiveWorkout({
     !isFinishStep && canAdvanceFromStep(currentStep, session);
   const continueLabel = (() => {
     if (currentStep.kind === "warmup") {
-      const first = session.exercises[0]?.name ?? "first exercise";
+      if (session.conditioningBlock) {
+        return `Continue to ${session.conditioningBlock.name}`;
+      }
+      const first = session.exercises[0]?.name ?? "main work";
       return `Continue to ${first}`;
+    }
+    if (currentStep.kind === "conditioning") {
+      if (session.exercises[0]) {
+        return `Continue to ${session.exercises[0].name}`;
+      }
+      if (session.recoveryBlock) return "Continue to recovery";
+      return "Continue to wrap up";
     }
     if (currentStep.kind === "exercise") {
       if (currentStep.exerciseIndex < session.exercises.length - 1) {

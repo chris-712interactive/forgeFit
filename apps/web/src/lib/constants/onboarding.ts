@@ -37,6 +37,12 @@ export const FITNESS_GOALS: {
     label: "Recomposition",
     description: "Build muscle and lose fat at the same time",
   },
+  {
+    value: "functional_conditioning",
+    label: "Functional conditioning",
+    description:
+      "Strength plus mixed-modal circuits — maximize work in the time you have",
+  },
 ];
 
 /** Optional physique emphasis when primary goal is sport. */

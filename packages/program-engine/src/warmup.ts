@@ -133,6 +133,9 @@ const FOCUS_LABELS: Record<WarmupFocus, string> = {
 
 function warmupFocusForTemplate(template: SessionTemplate): WarmupFocus {
   const name = template.name.toLowerCase();
+  if (name.includes("conditioning") || template.sessionType === "conditioning") {
+    return "full_body";
+  }
 
   if (name.includes("push") || name.includes("bench")) return "push";
   if (name.includes("pull") || name.includes("deadlift")) return "pull";

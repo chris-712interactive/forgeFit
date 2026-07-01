@@ -1,11 +1,12 @@
 import { getOfflineDb } from "./db";
-import type { RecoveryBlock, WarmupBlock } from "@forgefit/program-engine";
+import type { RecoveryBlock, WarmupBlock, ConditioningBlock } from "@forgefit/program-engine";
 import type {
   ExerciseSnapshot,
   LocalExerciseSet,
   LocalWorkoutSession,
   RecoveryStatus,
   WarmupStatus,
+  ConditioningStatus,
   WorkoutStatus,
 } from "./types";
 
@@ -63,6 +64,7 @@ export async function startWorkoutSession(input: {
   exercises: ExerciseSnapshot[];
   warmupBlock?: WarmupBlock;
   recoveryBlock?: RecoveryBlock;
+  conditioningBlock?: ConditioningBlock;
   /** Prefill logged targets for the first working set per exercise */
   setPrefills?: Record<string, SetPrefill>;
 }): Promise<string> {
@@ -85,6 +87,9 @@ export async function startWorkoutSession(input: {
     warmupStatus: input.warmupBlock ? "pending" : undefined,
     recoveryBlock: input.recoveryBlock,
     recoveryStatus: input.recoveryBlock ? "pending" : undefined,
+    conditioningBlock: input.conditioningBlock,
+    conditioningStatus: input.conditioningBlock ? "pending" : undefined,
+    conditioningRoundsCompleted: 0,
   };
 
   const sets: LocalExerciseSet[] = [];
@@ -259,6 +264,31 @@ export async function updateWorkoutRecovery(
     recoveryDurationMs:
       input.status === "completed" ? input.durationMs : undefined,
     recoveryCompletedAt: timestamp,
+    updatedAt: timestamp,
+    synced: false,
+  };
+
+  await db.workoutSessions.put(updated);
+  return updated;
+}
+
+export async function updateWorkoutConditioning(
+  clientId: string,
+  input: {
+    status?: Extract<ConditioningStatus, "completed" | "skipped">;
+    roundsCompleted?: number;
+  }
+): Promise<LocalWorkoutSession | undefined> {
+  const db = getOfflineDb();
+  const existing = await db.workoutSessions.get(clientId);
+  if (!existing) return undefined;
+
+  const timestamp = nowIso();
+  const updated: LocalWorkoutSession = {
+    ...existing,
+    conditioningStatus: input.status ?? existing.conditioningStatus ?? "pending",
+    conditioningRoundsCompleted:
+      input.roundsCompleted ?? existing.conditioningRoundsCompleted ?? 0,
     updatedAt: timestamp,
     synced: false,
   };

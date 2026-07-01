@@ -33,6 +33,10 @@ const GOAL_LINES: Record<CoachingGoal, string[]> = {
     "Getting stronger while recomping — that's the sweet spot.",
     "New best. Training and nutrition are aligning.",
   ],
+  functional_conditioning: [
+    "Stronger and fitter — capacity up.",
+    "New PR in the circuit. Work capacity pays off.",
+  ],
 };
 
 function hashPick<T>(items: T[], seed: number): T {

@@ -85,6 +85,7 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 45. `20260611100000_body_composition_targets.sql` — **required for fat-loss pace, recomp priority, goal weight** (Profile → Program plan)
 46. `20260630100000_signup_source.sql` — optional onboarding “previous app” answer (`profiles.signup_source`)
 47. `20260630130000_sport_practice_schedule.sql` — sport practice days + gym-on-practice policy for schedule blocking
+48. `20260630140000_functional_conditioning_goal.sql` — **Functional conditioning** primary goal (`functional_conditioning`)
 
 After running SQL in the dashboard, reload the API schema if errors persist: **Project Settings → API → Reload schema cache**.
 

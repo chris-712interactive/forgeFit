@@ -41,6 +41,11 @@ const GOAL_MESSAGES: Record<FitnessGoal, string[]> = {
     "Strong in the gym, sharp on the field — keep stacking good weeks.",
     "Fuel the work, recover smart, show up for practice and training.",
   ],
+  functional_conditioning: [
+    "Strength and conditioning in one plan — move with intent each session.",
+    "Every round builds work capacity. Stay sharp, stay moving.",
+    "Compound effort, full-body payoff — stack good weeks.",
+  ],
 };
 
 function hashPick<T>(items: T[], seed: number): T {

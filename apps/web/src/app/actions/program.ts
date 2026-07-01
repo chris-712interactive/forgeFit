@@ -38,6 +38,7 @@ const planSettingsSchema = z
       "general_strength",
       "recomposition",
       "sport_performance",
+      "functional_conditioning",
     ]),
     sport_id: z.string().optional(),
     sport_position_id: z.string().optional(),

@@ -3,7 +3,8 @@ export type CoachingGoal =
   | "bodybuilding"
   | "powerlifting"
   | "general_strength"
-  | "recomposition";
+  | "recomposition"
+  | "functional_conditioning";
 
 export type CoachingExperience = "beginner" | "intermediate" | "advanced";
 

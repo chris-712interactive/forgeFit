@@ -21,6 +21,10 @@ export function formatProgramPlanHint(input: {
     return sport ? `${sport.label} · ${schedule}` : `Sport · ${schedule}`;
   }
 
+  if (input.goal === "functional_conditioning") {
+    return `Functional conditioning · ${schedule}`;
+  }
+
   const goal = FITNESS_GOALS.find((item) => item.value === input.goal);
   return `${goal?.label ?? "Plan"} · ${schedule}`;
 }

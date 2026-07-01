@@ -32,6 +32,7 @@ export function requiresParentConsent(age: number): boolean {
 export function minAgeForPrimaryGoal(goal: FitnessGoal): number {
   switch (goal) {
     case "sport_performance":
+    case "functional_conditioning":
     case "fat_loss":
     case "general_strength":
       return MIN_AGE;

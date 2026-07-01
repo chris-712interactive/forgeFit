@@ -35,6 +35,7 @@ const fitnessGoalSchema = z.enum([
   "general_strength",
   "recomposition",
   "sport_performance",
+  "functional_conditioning",
 ]);
 
 const onboardingSchema = z
@@ -139,6 +140,13 @@ const onboardingSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Secondary goal cannot be sport performance.",
+          path: ["secondary_goal"],
+        });
+      }
+      if (data.secondary_goal === "functional_conditioning") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Secondary goal cannot be functional conditioning.",
           path: ["secondary_goal"],
         });
       }
