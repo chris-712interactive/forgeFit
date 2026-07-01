@@ -4,6 +4,7 @@ import type { ProgramPlan } from "@forgefit/program-engine";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import {
   buildRecentTrainingContextFromSessions,
+  findMostRecentCompletedSessionKind,
   planReferenceDateForRecentTraining,
 } from "./recent-training";
 
@@ -177,6 +178,24 @@ test("buildRecentTrainingContextFromSessions captures last completed session kin
   );
 
   assert.equal(context.lastSessionKind, "lower");
+});
+
+test("findMostRecentCompletedSessionKind uses calendar date, not plan slot matching", () => {
+  const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
+  const yesterdayUpper = session({
+    clientId: "yesterday-upper",
+    dayIndex: 4,
+    status: "completed",
+    startedAt: "2026-07-01T10:00:00.000Z",
+    completedAt: "2026-07-01T11:00:00.000Z",
+    sets: [],
+  });
+  yesterdayUpper.sessionName = "Upper";
+
+  assert.equal(
+    findMostRecentCompletedSessionKind([yesterdayUpper], startDate),
+    "upper"
+  );
 });
 
 test("planReferenceDateForRecentTraining uses plan start when regenerate starts later", () => {

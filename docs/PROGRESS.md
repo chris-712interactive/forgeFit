@@ -36,6 +36,23 @@
 
 ## Session Log
 
+### 2026-07-01 — Fix regenerate still scheduling same session type next day
+
+**What was done:**
+- `lastSessionKind` now comes from the most recent completed workout by **calendar date** (14-day lookback), not plan-slot matching — catches completions from prior plan rows
+- Engine `ensureAnchorDayAvoidsKind` swaps templates so the plan start weekday is never the same kind as the last completed session
+- `findNextPlannedSession` skips today when it repeats yesterday's session kind (fallback if plan still duplicates)
+
+**What's next:** Regenerate once more after pulling this fix; confirm Wed shows Lower after Tue Upper (recomposition 4×/week)
+
+**Blockers:** None
+
+**Files touched:**
+- `apps/web/src/lib/programs/recent-training.ts`, `recent-training.test.ts`
+- `apps/web/src/lib/workouts/next-session.ts`, `next-session.test.ts`
+- `packages/program-engine/src/session-kind.ts`, `session-kind.test.ts`, `generate.ts`
+- `docs/PROGRESS.md`
+
 ### 2026-07-01 — Regenerate avoids back-to-back same session type
 
 **What was done:**

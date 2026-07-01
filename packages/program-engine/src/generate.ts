@@ -30,6 +30,7 @@ import {
 import { buildConditioningBlock } from "./conditioning";
 import {
   avoidConsecutiveSameKind,
+  ensureAnchorDayAvoidsKind,
   rotateSplitAvoidingKind,
 } from "./session-kind";
 import {
@@ -782,6 +783,11 @@ export function generateProgram(
 
   if (options.recentTraining?.lastSessionKind) {
     avoidConsecutiveSameKind(templatesWithDays);
+    ensureAnchorDayAvoidsKind(
+      templatesWithDays,
+      anchorWeekday,
+      options.recentTraining.lastSessionKind
+    );
   }
 
   const week = templatesWithDays.map(({ template, dayIndex }) => {

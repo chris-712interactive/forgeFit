@@ -18,6 +18,38 @@ function pushUnique(target: string[], value: string): void {
   }
 }
 
+function startOfDay(date: Date): Date {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+/** Most recent completed session kind before regenerate — calendar-based, not plan-slot matching. */
+export function findMostRecentCompletedSessionKind(
+  records: WorkoutSessionRecord[],
+  startDate: Date,
+  maxLookbackDays = 14
+): string | undefined {
+  const startMs = startOfDay(startDate).getTime();
+  const minMs = startMs - maxLookbackDays * 86_400_000;
+
+  let best: { when: number; kind: string } | undefined;
+
+  for (const record of records) {
+    if (record.status !== "completed") continue;
+
+    const when = new Date(record.completedAt ?? record.startedAt).getTime();
+    if (when >= startMs) continue;
+    if (when < minMs) continue;
+
+    if (!best || when > best.when) {
+      best = { when, kind: sessionKind(record.sessionName) };
+    }
+  }
+
+  return best?.kind;
+}
+
 /** Collect exercises and muscles from completed sessions before a regenerate start date. */
 export function buildRecentTrainingContextFromSessions(
   records: WorkoutSessionRecord[],
@@ -28,8 +60,7 @@ export function buildRecentTrainingContextFromSessions(
   const startIso = toScheduleStartIso(startDate);
   const exerciseIds: string[] = [];
   const muscleGroups: string[] = [];
-  let lastSessionKind: string | undefined;
-  let latestCompletionMs = -1;
+  const lastSessionKind = findMostRecentCompletedSessionKind(records, startDate);
 
   for (const record of records) {
     if (record.status !== "completed") continue;
@@ -37,14 +68,6 @@ export function buildRecentTrainingContextFromSessions(
       continue;
     }
     if (sessionDateIso(record) >= startIso) continue;
-
-    const completedAtMs = new Date(
-      record.completedAt ?? record.startedAt
-    ).getTime();
-    if (completedAtMs > latestCompletionMs) {
-      latestCompletionMs = completedAtMs;
-      lastSessionKind = sessionKind(record.sessionName);
-    }
 
     const completedExerciseIds = [
       ...new Set(

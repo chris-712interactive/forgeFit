@@ -74,3 +74,26 @@ export function avoidConsecutiveSameKind(
     }
   }
 }
+
+/** Ensure the plan start weekday is not the same session kind as the last completed workout. */
+export function ensureAnchorDayAvoidsKind(
+  assignments: TemplateDayAssignment[],
+  anchorWeekday: number,
+  avoidKind: string | undefined
+): void {
+  if (!avoidKind) return;
+
+  const anchor = assignments.find((entry) => entry.dayIndex === anchorWeekday);
+  if (!anchor || sessionKind(anchor.template.name) !== avoidKind) return;
+
+  const swapCandidate = assignments.find(
+    (entry) =>
+      entry.dayIndex !== anchorWeekday &&
+      sessionKind(entry.template.name) !== avoidKind
+  );
+  if (!swapCandidate) return;
+
+  const anchorTemplate = anchor.template;
+  anchor.template = swapCandidate.template;
+  swapCandidate.template = anchorTemplate;
+}

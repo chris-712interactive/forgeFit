@@ -3,6 +3,7 @@ import test from "node:test";
 import type { SessionTemplate } from "./splits";
 import {
   avoidConsecutiveSameKind,
+  ensureAnchorDayAvoidsKind,
   rotateSplitAvoidingKind,
   sessionKind,
 } from "./session-kind";
@@ -48,4 +49,18 @@ test("avoidConsecutiveSameKind swaps templates on back-to-back days", () => {
   assert.equal(assignments.find((a) => a.dayIndex === 2)?.template.name, "Upper");
   assert.equal(assignments.find((a) => a.dayIndex === 3)?.template.name, "Lower");
   assert.equal(assignments.find((a) => a.dayIndex === 5)?.template.name, "Upper");
+});
+
+test("ensureAnchorDayAvoidsKind swaps template off the plan start weekday", () => {
+  const upper = template("Upper");
+  const lower = template("Lower");
+  const assignments = [
+    { template: upper, dayIndex: 2 },
+    { template: lower, dayIndex: 4 },
+  ];
+
+  ensureAnchorDayAvoidsKind(assignments, 2, "upper");
+
+  assert.equal(assignments.find((a) => a.dayIndex === 2)?.template.name, "Lower");
+  assert.equal(assignments.find((a) => a.dayIndex === 4)?.template.name, "Upper");
 });
