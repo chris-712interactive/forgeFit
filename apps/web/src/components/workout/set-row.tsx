@@ -1,15 +1,8 @@
 "use client";
 
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
-import {
-  snapPrescribedWeightKg,
-  weightInputStep,
-} from "@/lib/progression/load-snapping";
-import {
-  kgFromDisplayValue,
-  kgToDisplayValue,
-  weightUnitLabel,
-} from "@/lib/units/measurements";
+import { weightUnitLabel } from "@/lib/units/measurements";
+import { useWorkoutWeightInput } from "@/components/workout/use-workout-weight-input";
 import {
   exerciseTracksWeight,
   isTimedCardioExercise,
@@ -20,6 +13,7 @@ import {
   timedSetTotalMs,
 } from "@forgefit/exercise-db";
 import type { LocalExerciseSet } from "@forgefit/offline-sync";
+import { useCallback } from "react";
 
 interface SetRowProps {
   set: LocalExerciseSet;
@@ -100,19 +94,25 @@ export function SetRow({
   const targetLogValue = parseTimedTargetValue(targetReps);
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
-  const weightStep = weightInputStep(exerciseId, unit);
   const effortLevels = isTimed ? TIMED_EFFORT_LEVELS : EFFORT_LEVELS;
   const durationParts = timedDurationPartsFromMs(
     timedSetTotalMs(set, exerciseId) ?? 0
   );
   const selectedEffort = effortFromRir(set.rir);
-  const displayWeight =
-    set.weightKg != null
-      ? kgToDisplayValue(
-          snapPrescribedWeightKg(exerciseId, set.weightKg, unit),
-          unit
-        )
-      : "";
+
+  const commitWeight = useCallback(
+    (weightKg: number | undefined) => {
+      onUpdate(set.clientId, { weightKg });
+    },
+    [onUpdate, set.clientId]
+  );
+
+  const weightInput = useWorkoutWeightInput({
+    exerciseId,
+    weightKg: set.weightKg,
+    unit,
+    onCommit: commitWeight,
+  });
 
   return (
     <div
@@ -288,22 +288,13 @@ export function SetRow({
               )}
             </span>
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
-              min={0}
-              step={weightStep}
               placeholder="0"
-              value={displayWeight}
-              onChange={(e) => {
-                if (e.target.value === "") {
-                  onUpdate(set.clientId, { weightKg: undefined });
-                  return;
-                }
-                const rawKg = kgFromDisplayValue(Number(e.target.value), unit);
-                onUpdate(set.clientId, {
-                  weightKg: snapPrescribedWeightKg(exerciseId, rawKg, unit),
-                });
-              }}
+              value={weightInput.text}
+              onFocus={weightInput.handleFocus}
+              onBlur={weightInput.handleBlur}
+              onChange={(e) => weightInput.handleChange(e.target.value)}
               className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
             />
           </label>

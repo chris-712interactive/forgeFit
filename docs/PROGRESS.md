@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 9 in progress (9A–9I shipped) |
-| **Last updated** | 2026-06-30 |
-| **Last session focus** | Profile program/equipment section redesign |
+| **Last updated** | 2026-07-01 |
+| **Last session focus** | Workout weight input overwrite fix |
 
 ---
 
