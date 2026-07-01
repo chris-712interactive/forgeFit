@@ -762,8 +762,10 @@ export function generateProgram(
   if (sessionCap != null && split.length > sessionCap) {
     split = split.slice(0, sessionCap);
   }
-  if (options.recentTraining?.lastSessionKind) {
-    split = rotateSplitAvoidingKind(split, options.recentTraining.lastSessionKind);
+  const avoidSessionKind =
+    options.lastSessionKindOverride ?? options.recentTraining?.lastSessionKind;
+  if (avoidSessionKind) {
+    split = rotateSplitAvoidingKind(split, avoidSessionKind);
   }
   const startDate = options.startDate ?? new Date();
   const anchorWeekday = isoWeekdayFromDate(startDate);
@@ -781,12 +783,12 @@ export function generateProgram(
     }))
     .sort((a, b) => a.dayIndex - b.dayIndex);
 
-  if (options.recentTraining?.lastSessionKind) {
+  if (avoidSessionKind && options.recentTraining) {
     avoidConsecutiveSameKind(templatesWithDays);
     ensureAnchorDayAvoidsKind(
       templatesWithDays,
       anchorWeekday,
-      options.recentTraining.lastSessionKind
+      avoidSessionKind
     );
   }
 

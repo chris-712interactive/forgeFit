@@ -175,7 +175,10 @@ function revalidateProgramPaths() {
   revalidatePath("/evidence");
 }
 
-export async function rebuildProgram(input?: { schedule_start_date?: string }) {
+export async function rebuildProgram(input?: {
+  schedule_start_date?: string;
+  last_completed_session_kind?: string;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -192,6 +195,7 @@ export async function rebuildProgram(input?: { schedule_start_date?: string }) {
 
   const result = await generateAndSaveProgram(user.id, null, {
     startDate: start.startDate,
+    lastSessionKindOverride: input?.last_completed_session_kind,
   });
   if ("error" in result) {
     return { error: result.error };

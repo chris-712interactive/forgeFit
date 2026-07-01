@@ -45,6 +45,7 @@ type HubIntegration = IntegrationPublicStatus & {
 };
 
 interface ProfileSettingsHubProps {
+  userId: string;
   subscription: SubscriptionSnapshot;
   stripeConfigured: boolean;
   checkoutStatus: "success" | "canceled" | null;
@@ -88,6 +89,7 @@ interface ProfileSettingsHubProps {
 }
 
 export function ProfileSettingsHub({
+  userId,
   subscription,
   stripeConfigured,
   checkoutStatus,
@@ -239,6 +241,7 @@ export function ProfileSettingsHub({
         id="program-plan"
       >
         <ProgramPlanSetting
+          userId={userId}
           initialGoal={initialGoal}
           initialFatLossPace={initialFatLossPace}
           initialRecompPriority={initialRecompPriority}

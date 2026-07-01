@@ -168,6 +168,7 @@ export default async function ProfilePage({
 
       <div className={`${appHeaderGap} ${appSectionStack}`}>
         <ProfileSettingsHub
+          userId={user?.id ?? ""}
           subscription={subscription}
           stripeConfigured={isStripeProConfigured()}
           checkoutStatus={checkoutStatus}

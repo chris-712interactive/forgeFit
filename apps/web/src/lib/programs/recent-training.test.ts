@@ -5,7 +5,9 @@ import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import {
   buildRecentTrainingContextFromSessions,
   findMostRecentCompletedSessionKind,
+  findYesterdayCompletedSessionKind,
   planReferenceDateForRecentTraining,
+  resolveLastSessionKindForRegenerate,
 } from "./recent-training";
 
 const priorPlan = {
@@ -96,88 +98,36 @@ test("buildRecentTrainingContextFromSessions includes only prior-week completion
   assert.ok(!context.muscleGroups.includes("chest"));
 });
 
-test("buildRecentTrainingContextFromSessions ignores incomplete sets", () => {
+test("findYesterdayCompletedSessionKind prefers yesterday over older sessions", () => {
   const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
-  const referenceDate = new Date(2026, 6, 2, 12, 0, 0, 0);
-
-  const partial = session({
-    clientId: "partial",
-    dayIndex: 0,
-    status: "completed",
-    startedAt: "2026-06-30T10:00:00.000Z",
-    completedAt: "2026-06-30T11:00:00.000Z",
-    sets: [
-      {
-        exerciseId: "barbell_squat",
-        exerciseName: "Barbell Squat",
-        setNumber: 1,
-        completed: false,
-      },
-      {
-        exerciseId: "romanian_deadlift",
-        exerciseName: "Romanian Deadlift",
-        setNumber: 1,
-        completed: true,
-      },
-    ],
-  });
-
-  const context = buildRecentTrainingContextFromSessions(
-    [partial],
-    priorPlan,
-    startDate,
-    referenceDate
-  );
-
-  assert.deepEqual(context.exerciseIds, ["romanian_deadlift"]);
-});
-
-test("buildRecentTrainingContextFromSessions captures last completed session kind", () => {
-  const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
-  const referenceDate = new Date(2026, 6, 2, 12, 0, 0, 0);
-
-  const mondayUpper = session({
-    clientId: "mon-upper",
-    dayIndex: 0,
-    status: "completed",
-    startedAt: "2026-06-30T10:00:00.000Z",
-    completedAt: "2026-06-30T11:00:00.000Z",
-    sets: [
-      {
-        exerciseId: "barbell_bench",
-        exerciseName: "Barbell Bench",
-        setNumber: 1,
-        completed: true,
-      },
-    ],
-  });
-  mondayUpper.sessionName = "Upper";
-
-  const tuesdayLower = session({
-    clientId: "tue-lower",
-    dayIndex: 1,
+  const yesterdayUpper = session({
+    clientId: "yesterday-upper",
+    dayIndex: 4,
     status: "completed",
     startedAt: "2026-07-01T10:00:00.000Z",
     completedAt: "2026-07-01T11:00:00.000Z",
-    sets: [
-      {
-        exerciseId: "barbell_squat",
-        exerciseName: "Barbell Squat",
-        setNumber: 1,
-        completed: true,
-      },
-    ],
+    sets: [],
   });
-  tuesdayLower.sessionName = "Lower";
+  yesterdayUpper.sessionName = "Upper";
 
-  const context = buildRecentTrainingContextFromSessions(
-    [mondayUpper, tuesdayLower],
-    priorPlan,
-    startDate,
-    referenceDate
+  const olderLower = session({
+    clientId: "older-lower",
+    dayIndex: 0,
+    status: "completed",
+    startedAt: "2026-06-28T10:00:00.000Z",
+    completedAt: "2026-06-28T11:00:00.000Z",
+    sets: [],
+  });
+  olderLower.sessionName = "Lower";
+
+  assert.equal(
+    findYesterdayCompletedSessionKind([olderLower, yesterdayUpper], startDate),
+    "upper"
   );
-
-  assert.equal(context.lastSessionKind, "lower");
+  assert.equal(
+    resolveLastSessionKindForRegenerate([olderLower, yesterdayUpper], startDate),
+    "upper"
+  );
 });
 
 test("findMostRecentCompletedSessionKind uses calendar date, not plan slot matching", () => {
@@ -196,6 +146,30 @@ test("findMostRecentCompletedSessionKind uses calendar date, not plan slot match
     findMostRecentCompletedSessionKind([yesterdayUpper], startDate),
     "upper"
   );
+});
+
+test("buildRecentTrainingContextFromSessions captures last completed session kind", () => {
+  const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
+  const referenceDate = new Date(2026, 6, 2, 12, 0, 0, 0);
+
+  const tuesdayLower = session({
+    clientId: "tue-lower",
+    dayIndex: 1,
+    status: "completed",
+    startedAt: "2026-07-01T10:00:00.000Z",
+    completedAt: "2026-07-01T11:00:00.000Z",
+    sets: [],
+  });
+  tuesdayLower.sessionName = "Lower";
+
+  const context = buildRecentTrainingContextFromSessions(
+    [tuesdayLower],
+    priorPlan,
+    startDate,
+    referenceDate
+  );
+
+  assert.equal(context.lastSessionKind, "lower");
 });
 
 test("planReferenceDateForRecentTraining uses plan start when regenerate starts later", () => {

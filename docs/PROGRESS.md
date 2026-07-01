@@ -36,6 +36,16 @@
 
 ## Session Log
 
+### 2026-07-01 — Fix rebuild without plan changes missing session history
+
+**What was done:**
+- Rebuild always loads recent training when a prior plan exists (removed gate that could skip context)
+- `lastSessionKind` prioritizes **yesterday's** completed workout by calendar date; falls back to direct Supabase query
+- Rebuild button resets start date to today and passes local (IndexedDB) workout history to the server action
+- Regenerate scheduling uses `startIso <= todayIso` for forward-only weekdays
+
+**Files touched:** `recent-training.ts`, `service.ts`, `program.ts`, `program-plan-setting.tsx`, `profile-settings-hub.tsx`, `profile/page.tsx`, `generate.ts`, `types.ts`, tests, `docs/PROGRESS.md`
+
 ### 2026-07-01 — Fix regenerate still scheduling same session type next day
 
 **What was done:**

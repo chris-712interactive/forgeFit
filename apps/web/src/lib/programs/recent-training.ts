@@ -5,6 +5,7 @@ import {
   type ProgramPlan,
   type RecentTrainingContext,
 } from "@forgefit/program-engine";
+import { createClient } from "@/lib/supabase/server";
 import { planScheduleStartIso } from "@/lib/programs/start-date";
 import {
   sessionDateIso,
@@ -18,30 +19,22 @@ function pushUnique(target: string[], value: string): void {
   }
 }
 
-function startOfDay(date: Date): Date {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
-
-/** Most recent completed session kind before regenerate — calendar-based, not plan-slot matching. */
-export function findMostRecentCompletedSessionKind(
+/** Completed session kind from the calendar day before plan start (most common regenerate case). */
+export function findYesterdayCompletedSessionKind(
   records: WorkoutSessionRecord[],
-  startDate: Date,
-  maxLookbackDays = 14
+  startDate: Date
 ): string | undefined {
-  const startMs = startOfDay(startDate).getTime();
-  const minMs = startMs - maxLookbackDays * 86_400_000;
+  const yesterday = new Date(startDate);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayIso = toScheduleStartIso(yesterday);
 
   let best: { when: number; kind: string } | undefined;
 
   for (const record of records) {
     if (record.status !== "completed") continue;
+    if (sessionDateIso(record) !== yesterdayIso) continue;
 
     const when = new Date(record.completedAt ?? record.startedAt).getTime();
-    if (when >= startMs) continue;
-    if (when < minMs) continue;
-
     if (!best || when > best.when) {
       best = { when, kind: sessionKind(record.sessionName) };
     }
@@ -50,17 +43,99 @@ export function findMostRecentCompletedSessionKind(
   return best?.kind;
 }
 
+/** Most recent completed session kind before regenerate — calendar-based, not plan-slot matching. */
+export function findMostRecentCompletedSessionKind(
+  records: WorkoutSessionRecord[],
+  startDate: Date,
+  maxLookbackDays = 14
+): string | undefined {
+  const startIso = toScheduleStartIso(startDate);
+  const minDate = new Date(startDate);
+  minDate.setDate(minDate.getDate() - maxLookbackDays);
+  const minIso = toScheduleStartIso(minDate);
+
+  let best: { when: number; kind: string } | undefined;
+
+  for (const record of records) {
+    if (record.status !== "completed") continue;
+
+    const dateIso = sessionDateIso(record);
+    if (dateIso >= startIso) continue;
+    if (dateIso < minIso) continue;
+
+    const when = new Date(record.completedAt ?? record.startedAt).getTime();
+    if (!best || when > best.when) {
+      best = { when, kind: sessionKind(record.sessionName) };
+    }
+  }
+
+  return best?.kind;
+}
+
+export function resolveLastSessionKindForRegenerate(
+  records: WorkoutSessionRecord[],
+  startDate: Date
+): string | undefined {
+  return (
+    findYesterdayCompletedSessionKind(records, startDate) ??
+    findMostRecentCompletedSessionKind(records, startDate)
+  );
+}
+
+function mapDbSessionRow(row: {
+  session_name: string;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+}): WorkoutSessionRecord {
+  return {
+    id: "db",
+    clientId: "db",
+    dayIndex: 0,
+    sessionName: String(row.session_name),
+    status: String(row.status),
+    startedAt: String(row.started_at),
+    completedAt: row.completed_at,
+    sets: [],
+  };
+}
+
+/** Direct DB read when bundled session fetch returns no usable history. */
+export async function fetchLastSessionKindFromDb(
+  userId: string,
+  startDate: Date
+): Promise<string | undefined> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workout_sessions")
+    .select("session_name, status, started_at, completed_at")
+    .eq("user_id", userId)
+    .eq("status", "completed")
+    .order("completed_at", { ascending: false, nullsFirst: false })
+    .limit(30);
+
+  if (!data?.length) return undefined;
+
+  return resolveLastSessionKindForRegenerate(
+    data.map(mapDbSessionRow),
+    startDate
+  );
+}
+
 /** Collect exercises and muscles from completed sessions before a regenerate start date. */
 export function buildRecentTrainingContextFromSessions(
   records: WorkoutSessionRecord[],
   priorPlan: ProgramPlan,
   startDate: Date,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  lastSessionKindOverride?: string
 ): RecentTrainingContext {
   const startIso = toScheduleStartIso(startDate);
   const exerciseIds: string[] = [];
   const muscleGroups: string[] = [];
-  const lastSessionKind = findMostRecentCompletedSessionKind(records, startDate);
+  const lastSessionKind =
+    lastSessionKindOverride ??
+    resolveLastSessionKindForRegenerate(records, startDate);
 
   for (const record of records) {
     if (record.status !== "completed") continue;
@@ -88,14 +163,6 @@ export function buildRecentTrainingContextFromSessions(
   }
 
   return { exerciseIds, muscleGroups, lastSessionKind };
-}
-
-/** True when prior plan has schedule metadata worth matching against. */
-export function priorPlanSupportsRecentTraining(
-  priorPlan: ProgramPlan | null
-): priorPlan is ProgramPlan {
-  if (!priorPlan) return false;
-  return Boolean(priorPlan.scheduleStartDate ?? priorPlan.generatedAt);
 }
 
 export function planReferenceDateForRecentTraining(

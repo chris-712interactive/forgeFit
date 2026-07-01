@@ -171,4 +171,6 @@ export interface GenerateProgramOptions {
   scheduleFromTodayOnly?: boolean;
   /** Regenerate: exercises and muscles from recent completed sessions before startDate */
   recentTraining?: RecentTrainingContext;
+  /** Client/server fallback when workout history query misses local-only completions */
+  lastSessionKindOverride?: string;
 }

@@ -18,6 +18,8 @@ import {
   SPORT_PERFORMANCE_GOAL,
 } from "@/lib/constants/onboarding";
 import { todayScheduleStartIso } from "@/lib/programs/start-date";
+import { resolveLastSessionKindForRegenerate } from "@/lib/programs/recent-training";
+import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import type {
   FatLossPace,
   FitnessGoal,
@@ -36,6 +38,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
 interface ProgramPlanSettingProps {
+  userId: string;
   initialGoal: FitnessGoal | null;
   initialFatLossPace: FatLossPace | null;
   initialRecompPriority: RecompPriority | null;
@@ -53,6 +56,7 @@ interface ProgramPlanSettingProps {
 }
 
 export function ProgramPlanSetting({
+  userId,
   initialGoal,
   initialFatLossPace,
   initialRecompPriority,
@@ -422,11 +426,27 @@ export function ProgramPlanSetting({
           <button
             type="button"
             disabled={pending}
-            onClick={() =>
-              runAction(() =>
-                rebuildProgram({ schedule_start_date: scheduleStartDate })
-              )
-            }
+            onClick={() => {
+              const today = todayScheduleStartIso();
+              setScheduleStartDate(today);
+              runAction(async () => {
+                let lastCompletedSessionKind: string | undefined;
+                try {
+                  const localSessions = await loadLocalSessionRecords(userId);
+                  lastCompletedSessionKind = resolveLastSessionKindForRegenerate(
+                    localSessions,
+                    new Date()
+                  );
+                } catch {
+                  // IndexedDB unavailable — server will load history
+                }
+
+                return rebuildProgram({
+                  schedule_start_date: today,
+                  last_completed_session_kind: lastCompletedSessionKind,
+                });
+              });
+            }}
             className="min-h-[48px] flex-1 rounded-xl border border-forge-ember/40 px-4 text-sm font-semibold text-forge-ember disabled:opacity-50"
           >
             Rebuild plan

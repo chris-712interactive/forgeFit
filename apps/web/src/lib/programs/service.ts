@@ -15,8 +15,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import {
   buildRecentTrainingContextFromSessions,
+  fetchLastSessionKindFromDb,
   planReferenceDateForRecentTraining,
-  priorPlanSupportsRecentTraining,
+  resolveLastSessionKindForRegenerate,
 } from "./recent-training";
 
 export async function loadUserProgramContext(userId: string) {
@@ -116,7 +117,7 @@ async function countCompletedSessions(userId: string): Promise<number> {
 export async function generateAndSaveProgram(
   userId: string,
   previousPlan: ProgramPlan | null = null,
-  options: { startDate?: Date } = {}
+  options: { startDate?: Date; lastSessionKindOverride?: string } = {}
 ): Promise<{ plan: ProgramPlan; previousPlan: ProgramPlan | null } | { error: string }> {
   const ctx = await loadUserProgramContext(userId);
   if (!ctx) {
@@ -137,13 +138,21 @@ export async function generateAndSaveProgram(
   const isRegenerate = priorPlan != null;
 
   let recentTraining;
-  if (priorPlanSupportsRecentTraining(priorPlan)) {
-    const { records } = await getServerSessionRecords(userId, 40);
+  if (isRegenerate && priorPlan) {
+    const { records } = await getServerSessionRecords(userId, 50);
+    let lastSessionKind =
+      options.lastSessionKindOverride ??
+      resolveLastSessionKindForRegenerate(records, startDate);
+    if (!lastSessionKind) {
+      lastSessionKind = await fetchLastSessionKindFromDb(userId, startDate);
+    }
+
     recentTraining = buildRecentTrainingContextFromSessions(
       records,
       priorPlan,
       startDate,
-      planReferenceDateForRecentTraining(priorPlan, startDate)
+      planReferenceDateForRecentTraining(priorPlan, startDate),
+      lastSessionKind
     );
   }
 
@@ -152,8 +161,9 @@ export async function generateAndSaveProgram(
     isDeloadWeek,
     deloadVolumeReductionPct: 40,
     scheduleFromTodayOnly:
-      isRegenerate && !isFutureStart && startIso === todayIso,
+      isRegenerate && !isFutureStart && startIso <= todayIso,
     recentTraining,
+    lastSessionKindOverride: recentTraining?.lastSessionKind,
   });
 
   const supabase = await createClient();
