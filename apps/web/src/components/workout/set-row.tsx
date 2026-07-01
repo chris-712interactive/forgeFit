@@ -4,6 +4,7 @@ import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { weightUnitLabel } from "@/lib/units/measurements";
 import { useWorkoutWeightInput } from "@/components/workout/use-workout-weight-input";
 import {
+  exerciseLogsPerDumbbell,
   exerciseTracksWeight,
   isTimedCardioExercise,
   isTimedExercise,
@@ -91,6 +92,7 @@ export function SetRow({
   const isTimed = isTimedExercise(exerciseId);
   const isCardio = isTimedCardioExercise(exerciseId);
   const tracksWeight = exerciseTracksWeight(exerciseId);
+  const perDumbbell = exerciseLogsPerDumbbell(exerciseId);
   const targetLogValue = parseTimedTargetValue(targetReps);
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
@@ -281,6 +283,11 @@ export function SetRow({
           <label className="min-w-0">
             <span className="mb-1 block text-xs font-medium text-forge-muted">
               Weight ({weightLabel})
+              {perDumbbell && (
+                <span className="ml-1 font-normal text-forge-steel">
+                  · per dumbbell
+                </span>
+              )}
               {showProgressionHint && set.weightKg != null && (
                 <span className="ml-1 font-normal text-forge-steel">
                   · suggested

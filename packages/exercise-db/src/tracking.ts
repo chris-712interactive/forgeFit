@@ -16,6 +16,31 @@ export function isBodyweightOnlyExercise(exerciseId: string): boolean {
   );
 }
 
+/** Single implement held with both hands — log total weight, not per hand. */
+const SINGLE_IMPLEMENT_EXERCISE_IDS = new Set(["goblet_squat"]);
+
+/**
+ * Whether logged weight is one dumbbell (each hand), not the combined pair.
+ * Used for bilateral and unilateral dumbbell lifts; excludes goblet-style holds.
+ */
+export function exerciseLogsPerDumbbell(exerciseId: string): boolean {
+  if (!exerciseTracksWeight(exerciseId)) return false;
+  if (SINGLE_IMPLEMENT_EXERCISE_IDS.has(exerciseId)) return false;
+
+  const detail = resolveExerciseDetail(exerciseId);
+  if (!detail) return false;
+
+  const equipment = new Set(detail.equipment);
+  if (!equipment.has("dumbbells")) return false;
+
+  // Dual-modality lifts (e.g. barbell or dumbbells) log total bar weight on the bar.
+  if (equipment.has("barbell") && !exerciseId.includes("dumbbell")) {
+    return false;
+  }
+
+  return true;
+}
+
 /** Whether the workout logger should show a weight field for this exercise. */
 export function exerciseTracksWeight(exerciseId: string): boolean {
   if (isTimedExercise(exerciseId)) return false;

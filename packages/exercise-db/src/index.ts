@@ -24,6 +24,7 @@ export {
 export { resolveExerciseDetail } from "./resolve";
 export { isExerciseAvailable, isBodyweightOnlyMode } from "./availability";
 export {
+  exerciseLogsPerDumbbell,
   exerciseTracksWeight,
   isBodyweightOnlyExercise,
 } from "./tracking";

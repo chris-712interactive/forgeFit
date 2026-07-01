@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 9 in progress (9A–9I shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Workout weight input overwrite fix |
+| **Last session focus** | Per-dumbbell weight hint in workout logger |
 
 ---
 
@@ -34,6 +34,23 @@
 ---
 
 ## Session Log
+
+### 2026-07-01 — Per-dumbbell weight hint in workout logger
+
+**What was done:**
+- Added `exerciseLogsPerDumbbell()` in `@forgefit/exercise-db` to detect dumbbell lifts where logged weight is one bell (each hand), excluding goblet-style single-implement holds and barbell-primary dual-modality lifts
+- Workout set row shows `· per dumbbell` next to the weight label for those exercises
+
+**What's next:**
+- Consider the same hint on profile 1RM fields if dumbbell-specific maxes are added later
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/exercise-db/src/tracking.ts`
+- `packages/exercise-db/src/index.ts`
+- `apps/web/src/components/workout/set-row.tsx`
+- `docs/PROGRESS.md`
 
 ### 2026-06-30 — Profile program section redesign
 
