@@ -15,10 +15,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import {
   buildRecentTrainingContextFromSessions,
-  fetchLastSessionKindFromDb,
   planReferenceDateForRecentTraining,
   resolveLastSessionKindForRegenerate,
 } from "./recent-training";
+import { fetchLastSessionKindFromDb } from "./recent-training-server";
 
 export async function loadUserProgramContext(userId: string) {
   const supabase = await createClient();

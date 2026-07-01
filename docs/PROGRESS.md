@@ -44,7 +44,7 @@
 - Rebuild button resets start date to today and passes local (IndexedDB) workout history to the server action
 - Regenerate scheduling uses `startIso <= todayIso` for forward-only weekdays
 
-**Files touched:** `recent-training.ts`, `service.ts`, `program.ts`, `program-plan-setting.tsx`, `profile-settings-hub.tsx`, `profile/page.tsx`, `generate.ts`, `types.ts`, tests, `docs/PROGRESS.md`
+**Files touched:** `recent-training.ts`, `recent-training-server.ts`, `service.ts`, `program.ts`, `program-plan-setting.tsx`, `profile-settings-hub.tsx`, `profile/page.tsx`, `generate.ts`, `types.ts`, tests, `docs/PROGRESS.md`
 
 ### 2026-07-01 — Fix regenerate still scheduling same session type next day
 
