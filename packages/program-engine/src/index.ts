@@ -55,6 +55,7 @@ export {
   parseScheduleStartIso,
   toScheduleStartIso,
 } from "./schedule";
+export { sessionKind } from "./session-kind";
 export type {
   ProgramPlan,
   ProgramUserProfile,

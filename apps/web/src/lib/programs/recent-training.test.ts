@@ -131,6 +131,54 @@ test("buildRecentTrainingContextFromSessions ignores incomplete sets", () => {
   assert.deepEqual(context.exerciseIds, ["romanian_deadlift"]);
 });
 
+test("buildRecentTrainingContextFromSessions captures last completed session kind", () => {
+  const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
+  const referenceDate = new Date(2026, 6, 2, 12, 0, 0, 0);
+
+  const mondayUpper = session({
+    clientId: "mon-upper",
+    dayIndex: 0,
+    status: "completed",
+    startedAt: "2026-06-30T10:00:00.000Z",
+    completedAt: "2026-06-30T11:00:00.000Z",
+    sets: [
+      {
+        exerciseId: "barbell_bench",
+        exerciseName: "Barbell Bench",
+        setNumber: 1,
+        completed: true,
+      },
+    ],
+  });
+  mondayUpper.sessionName = "Upper";
+
+  const tuesdayLower = session({
+    clientId: "tue-lower",
+    dayIndex: 1,
+    status: "completed",
+    startedAt: "2026-07-01T10:00:00.000Z",
+    completedAt: "2026-07-01T11:00:00.000Z",
+    sets: [
+      {
+        exerciseId: "barbell_squat",
+        exerciseName: "Barbell Squat",
+        setNumber: 1,
+        completed: true,
+      },
+    ],
+  });
+  tuesdayLower.sessionName = "Lower";
+
+  const context = buildRecentTrainingContextFromSessions(
+    [mondayUpper, tuesdayLower],
+    priorPlan,
+    startDate,
+    referenceDate
+  );
+
+  assert.equal(context.lastSessionKind, "lower");
+});
+
 test("planReferenceDateForRecentTraining uses plan start when regenerate starts later", () => {
   const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
   const ref = planReferenceDateForRecentTraining(priorPlan, startDate);

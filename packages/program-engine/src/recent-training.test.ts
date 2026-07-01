@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { pickExerciseForPattern } from "@forgefit/exercise-db";
 import { generateProgram } from "./generate";
+import { sessionKind } from "./session-kind";
 import type { ProgramUserProfile } from "./types";
 
 const gymProfile: ProgramUserProfile = {
@@ -74,4 +75,26 @@ test("recentMuscleGroups deprioritize overlapping primary muscles", () => {
 
   assert.equal(defaultPick?.id, "barbell_bench");
   assert.equal(deprioritized?.id, "cable_fly");
+});
+
+test("regenerate avoids scheduling upper the day after a completed upper session", () => {
+  const profile: ProgramUserProfile = {
+    ...gymProfile,
+    goal: "recomposition",
+    sessionsPerWeek: 4,
+  };
+
+  const plan = generateProgram(profile, {
+    startDate: new Date(2026, 6, 2, 12, 0, 0),
+    scheduleFromTodayOnly: true,
+    recentTraining: {
+      exerciseIds: [],
+      muscleGroups: [],
+      lastSessionKind: "upper",
+    },
+  });
+
+  const firstUpcoming = [...plan.week].sort((a, b) => a.dayIndex - b.dayIndex)[0];
+  assert.ok(firstUpcoming);
+  assert.notEqual(sessionKind(firstUpcoming.name), "upper");
 });

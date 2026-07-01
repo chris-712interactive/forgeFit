@@ -1,5 +1,6 @@
 import { getExerciseById } from "@forgefit/exercise-db";
 import {
+  sessionKind,
   toScheduleStartIso,
   type ProgramPlan,
   type RecentTrainingContext,
@@ -27,6 +28,8 @@ export function buildRecentTrainingContextFromSessions(
   const startIso = toScheduleStartIso(startDate);
   const exerciseIds: string[] = [];
   const muscleGroups: string[] = [];
+  let lastSessionKind: string | undefined;
+  let latestCompletionMs = -1;
 
   for (const record of records) {
     if (record.status !== "completed") continue;
@@ -34,6 +37,14 @@ export function buildRecentTrainingContextFromSessions(
       continue;
     }
     if (sessionDateIso(record) >= startIso) continue;
+
+    const completedAtMs = new Date(
+      record.completedAt ?? record.startedAt
+    ).getTime();
+    if (completedAtMs > latestCompletionMs) {
+      latestCompletionMs = completedAtMs;
+      lastSessionKind = sessionKind(record.sessionName);
+    }
 
     const completedExerciseIds = [
       ...new Set(
@@ -53,7 +64,7 @@ export function buildRecentTrainingContextFromSessions(
     }
   }
 
-  return { exerciseIds, muscleGroups };
+  return { exerciseIds, muscleGroups, lastSessionKind };
 }
 
 /** True when prior plan has schedule metadata worth matching against. */

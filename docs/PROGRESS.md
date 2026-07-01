@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Regenerate dedup vs recent completions |
+| **Last session focus** | Regenerate avoids back-to-back session types |
 
 ---
 
@@ -35,6 +35,22 @@
 ---
 
 ## Session Log
+
+### 2026-07-01 — Regenerate avoids back-to-back same session type
+
+**What was done:**
+- Recent training context now includes `lastSessionKind` from the most recently completed session
+- On regenerate, the weekly split rotates so today's first session is not the same kind as yesterday (e.g. Upper → Lower)
+- Consecutive calendar days in the new plan swap templates when they would repeat the same session kind
+
+**What's next:** Manual QA: complete Upper, regenerate next day, confirm Lower (or Pull/Legs) is scheduled first
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/program-engine/src/session-kind.ts`, `session-kind.test.ts`, `generate.ts`, `types.ts`, `recent-training.test.ts`, `index.ts`
+- `apps/web/src/lib/programs/recent-training.ts`, `recent-training.test.ts`
+- `docs/PROGRESS.md`
 
 ### 2026-07-01 — Regenerate plan respects recent completed workouts
 

@@ -158,6 +158,8 @@ export interface ProgramPlan {
 export interface RecentTrainingContext {
   exerciseIds: string[];
   muscleGroups: string[];
+  /** Normalized kind of the most recently completed session (e.g. upper, lower). */
+  lastSessionKind?: string;
 }
 
 export interface GenerateProgramOptions {

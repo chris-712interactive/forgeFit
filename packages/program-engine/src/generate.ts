@@ -29,6 +29,10 @@ import {
 } from "./session-time";
 import { buildConditioningBlock } from "./conditioning";
 import {
+  avoidConsecutiveSameKind,
+  rotateSplitAvoidingKind,
+} from "./session-kind";
+import {
   absorbSessionIntoMemory,
   createWeekExerciseMemory,
   type WeekExerciseMemory,
@@ -757,6 +761,9 @@ export function generateProgram(
   if (sessionCap != null && split.length > sessionCap) {
     split = split.slice(0, sessionCap);
   }
+  if (options.recentTraining?.lastSessionKind) {
+    split = rotateSplitAvoidingKind(split, options.recentTraining.lastSessionKind);
+  }
   const startDate = options.startDate ?? new Date();
   const anchorWeekday = isoWeekdayFromDate(startDate);
   const sessionWeekdays = assignSessionWeekdays(split.length, anchorWeekday, {
@@ -772,6 +779,10 @@ export function generateProgram(
       dayIndex: sessionWeekdays[i] ?? anchorWeekday,
     }))
     .sort((a, b) => a.dayIndex - b.dayIndex);
+
+  if (options.recentTraining?.lastSessionKind) {
+    avoidConsecutiveSameKind(templatesWithDays);
+  }
 
   const week = templatesWithDays.map(({ template, dayIndex }) => {
     const session = buildSession(
