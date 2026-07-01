@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 9 in progress (9A–9I shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Per-dumbbell weight hint in workout logger |
+| **Last session focus** | Community PR weight units (imperial display) |
 
 ---
 

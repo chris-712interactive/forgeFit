@@ -13,4 +13,5 @@ export type {
   HabitScoreResult,
   PreWorkoutHypeInput,
   PrCelebrationInput,
+  UnitSystem,
 } from "./types";

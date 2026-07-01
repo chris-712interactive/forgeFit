@@ -1,5 +1,11 @@
+"use client";
+
 import { CommunityWinInteractions } from "@/components/coaching/community-win-interactions";
-import { winTypeLabel } from "@/lib/coaching/community-labels";
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
+import {
+  formatCommunityWinDetail,
+  winTypeLabel,
+} from "@/lib/coaching/community-labels";
 import type { GamificationContext } from "@/lib/coaching/types";
 import Link from "next/link";
 
@@ -25,6 +31,8 @@ export function CommunityWinsFeed({
   compact = false,
   maxItems,
 }: CommunityWinsFeedProps) {
+  const unit = useUnitPreference();
+
   if (!gamification.unlocked) {
     return null;
   }
@@ -102,7 +110,9 @@ export function CommunityWinsFeed({
                     {win.headline}
                   </p>
                   {!compact && win.detail && (
-                    <p className="mt-1 text-xs text-forge-muted">{win.detail}</p>
+                    <p className="mt-1 text-xs text-forge-muted">
+                      {formatCommunityWinDetail(win.detail, unit)}
+                    </p>
                   )}
                 </div>
                 {!compact && (

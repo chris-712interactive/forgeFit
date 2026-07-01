@@ -389,6 +389,7 @@ export function ActiveWorkout({
               e1rmKg: detected.e1rmKg,
               goal: coaching.goal as CoachingGoal,
               displayName: coaching.displayName,
+              unitSystem: unit,
             });
             const detail = pickPrCelebrationBody({
               exerciseLabel: detected.label,
@@ -397,6 +398,7 @@ export function ActiveWorkout({
               e1rmKg: detected.e1rmKg,
               goal: coaching.goal as CoachingGoal,
               displayName: coaching.displayName,
+              unitSystem: unit,
             });
             void publishWorkoutPrWin({ headline, detail });
           }
@@ -975,6 +977,7 @@ export function ActiveWorkout({
             e1rmKg: celebrationPr.e1rmKg,
             goal: coaching.goal as CoachingGoal,
             displayName: coaching.displayName,
+            unitSystem: unit,
           })}
           body={pickPrCelebrationBody({
             exerciseLabel: celebrationPr.label,
@@ -983,6 +986,7 @@ export function ActiveWorkout({
             e1rmKg: celebrationPr.e1rmKg,
             goal: coaching.goal as CoachingGoal,
             displayName: coaching.displayName,
+            unitSystem: unit,
           })}
           onClose={() => setCelebrationPr(null)}
         />

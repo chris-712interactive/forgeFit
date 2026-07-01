@@ -1,6 +1,11 @@
 "use client";
 
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import type { DetectedWorkoutPr } from "@/lib/coaching/detect-pr";
+import {
+  kgToDisplayValue,
+  weightUnitLabel,
+} from "@/lib/units/measurements";
 import { useEffect } from "react";
 
 interface PrCelebrationModalProps {
@@ -16,6 +21,9 @@ export function PrCelebrationModal({
   body,
   onClose,
 }: PrCelebrationModalProps) {
+  const unit = useUnitPreference();
+  const weightLabel = weightUnitLabel(unit);
+
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -44,7 +52,7 @@ export function PrCelebrationModal({
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/95">{body}</p>
           <p className="mt-4 font-display text-3xl font-bold text-white">
-            ~{pr.e1rmKg} kg e1RM
+            ~{kgToDisplayValue(pr.e1rmKg, unit)} {weightLabel} e1RM
           </p>
         </div>
         <div className="bg-forge-surface-raised px-6 py-4">

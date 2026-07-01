@@ -1,4 +1,16 @@
-import type { CoachingGoal, PrCelebrationInput } from "./types";
+import type { CoachingGoal, PrCelebrationInput, UnitSystem } from "./types";
+
+const KG_PER_LB = 0.45359237;
+
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+function formatWeightDisplay(kg: number, unit: UnitSystem): string {
+  return unit === "imperial"
+    ? `${round1(kg / KG_PER_LB)} lb`
+    : `${round1(kg)} kg`;
+}
 
 const GOAL_LINES: Record<CoachingGoal, string[]> = {
   fat_loss: [
@@ -38,9 +50,10 @@ export function pickPrCelebrationHeadline(input: PrCelebrationInput): string {
 
 export function pickPrCelebrationBody(input: PrCelebrationInput): string {
   const prefix = namePrefix(input.displayName);
+  const unit = input.unitSystem ?? "metric";
   const goalLine = hashPick(
     GOAL_LINES[input.goal],
     Math.round(input.e1rmKg * 10) + input.reps
   );
-  return `${prefix}${input.reps} reps at ${Math.round(input.weightKg * 10) / 10} kg. ${goalLine}`;
+  return `${prefix}${input.reps} reps at ${formatWeightDisplay(input.weightKg, unit)}. ${goalLine}`;
 }

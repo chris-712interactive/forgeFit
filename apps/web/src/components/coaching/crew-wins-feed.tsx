@@ -1,7 +1,11 @@
 "use client";
 
 import { CommunityWinCheerButton } from "@/components/coaching/community-win-cheer-button";
-import { winTypeLabel } from "@/lib/coaching/community-labels";
+import {
+  formatCommunityWinDetail,
+  winTypeLabel,
+} from "@/lib/coaching/community-labels";
+import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import type { CommunityWinRow } from "@/lib/coaching/types";
 
 interface CrewWinsFeedProps {
@@ -9,6 +13,8 @@ interface CrewWinsFeedProps {
 }
 
 export function CrewWinsFeed({ wins }: CrewWinsFeedProps) {
+  const unit = useUnitPreference();
+
   if (wins.length === 0) {
     return (
       <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
@@ -47,7 +53,9 @@ export function CrewWinsFeed({ wins }: CrewWinsFeedProps) {
                   {win.headline}
                 </p>
                 {win.detail && (
-                  <p className="mt-1 text-xs text-forge-muted">{win.detail}</p>
+                  <p className="mt-1 text-xs text-forge-muted">
+                    {formatCommunityWinDetail(win.detail, unit)}
+                  </p>
                 )}
               </div>
               <CommunityWinCheerButton

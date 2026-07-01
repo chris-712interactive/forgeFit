@@ -1,5 +1,25 @@
 import type { ExperienceLevel, FitnessGoal } from "@/lib/types/profile";
 import { EXPERIENCE_LEVELS, FITNESS_GOALS } from "@/lib/constants/onboarding";
+import {
+  formatWeight,
+  type UnitSystem,
+} from "@/lib/units/measurements";
+
+/** Converts legacy metric PR win copy for the viewer's unit preference. */
+export function formatCommunityWinDetail(
+  detail: string | null,
+  unit: UnitSystem
+): string | null {
+  if (!detail || unit === "metric") {
+    return detail;
+  }
+
+  return detail.replace(
+    /(\d+(?:\.\d+)?)\s+reps\s+at\s+(\d+(?:\.\d+)?)\s+kg\b/gi,
+    (_, reps: string, kg: string) =>
+      `${reps} reps at ${formatWeight(Number(kg), unit)}`
+  );
+}
 
 export function bucketLabel(
   goal: FitnessGoal | string | null | undefined,

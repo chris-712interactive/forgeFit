@@ -18,6 +18,8 @@ export interface PreWorkoutHypeInput {
   workoutsPlannedThisWeek?: number;
 }
 
+export type UnitSystem = "metric" | "imperial";
+
 export interface PrCelebrationInput {
   exerciseLabel: string;
   weightKg: number;
@@ -25,6 +27,8 @@ export interface PrCelebrationInput {
   e1rmKg: number;
   goal: CoachingGoal;
   displayName?: string | null;
+  /** Defaults to metric when omitted. */
+  unitSystem?: UnitSystem;
 }
 
 export interface HabitScoreInput {
