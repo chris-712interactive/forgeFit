@@ -35,6 +35,29 @@
 
 ## Session Log
 
+### 2026-07-01 — Community PR weight units respect imperial preference
+
+**What was done:**
+- PR celebration modal and community win copy now format weights in the viewer's unit preference (lb vs kg)
+- `pickPrCelebrationBody` accepts `unitSystem`; workout logger passes the active preference when publishing PR wins
+- Community and crew win feeds localize legacy metric PR detail text for imperial viewers
+
+**What's next:**
+- Manual QA: set profile to imperial, hit a PR, confirm celebration + community feed show pounds
+
+**Blockers:** None
+
+**Files touched:**
+- `packages/coaching/src/types.ts`
+- `packages/coaching/src/pr-celebration.ts`
+- `packages/coaching/src/index.ts`
+- `apps/web/src/lib/coaching/community-labels.ts`
+- `apps/web/src/components/coaching/pr-celebration-modal.tsx`
+- `apps/web/src/components/coaching/community-wins-feed.tsx`
+- `apps/web/src/components/coaching/crew-wins-feed.tsx`
+- `apps/web/src/components/workout/active-workout.tsx`
+- `docs/PROGRESS.md`
+
 ### 2026-07-01 — Fix completed workout still showing Start button
 
 **What was done:**
