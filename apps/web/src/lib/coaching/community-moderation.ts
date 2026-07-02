@@ -9,18 +9,8 @@ export interface FlaggedScoreRow {
   weekStart: string;
 }
 
-export interface ModerationWinRow {
-  id: string;
-  userId: string;
-  displayLabel: string;
-  headline: string;
-  occurredAt: string;
-  hiddenAt: string | null;
-}
-
 export interface ModerationQueue {
   flaggedScores: FlaggedScoreRow[];
-  recentWins: ModerationWinRow[];
 }
 
 function moderatorIdsFromEnv(): Set<string> {
@@ -69,54 +59,15 @@ export async function getModerationQueue(input: {
 }): Promise<ModerationQueue> {
   const supabase = await createClient();
 
-  const [scoresResult, winsResult] = await Promise.all([
-    supabase
-      .from("leaderboard_entries")
-      .select("user_id, display_label, habit_score, flag_reason, week_start")
-      .eq("bucket_goal", input.bucketGoal)
-      .eq("bucket_experience", input.bucketExperience)
-      .eq("week_start", input.weekStart)
-      .eq("score_flagged", true)
-      .order("habit_score", { ascending: false })
-      .limit(20),
-    supabase
-      .from("community_wins")
-      .select("id, user_id, headline, occurred_at, hidden_at")
-      .eq("bucket_goal", input.bucketGoal)
-      .eq("bucket_experience", input.bucketExperience)
-      .order("occurred_at", { ascending: false })
-      .limit(15),
-  ]);
-
-  const winRows = winsResult.data ?? [];
-  const userIds = [
-    ...new Set([
-      ...(scoresResult.data ?? []).map((row) => row.user_id as string),
-      ...winRows.map((row) => row.user_id as string),
-    ]),
-  ];
-
-  const labelByUserId = new Map<string, string>();
-  for (const row of scoresResult.data ?? []) {
-    labelByUserId.set(row.user_id as string, row.display_label as string);
-  }
-
-  if (userIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, first_name, display_name, email")
-      .in("id", userIds);
-
-    for (const profile of profiles ?? []) {
-      if (labelByUserId.has(profile.id as string)) continue;
-      const first =
-        (profile.first_name as string | null) ??
-        (profile.display_name as string | null) ??
-        profile.email?.toString().split("@")[0] ??
-        "Forge athlete";
-      labelByUserId.set(profile.id as string, first);
-    }
-  }
+  const scoresResult = await supabase
+    .from("leaderboard_entries")
+    .select("user_id, display_label, habit_score, flag_reason, week_start")
+    .eq("bucket_goal", input.bucketGoal)
+    .eq("bucket_experience", input.bucketExperience)
+    .eq("week_start", input.weekStart)
+    .eq("score_flagged", true)
+    .order("habit_score", { ascending: false })
+    .limit(20);
 
   return {
     flaggedScores: (scoresResult.data ?? []).map((row) => ({
@@ -126,17 +77,6 @@ export async function getModerationQueue(input: {
       flagReason: (row.flag_reason as string | null) ?? null,
       weekStart: row.week_start as string,
     })),
-    recentWins: winRows.map((row) => {
-      const userId = row.user_id as string;
-      return {
-        id: row.id as string,
-        userId,
-        displayLabel: labelByUserId.get(userId) ?? "Forge athlete",
-        headline: row.headline as string,
-        occurredAt: row.occurred_at as string,
-        hiddenAt: (row.hidden_at as string | null) ?? null,
-      };
-    }),
   };
 }
 

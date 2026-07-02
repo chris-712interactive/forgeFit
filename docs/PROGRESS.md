@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Rebuild plan start-date modal |
+| **Last session focus** | Inline win moderation on community feed |
 
 ---
 
@@ -35,6 +35,18 @@
 ---
 
 ## Session Log
+
+### 2026-07-01 — Inline win moderation on community feed
+
+**What was done:**
+- Removed duplicate **Recent wins** list from the moderation panel (only **Flagged scores** remain as a separate section)
+- **Hide / Unhide / Suspend user** controls now live on each win card for moderators
+- Moderators see hidden wins in the feed (with a **Hidden** badge) so they can unhide without a separate queue
+- Public users still only see non-hidden wins
+
+**Blockers:** None
+
+**Files touched:** `community-win-moderation-controls.tsx`, `community-wins-feed.tsx`, `community-moderation-panel.tsx`, `community-moderation.ts`, `service.ts`, `types.ts`, `docs/PROGRESS.md`
 
 ### 2026-07-01 — Rebuild plan start-date modal
 

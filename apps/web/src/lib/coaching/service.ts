@@ -509,15 +509,22 @@ export async function getGamificationContext(
       .eq("bucket_experience", experience)
       .eq("bucket_age_cohort", ageCohort)
       .eq("week_start", weekStart),
-    supabase
-      .from("community_wins")
-      .select("id, user_id, win_type, headline, detail, occurred_at")
-      .eq("bucket_goal", goal)
-      .eq("bucket_experience", experience)
-      .eq("bucket_age_cohort", ageCohort)
-      .is("hidden_at", null)
-      .order("occurred_at", { ascending: false })
-      .limit(8),
+    (async () => {
+      let query = supabase
+        .from("community_wins")
+        .select(
+          "id, user_id, win_type, headline, detail, occurred_at, hidden_at"
+        )
+        .eq("bucket_goal", goal)
+        .eq("bucket_experience", experience)
+        .eq("bucket_age_cohort", ageCohort)
+        .order("occurred_at", { ascending: false })
+        .limit(isModerator ? 15 : 8);
+      if (!isModerator) {
+        query = query.is("hidden_at", null);
+      }
+      return query;
+    })(),
   ]);
 
   const tableMissing =
@@ -601,6 +608,7 @@ export async function getGamificationContext(
       headline: row.headline as string,
       detail: (row.detail as string | null) ?? null,
       occurredAt: row.occurred_at as string,
+      hiddenAt: (row.hidden_at as string | null) ?? null,
       cheerCount: 0,
       cheeredByMe: false,
       isCurrentUser: winUserId === userId,

@@ -189,6 +189,7 @@ export interface CommunityWinRow {
   headline: string;
   detail: string | null;
   occurredAt: string;
+  hiddenAt?: string | null;
   cheerCount: number;
   cheeredByMe: boolean;
   isCurrentUser: boolean;
@@ -206,18 +207,8 @@ export interface FlaggedScoreRow {
   weekStart: string;
 }
 
-export interface ModerationWinRow {
-  id: string;
-  userId: string;
-  displayLabel: string;
-  headline: string;
-  occurredAt: string;
-  hiddenAt: string | null;
-}
-
 export interface ModerationQueue {
   flaggedScores: FlaggedScoreRow[];
-  recentWins: ModerationWinRow[];
 }
 
 export interface GamificationContext {
