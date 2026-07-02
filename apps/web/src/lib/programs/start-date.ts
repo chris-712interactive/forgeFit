@@ -16,10 +16,17 @@ export function parsePlanStartDateInput(isoDate: string): Date | null {
   return parseScheduleStartIso(isoDate);
 }
 
+/** Earliest allowed start (yesterday) to tolerate client/server timezone skew. */
+export function earliestAllowedPlanStartIso(): string {
+  const earliest = parseScheduleStartIso(todayScheduleStartIso());
+  earliest.setDate(earliest.getDate() - 1);
+  return toScheduleStartIso(earliest);
+}
+
 export function isValidPlanStartDate(isoDate: string): boolean {
   const parsed = parsePlanStartDateInput(isoDate);
   if (!parsed) return false;
-  return toScheduleStartIso(parsed) >= todayScheduleStartIso();
+  return toScheduleStartIso(parsed) >= earliestAllowedPlanStartIso();
 }
 
 export function planScheduleStartIso(plan: ProgramPlan): string {

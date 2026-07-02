@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  rebuildProgram,
   updatePlanSettings,
 } from "@/app/actions/program";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { RebuildPlanModal } from "@/components/profile/rebuild-plan-modal";
 import { ProfileSubSection } from "@/components/profile/profile-subsection";
 import { SportPlanFields } from "@/components/profile/sport-plan-fields";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
@@ -18,8 +18,6 @@ import {
   SPORT_PERFORMANCE_GOAL,
 } from "@/lib/constants/onboarding";
 import { todayScheduleStartIso } from "@/lib/programs/start-date";
-import { resolveLastSessionKindForRegenerate } from "@/lib/programs/recent-training";
-import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import type {
   FatLossPace,
   FitnessGoal,
@@ -102,6 +100,7 @@ export function ProgramPlanSetting({
   const [scheduleStartDate, setScheduleStartDate] = useState(
     todayScheduleStartIso()
   );
+  const [showRebuildModal, setShowRebuildModal] = useState(false);
 
   const initialSport = getSportById(initialSportId ?? undefined);
   const [sportCategoryId, setSportCategoryId] = useState(
@@ -426,27 +425,7 @@ export function ProgramPlanSetting({
           <button
             type="button"
             disabled={pending}
-            onClick={() => {
-              const today = todayScheduleStartIso();
-              setScheduleStartDate(today);
-              runAction(async () => {
-                let lastCompletedSessionKind: string | undefined;
-                try {
-                  const localSessions = await loadLocalSessionRecords(userId);
-                  lastCompletedSessionKind = resolveLastSessionKindForRegenerate(
-                    localSessions,
-                    new Date()
-                  );
-                } catch {
-                  // IndexedDB unavailable — server will load history
-                }
-
-                return rebuildProgram({
-                  schedule_start_date: today,
-                  last_completed_session_kind: lastCompletedSessionKind,
-                });
-              });
-            }}
+            onClick={() => setShowRebuildModal(true)}
             className="min-h-[48px] flex-1 rounded-xl border border-forge-ember/40 px-4 text-sm font-semibold text-forge-ember disabled:opacity-50"
           >
             Rebuild plan
@@ -472,6 +451,25 @@ export function ProgramPlanSetting({
           </p>
         )}
       </div>
+
+      {showRebuildModal && (
+        <RebuildPlanModal
+          userId={userId}
+          onClose={() => setShowRebuildModal(false)}
+          onComplete={(result) => {
+            if (result.error) {
+              setError(result.error);
+              return;
+            }
+            setError(null);
+            if (result.changes?.length) {
+              setChanges(result.changes);
+              setIsDeloadWeek(Boolean(result.isDeloadWeek));
+            }
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

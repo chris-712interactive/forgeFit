@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-01 |
-| **Last session focus** | Regenerate avoids back-to-back session types |
+| **Last session focus** | Rebuild plan start-date modal |
 
 ---
 
@@ -35,6 +35,19 @@
 ---
 
 ## Session Log
+
+### 2026-07-01 — Rebuild plan start-date modal
+
+**What was done:**
+- **Rebuild plan** opens a modal with a visible date picker and **Start today** shortcut (no need to expand Rebuild options)
+- **Start today** omits `schedule_start_date` so the server anchors to `now` (avoids client/server timezone mismatch)
+- Plan start validation allows yesterday through future dates to tolerate timezone skew
+
+**What's next:** Rebuild after Upper; confirm today shows Lower on workout hub
+
+**Blockers:** None
+
+**Files touched:** `rebuild-plan-modal.tsx`, `program-plan-setting.tsx`, `start-date.ts`, `start-date.test.ts`, `docs/PROGRESS.md`
 
 ### 2026-07-01 — Rebuild infers session type from prior plan schedule
 
