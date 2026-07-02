@@ -1,5 +1,6 @@
 import { getExerciseById } from "@forgefit/exercise-db";
 import {
+  isoWeekdayFromDate,
   sessionKind,
   toScheduleStartIso,
   type ProgramPlan,
@@ -81,6 +82,47 @@ export function resolveLastSessionKindForRegenerate(
   );
 }
 
+/** Infer what to avoid today from the prior plan schedule (no workout log required). */
+export function inferAvoidKindFromPriorPlan(
+  priorPlan: ProgramPlan,
+  startDate: Date
+): string | undefined {
+  const startWeekday = isoWeekdayFromDate(startDate);
+
+  const yesterday = new Date(startDate);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayWeekday = isoWeekdayFromDate(yesterday);
+  const yesterdaySlot = priorPlan.week.find(
+    (session) => session.dayIndex === yesterdayWeekday
+  );
+  if (yesterdaySlot) {
+    return sessionKind(yesterdaySlot.name);
+  }
+
+  const lastSlotBeforeToday = [...priorPlan.week]
+    .filter((session) => session.dayIndex < startWeekday)
+    .sort((a, b) => b.dayIndex - a.dayIndex)[0];
+  if (lastSlotBeforeToday) {
+    return sessionKind(lastSlotBeforeToday.name);
+  }
+
+  return undefined;
+}
+
+export function resolveAvoidSessionKindForRegenerate(
+  records: WorkoutSessionRecord[],
+  priorPlan: ProgramPlan,
+  startDate: Date,
+  override?: string
+): string | undefined {
+  return (
+    override ??
+    findYesterdayCompletedSessionKind(records, startDate) ??
+    findMostRecentCompletedSessionKind(records, startDate) ??
+    inferAvoidKindFromPriorPlan(priorPlan, startDate)
+  );
+}
+
 /** Collect exercises and muscles from completed sessions before a regenerate start date. */
 export function buildRecentTrainingContextFromSessions(
   records: WorkoutSessionRecord[],
@@ -92,9 +134,12 @@ export function buildRecentTrainingContextFromSessions(
   const startIso = toScheduleStartIso(startDate);
   const exerciseIds: string[] = [];
   const muscleGroups: string[] = [];
-  const lastSessionKind =
-    lastSessionKindOverride ??
-    resolveLastSessionKindForRegenerate(records, startDate);
+  const lastSessionKind = resolveAvoidSessionKindForRegenerate(
+    records,
+    priorPlan,
+    startDate,
+    lastSessionKindOverride
+  );
 
   for (const record of records) {
     if (record.status !== "completed") continue;

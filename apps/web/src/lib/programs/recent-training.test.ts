@@ -6,8 +6,9 @@ import {
   buildRecentTrainingContextFromSessions,
   findMostRecentCompletedSessionKind,
   findYesterdayCompletedSessionKind,
+  inferAvoidKindFromPriorPlan,
   planReferenceDateForRecentTraining,
-  resolveLastSessionKindForRegenerate,
+  resolveAvoidSessionKindForRegenerate,
 } from "./recent-training";
 
 const priorPlan = {
@@ -170,6 +171,25 @@ test("buildRecentTrainingContextFromSessions captures last completed session kin
   );
 
   assert.equal(context.lastSessionKind, "lower");
+});
+
+test("inferAvoidKindFromPriorPlan uses yesterday plan slot when logs are missing", () => {
+  const startDate = new Date(2026, 6, 2, 12, 0, 0, 0);
+  const priorPlanWithWednesdayUpper = {
+    week: [
+      { dayIndex: 2, name: "Upper" },
+      { dayIndex: 4, name: "Lower" },
+    ],
+  } as ProgramPlan;
+
+  assert.equal(
+    inferAvoidKindFromPriorPlan(priorPlanWithWednesdayUpper, startDate),
+    "upper"
+  );
+  assert.equal(
+    resolveAvoidSessionKindForRegenerate([], priorPlanWithWednesdayUpper, startDate),
+    "upper"
+  );
 });
 
 test("planReferenceDateForRecentTraining uses plan start when regenerate starts later", () => {

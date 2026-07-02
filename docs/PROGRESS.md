@@ -36,6 +36,15 @@
 
 ## Session Log
 
+### 2026-07-01 — Rebuild infers session type from prior plan schedule
+
+**What was done:**
+- When workout logs are missing/unsynced, rebuild infers avoid-kind from the **prior plan** (yesterday's slot, else last session before today)
+- Regenerate anchors schedule to server `now` so today's weekday matches the workout UI
+- Workout week cards sorted Mon→Sun
+
+**Files touched:** `recent-training.ts`, `recent-training.test.ts`, `service.ts`, `workout-hub.tsx`, `docs/PROGRESS.md`
+
 ### 2026-07-01 — Fix rebuild without plan changes missing session history
 
 **What was done:**

@@ -15,8 +15,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import {
   buildRecentTrainingContextFromSessions,
+  inferAvoidKindFromPriorPlan,
   planReferenceDateForRecentTraining,
-  resolveLastSessionKindForRegenerate,
+  resolveAvoidSessionKindForRegenerate,
 } from "./recent-training";
 import { fetchLastSessionKindFromDb } from "./recent-training-server";
 
@@ -131,20 +132,31 @@ export async function generateAndSaveProgram(
     ctx.userProfile.sessionsPerWeek
   );
 
-  const startDate = options.startDate ?? new Date();
+  const startDateInput = options.startDate ?? new Date();
   const todayIso = toScheduleStartIso(new Date());
-  const startIso = toScheduleStartIso(startDate);
+  const startIso = toScheduleStartIso(startDateInput);
   const isFutureStart = startIso > todayIso;
   const isRegenerate = priorPlan != null;
+  /** Regenerate for today: anchor weekdays to server now (matches workout UI "today"). */
+  const startDate =
+    isRegenerate && !isFutureStart && startIso <= todayIso
+      ? new Date()
+      : startDateInput;
 
   let recentTraining;
   if (isRegenerate && priorPlan) {
     const { records } = await getServerSessionRecords(userId, 50);
-    let lastSessionKind =
-      options.lastSessionKindOverride ??
-      resolveLastSessionKindForRegenerate(records, startDate);
+    let lastSessionKind = resolveAvoidSessionKindForRegenerate(
+      records,
+      priorPlan,
+      startDate,
+      options.lastSessionKindOverride
+    );
     if (!lastSessionKind) {
       lastSessionKind = await fetchLastSessionKindFromDb(userId, startDate);
+    }
+    if (!lastSessionKind) {
+      lastSessionKind = inferAvoidKindFromPriorPlan(priorPlan, startDate);
     }
 
     recentTraining = buildRecentTrainingContextFromSessions(

@@ -547,7 +547,9 @@ export function WorkoutHub({
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               This week
             </h2>
-            {plan.week.map((session) => (
+            { [...plan.week]
+              .sort((a, b) => a.dayIndex - b.dayIndex)
+              .map((session) => (
               <WeekPlanCard
                 key={`${session.dayIndex}-${session.name}`}
                 plan={plan}
