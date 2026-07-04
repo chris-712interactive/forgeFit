@@ -1,14 +1,5 @@
 import { spotifyPlaylistUrl } from "./catalog";
-
-function isStandalonePwa(): boolean {
-  if (typeof window === "undefined") return false;
-
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.matchMedia("(display-mode: fullscreen)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
-}
+import { isStandalonePwa } from "@/lib/pwa/standalone";
 
 function isIosMobile(): boolean {
   if (typeof navigator === "undefined") return false;

@@ -2,6 +2,7 @@
 
 import { GenericInstallGuide } from "@/components/pwa/generic-install-guide";
 import { IosInstallGuide } from "@/components/pwa/ios-install-guide";
+import { isStandalonePwa } from "@/lib/pwa/standalone";
 import { useEffect, useState } from "react";
 
 const DISMISS_KEY = "forgefit:pwa-install-dismissed";
@@ -40,9 +41,10 @@ export function PwaInstallPrompt({
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const standalone = window.matchMedia("(display-mode: standalone)").matches;
-    setIsStandalone(standalone);
-    if (standalone) return;
+    if (isStandalonePwa()) {
+      setIsStandalone(true);
+      return;
+    }
 
     if (
       !showAfterOnboarding &&
@@ -92,18 +94,12 @@ export function PwaInstallPrompt({
     setDeferredPrompt(null);
   }
 
-  if (!active && !isStandalone) {
+  if (isStandalone) {
     return null;
   }
 
-  if (isStandalone) {
-    return (
-      <section className="rounded-2xl border border-forge-success/30 bg-forge-success/5 p-4">
-        <p className="text-sm text-forge-text">
-          You&apos;re already using ForgeRep as an installed app.
-        </p>
-      </section>
-    );
+  if (!active) {
+    return null;
   }
 
   if (dismissed && !showAfterOnboarding) {

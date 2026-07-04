@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-04 |
-| **Last session focus** | Home page redesign — hero + domain carousel |
+| **Last session focus** | Hide PWA install banner when already in installed app |
 
 ---
 
@@ -35,6 +35,22 @@
 ---
 
 ## Session Log
+
+### 2026-07-04 — PWA install prompt in standalone mode
+
+**What was done**
+
+- `PwaInstallPrompt` returns nothing when running as an installed PWA (no more “You're already using ForgeRep…” banner on Workout/onboarding)
+- Shared `isStandalonePwa()` in `lib/pwa/standalone.ts` (display-mode + iOS `navigator.standalone`)
+
+**Files touched**
+
+- `apps/web/src/components/pwa/install-prompt.tsx`
+- `apps/web/src/lib/pwa/standalone.ts`
+- `apps/web/src/lib/workout-music/open-spotify.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-04 — Home dashboard cleanup
 
