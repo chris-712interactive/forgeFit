@@ -20,7 +20,7 @@ import {
   useCommunityQuickActionHandlers,
 } from "@/components/community/community-quick-actions";
 import { CommunityRivalShowdown } from "@/components/community/community-rival-showdown";
-import { CommunityWeekCountdownBar } from "@/components/community/community-week-countdown";
+import { CommunityCountdownArcs } from "@/components/community/community-countdown-arcs";
 import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
 import type { CommunityPageData } from "@/lib/coaching/types";
 import Link from "next/link";
@@ -63,7 +63,7 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-4 pb-8 sm:max-w-2xl sm:gap-5">
       <header className="flex items-start justify-between gap-3 px-0.5">
-        <div>
+        <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-forge-text sm:text-2xl">
             Community
           </h1>
@@ -73,22 +73,23 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
               : "Weekly habit competition in your bucket"}
           </p>
         </div>
-        {showArena && unreadNotificationCount > 0 && (
-          <button
-            type="button"
-            onClick={scrollToAlerts}
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-forge-surface-raised text-forge-muted transition-colors hover:text-forge-text"
-            aria-label={`${unreadNotificationCount} unread notifications`}
-          >
-            <span className="text-sm leading-none">●</span>
-            <span className="absolute right-1.5 top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-forge-coral px-0.5 text-[8px] font-bold text-white">
-              {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
-            </span>
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {hasBucket && <CommunityCountdownArcs />}
+          {showArena && unreadNotificationCount > 0 && (
+            <button
+              type="button"
+              onClick={scrollToAlerts}
+              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-forge-surface-raised text-forge-muted transition-colors hover:text-forge-text"
+              aria-label={`${unreadNotificationCount} unread notifications`}
+            >
+              <span className="text-sm leading-none">●</span>
+              <span className="absolute right-1.5 top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-forge-coral px-0.5 text-[8px] font-bold text-white">
+                {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+              </span>
+            </button>
+          )}
+        </div>
       </header>
-
-      {hasBucket && <CommunityWeekCountdownBar />}
 
       {!hasBucket ? (
         <>

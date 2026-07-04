@@ -36,6 +36,29 @@
 
 ## Session Log
 
+### 2026-07-04 — Community countdown header arcs
+
+**What was done**
+
+- Replaced full-width week countdown bar with **twin arc dials** in the Community page header (ember = week, gold = season)
+- Added `getCommunitySeasonCountdown()` for calendar-month season time remaining
+- Removed standalone countdown card — zero extra vertical space below the title
+
+**What's next**
+
+- Season promotion status line on arena ribbon (monthly avg rank in tier)
+- Manual QA of header arcs on 375px with notification bell visible
+
+**Files touched**
+
+- `apps/web/src/components/community/community-countdown-arcs.tsx` (new)
+- `apps/web/src/components/community/community-page-client.tsx`
+- `apps/web/src/lib/coaching/community-season-countdown.ts`, `community-season-countdown.test.ts`
+- Deleted `apps/web/src/components/community/community-week-countdown.tsx`
+- `docs/DESIGN.md`, `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-04 — Community page arena redesign
 
 **What was done**
