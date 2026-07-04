@@ -6,6 +6,10 @@ export type LoadSnapProfile = "barbell" | "dumbbell" | "kettlebell" | "machine";
 /** Common competition-style kettlebell sizes (kg). */
 const KETTLEBELL_KG = [4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40];
 
+/** Typical commercial-gym kettlebell sizes (lb): 20, 25, 30, … */
+const KETTLEBELL_MIN_LB = 20;
+const KETTLEBELL_STEP_LB = 5;
+
 function snapToNearestGrid(value: number, step: number): number {
   if (step <= 0) return value;
   return Math.round(value / step) * step;
@@ -79,6 +83,14 @@ export function snapPrescribedWeightKg(
   const profile = getLoadSnapProfile(exerciseId);
 
   if (profile === "kettlebell") {
+    if (unit === "imperial") {
+      const lbs = kgToLbs(weightKg);
+      const snappedLbs = Math.max(
+        KETTLEBELL_MIN_LB,
+        snapToNearestGrid(lbs, KETTLEBELL_STEP_LB)
+      );
+      return Math.round(lbsToKg(snappedLbs) * 1000) / 1000;
+    }
     return snapToNearestCatalog(weightKg, KETTLEBELL_KG);
   }
 
@@ -108,7 +120,7 @@ export function weightInputStep(
 ): number {
   const profile = getLoadSnapProfile(exerciseId);
   if (unit === "imperial") {
-    if (profile === "kettlebell") return 4;
+    if (profile === "kettlebell") return KETTLEBELL_STEP_LB;
     if (profile === "dumbbell") return 5;
     return 5;
   }

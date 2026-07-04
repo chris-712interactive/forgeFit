@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
-| **Last updated** | 2026-07-01 |
-| **Last session focus** | Inline win moderation on community feed |
+| **Last updated** | 2026-07-04 |
+| **Last session focus** | Imperial kettlebell load snapping (commercial gym sizes) |
 
 ---
 
