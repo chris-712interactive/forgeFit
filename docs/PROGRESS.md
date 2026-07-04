@@ -36,6 +36,19 @@
 
 ## Session Log
 
+### 2026-07-04 — Path pill route scope
+
+**What was done**
+
+- **Experience path pill** now shows only on `/home` and `/workout` (including active session routes) — hidden on nutrition, progress, community, and profile
+
+**Files touched**
+
+- `apps/web/src/components/progression/experience-path-indicator.tsx`
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-04 — Community countdown header arcs
 
 **What was done**
@@ -47,7 +60,6 @@
 **What's next**
 
 - Season promotion status line on arena ribbon (monthly avg rank in tier)
-- Manual QA of header arcs on 375px with notification bell visible
 
 **Files touched**
 

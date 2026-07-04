@@ -1,11 +1,20 @@
 "use client";
 
 import type { PromotionEvaluation } from "@/lib/progression/types";
+import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ExperiencePathPanel } from "./experience-path-panel";
 
 interface ExperiencePathIndicatorProps {
   evaluation: PromotionEvaluation | null;
+}
+
+const PATH_PILL_PREFIXES = ["/home", "/workout"] as const;
+
+function shouldShowPathPill(pathname: string): boolean {
+  return PATH_PILL_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
 }
 
 function formatLevel(level: string) {
@@ -19,6 +28,7 @@ function levelAbbrev(level: string) {
 export function ExperiencePathIndicator({
   evaluation,
 }: ExperiencePathIndicatorProps) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const progressPct = useMemo(() => {
@@ -30,6 +40,10 @@ export function ExperiencePathIndicator({
       (progress.totalQualitySessions / progress.requiredSessions) * 100;
     return Math.min(100, Math.round((weekPct + sessionPct) / 2));
   }, [evaluation]);
+
+  if (!shouldShowPathPill(pathname)) {
+    return null;
+  }
 
   if (!evaluation?.nextLevel || !evaluation.progress) {
     return null;
