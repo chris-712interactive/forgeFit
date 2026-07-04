@@ -13,6 +13,10 @@ import {
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import { bucketLabel as formatBucketLabel, leagueTierLabel } from "./community-labels";
 import {
+  dedupeCommunityPrWins,
+  prWinE1rmKg,
+} from "./community-pr-wins";
+import {
   buildSeasonRecap,
   ensureLeagueTier,
   fetchTierLeaderboard,
@@ -596,10 +600,6 @@ export async function getGamificationContext(
     }
   }
 
-  const winIds = winRows.map((row) => row.id as string);
-  const cheerCountByWinId = new Map<string, number>();
-  const cheeredWinIds = new Set<string>();
-
   let communityWins: CommunityWinRow[] = winRows.map((row) => {
     const winUserId = row.user_id as string;
     const winId = row.id as string;
@@ -617,6 +617,12 @@ export async function getGamificationContext(
       isCurrentUser: winUserId === userId,
     };
   });
+
+  communityWins = dedupeCommunityPrWins(communityWins);
+
+  const winIds = communityWins.map((row) => row.id);
+  const cheerCountByWinId = new Map<string, number>();
+  const cheeredWinIds = new Set<string>();
 
   if (winIds.length > 0) {
     const [
@@ -750,11 +756,43 @@ export async function getGamificationContext(
   };
 }
 
+async function hasSameDayPrWithEqualOrHigherE1rm(input: {
+  userId: string;
+  headline: string;
+  e1rmKg: number;
+}): Promise<boolean> {
+  const supabase = await createClient();
+  const dateKey = new Date().toISOString().slice(0, 10);
+  const nextDate = new Date(`${dateKey}T00:00:00.000Z`);
+  nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+  const nextDateKey = nextDate.toISOString().slice(0, 10);
+
+  const { data, error } = await supabase
+    .from("community_wins")
+    .select("detail")
+    .eq("user_id", input.userId)
+    .eq("win_type", "pr")
+    .eq("headline", input.headline)
+    .gte("occurred_at", `${dateKey}T00:00:00.000Z`)
+    .lt("occurred_at", `${nextDateKey}T00:00:00.000Z`);
+
+  if (error || !data?.length) {
+    return false;
+  }
+
+  const bestExisting = Math.max(
+    ...data.map((row) => prWinE1rmKg((row.detail as string | null) ?? null) ?? 0)
+  );
+
+  return input.e1rmKg <= bestExisting;
+}
+
 export async function recordCommunityWin(input: {
   userId: string;
   winType: CommunityWinRow["winType"];
   headline: string;
   detail?: string | null;
+  prE1rmKg?: number;
 }): Promise<void> {
   const supabase = await createClient();
   const { data: profile } = await supabase
@@ -769,6 +807,18 @@ export async function recordCommunityWin(input: {
 
   const bucket = resolveCommunityBucket(profile);
   if (!bucket) {
+    return;
+  }
+
+  if (
+    input.winType === "pr" &&
+    input.prE1rmKg != null &&
+    (await hasSameDayPrWithEqualOrHigherE1rm({
+      userId: input.userId,
+      headline: input.headline,
+      e1rmKg: input.prE1rmKg,
+    }))
+  ) {
     return;
   }
 

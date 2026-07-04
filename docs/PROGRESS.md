@@ -36,6 +36,24 @@
 
 ## Session Log
 
+### 2026-07-04 — Community PR win dedupe
+
+**What was done**
+
+- Same user + movement + calendar day now shows only the **highest e1rm PR** in community feeds
+- PRs on different days (including week-over-week) still all appear
+- Workout logger skips publishing lower same-day PRs for the same lift
+
+**Files touched**
+
+- `apps/web/src/lib/coaching/community-pr-wins.ts`, `community-pr-wins.test.ts` (new)
+- `apps/web/src/lib/coaching/service.ts`, `community-crews.ts`
+- `apps/web/src/app/actions/gamification.ts`
+- `apps/web/src/components/workout/active-workout.tsx`
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-04 — Community moderator tools split
 
 **What was done**

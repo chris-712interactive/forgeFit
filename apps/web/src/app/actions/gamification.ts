@@ -205,6 +205,7 @@ export async function toggleCommunityWinCheer(winId: string): Promise<{
 export async function publishWorkoutPrWin(input: {
   headline: string;
   detail: string;
+  e1rmKg: number;
 }): Promise<void> {
   const supabase = await createClient();
   const {
@@ -220,6 +221,7 @@ export async function publishWorkoutPrWin(input: {
     winType: "pr",
     headline: input.headline,
     detail: input.detail,
+    prE1rmKg: input.e1rmKg,
   });
 
   revalidatePath("/home");

@@ -422,7 +422,11 @@ export function ActiveWorkout({
               displayName: coaching.displayName,
               unitSystem: unit,
             });
-            void publishWorkoutPrWin({ headline, detail });
+            void publishWorkoutPrWin({
+              headline,
+              detail,
+              e1rmKg: detected.e1rmKg,
+            });
           }
         }
       }

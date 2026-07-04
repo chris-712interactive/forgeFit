@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { unstable_noStore as noStore } from "next/cache";
+import { dedupeCommunityPrWins } from "./community-pr-wins";
 import type { CommunityWinRow } from "./types";
 
 export interface CrewMemberRow {
@@ -437,20 +438,22 @@ export async function getCrewWins(
     }
   }
 
-  return winRows.map((row) => {
-    const winUserId = row.user_id as string;
-    const winId = row.id as string;
-    return {
-      id: winId,
-      userId: winUserId,
-      displayLabel: labelByUserId.get(winUserId) ?? "Crew member",
-      winType: row.win_type as CommunityWinRow["winType"],
-      headline: row.headline as string,
-      detail: (row.detail as string | null) ?? null,
-      occurredAt: row.occurred_at as string,
-      cheerCount: cheerCountByWinId.get(winId) ?? 0,
-      cheeredByMe: cheeredWinIds.has(winId),
-      isCurrentUser: winUserId === currentUserId,
-    };
-  });
+  return dedupeCommunityPrWins(
+    winRows.map((row) => {
+      const winUserId = row.user_id as string;
+      const winId = row.id as string;
+      return {
+        id: winId,
+        userId: winUserId,
+        displayLabel: labelByUserId.get(winUserId) ?? "Crew member",
+        winType: row.win_type as CommunityWinRow["winType"],
+        headline: row.headline as string,
+        detail: (row.detail as string | null) ?? null,
+        occurredAt: row.occurred_at as string,
+        cheerCount: cheerCountByWinId.get(winId) ?? 0,
+        cheeredByMe: cheeredWinIds.has(winId),
+        isCurrentUser: winUserId === currentUserId,
+      };
+    })
+  );
 }
