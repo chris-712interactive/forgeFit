@@ -6,6 +6,8 @@ import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import type { WeighInReminder } from "@/lib/measurements/weigh-in-reminder";
 import type { FitnessGoal } from "@/lib/types/profile";
+import type { HomeChartSnapshots } from "./chart-snapshots";
+import type { HomeHeroContext } from "./hero-context";
 
 export interface WeeklyWorkStats {
   workoutsCompleted: number;
@@ -37,4 +39,6 @@ export interface HomeDashboardData {
   gamification: GamificationContext;
   weighInReminder: WeighInReminder | null;
   isPro: boolean;
+  hero: HomeHeroContext;
+  charts: HomeChartSnapshots;
 }

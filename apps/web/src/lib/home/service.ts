@@ -18,12 +18,72 @@ import {
 } from "@/lib/profile/identity";
 import type { HomeDashboardData } from "./types";
 import {
+  buildSessionsByDay,
+  buildStepsByDay,
+  buildWeightByDay,
+} from "./chart-snapshots";
+import { buildHomeHeroContext } from "./hero-context";
+import {
   computeWeeklyWorkStats,
   findNextPlannedSession,
 } from "./weekly-stats";
 import { getWeighInReminderForUser } from "@/lib/measurements/weigh-in-reminder-service";
+import type { BodyMeasurementRow } from "@/lib/measurements/types";
+import { addDaysIso, todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createClient } from "@/lib/supabase/server";
 import { pickEncouragement } from "./encouragement";
+
+function mapBodyMeasurementRow(row: Record<string, unknown>): BodyMeasurementRow {
+  return {
+    id: row.id as string,
+    measuredDate: row.measured_date as string,
+    weightKg: row.weight_kg != null ? Number(row.weight_kg) : null,
+    waistCm: row.waist_cm != null ? Number(row.waist_cm) : null,
+    chestCm: row.chest_cm != null ? Number(row.chest_cm) : null,
+    armsCm: row.arms_cm != null ? Number(row.arms_cm) : null,
+    legsCm: row.legs_cm != null ? Number(row.legs_cm) : null,
+    neckCm: row.neck_cm != null ? Number(row.neck_cm) : null,
+    hipsCm: row.hips_cm != null ? Number(row.hips_cm) : null,
+    bodyFatPct: row.body_fat_pct != null ? Number(row.body_fat_pct) : null,
+    notes: (row.notes as string | null) ?? null,
+  };
+}
+
+async function getRecentBodyMeasurements(
+  userId: string,
+  days = 14
+): Promise<BodyMeasurementRow[]> {
+  const supabase = await createClient();
+  const timeZone = await getUserTimeZone();
+  const endDate = todayLocalIsoDate(new Date(), timeZone);
+  const startDate = addDaysIso(endDate, -(days - 1));
+
+  const { data, error } = await supabase
+    .from("body_measurements")
+    .select(
+      "id, measured_date, weight_kg, waist_cm, chest_cm, arms_cm, legs_cm, neck_cm, hips_cm, body_fat_pct, notes"
+    )
+    .eq("user_id", userId)
+    .gte("measured_date", startDate)
+    .lte("measured_date", endDate)
+    .order("measured_date", { ascending: true });
+
+  if (error) {
+    if (
+      error.code === "PGRST205" ||
+      error.message?.toLowerCase().includes("body_measurements")
+    ) {
+      return [];
+    }
+    console.error("home body measurements lookup failed:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) =>
+    mapBodyMeasurementRow(row as Record<string, unknown>)
+  );
+}
 
 export async function getHomeDashboardData(
   userId: string
@@ -37,7 +97,7 @@ export async function getHomeDashboardData(
     hasProAccess(subscription) &&
     hasFeature(subscription, "rule_based_insights");
 
-  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recovery] =
+  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recovery, recentMeasurements] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -54,6 +114,7 @@ export async function getHomeDashboardData(
       needsProAnalytics
         ? getRecoveryContext(userId, subscription)
         : Promise.resolve(null),
+      getRecentBodyMeasurements(userId),
     ]);
 
   const gamification = await getGamificationContext(
@@ -95,6 +156,20 @@ export async function getHomeDashboardData(
       ? birthdayGreeting(firstName)
       : null;
 
+  const hero = buildHomeHeroContext(
+    plan,
+    sessionResult.records,
+    weeklyStats,
+    nutrition
+  );
+  const weightChart = buildWeightByDay(recentMeasurements);
+  const charts = {
+    sessionsByDay: buildSessionsByDay(sessionResult.records),
+    weightByDay: weightChart.points,
+    weightDeltaKg: weightChart.deltaKg,
+    stepsByDay: buildStepsByDay(activity.series),
+  };
+
   return {
     displayName: firstName ?? profile?.display_name ?? null,
     goal,
@@ -121,5 +196,7 @@ export async function getHomeDashboardData(
     gamification,
     weighInReminder,
     isPro: hasProAccess(subscription),
+    hero,
+    charts,
   };
 }

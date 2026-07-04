@@ -1,10 +1,15 @@
 import { HomeDashboard } from "@/components/home/home-dashboard";
-import {
-  appHeaderGap,
-  appPagePadding,
-} from "@/components/layout/page-layout";
+import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
 import { getHomeDashboardData } from "@/lib/home/service";
 import { createClient } from "@/lib/supabase/server";
+
+function formatHomeDate(date: Date): string {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -22,15 +27,11 @@ export default async function HomePage() {
 
   const data = await getHomeDashboardData(user.id);
 
-  const greeting = data.displayName
-    ? `Hey, ${data.displayName}`
-    : "Let's forge it";
+  const greeting = data.displayName ? `Hey, ${data.displayName}` : "Let's forge it";
 
   return (
     <div className={appPagePadding}>
-      <p className="font-display text-sm font-semibold uppercase tracking-widest text-forge-gold">
-        Home
-      </p>
+      <p className="text-sm text-forge-muted">{formatHomeDate(new Date())}</p>
       <h1 className="font-display mt-1 text-2xl font-bold text-forge-text sm:text-3xl">
         {greeting}
       </h1>

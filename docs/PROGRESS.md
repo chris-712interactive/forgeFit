@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-04 |
-| **Last session focus** | In-session exercise swap ("Equipment busy?") |
+| **Last session focus** | Home page redesign — hero + domain carousel |
 
 ---
 
@@ -35,6 +35,42 @@
 ---
 
 ## Session Log
+
+### 2026-07-04 — Home page redesign (Option B carousel)
+
+**What was done**
+
+- Replaced cluttered vertical home stack with **fixed hero** (next session CTA + fuel hint) + **horizontal domain carousel**
+- Five snap cards: Training, Nutrition, Progress, Activity, Community — each with headline metric, mini chart, and deep link to the relevant tab
+- Added `lib/home/chart-snapshots.ts` and `lib/home/hero-context.ts`; extended `getHomeDashboardData` with `hero`, `charts`, and lightweight body-measurement fetch for weight sparkline
+- New components: `home-hero`, `home-domain-carousel`, `home-domain-cards`, `home-domain-card`, `home-mini-charts`
+- Removed from default home scroll: community feed, scorecard strip, pro insights, PWA prompt, progress shortcut, today snapshot grid, train-and-fuel card stack
+
+**What's next**
+
+- Apply migration `20260704100000_exercise_swap.sql` on Supabase remote (prior session)
+- Visual QA on 375px device — carousel snap, chart empty states, rest-day hero
+
+**Blockers**
+
+- None for home redesign
+
+**Files touched**
+
+- `apps/web/src/app/(app)/home/page.tsx`
+- `apps/web/src/components/home/home-dashboard.tsx`
+- `apps/web/src/components/home/home-hero.tsx`
+- `apps/web/src/components/home/home-domain-carousel.tsx`
+- `apps/web/src/components/home/home-domain-cards.tsx`
+- `apps/web/src/components/home/home-domain-card.tsx`
+- `apps/web/src/components/home/home-mini-charts.tsx`
+- `apps/web/src/lib/home/types.ts`
+- `apps/web/src/lib/home/service.ts`
+- `apps/web/src/lib/home/chart-snapshots.ts`
+- `apps/web/src/lib/home/hero-context.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-04 — In-session exercise swap
 

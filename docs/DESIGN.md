@@ -71,6 +71,14 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 | Use gradients on hero/hype surfaces only | Gradient everything |
 | Pulse `forge-gold` on rest timer | Flash red on missed day |
 
+## Logged-in home (`/home`)
+
+- **Header:** Date line + greeting only (no "HOME" label)
+- **Hero:** Fixed card — next session name, ember CTA, one-line fuel/encouragement; states: planned, in progress, rest/up next, week complete, no plan
+- **Carousel:** Horizontal snap row (~82% card width, page dots) — Training, Nutrition, Progress, Activity, Community
+- **Each card:** One headline metric, compact chart or stat tiles (~88px), caption, link to full tab
+- **Deferred:** Community feed, scorecard, pro insights, PWA prompt, and full metric grids live on their tabs — not on home scroll
+
 ## Marketing landing page
 
 Public homepage (`apps/web/src/components/marketing/`):
