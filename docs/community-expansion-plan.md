@@ -17,7 +17,7 @@ Tier gate: **Pro** (`gamification` in `gates.ts`). Free users can preview bucket
 
 | Feature | Location | Migration |
 |---------|----------|-----------|
-| Always-visible Community section on Home | `community-section.tsx` | — |
+| Community summary on Home (carousel card → `/community`) | `home-domain-cards.tsx` | Full feed on Community tab |
 | `/community` tab (bottom nav) | `community/page.tsx` | — |
 | Full bucket standings (50) + habit score breakdown | `community-page-client.tsx` | `20260610000000_phase8_gamification.sql` |
 | Pre-workout rank strip | `community-rank-strip.tsx` | — |

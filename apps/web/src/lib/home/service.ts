@@ -1,11 +1,7 @@
-import { buildProAnalyticsBundle } from "@/lib/analytics/service";
 import { getActivityContext } from "@/lib/activity/service";
-import { getRecoveryContext } from "@/lib/recovery/service";
 import { getSleepContext } from "@/lib/sleep/service";
 import { getGamificationContext } from "@/lib/coaching/service";
-import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
-import { hasProAccess } from "@/lib/billing/types";
 import { getDailyNutritionSummary } from "@/lib/nutrition/service";
 import { scheduleFitbitBackgroundSync } from "@/lib/integrations/fitbit-sync-scheduler";
 import { ensureActiveProgram } from "@/lib/programs/service";
@@ -23,10 +19,7 @@ import {
   buildWeightByDay,
 } from "./chart-snapshots";
 import { buildHomeHeroContext } from "./hero-context";
-import {
-  computeWeeklyWorkStats,
-  findNextPlannedSession,
-} from "./weekly-stats";
+import { computeWeeklyWorkStats } from "./weekly-stats";
 import { getWeighInReminderForUser } from "@/lib/measurements/weigh-in-reminder-service";
 import type { BodyMeasurementRow } from "@/lib/measurements/types";
 import { addDaysIso, todayLocalIsoDate } from "@/lib/datetime/local-date";
@@ -93,11 +86,7 @@ export async function getHomeDashboardData(
   const subscription = await getSubscriptionForUser(userId);
   await scheduleFitbitBackgroundSync(userId, subscription);
 
-  const needsProAnalytics =
-    hasProAccess(subscription) &&
-    hasFeature(subscription, "rule_based_insights");
-
-  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recovery, recentMeasurements] =
+  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recentMeasurements] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -111,9 +100,6 @@ export async function getHomeDashboardData(
       getServerSessionRecords(userId, 120),
       getActivityContext(userId, subscription),
       getSleepContext(userId, subscription),
-      needsProAnalytics
-        ? getRecoveryContext(userId, subscription)
-        : Promise.resolve(null),
       getRecentBodyMeasurements(userId),
     ]);
 
@@ -130,19 +116,6 @@ export async function getHomeDashboardData(
     sessionResult.records,
     plan
   );
-  const next = findNextPlannedSession(sessionResult.records, plan);
-
-  let proInsights: HomeDashboardData["proInsights"] = [];
-  let weeklyScorecard: HomeDashboardData["weeklyScorecard"] = null;
-  if (needsProAnalytics) {
-    const bundle = await buildProAnalyticsBundle(userId, subscription, {
-      activity,
-      sleep,
-      recovery,
-    });
-    proInsights = bundle.insights;
-    weeklyScorecard = bundle.scorecard;
-  }
 
   const firstName = profile
     ? profileFirstName({
@@ -186,16 +159,11 @@ export async function getHomeDashboardData(
       whyStarted: profile?.why_started ?? null,
     }),
     birthdayMessage,
-    nextSessionDayIndex: next?.dayIndex ?? null,
-    nextSessionName: next?.name ?? null,
     workoutsTableReady: sessionResult.tableReady,
-    proInsights,
-    weeklyScorecard,
     activity,
     sleep,
     gamification,
     weighInReminder,
-    isPro: hasProAccess(subscription),
     hero,
     charts,
   };

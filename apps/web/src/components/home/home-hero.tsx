@@ -92,14 +92,24 @@ export function HomeHero({
       ? `/workout?day=${hero.sessionDayIndex}`
       : "/workout";
 
+  const isRestDay = hero.status === "rest";
+  const shellClass = isRestDay
+    ? "rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5"
+    : "rounded-2xl border border-forge-ember/25 bg-forge-ember/5 p-5";
+  const statusPillClass = isRestDay
+    ? "border-[var(--border)] bg-forge-surface text-forge-muted"
+    : "border-forge-gold/40 bg-forge-gold/10 text-forge-gold";
+
   return (
-    <section className="rounded-2xl border border-forge-ember/25 bg-forge-ember/5 p-5">
+    <section className={shellClass}>
       {birthdayMessage ? (
         <p className="mb-3 text-sm font-medium text-forge-gold">{birthdayMessage}</p>
       ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-forge-gold/40 bg-forge-gold/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-forge-gold">
+        <span
+          className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${statusPillClass}`}
+        >
           {statusLabel}
         </span>
         <span className="text-xs text-forge-muted">{progressLine}</span>
@@ -117,13 +127,22 @@ export function HomeHero({
         <p className="mt-2 text-sm italic leading-relaxed text-forge-muted">{hint}</p>
       )}
 
-      {hero.status !== "rest" || hero.sessionDayIndex != null ? (
-        <Link
-          href={workoutHref}
-          className="mt-4 flex min-h-[52px] items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white"
-        >
-          {ctaLabel}
-        </Link>
+      {hero.sessionDayIndex != null ? (
+        isRestDay ? (
+          <Link
+            href={workoutHref}
+            className="mt-4 inline-flex min-h-[48px] items-center justify-center rounded-xl border border-forge-steel/40 px-4 font-display text-sm font-semibold text-forge-steel hover:border-forge-ember/40 hover:text-forge-ember"
+          >
+            {ctaLabel}
+          </Link>
+        ) : (
+          <Link
+            href={workoutHref}
+            className="mt-4 flex min-h-[52px] items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white"
+          >
+            {ctaLabel}
+          </Link>
+        )
       ) : null}
 
       <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-semibold">

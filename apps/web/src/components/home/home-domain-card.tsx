@@ -23,19 +23,17 @@ export function HomeDomainCard({
   chartCaption,
 }: HomeDomainCardProps) {
   return (
-    <article className="flex h-full min-h-[248px] flex-col rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+    <Link
+      href={href}
+      className="flex h-full min-h-[248px] flex-col rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 transition-colors hover:border-forge-ember/35"
+    >
       <div className="flex items-center justify-between gap-3">
         <h3
           className={`font-display text-[11px] font-semibold uppercase tracking-wider ${titleClassName}`}
         >
           {title}
         </h3>
-        <Link
-          href={href}
-          className="text-[11px] font-semibold text-forge-steel hover:text-forge-ember"
-        >
-          {linkLabel}
-        </Link>
+        <span className="text-[11px] font-semibold text-forge-steel">{linkLabel}</span>
       </div>
 
       <div className="mt-3">
@@ -48,6 +46,6 @@ export function HomeDomainCard({
       <div className="mt-3 min-h-0 flex-1">{chart}</div>
 
       <p className="mt-2 text-[10px] leading-snug text-forge-muted">{chartCaption}</p>
-    </article>
+    </Link>
   );
 }

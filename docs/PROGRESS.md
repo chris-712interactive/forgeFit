@@ -36,6 +36,28 @@
 
 ## Session Log
 
+### 2026-07-04 — Home dashboard cleanup
+
+**What was done**
+
+- Removed 12 orphaned pre-redesign home components (integrated loop, today snapshot, community section, etc.)
+- Trimmed `HomeDashboardData` — dropped unused `nextSession*`, `proInsights`, `weeklyScorecard`, `isPro`; removed Pro analytics fetch from home service
+- Domain cards are fully tappable links; rest-day hero uses muted styling + outline CTA
+
+**What's next**
+
+- Apply migration `20260704100000_exercise_swap.sql` on Supabase remote
+- Visual QA on 375px device
+
+**Files touched**
+
+- Deleted `apps/web/src/components/home/{home-integrated-loop,home-today-snapshot,community-section,...}.tsx` (12 files)
+- `apps/web/src/lib/home/types.ts`, `service.ts`
+- `apps/web/src/components/home/home-domain-card.tsx`, `home-hero.tsx`
+- `docs/community-expansion-plan.md`, `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-04 — Home page redesign (Option B carousel)
 
 **What was done**
