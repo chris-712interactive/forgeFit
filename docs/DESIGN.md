@@ -80,6 +80,16 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 - **Deferred:** Community feed, scorecard, pro insights, PWA prompt, and full metric grids live on their tabs — not on home scroll
 - **Sleep shortfall:** When Fitbit sleep averages under 7h, Activity card and Progress sleep panel suggest a lights-out time from 7-day wake pattern
 
+## Community tab (`/community`)
+
+- **Layout:** Single-scroll arena — no week/squad/feed tabs; competition and involvement on one page
+- **Week countdown:** Mon–Sun progress bar with days remaining
+- **Arena ribbon:** Forged rank plate (bronze / silver / gold SVG backgrounds), hex rank badge, habit score breakdown bar, league pill
+- **Rival showdown:** Head-to-head vs card with split score bar
+- **Quick actions:** Cheer wins · Squad · Alerts — smooth-scroll to anchored sections
+- **Podium standings:** Top 3 visual podium + compact list; expand for full board
+- **Opt-in gate:** Non-participants see `CommunityHero` + preview standings/wins; opted-in users get full arena flow
+
 ## Marketing landing page
 
 Public homepage (`apps/web/src/components/marketing/`):

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-04 |
-| **Last session focus** | Bedtime suggestion from Fitbit wake times |
+| **Last session focus** | Community page arena redesign |
 
 ---
 
@@ -35,6 +35,37 @@
 ---
 
 ## Session Log
+
+### 2026-07-04 — Community page arena redesign
+
+**What was done**
+
+- Replaced tabbed Community page with single-scroll **arena layout** — countdown, rival showdown, quick actions, squad, podium standings, wins, and notifications on one page
+- **Forged rank plates** per league tier (bronze / silver / gold) — Warzone-inspired SVG backgrounds with rivets, bolt holes, and stacked chevrons
+- **Arena ribbon** — compact rank/score/habit-breakdown on tier plate; hex rank badge
+- **CommunityRivalShowdown** — head-to-head vs card with split score bar
+- Quick-action chips scroll to `#community-wins`, `#community-squad`, `#community-notifications`
+- **CommunityPodiumStandings** — top-3 podium + expandable list
+
+**What's next**
+
+- Apply pending Supabase migrations on remote if not yet applied
+- Manual QA of Community page on mobile (375px) with Pro account opted into community
+
+**Files touched**
+
+- `apps/web/src/components/community/community-page-client.tsx`
+- `apps/web/src/components/community/community-arena-ribbon.tsx`
+- `apps/web/src/components/community/league-tier-background.tsx`
+- `apps/web/src/components/community/community-week-countdown.tsx`
+- `apps/web/src/components/community/community-rival-showdown.tsx`
+- `apps/web/src/components/community/community-quick-actions.tsx`
+- `apps/web/src/components/community/community-activity-pulse.tsx`
+- `apps/web/src/components/community/community-podium-standings.tsx`
+- `apps/web/src/lib/coaching/community-week-countdown.ts`, `community-week-countdown.test.ts`
+- `docs/DESIGN.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-04 — Bedtime suggestion from wearable sleep
 

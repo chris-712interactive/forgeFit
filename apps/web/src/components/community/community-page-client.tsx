@@ -11,25 +11,23 @@ import { HallOfFameCard } from "@/components/coaching/hall-of-fame-card";
 import { CommunityNotificationsPanel } from "@/components/coaching/community-notifications-panel";
 import { SeasonRecapCard } from "@/components/coaching/season-recap-card";
 import { WeeklyChallengeCard } from "@/components/coaching/weekly-challenge-card";
-import { WeeklyRivalCard } from "@/components/coaching/weekly-rival-card";
+import { CommunityActivityPulse } from "@/components/community/community-activity-pulse";
+import { CommunityArenaRibbon } from "@/components/community/community-arena-ribbon";
 import { CommunityHero } from "@/components/community/community-hero";
-import { CommunityStandingsList } from "@/components/community/community-standings-list";
+import { CommunityPodiumStandings } from "@/components/community/community-podium-standings";
+import {
+  CommunityQuickActions,
+  useCommunityQuickActionHandlers,
+} from "@/components/community/community-quick-actions";
+import { CommunityRivalShowdown } from "@/components/community/community-rival-showdown";
+import { CommunityWeekCountdownBar } from "@/components/community/community-week-countdown";
 import { WeeklyCommunityRecapCard } from "@/components/home/weekly-community-recap-card";
 import type { CommunityPageData } from "@/lib/coaching/types";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-
-type CommunityTab = "week" | "squad" | "feed";
 
 interface CommunityPageClientProps {
   data: CommunityPageData;
 }
-
-const TAB_LABELS: Record<CommunityTab, string> = {
-  week: "This week",
-  squad: "Squad",
-  feed: "Feed",
-};
 
 export function CommunityPageClient({ data }: CommunityPageClientProps) {
   const {
@@ -48,127 +46,149 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
     communityMetrics,
   } = data;
 
-  const [tab, setTab] = useState<CommunityTab>("week");
+  const {
+    scrollToWins,
+    scrollToSquad,
+    scrollToAlerts,
+  } = useCommunityQuickActionHandlers();
 
-  const showSquad = gamification.optedIn;
-  const showFeed = gamification.unlocked && Boolean(gamification.bucketLabel);
-
-  const tabs = useMemo(() => {
-    const items: CommunityTab[] = ["week"];
-    if (showSquad) items.push("squad");
-    if (showFeed) items.push("feed");
-    return items;
-  }, [showSquad, showFeed]);
+  const hasBucket = gamification.unlocked && Boolean(gamification.bucketLabel);
+  const showArena = hasBucket && gamification.optedIn;
+  const latestWin = gamification.communityWins[0] ?? null;
+  const crewProgressLabel =
+    crew && crewChallenge
+      ? `${crewChallenge.completedCount}/${crewChallenge.memberCount}`
+      : null;
 
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-4 pb-8 sm:max-w-2xl sm:gap-5">
-      <header className="px-0.5">
-        <h1 className="font-display text-xl font-bold text-forge-text sm:text-2xl">
-          Community
-        </h1>
-        <p className="mt-0.5 text-xs text-forge-muted sm:text-sm">
-          Weekly habit competition in your bucket
-        </p>
+      <header className="flex items-start justify-between gap-3 px-0.5">
+        <div>
+          <h1 className="font-display text-xl font-bold text-forge-text sm:text-2xl">
+            Community
+          </h1>
+          <p className="mt-0.5 text-xs text-forge-muted sm:text-sm">
+            {hasBucket
+              ? gamification.bucketLabel
+              : "Weekly habit competition in your bucket"}
+          </p>
+        </div>
+        {showArena && unreadNotificationCount > 0 && (
+          <button
+            type="button"
+            onClick={scrollToAlerts}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-forge-surface-raised text-forge-muted transition-colors hover:text-forge-text"
+            aria-label={`${unreadNotificationCount} unread notifications`}
+          >
+            <span className="text-sm leading-none">●</span>
+            <span className="absolute right-1.5 top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-forge-coral px-0.5 text-[8px] font-bold text-white">
+              {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+            </span>
+          </button>
+        )}
       </header>
 
-      <CommunityHero gamification={gamification} />
+      {hasBucket && <CommunityWeekCountdownBar />}
 
-      {tabs.length > 1 && (
-        <nav
-          className="sticky top-0 z-10 -mx-1 rounded-2xl border border-[var(--border)] bg-forge-surface/95 p-1 backdrop-blur-md"
-          aria-label="Community sections"
-        >
-          <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
-            {tabs.map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setTab(key)}
-                className={`relative rounded-xl px-2 py-2.5 text-center text-xs font-semibold transition-colors sm:text-sm ${
-                  tab === key
-                    ? "bg-forge-ember text-white shadow-sm"
-                    : "text-forge-muted hover:text-forge-text"
-                }`}
+      {!hasBucket ? (
+        <>
+          <CommunityHero gamification={gamification} />
+          {!gamification.unlocked && (
+            <p className="text-center text-xs text-forge-muted">
+              <Link
+                href="/profile#subscription"
+                className="font-medium text-forge-ember underline-offset-2 hover:underline"
               >
-                {TAB_LABELS[key]}
-                {key === "feed" && unreadNotificationCount > 0 && (
-                  <span className="absolute right-2 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-forge-coral px-1 text-[9px] font-bold text-white">
-                    {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
-
-      {tab === "week" && (
-        <div className="flex flex-col gap-4 sm:gap-5">
-          {gamification.league?.seasonRecap && (
-            <SeasonRecapCard recap={gamification.league.seasonRecap} />
+                View Pro plans
+              </Link>
+            </p>
           )}
+        </>
+      ) : !gamification.optedIn ? (
+        <>
+          <CommunityHero gamification={gamification} />
+
+          {(fullLeaderboard.length > 0 || gamification.communityWins.length > 0) && (
+            <div className="flex flex-col gap-4 sm:gap-5">
+              {fullLeaderboard.length > 0 && (
+                <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
+                  <CommunityPodiumStandings
+                    gamification={gamification}
+                    entries={fullLeaderboard}
+                    totalRanked={totalRankedThisWeek}
+                    followState={followState}
+                  />
+                </section>
+              )}
+              <CommunityWinsFeed gamification={gamification} preview />
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col gap-4 sm:gap-5">
+          <CommunityArenaRibbon gamification={gamification} />
+
+          {gamification.weeklyRival && gamification.userScore != null && (
+            <CommunityRivalShowdown
+              rival={gamification.weeklyRival}
+              userRank={gamification.userRank}
+              userScore={gamification.userScore}
+            />
+          )}
+
+          <CommunityQuickActions
+            unreadNotificationCount={unreadNotificationCount}
+            showSquad
+            crewProgressLabel={crewProgressLabel}
+            onCheerWins={scrollToWins}
+            onSquad={scrollToSquad}
+            onAlerts={scrollToAlerts}
+          />
+
+          <CommunityActivityPulse
+            activePeerCount={gamification.activePeerCount}
+            latestWin={latestWin}
+          />
 
           {gamification.weeklyRecap && (
             <WeeklyCommunityRecapCard recap={gamification.weeklyRecap} />
           )}
 
-          {gamification.optedIn && gamification.weeklyRival && (
-            <WeeklyRivalCard
-              rival={gamification.weeklyRival}
-              userRank={gamification.userRank}
-              compact
-              hideFooterLink
-            />
+          {gamification.league?.seasonRecap && (
+            <SeasonRecapCard recap={gamification.league.seasonRecap} />
           )}
 
-          {gamification.optedIn && weeklyChallenge && (
+          {weeklyChallenge && (
             <WeeklyChallengeCard challenge={weeklyChallenge} />
           )}
 
-          {gamification.unlocked &&
-            gamification.bucketLabel &&
-            (fullLeaderboard.length > 0 || gamification.optedIn) && (
-              <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-                <CommunityStandingsList
-                  gamification={gamification}
-                  entries={fullLeaderboard}
-                  totalRanked={totalRankedThisWeek}
-                  followState={followState}
-                />
-              </section>
-            )}
+          <section
+            id="community-squad"
+            className="scroll-mt-4 flex flex-col gap-4 sm:gap-5"
+          >
+            <CrewPanel crew={crew} crewChallenge={crewChallenge} />
+            {crew && <CrewWinsFeed wins={crewWins} />}
+            <FriendsLeaderboard friends={friendsLeaderboard} />
+          </section>
 
-          {gamification.optedIn && gamification.habitBreakdown && (
-            <HabitScoreBreakdownCard
-              breakdown={gamification.habitBreakdown}
-              compact
-            />
+          {(fullLeaderboard.length > 0 || gamification.userRank != null) && (
+            <section
+              id="community-standings"
+              className="scroll-mt-4 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5"
+            >
+              <CommunityPodiumStandings
+                gamification={gamification}
+                entries={fullLeaderboard}
+                totalRanked={totalRankedThisWeek}
+                followState={followState}
+              />
+            </section>
           )}
 
-          {gamification.optedIn && (
-            <p className="text-center text-[11px] text-forge-muted">
-              Top 30% promote at month end ·{" "}
-              <Link
-                href="/profile#gamification"
-                className="text-forge-ember underline-offset-2 hover:underline"
-              >
-                Community settings
-              </Link>
-            </p>
-          )}
-        </div>
-      )}
+          <section id="community-wins" className="scroll-mt-4">
+            <CommunityWinsFeed gamification={gamification} />
+          </section>
 
-      {tab === "squad" && showSquad && (
-        <div className="flex flex-col gap-4 sm:gap-5">
-          <CrewPanel crew={crew} crewChallenge={crewChallenge} />
-          {crew && <CrewWinsFeed wins={crewWins} />}
-          <FriendsLeaderboard friends={friendsLeaderboard} />
-        </div>
-      )}
-
-      {tab === "feed" && showFeed && (
-        <div className="flex flex-col gap-4 sm:gap-5">
           {gamification.isModerator && communityMetrics && (
             <CommunityOpsMetricsPanel metrics={communityMetrics} />
           )}
@@ -177,36 +197,37 @@ export function CommunityPageClient({ data }: CommunityPageClientProps) {
             <CommunityModerationPanel queue={moderationQueue} />
           )}
 
-          <CommunityWinsFeed
-            gamification={gamification}
-            preview={!gamification.optedIn}
-          />
-
-          {gamification.optedIn && (
+          <section id="community-notifications" className="scroll-mt-4">
             <CommunityNotificationsPanel
               notifications={notifications}
               unreadCount={unreadNotificationCount}
             />
-          )}
+          </section>
 
-          {gamification.optedIn && gamification.league && (
+          {gamification.league && (
             <HallOfFameCard
               entries={gamification.league.hallOfFame}
               bucketLabel={gamification.bucketLabel}
             />
           )}
-        </div>
-      )}
 
-      {!gamification.unlocked && (
-        <p className="text-center text-xs text-forge-muted">
-          <Link
-            href="/profile#subscription"
-            className="font-medium text-forge-ember underline-offset-2 hover:underline"
-          >
-            View Pro plans
-          </Link>
-        </p>
+          {gamification.habitBreakdown && (
+            <HabitScoreBreakdownCard
+              breakdown={gamification.habitBreakdown}
+              compact
+            />
+          )}
+
+          <p className="text-center text-[11px] text-forge-muted">
+            Top 30% promote at month end ·{" "}
+            <Link
+              href="/profile#gamification"
+              className="text-forge-ember underline-offset-2 hover:underline"
+            >
+              Community settings
+            </Link>
+          </p>
+        </div>
       )}
     </div>
   );
