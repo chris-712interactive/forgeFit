@@ -89,6 +89,7 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 - **Quick actions:** Cheer wins · Squad · Alerts — smooth-scroll to anchored sections
 - **Podium standings:** Top 3 visual podium + compact list; expand for full board
 - **Opt-in gate:** Non-participants see `CommunityHero` + preview standings/wins; opted-in users get full arena flow
+- **Moderator tools:** Separate `/community/moderation` view (linked from Profile → Gamification); main community page matches member experience
 
 ## Marketing landing page
 

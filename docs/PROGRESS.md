@@ -36,6 +36,27 @@
 
 ## Session Log
 
+### 2026-07-04 — Community moderator tools split
+
+**What was done**
+
+- Moved moderator-only UI off `/community` to **`/community/moderation`** (ops metrics, flagged scores, win moderation controls)
+- Main community page now uses the same wins feed as everyone else (hidden wins filtered, no inline mod controls)
+- Profile → Gamification shows **Open moderator tools** link for moderators only
+
+**Files touched**
+
+- `apps/web/src/app/(app)/community/moderation/page.tsx` (new)
+- `apps/web/src/components/community/community-moderation-page-client.tsx` (new)
+- `apps/web/src/components/community/community-page-client.tsx`
+- `apps/web/src/components/coaching/community-wins-feed.tsx`
+- `apps/web/src/lib/coaching/service.ts`, `types.ts`, `index.ts`
+- `apps/web/src/components/profile/gamification-setting.tsx`, `profile-settings-hub.tsx`
+- `apps/web/src/app/(app)/profile/page.tsx`
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-04 — Path pill route scope
 
 **What was done**

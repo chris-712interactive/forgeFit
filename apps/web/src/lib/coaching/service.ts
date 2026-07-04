@@ -29,6 +29,7 @@ import type {
   CommunityRankSnapshot,
   WeeklyCommunityRecap,
   CommunityPageData,
+  CommunityModerationPageData,
   LeagueContext,
 } from "./types";
 import { computeTrainingStreakWeeks, highestNewStreakMilestone } from "./streak";
@@ -418,7 +419,8 @@ export async function upsertWeeklyLeaderboardScore(
 export async function getGamificationContext(
   userId: string,
   subscription: SubscriptionSnapshot,
-  sessions: WorkoutSessionRecord[]
+  sessions: WorkoutSessionRecord[],
+  options: { moderatorWinsView?: boolean } = {}
 ): Promise<GamificationContext> {
   const unlocked = hasFeature(subscription, "gamification");
 
@@ -441,6 +443,7 @@ export async function getGamificationContext(
     userId,
     profileFlag: profile?.is_community_moderator,
   });
+  const moderatorWinsView = options.moderatorWinsView === true && isModerator;
   const goal = profile?.primary_goal ?? null;
   const experience = profile?.experience_level ?? null;
   const bucket = profile ? resolveCommunityBucket(profile) : null;
@@ -519,8 +522,8 @@ export async function getGamificationContext(
         .eq("bucket_experience", experience)
         .eq("bucket_age_cohort", ageCohort)
         .order("occurred_at", { ascending: false })
-        .limit(isModerator ? 15 : 8);
-      if (!isModerator) {
+        .limit(moderatorWinsView ? 15 : 8);
+      if (!moderatorWinsView) {
         query = query.is("hidden_at", null);
       }
       return query;
@@ -1055,8 +1058,6 @@ export async function getCommunityPageData(
       weeklyChallenge: null,
       crewChallenge: null,
       crewWins: [],
-      moderationQueue: null,
-      communityMetrics: null,
     };
   }
 
@@ -1150,20 +1151,6 @@ export async function getCommunityPageData(
     recap.crewName = crew.name;
   }
 
-  const [moderationQueue, communityMetrics] =
-    gamification.isModerator &&
-    gamification.bucketGoal &&
-    gamification.bucketExperience
-      ? await Promise.all([
-          getModerationQueue({
-            bucketGoal: gamification.bucketGoal,
-            bucketExperience: gamification.bucketExperience,
-            weekStart,
-          }),
-          getCommunityMetrics(),
-        ])
-      : [null, null];
-
   return {
     gamification: {
       ...gamification,
@@ -1180,6 +1167,45 @@ export async function getCommunityPageData(
     weeklyChallenge: weeklyChallengeView,
     crewChallenge,
     crewWins,
+  };
+}
+
+export async function getCommunityModerationPageData(
+  userId: string,
+  subscription: SubscriptionSnapshot,
+  sessions: WorkoutSessionRecord[]
+): Promise<CommunityModerationPageData | null> {
+  const gamification = await getGamificationContext(
+    userId,
+    subscription,
+    sessions,
+    { moderatorWinsView: true }
+  );
+
+  if (!gamification.isModerator) {
+    return null;
+  }
+
+  if (!gamification.bucketGoal || !gamification.bucketExperience) {
+    return {
+      gamification,
+      moderationQueue: null,
+      communityMetrics: null,
+    };
+  }
+
+  const weekStart = weekStartIso();
+  const [moderationQueue, communityMetrics] = await Promise.all([
+    getModerationQueue({
+      bucketGoal: gamification.bucketGoal,
+      bucketExperience: gamification.bucketExperience,
+      weekStart,
+    }),
+    getCommunityMetrics(),
+  ]);
+
+  return {
+    gamification,
     moderationQueue,
     communityMetrics,
   };

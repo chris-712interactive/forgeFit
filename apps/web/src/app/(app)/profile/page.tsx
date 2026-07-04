@@ -9,6 +9,7 @@ import { getUserOneRepMaxes } from "@/lib/progression/user-maxes";
 import { getCommunityEmailSettings } from "@/lib/coaching/community-email";
 import { getCommunityPushSettings } from "@/lib/coaching/community-push";
 import { getWeighInPushSettings } from "@/lib/coaching/progress-push";
+import { isCommunityModerator } from "@/lib/coaching/community-moderation";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { hasFeature } from "@/lib/billing/gates";
 import { isStripeProConfigured } from "@/lib/billing/stripe";
@@ -189,6 +190,14 @@ export default async function ProfilePage({
           integrationError={integrationError ?? integrationsLoadError}
           gamificationUnlocked={hasFeature(subscription, "gamification")}
           gamificationOptIn={profile?.gamification_opt_in ?? false}
+          isCommunityModerator={
+            user
+              ? isCommunityModerator({
+                  userId: user.id,
+                  profileFlag: profile?.is_community_moderator,
+                })
+              : false
+          }
           communityOptInVariant={
             profile?.community_opt_in_variant === "default_on_ui"
               ? "default_on_ui"

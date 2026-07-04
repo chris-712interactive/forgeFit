@@ -15,6 +15,7 @@ interface CommunityWinsFeedProps {
   preview?: boolean;
   compact?: boolean;
   maxItems?: number;
+  showModerationControls?: boolean;
 }
 
 function formatWhen(iso: string): string {
@@ -31,6 +32,7 @@ export function CommunityWinsFeed({
   preview = false,
   compact = false,
   maxItems,
+  showModerationControls = false,
 }: CommunityWinsFeedProps) {
   const unit = useUnitPreference();
 
@@ -42,8 +44,6 @@ export function CommunityWinsFeed({
     ? gamification.communityWins.slice(0, maxItems)
     : gamification.communityWins;
   const hasWins = wins.length > 0;
-  const showModerationControls =
-    gamification.isModerator && !preview && !compact;
 
   return (
     <section
@@ -71,7 +71,7 @@ export function CommunityWinsFeed({
           PRs and milestones from your bucket — cheer peers to keep momentum
           going.
           {showModerationControls
-            ? " Hidden wins stay visible to you with moderation controls."
+            ? " Hidden wins stay visible here with moderation controls."
             : ""}
         </p>
       )}

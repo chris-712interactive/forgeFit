@@ -2,6 +2,7 @@
 
 import { setGamificationOptIn } from "@/app/actions/gamification";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,12 +13,14 @@ interface GamificationSettingProps {
   unlocked: boolean;
   optedIn: boolean;
   optInVariant?: CommunityOptInVariant;
+  isCommunityModerator?: boolean;
 }
 
 export function GamificationSetting({
   unlocked,
   optedIn,
   optInVariant = "control",
+  isCommunityModerator = false,
 }: GamificationSettingProps) {
   const router = useRouter();
   const defaultEnabled =
@@ -92,6 +95,15 @@ export function GamificationSetting({
             />
           </button>
         </div>
+      )}
+
+      {isCommunityModerator && unlocked && (
+        <Link
+          href="/community/moderation"
+          className="mt-4 inline-flex text-sm font-medium text-forge-ember underline-offset-2 hover:underline"
+        >
+          Open moderator tools
+        </Link>
       )}
     </section>
   );

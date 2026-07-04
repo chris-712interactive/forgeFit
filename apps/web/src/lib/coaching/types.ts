@@ -248,6 +248,10 @@ export interface CommunityPageData {
   weeklyChallenge: WeeklyChallengeView | null;
   crewChallenge: CrewChallengeView | null;
   crewWins: CommunityWinRow[];
+}
+
+export interface CommunityModerationPageData {
+  gamification: GamificationContext;
   moderationQueue: ModerationQueue | null;
   communityMetrics: CommunityMetricsSnapshot | null;
 }
