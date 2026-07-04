@@ -36,6 +36,19 @@
 
 ## Session Log
 
+### 2026-07-04 — Imperial kettlebell load snapping
+
+**What was done:**
+- Kettlebell movements (goblet squat, kettlebell-only lifts) now snap to **commercial gym sizes** when unit preference is imperial: **20, 25, 30, 35… lb** in 5 lb steps
+- Metric kettlebells still use competition-style kg sizes (4, 6, 8, 10, 12, 16, 20, 24…)
+- Added regression test for goblet squat imperial display snapping
+
+**What's next:** None for this fix — verify goblet squat logging in an imperial session at the gym
+
+**Blockers:** None
+
+**Files touched:** `load-snapping.ts`, `use-workout-weight-input.test.ts`, `docs/PROGRESS.md`
+
 ### 2026-07-01 — Inline win moderation on community feed
 
 **What was done:**
