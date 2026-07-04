@@ -8,10 +8,12 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "lint": "echo 'no lint configured'",
     "build-catalog": "node scripts/build-catalog.mjs"
   },
   "devDependencies": {
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3"
   }
 }

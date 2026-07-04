@@ -65,6 +65,8 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
       sessionClientId: s.sessionClientId,
       exerciseId: s.exerciseId,
       exerciseName: s.exerciseName,
+      plannedExerciseId: s.plannedExerciseId,
+      substitutionReason: s.substitutionReason,
       setNumber: s.setNumber,
       reps: finiteOrUndefined(s.reps),
       durationMs: finiteOrUndefined(s.durationMs),

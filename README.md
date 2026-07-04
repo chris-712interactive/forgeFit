@@ -12,7 +12,7 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 - **Workout music** — curated Spotify vibe playlists + optional OAuth playback controls (all tiers; Spotify Premium for in-app controls)
 - **Nutrition diary** — USDA + Open Food Facts, restaurant quick-log (Pro+), macro tracking vs program targets
 - **Progress tracking** — 30/90-day projections (Pro), strength/volume analytics, caliper BF%, progress photos
-- **Exercise library** — 800+ demos, muscle heatmaps, equipment substitution preview
+- **Exercise library** — 800+ demos, muscle heatmaps, equipment swaps (library + in-session **Equipment busy?** during workouts)
 - **Stripe billing** — Free, Pro ($8.99/mo), Pro+ ($14.99/mo)
 - **Fitbit / Google Health sync** (Pro+) — activity, sleep, recovery, workout intensity correlation
 - **Community** (Pro) — opt-in bucket leaderboards, rivals, follows, win feed, in-app notifications

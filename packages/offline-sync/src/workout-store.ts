@@ -8,6 +8,7 @@ import type {
   WarmupStatus,
   ConditioningStatus,
   WorkoutStatus,
+  SubstitutionReason,
 } from "./types";
 
 function nowIso(): string {
@@ -170,6 +171,85 @@ export async function appendExerciseSet(input: {
   });
 
   return created;
+}
+
+export async function swapExerciseInSession(input: {
+  sessionClientId: string;
+  exerciseIndex: number;
+  newExerciseId: string;
+  newExerciseName: string;
+  reason: SubstitutionReason;
+}): Promise<LocalWorkoutSession | undefined> {
+  const db = getOfflineDb();
+  const session = await db.workoutSessions.get(input.sessionClientId);
+  if (!session || session.status !== "in_progress") return undefined;
+
+  const current = session.exercises[input.exerciseIndex];
+  if (!current) return undefined;
+
+  const previousExerciseId = current.exerciseId;
+  const plannedExerciseId = current.plannedExerciseId ?? current.exerciseId;
+  const plannedExerciseName = current.plannedExerciseName ?? current.name;
+  const timestamp = nowIso();
+
+  const updatedExercise: ExerciseSnapshot = {
+    ...current,
+    exerciseId: input.newExerciseId,
+    name: input.newExerciseName,
+    plannedExerciseId,
+    plannedExerciseName,
+    substitutedAt: timestamp,
+    substitutionReason: input.reason,
+  };
+
+  const exercises = session.exercises.map((exercise, index) =>
+    index === input.exerciseIndex ? updatedExercise : exercise
+  );
+
+  const sets = await db.exerciseSets
+    .where("sessionClientId")
+    .equals(input.sessionClientId)
+    .filter(
+      (set) => set.exerciseId === previousExerciseId && !set.completed
+    )
+    .toArray();
+
+  const lastCompletedWeight = (
+    await db.exerciseSets
+      .where("sessionClientId")
+      .equals(input.sessionClientId)
+      .filter(
+        (set) => set.exerciseId === previousExerciseId && set.completed
+      )
+      .toArray()
+  )
+    .sort((a, b) => b.setNumber - a.setNumber)
+    .find((set) => set.weightKg != null)?.weightKg;
+
+  const updatedSession: LocalWorkoutSession = {
+    ...session,
+    exercises,
+    updatedAt: timestamp,
+    synced: false,
+  };
+
+  await db.transaction("rw", db.workoutSessions, db.exerciseSets, async () => {
+    await db.workoutSessions.put(updatedSession);
+    for (const set of sets) {
+      await db.exerciseSets.put({
+        ...set,
+        exerciseId: input.newExerciseId,
+        exerciseName: input.newExerciseName,
+        plannedExerciseId,
+        substitutionReason: input.reason,
+        weightKg: set.weightKg ?? lastCompletedWeight,
+        updatedAt: timestamp,
+        synced: false,
+      });
+    }
+  });
+
+  return updatedSession;
 }
 
 export async function updateSet(

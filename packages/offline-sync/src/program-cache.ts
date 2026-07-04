@@ -7,7 +7,8 @@ export type { CachedProgram };
 export async function cacheProgramPlan(
   userId: string,
   plan: ProgramPlan,
-  programId?: string
+  programId?: string,
+  userEquipment?: string[]
 ): Promise<void> {
   const db = getOfflineDb();
   await db.cachedPrograms.put({
@@ -15,6 +16,7 @@ export async function cacheProgramPlan(
     programId,
     plan,
     cachedAt: new Date().toISOString(),
+    userEquipment,
   });
 }
 

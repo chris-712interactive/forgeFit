@@ -6,8 +6,10 @@ import {
   appSectionStack,
 } from "@/components/layout/page-layout";
 import { SubstitutionList } from "@/components/exercises/substitution-list";
+import { ExerciseWorkoutSwapAction } from "@/components/exercises/exercise-workout-swap-action";
 import { getExerciseDetailData } from "@/lib/exercises/service";
 import { formatEquipment, formatPattern } from "@/lib/exercises/labels";
+import { parseWorkoutSwapReturnTo } from "@/lib/workouts/exercise-swap-return";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
@@ -73,8 +75,14 @@ export default async function ExerciseDetailPage({
               substitutions={substitutions}
               userEquipment={userEquipment}
               returnTo={returnTo}
+              workoutSwapTarget={parseWorkoutSwapReturnTo(returnTo)}
             />
           </div>
+          <ExerciseWorkoutSwapAction
+            exerciseId={exercise.id}
+            exerciseName={exercise.name}
+            returnTo={returnTo}
+          />
         </section>
 
         {exercise.instructions.length > 0 && (

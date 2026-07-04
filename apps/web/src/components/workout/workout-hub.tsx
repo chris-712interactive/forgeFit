@@ -53,6 +53,7 @@ interface WorkoutHubProps {
   userId: string;
   programId?: string;
   plan: ProgramPlan | null;
+  userEquipment?: string[];
   serverSessions?: WorkoutSessionRecord[];
   workoutsTableReady?: boolean;
   experienceLevel?: ExperienceLevel;
@@ -107,6 +108,7 @@ export function WorkoutHub({
   userId,
   programId,
   plan: serverPlan,
+  userEquipment = ["bodyweight_only"],
   serverSessions = [],
   workoutsTableReady = true,
   experienceLevel = "beginner",
@@ -230,7 +232,7 @@ export function WorkoutHub({
     if (serverPlan) {
       setPlan(serverPlan);
       setCachedProgramId(programId);
-      void cacheProgramPlan(userId, serverPlan, programId);
+      void cacheProgramPlan(userId, serverPlan, programId, userEquipment);
       return;
     }
 
@@ -240,7 +242,7 @@ export function WorkoutHub({
         setCachedProgramId(cached.programId);
       }
     });
-  }, [serverPlan, programId, userId]);
+  }, [serverPlan, programId, userId, userEquipment]);
 
   const openWorkout = useCallback((clientId: string) => {
     setReviewClientId(null);
@@ -447,6 +449,7 @@ export function WorkoutHub({
     return (
       <ActiveWorkout
         clientId={activeClientId}
+        userEquipment={userEquipment}
         experienceLevel={experienceLevel}
         coaching={coachingFeatures}
         readiness={readiness}

@@ -18,8 +18,11 @@ export {
   searchCatalog,
 } from "./catalog";
 export {
+  buildSubstitutionReason,
   getSubstitutions,
   getUnavailableReason,
+  suggestBusyEquipment,
+  type SubstitutionOptions,
 } from "./substitutions";
 export { resolveExerciseDetail } from "./resolve";
 export { isExerciseAvailable, isBodyweightOnlyMode } from "./availability";

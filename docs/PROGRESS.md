@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-04 |
-| **Last session focus** | Imperial kettlebell load snapping (commercial gym sizes) |
+| **Last session focus** | In-session exercise swap ("Equipment busy?") |
 
 ---
 
@@ -36,6 +36,40 @@
 
 ## Session Log
 
+### 2026-07-04 — In-session exercise swap
+
+**What was done**
+
+- Extended `getSubstitutions()` with `excludeEquipment`, `suggestBusyEquipment()`, and `buildSubstitutionReason()`
+- Added `swapExerciseInSession()` in `@forgefit/offline-sync` — updates session snapshot + remaining sets; preserves completed sets on original exercise
+- Supabase migration `20260704100000_exercise_swap.sql` — `planned_exercise_id`, `substitution_reason` on `exercise_sets`
+- Active workout **Equipment busy?** bottom sheet with busy-equipment chips, GIF swap cards, confirmation toast
+- Exercise detail: substitution list **Use in workout** when opened from active session; recap shows swap summary
+- Cached program plan now stores `userEquipment` for offline swap ranking
+
+**What's next**
+
+- Apply migration on Supabase remote
+- Optional: conditioning-block per-movement swap; weight heuristic when machine → free-weight
+
+**Blockers**
+
+- Migration must be applied before swap metadata syncs to server
+
+**Files touched**
+
+- `packages/exercise-db/src/substitutions.ts`, `substitutions.test.ts`, `index.ts`, `package.json`, `tsconfig.json`
+- `packages/offline-sync/src/types.ts`, `workout-store.ts`, `program-cache.ts`, `sync-client.ts`
+- `supabase/migrations/20260704100000_exercise_swap.sql`
+- `apps/web/src/app/api/sync/route.ts`
+- `apps/web/src/components/workout/exercise-swap-sheet.tsx`, `active-workout.tsx`, `workout-recap.tsx`, `workout-hub.tsx`
+- `apps/web/src/components/exercises/substitution-list.tsx`, `exercise-workout-swap-action.tsx`
+- `apps/web/src/lib/workouts/exercise-swap.ts`, `exercise-swap-return.ts`, `workout-steps.ts`, `sessions.ts`, `sessions-local.ts`
+- `apps/web/src/app/(app)/workout/page.tsx`, `exercises/[id]/page.tsx`
+- `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`, `README.md`
+
+---
+
 ### 2026-07-04 — Imperial kettlebell load snapping
 
 **What was done:**
@@ -48,6 +82,31 @@
 **Blockers:** None
 
 **Files touched:** `load-snapping.ts`, `use-workout-weight-input.test.ts`, `docs/PROGRESS.md`
+
+---
+
+### 2026-07-03 — Instagram promo assets guide (CTV + Phone)
+
+**What was done**
+
+- Added **Promo assets (CTV + Phone)** section to `docs/marketing/instagram-31-day-calendar.md` — when to use 16:9 MNTN vs 9:16 Phone promo, organic vs Meta Ads Manager vs boost, UTMs, Day 30 optional swap, workflow
+- Updated table of contents, Day 30 cross-reference, and brand references table
+
+**What's next**
+
+- Optional: sync `apps/web/content/marketing/ig31-print.html` with new promo section if printable guide should match
+- Run Day 30 with batch CTA Reel or Phone promo; launch Meta Ads test with `utm_campaign=promo_phone` when ready
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `docs/marketing/instagram-31-day-calendar.md`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-01 — Inline win moderation on community feed
 

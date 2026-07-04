@@ -1,4 +1,5 @@
 import type { LocalExerciseSet, LocalWorkoutSession } from "@forgefit/offline-sync";
+import { setsForExerciseSlot } from "@/lib/workouts/exercise-swap";
 
 export type WorkoutStep =
   | { kind: "overview" }
@@ -90,9 +91,7 @@ export function initialStepIndex(
     if (step.kind !== "exercise") continue;
     const exercise = session.exercises[step.exerciseIndex];
     if (!exercise) continue;
-    const exerciseSets = sets.filter(
-      (set) => set.exerciseId === exercise.exerciseId
-    );
+    const exerciseSets = setsForExerciseSlot(sets, exercise);
     if (exerciseSets.length === 0 || exerciseSets.some((set) => !set.completed)) {
       return steps.indexOf(step);
     }

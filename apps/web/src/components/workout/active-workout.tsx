@@ -63,6 +63,10 @@ import { WorkoutEquipmentOverviewCard } from "./workout-equipment-overview-card"
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
+import {
+  completedSetsOnOriginalExercise,
+  setsForExerciseSlot,
+} from "@/lib/workouts/exercise-swap";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HoldTimer } from "./hold-timer";
@@ -74,10 +78,12 @@ import { SetRow } from "./set-row";
 import { WorkoutStepHeader } from "./workout-step-header";
 import { WorkoutMusicPicker } from "./workout-music-picker";
 import { WorkoutMusicTransport } from "./workout-music-transport";
+import { ExerciseSwapSheet } from "./exercise-swap-sheet";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface ActiveWorkoutProps {
   clientId: string;
+  userEquipment?: string[];
   experienceLevel?: ExperienceLevel;
   coaching?: WorkoutCoachingFeatures | null;
   readiness?: WorkoutReadinessContext | null;
@@ -88,6 +94,7 @@ interface ActiveWorkoutProps {
 
 export function ActiveWorkout({
   clientId,
+  userEquipment = ["bodyweight_only"],
   experienceLevel = "beginner",
   coaching = null,
   readiness = null,
@@ -130,6 +137,10 @@ export function ActiveWorkout({
     suggestion: EasySetSuggestion;
   } | null>(null);
   const [musicStripDismissed, setMusicStripDismissed] = useState(false);
+  const [swapSheetOpen, setSwapSheetOpen] = useState(false);
+  const [swapConfirmation, setSwapConfirmation] = useState<string | null>(
+    null
+  );
 
   const goBack = useCallback(() => {
     onBack?.();
@@ -152,6 +163,12 @@ export function ActiveWorkout({
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!swapConfirmation) return;
+    const timer = window.setTimeout(() => setSwapConfirmation(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [swapConfirmation]);
 
   const steps = useMemo(
     () => (session ? buildWorkoutSteps(session) : []),
@@ -220,7 +237,9 @@ export function ActiveWorkout({
     }
 
     const exercise = session.exercises.find(
-      (item) => item.exerciseId === setRow.exerciseId
+      (item) =>
+        item.exerciseId === setRow.exerciseId ||
+        item.plannedExerciseId === setRow.exerciseId
     );
     if (!exercise) return;
 
@@ -232,7 +251,7 @@ export function ActiveWorkout({
           experienceLevel as HoldExperience
         )
       : exercise.reps;
-    const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
+    const exerciseSets = setsForExerciseSlot(sets, exercise);
 
     const suggestion = buildEasySetSuggestion({
       set: { ...setRow, rir: nextRir },
@@ -604,12 +623,29 @@ export function ActiveWorkout({
     }
   }
 
+  async function handleExerciseSwapped(input: {
+    exerciseId: string;
+    exerciseName: string;
+  }) {
+    const [sessionRow, setRows] = await Promise.all([
+      getSession(clientId),
+      getSetsForSession(clientId),
+    ]);
+    setSession(sessionRow ?? null);
+    setSets(setRows);
+    setSwapConfirmation(`Swapped to ${input.exerciseName}`);
+    void sync?.refreshPending();
+    if (navigator.onLine) {
+      void sync?.runSync();
+    }
+  }
+
   function renderExerciseStep(step: Extract<WorkoutStep, { kind: "exercise" }>) {
     if (!session) return null;
     const exercise = session.exercises[step.exerciseIndex];
     if (!exercise) return null;
 
-    const exerciseSets = setsByExercise.get(exercise.exerciseId) ?? [];
+    const exerciseSets = setsForExerciseSlot(sets, exercise);
     const isTimed = isTimedExercise(exercise.exerciseId);
     const isCardio = isTimedCardioExercise(exercise.exerciseId);
     const isHold = isDurationHoldExercise(exercise.exerciseId);
@@ -626,21 +662,44 @@ export function ActiveWorkout({
     const timerLabel = isCardio ? "Cardio" : "Hold";
     const exerciseSetsComplete =
       exerciseSets.length > 0 && exerciseSets.every((set) => set.completed);
+    const completedOnOriginal = completedSetsOnOriginalExercise(sets, exercise);
+    const swappedFromName =
+      exercise.plannedExerciseName &&
+      exercise.plannedExerciseId !== exercise.exerciseId
+        ? exercise.plannedExerciseName
+        : null;
 
     return (
       <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-3 sm:p-4">
         <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
               Exercise {step.exerciseIndex + 1} of {session.exercises.length}
             </p>
-            <Link
-              href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(`/workout?active=${clientId}`)}`}
-              className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 text-xs font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
-            >
-              View form →
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setSwapSheetOpen(true)}
+                className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-gold/30 bg-forge-gold/10 px-3 text-xs font-semibold text-forge-gold transition-colors hover:border-forge-gold/50"
+              >
+                Equipment busy?
+              </button>
+              <Link
+                href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(`/workout?active=${clientId}&swapAt=${step.exerciseIndex}`)}`}
+                className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 text-xs font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
+              >
+                View form →
+              </Link>
+            </div>
           </div>
+          {swappedFromName && (
+            <p className="mt-2 rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 py-2 text-xs text-forge-steel">
+              Swapped from {swappedFromName}
+              {completedOnOriginal > 0
+                ? ` · ${completedOnOriginal} set${completedOnOriginal === 1 ? "" : "s"} logged on original`
+                : ""}
+            </p>
+          )}
           <p className="mt-2 text-sm text-forge-muted">
             {isCardio ? (
               <>Aim for {timedPrescription}</>
@@ -1088,6 +1147,31 @@ export function ActiveWorkout({
           })}
           onClose={() => setCelebrationPr(null)}
         />
+      )}
+
+      {currentStep?.kind === "exercise" && session && (
+        <ExerciseSwapSheet
+          open={swapSheetOpen}
+          sessionClientId={clientId}
+          exerciseIndex={currentStep.exerciseIndex}
+          exerciseId={session.exercises[currentStep.exerciseIndex]?.exerciseId ?? ""}
+          exerciseName={session.exercises[currentStep.exerciseIndex]?.name ?? ""}
+          userEquipment={userEquipment}
+          onClose={() => setSwapSheetOpen(false)}
+          onSwapped={(input) => void handleExerciseSwapped(input)}
+        />
+      )}
+
+      {swapConfirmation && (
+        <div
+          className="fixed bottom-28 left-1/2 z-[110] w-[min(20rem,calc(100%-2rem))] -translate-x-1/2 rounded-xl border border-forge-success/30 bg-forge-surface-raised px-4 py-3 text-center shadow-2xl"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="text-sm font-semibold text-forge-success">
+            {swapConfirmation}
+          </p>
+        </div>
       )}
     </div>
   );

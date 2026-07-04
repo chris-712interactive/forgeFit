@@ -8,6 +8,7 @@ import {
   userOneRepMaxMap,
 } from "@/lib/progression/user-maxes";
 import { getActiveProgramRow } from "@/lib/programs/service";
+import { getUserEquipment } from "@/lib/exercises/service";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkoutDeviceMetricsByClientIds } from "@/lib/workouts/device-metrics-service";
 import { getWorkoutReadinessContext } from "@/lib/workouts/readiness";
@@ -64,12 +65,14 @@ export default async function WorkoutPage() {
   const spotifyConnected = spotifyStatus.connected;
 
   const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
+  const userEquipment = user ? await getUserEquipment(user.id) : [];
 
   return (
     <WorkoutHub
       userId={user!.id}
       programId={programRow?.id}
       plan={plan}
+      userEquipment={userEquipment}
       serverSessions={serverSessionsResult.records}
       workoutsTableReady={serverSessionsResult.tableReady}
       experienceLevel={profile?.experience_level ?? "beginner"}

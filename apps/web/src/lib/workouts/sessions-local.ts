@@ -1,11 +1,12 @@
 import type { LocalExerciseSet, LocalWorkoutSession } from "@forgefit/offline-sync";
 import { getSetsForSession, listSessionsForUser } from "@forgefit/offline-sync";
-import type { WorkoutSessionRecord, WorkoutSetRecord } from "./sessions";
+import type { WorkoutSessionRecord, WorkoutSetRecord, WorkoutExerciseSwap } from "./sessions";
 
 function mapLocalSets(sets: LocalExerciseSet[]): WorkoutSetRecord[] {
   return sets.map((set) => ({
     exerciseId: set.exerciseId,
     exerciseName: set.exerciseName,
+    plannedExerciseId: set.plannedExerciseId,
     setNumber: set.setNumber,
     reps: set.reps,
     durationMs: set.durationMs,
@@ -13,6 +14,22 @@ function mapLocalSets(sets: LocalExerciseSet[]): WorkoutSetRecord[] {
     rir: set.rir,
     completed: set.completed,
   }));
+}
+
+function collectExerciseSwaps(
+  session: LocalWorkoutSession
+): WorkoutExerciseSwap[] {
+  return session.exercises
+    .filter(
+      (exercise) =>
+        exercise.plannedExerciseId &&
+        exercise.plannedExerciseId !== exercise.exerciseId
+    )
+    .map((exercise) => ({
+      plannedExerciseName:
+        exercise.plannedExerciseName ?? exercise.plannedExerciseId!,
+      actualExerciseName: exercise.name,
+    }));
 }
 
 function mapLocalSession(
@@ -28,6 +45,7 @@ function mapLocalSession(
     startedAt: session.startedAt,
     completedAt: session.completedAt ?? null,
     sets: mapLocalSets(sets),
+    swaps: collectExerciseSwaps(session),
     pendingSync: !session.synced,
     warmupBlock: session.warmupBlock,
     warmupStatus: session.warmupStatus,

@@ -7,12 +7,18 @@ import type { WarmupStatus } from "./warmup";
 export interface WorkoutSetRecord {
   exerciseId: string;
   exerciseName: string;
+  plannedExerciseId?: string;
   setNumber: number;
   reps?: number;
   durationMs?: number;
   weightKg?: number;
   rir?: number;
   completed: boolean;
+}
+
+export interface WorkoutExerciseSwap {
+  plannedExerciseName: string;
+  actualExerciseName: string;
 }
 
 export interface WorkoutSessionRecord {
@@ -24,6 +30,7 @@ export interface WorkoutSessionRecord {
   startedAt: string;
   completedAt: string | null;
   sets: WorkoutSetRecord[];
+  swaps?: WorkoutExerciseSwap[];
   pendingSync?: boolean;
   warmupBlock?: WarmupBlock;
   warmupStatus?: WarmupStatus | "completed" | "skipped";

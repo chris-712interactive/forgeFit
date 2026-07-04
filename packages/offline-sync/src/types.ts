@@ -4,12 +4,14 @@ export type WorkoutStatus = "in_progress" | "completed" | "cancelled";
 export type RecoveryStatus = "pending" | "completed" | "skipped";
 export type WarmupStatus = "pending" | "completed" | "skipped";
 export type ConditioningStatus = "pending" | "completed" | "skipped";
+export type SubstitutionReason = "equipment_busy" | "user_choice";
 
 export interface CachedProgram {
   userId: string;
   programId?: string;
   plan: ProgramPlan;
   cachedAt: string;
+  userEquipment?: string[];
 }
 
 export interface ExerciseSnapshot {
@@ -18,6 +20,11 @@ export interface ExerciseSnapshot {
   sets: number;
   reps: string;
   restSeconds: number;
+  /** Original program exercise before an in-session swap */
+  plannedExerciseId?: string;
+  plannedExerciseName?: string;
+  substitutedAt?: string;
+  substitutionReason?: SubstitutionReason;
   /** Extra working sets added by RIR-based progression */
   extraSets?: number;
   /** Human-readable note shown during the workout */
@@ -57,6 +64,8 @@ export interface LocalExerciseSet {
   userId: string;
   exerciseId: string;
   exerciseName: string;
+  plannedExerciseId?: string;
+  substitutionReason?: SubstitutionReason;
   setNumber: number;
   reps?: number;
   /** Elapsed time for timed sets (holds, cardio) in milliseconds */
@@ -96,6 +105,8 @@ export interface SyncSetPayload {
   sessionClientId: string;
   exerciseId: string;
   exerciseName: string;
+  plannedExerciseId?: string;
+  substitutionReason?: SubstitutionReason;
   setNumber: number;
   reps?: number;
   durationMs?: number;

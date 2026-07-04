@@ -7,7 +7,7 @@
 > **Cadence:** 1 Reel + 1 Carousel/static daily + 5–8 Stories (~2 feed touchpoints/day)  
 > **Time budget:** ~45–60 min/day after batch setup; ~4 hours on batch days (Days 0, 7, 14, 21)
 
-**Last updated:** 2026-06-30
+**Last updated:** 2026-07-03
 
 ---
 
@@ -26,9 +26,10 @@
 9. [Hook bank](#hook-bank)
 10. [Hashtag groups](#hashtag-groups)
 11. [Growth accelerators](#growth-accelerators)
-12. [Metrics](#metrics)
-13. [First 48 hours checklist](#first-48-hours-checklist)
-14. [Brand references (in-repo)](#brand-references-in-repo)
+12. [Promo assets (CTV + Phone)](#promo-assets-ctv--phone)
+13. [Metrics](#metrics)
+14. [First 48 hours checklist](#first-48-hours-checklist)
+15. [Brand references (in-repo)](#brand-references-in-repo)
 
 ---
 
@@ -1140,6 +1141,8 @@ Onboarding experience levels + program scaling — “Beginner to advanced.”
 
 **🎬 Reel — Direct CTA (15s):** Free account. Evidence-based plan. Offline gym logging. Link in bio.
 
+**Optional swap:** If you have **`ForgeRep Promo - Phone.mp4`** (9:16 · ~15s), you may use it **instead of** the CapCut batch Reel on Day 30 — see [Promo assets (CTV + Phone)](#promo-assets-ctv--phone). Default remains batch clips (better native feed fit).
+
 **📱 Static:** Minimal — logo + “Start free today” + URL
 
 **📖 Stories:** All day — link sticker, reshare every post, “DM me GOAL for which plan fits you”
@@ -1222,6 +1225,72 @@ Rotate one group per post (8–12 tags):
 
 ---
 
+## Promo assets (CTV + Phone)
+
+Polished promo spots (e.g. MNTN QuickFrame exports) are **not** part of the daily organic Reel factory. This calendar’s reach engine is **Batch Day 0 screen recordings + CapCut**. Use promo files for **conversion moments and paid media** — not as a replacement for demo/skit Reels.
+
+### Asset inventory
+
+| File (example) | Aspect | Length | Primary channel |
+|----------------|--------|--------|-----------------|
+| `ForgeRep Promo.mp4` | 16:9 (1920×1080) | ~15s | **MNTN / CTV** — not Instagram feed |
+| `ForgeRep Promo - Phone.mp4` | 9:16 (1080×1920) | ~15s | **Instagram Reels (optional organic)** · **Meta Ads Manager (paid)** |
+
+Store exports outside the repo (e.g. Desktop or ad account asset library). Re-export with burned-in captions if the promo VO is hard to follow without sound.
+
+### Organic Instagram — when to post
+
+| Do | Don’t |
+|----|-------|
+| Post **Phone** promo **once** on **Day 30** (optional swap for batch CTA Reel) | Replace daily Reels (Days 1–29) with the promo |
+| Cross-post Phone promo to **TikTok / YouTube Shorts** same day if you post organically | Expect promo to outperform screen-recording demos on reach |
+| Pin only if it converts — otherwise keep pinned slots for Days 1, 3, 5 batch Reels | Post 16:9 CTV file to the Reels feed (letterboxed) |
+
+**Default Day 30 Reel:** batch **01 + 03 + 05** in CapCut (native app demo feel). **Alternate:** Phone promo if you want a polished direct-response spot.
+
+### Paid — Ads Manager vs Boost
+
+**Prefer Meta Ads Manager** for signup campaigns. **Boost** is OK for small Y1 tests only (see `docs/business/forgeRep-5-year-business-plan.md` — modest boosted posts).
+
+| | **Meta Ads Manager** | **Boost existing Reel** |
+|--|----------------------|-------------------------|
+| **Best for** | Signups, measurable ROAS | Quick $20–50 test |
+| **Targeting** | Full (interests, lookalikes, retarget) | Limited |
+| **Landing URL** | Dedicated UTM per campaign | Often bio link only |
+| **Creative** | Upload Phone promo **without** organic post required | Must post first, then promote |
+| **When to use** | **Primary** for Phone promo | Optional learning spend |
+
+**Do not scale paid** until product metrics hit business-plan gates (90-day retention ≥40%, free→paid ≥8%).
+
+### UTM & tracking
+
+| Placement | Landing URL |
+|-----------|-------------|
+| Bio (organic) | `https://forge-rep.com/signup?utm_source=instagram&utm_medium=bio` |
+| Meta Ads (Phone promo) | `https://forge-rep.com/signup?utm_source=meta&utm_medium=paid_social&utm_campaign=promo_phone` |
+| MNTN (CTV) | `https://forge-rep.com/signup?utm_source=mntn&utm_medium=ctv&utm_campaign=quickframe` |
+
+Use **`signup_source`** (or equivalent analytics) to compare organic calendar signups vs paid promo vs CTV — not Reel views alone.
+
+### Recommended workflow
+
+```
+Weeks 1–4   Organic calendar only (batch Reels + carousels)
+Day 30      Default: batch CTA Reel · Optional: post Phone promo once
+Paid test   Upload Phone promo in Ads Manager (conversion → signup)
+CTV         Run 16:9 promo on MNTN separately — do not cross-post to IG feed
+Review      Weekly: link clicks + signups by UTM · pause paid if CAC > guardrails
+```
+
+### Quick decision tree
+
+1. **Growing followers / trust?** → Batch screen-recording Reels (this calendar).
+2. **One strong conversion post?** → Day 30 batch Reel **or** optional Phone promo organic post.
+3. **Paying for signups?** → **Ads Manager + Phone promo + UTM** (not boost-first).
+4. **TV viewers?** → **16:9 CTV promo on MNTN** — separate from Instagram.
+
+---
+
 ## Metrics
 
 Track weekly:
@@ -1251,6 +1320,7 @@ Track weekly:
 
 | Asset | Path |
 |-------|------|
+| Promo spots (CTV + Phone) | External exports — see [Promo assets (CTV + Phone)](#promo-assets-ctv--phone) |
 | Logo | `apps/web/public/logo.svg` |
 | App icon | `apps/web/public/logo-icon.svg` |
 | Marketing copy | `apps/web/src/components/marketing/` |

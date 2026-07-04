@@ -102,6 +102,23 @@ export function WorkoutRecap({
 
       {rankDelta && <WorkoutRankDeltaCard rankDelta={rankDelta} />}
 
+      {session.swaps && session.swaps.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-forge-steel/30 bg-forge-steel/5 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-steel">
+            Equipment swaps
+          </p>
+          <ul className="mt-2 space-y-1.5 text-sm text-forge-muted">
+            {session.swaps.map((swap) => (
+              <li key={`${swap.plannedExerciseName}-${swap.actualExerciseName}`}>
+                <span className="text-forge-text">{swap.plannedExerciseName}</span>
+                {" → "}
+                <span className="text-forge-text">{swap.actualExerciseName}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <PostWorkoutNutritionNudge />
 
       {prior && (
