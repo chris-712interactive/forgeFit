@@ -15,7 +15,7 @@ export function MarketingDashboardPreview() {
             eyebrow="Accountability at a glance"
             eyebrowClassName="text-forge-gold"
             title="Open the app. Know exactly where you stand."
-            description="Your Home dashboard surfaces today's macros, this week's workouts, and the body of work you've already logged — before you dive into the full plan."
+            description="Your Home dashboard leads with today's workout, then swipe through training, nutrition, progress, and community cards — each with a clear metric and trend at a glance."
           />
 
           <div className="mt-8 hidden sm:block">

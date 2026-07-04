@@ -45,6 +45,7 @@
 - Added `lib/home/chart-snapshots.ts` and `lib/home/hero-context.ts`; extended `getHomeDashboardData` with `hero`, `charts`, and lightweight body-measurement fetch for weight sparkline
 - New components: `home-hero`, `home-domain-carousel`, `home-domain-cards`, `home-domain-card`, `home-mini-charts`
 - Removed from default home scroll: community feed, scorecard strip, pro insights, PWA prompt, progress shortcut, today snapshot grid, train-and-fuel card stack
+- Updated `marketing-app-preview.tsx` — landing page phone mock now shows hero + domain carousel (matches logged-in home)
 
 **What's next**
 
@@ -68,7 +69,9 @@
 - `apps/web/src/lib/home/service.ts`
 - `apps/web/src/lib/home/chart-snapshots.ts`
 - `apps/web/src/lib/home/hero-context.ts`
-- `docs/PROGRESS.md`
+- `apps/web/src/components/marketing/marketing-app-preview.tsx`
+- `apps/web/src/components/marketing/marketing-dashboard-preview.tsx`
+- `docs/DESIGN.md`
 
 ---
 

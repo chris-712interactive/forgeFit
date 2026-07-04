@@ -84,7 +84,7 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 Public homepage (`apps/web/src/components/marketing/`):
 
 - **Layout:** `marketingWideClass` (max-w-6xl) for grids/hero; `marketingContentClass` (max-w-3xl) for prose
-- **Hero:** Split grid with CSS phone mockup (`marketing-app-preview.tsx`), ambient glow, gradient headline accent
+- **Hero:** Split grid with CSS phone mockup (`marketing-app-preview.tsx` — hero card + swipeable domain carousel), ambient glow, gradient headline accent
 - **Sections:** `#features`, `#how-it-works`, `#pricing`, `#faq` anchor IDs for sticky header nav
 - **Pricing:** Three tier cards from `marketing-data.ts` + `lib/billing/pricing.ts`; all CTAs → `/signup`
 - **SEO:** FAQ accordion + long-form `seoContentSections`; JSON-LD in `landing-json-ld.tsx`
