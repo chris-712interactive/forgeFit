@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-04 |
-| **Last session focus** | Hide PWA install banner when already in installed app |
+| **Last session focus** | Bedtime suggestion from Fitbit wake times |
 
 ---
 
@@ -35,6 +35,36 @@
 ---
 
 ## Session Log
+
+### 2026-07-04 — Bedtime suggestion from wearable sleep
+
+**What was done**
+
+- Migration `20260704110000_sleep_wake_time.sql` — `wake_at`, `wake_local_minutes` on `daily_sleep_logs`
+- Fitbit/Google Health sync now persists wake instant + local wake clock time from sleep sessions
+- `buildBedtimeSuggestion()` — 7-day avg duration + circular-mean wake time → suggested lights-out for 7h target when sleep is short
+- Home Activity carousel card + Progress sleep panel show the suggestion when applicable
+- Hide PWA “already installed” banner when running inside the installed app (`lib/pwa/standalone.ts`)
+
+**What's next**
+
+- Apply migrations `20260704100000_exercise_swap.sql` and `20260704110000_sleep_wake_time.sql` on Supabase remote
+- Re-sync Fitbit after migration so historical nights backfill wake times (or wait for next sync)
+
+**Files touched**
+
+- `supabase/migrations/20260704110000_sleep_wake_time.sql`
+- `packages/integrations/src/google-health.ts`, `google-health-sleep.test.ts`, `index.ts`
+- `apps/web/src/lib/sleep/bedtime-suggestion.ts`, `bedtime-suggestion.test.ts`, `types.ts`, `service.ts`
+- `apps/web/src/lib/integrations/service.ts`
+- `apps/web/src/components/home/home-domain-cards.tsx`
+- `apps/web/src/components/sleep/daily-sleep-panel.tsx`
+- `apps/web/src/components/pwa/install-prompt.tsx`
+- `apps/web/src/lib/pwa/standalone.ts`
+- `apps/web/src/lib/workout-music/open-spotify.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-04 — PWA install prompt in standalone mode
 

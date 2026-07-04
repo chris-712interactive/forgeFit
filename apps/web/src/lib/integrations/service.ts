@@ -28,6 +28,7 @@ import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
 import { todayLocalIsoDate } from "@/lib/datetime/local-date";
 import { getUserTimeZone } from "@/lib/datetime/timezone";
+import { isoToLocalMinutes } from "@/lib/sleep/bedtime-suggestion";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -679,6 +680,7 @@ async function syncSleepLogsForUser(params: {
   sleepSkipped: number;
   sleepLatestDate: string | null;
 }> {
+  const timeZone = await getUserTimeZone();
   const sleepSummaries = await fetchDailySleepSummaries({
     accessToken: params.accessToken,
     startDate: resolveSleepSyncStartDate(params.startDate, params.endDate),
@@ -694,6 +696,12 @@ async function syncSleepLogsForUser(params: {
       continue;
     }
 
+    const wakeLocalMinutes =
+      summary.wakeLocalMinutes ??
+      (summary.wakeAtUtc
+        ? isoToLocalMinutes(summary.wakeAtUtc, timeZone)
+        : null);
+
     const { data: existing } = await params.admin
       .from("daily_sleep_logs")
       .select("*")
@@ -707,7 +715,9 @@ async function syncSleepLogsForUser(params: {
       (existing.minutes_in_bed ?? null) === summary.minutesInBed &&
       (existing.deep_minutes ?? null) === summary.deepMinutes &&
       (existing.rem_minutes ?? null) === summary.remMinutes &&
-      (existing.awake_minutes ?? null) === summary.awakeMinutes;
+      (existing.awake_minutes ?? null) === summary.awakeMinutes &&
+      (existing.wake_at ?? null) === summary.wakeAtUtc &&
+      (existing.wake_local_minutes ?? null) === wakeLocalMinutes;
 
     if (unchanged) {
       sleepSkipped += 1;
@@ -728,6 +738,8 @@ async function syncSleepLogsForUser(params: {
           deep_minutes: summary.deepMinutes,
           rem_minutes: summary.remMinutes,
           awake_minutes: summary.awakeMinutes,
+          wake_at: summary.wakeAtUtc,
+          wake_local_minutes: wakeLocalMinutes,
           source: "fitbit",
           updated_at: new Date().toISOString(),
         },

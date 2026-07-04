@@ -45,10 +45,16 @@ export function HomeDomainCards({ data }: HomeDomainCardsProps) {
   const stepsHeadline =
     stepsToday != null ? stepsToday.toLocaleString() : "—";
   const sleepLabel = formatSleepHours(sleep.lastNight?.durationMinutes);
+  const bedtimeSuggestion = sleep.bedtimeSuggestion;
   const activitySubline =
-    activity.hasActivityData || activity.fitbitConnected
-      ? `Steps today · ${sleepLabel} sleep last night`
-      : "Connect Fitbit in Profile to import activity";
+    bedtimeSuggestion?.show
+      ? bedtimeSuggestion.summary
+      : activity.hasActivityData || activity.fitbitConnected
+        ? `Steps today · ${sleepLabel} sleep last night`
+        : "Connect Fitbit in Profile to import activity";
+  const activityCaption = bedtimeSuggestion?.show
+    ? "Based on your last 7 nights of Fitbit sleep"
+    : "Daily steps · last 7 days (thousands in chart)";
 
   const communityHeadline =
     gamification.unreadNotificationCount > 0
@@ -131,7 +137,7 @@ export function HomeDomainCards({ data }: HomeDomainCardsProps) {
         headline={stepsHeadline}
         subline={activitySubline}
         chart={<MiniStepsChart points={charts.stepsByDay} />}
-        chartCaption="Daily steps · last 7 days (thousands in chart)"
+        chartCaption={activityCaption}
         />
       </div>
 

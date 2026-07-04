@@ -64,6 +64,7 @@ export {
   EXERCISE_SYNC_LOOKBACK_DAYS,
   refreshGoogleHealthAccessToken,
   resolveSleepSyncStartDate,
+  summarizeSleepSessions,
   todayIsoDate,
 } from "./google-health";
 export type {

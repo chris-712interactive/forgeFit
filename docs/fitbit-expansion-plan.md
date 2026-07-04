@@ -13,7 +13,7 @@
 | **Active Zone Minutes** | `active-zone-minutes` dailyRollUp | same | `daily_activity_logs` | **Progress, Home** |
 | **Sedentary time** | `sedentary-period` dailyRollUp | same | `daily_activity_logs` | **Progress** |
 | **Total calories** | `total-calories` dailyRollUp | same | `daily_activity_logs` | **Progress** |
-| Sleep duration | `sleep` list (sessions) | `sleep.readonly` | `daily_sleep_logs` | Home, Progress |
+| Sleep duration + wake clock | `sleep` list (sessions) | `sleep.readonly` | `daily_sleep_logs` (`wake_at`, `wake_local_minutes`) | Home Activity card, Progress |
 | Sleep stages (deep/REM) | parsed from session summary | `sleep.readonly` | `daily_sleep_logs` | Progress detail |
 | **Resting HR range** | `daily-resting-heart-rate` **list** | **`health_metrics_and_measurements.readonly`** | **`daily_recovery_logs`** | **Progress** |
 | **HRV range** | `daily-heart-rate-variability` **list** | same | `daily_recovery_logs` | **Progress** |

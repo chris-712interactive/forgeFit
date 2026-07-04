@@ -5,6 +5,8 @@ export interface DailySleepLog {
   deepMinutes: number | null;
   remMinutes: number | null;
   awakeMinutes: number | null;
+  wakeAt: string | null;
+  wakeLocalMinutes: number | null;
   source: string;
 }
 
@@ -12,6 +14,16 @@ export interface DailySleepStats {
   avgDurationMinutes: number | null;
   nightsWithData: number;
   shortNights: number;
+}
+
+export interface BedtimeSuggestion {
+  show: boolean;
+  avgWakeLabel: string;
+  suggestedBedtimeLabel: string;
+  avgDurationMinutes: number;
+  targetMinutes: number;
+  summary: string;
+  wakeTimeVaries: boolean;
 }
 
 export interface SleepContext {
@@ -27,7 +39,9 @@ export interface SleepContext {
   hasSleepData: boolean;
   series: DailySleepLog[];
   weekStats: DailySleepStats | null;
+  bedtimeSuggestion: BedtimeSuggestion | null;
 }
 
 /** Evidence target: 7–9 hours for recovery (see recovery_sleep rule). */
 export const SLEEP_TARGET_MIN_MINUTES = 7 * 60;
+export const SLEEP_TARGET_HOURS = SLEEP_TARGET_MIN_MINUTES / 60;

@@ -78,6 +78,7 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 - **Carousel:** Horizontal snap row (~82% card width, page dots) — Training, Nutrition, Progress, Activity, Community
 - **Each card:** One headline metric, compact chart or stat tiles (~88px), caption, link to full tab
 - **Deferred:** Community feed, scorecard, pro insights, PWA prompt, and full metric grids live on their tabs — not on home scroll
+- **Sleep shortfall:** When Fitbit sleep averages under 7h, Activity card and Progress sleep panel suggest a lights-out time from 7-day wake pattern
 
 ## Marketing landing page
 

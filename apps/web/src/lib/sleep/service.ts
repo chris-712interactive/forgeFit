@@ -7,6 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 import { integrationHasSleepScope } from "@forgefit/integrations";
 import type { DailySleepLog, DailySleepStats, SleepContext } from "./types";
 import { SLEEP_TARGET_MIN_MINUTES } from "./types";
+import {
+  buildBedtimeSuggestion,
+  enrichWakeLocalMinutes,
+} from "./bedtime-suggestion";
 
 const CHART_DAYS = 14;
 const WEEK_DAYS = 7;
@@ -22,6 +26,9 @@ function mapSleepRow(row: Record<string, unknown>): DailySleepLog {
     remMinutes: row.rem_minutes != null ? Number(row.rem_minutes) : null,
     awakeMinutes:
       row.awake_minutes != null ? Number(row.awake_minutes) : null,
+    wakeAt: (row.wake_at as string | null) ?? null,
+    wakeLocalMinutes:
+      row.wake_local_minutes != null ? Number(row.wake_local_minutes) : null,
     source: (row.source as string) ?? "fitbit",
   };
 }
@@ -53,6 +60,8 @@ function fillDateSeries(
         deepMinutes: null,
         remMinutes: null,
         awakeMinutes: null,
+        wakeAt: null,
+        wakeLocalMinutes: null,
         source: "fitbit",
       }
     );
@@ -138,6 +147,7 @@ function emptySleepContext(
     hasSleepData: false,
     series: [],
     weekStats: null,
+    bedtimeSuggestion: null,
     ...overrides,
   };
 }
@@ -167,7 +177,7 @@ export async function getSleepContext(
   const { data, error } = await supabase
     .from("daily_sleep_logs")
     .select(
-      "sleep_date, duration_minutes, minutes_in_bed, deep_minutes, rem_minutes, awake_minutes, source"
+      "sleep_date, duration_minutes, minutes_in_bed, deep_minutes, rem_minutes, awake_minutes, wake_at, wake_local_minutes, source"
     )
     .eq("user_id", userId)
     .gte("sleep_date", chartStart)
@@ -189,7 +199,10 @@ export async function getSleepContext(
   const hasSleepData = logs.some(hasSleepMetrics);
   const displayNight = resolveDisplayNight(logs, localToday);
   const series = fillDateSeries(logs, chartStart, localToday);
-  const weekLogs = series.filter((log) => log.sleepDate >= weekStart);
+  const weekLogs = series
+    .filter((log) => log.sleepDate >= weekStart)
+    .map((log) => enrichWakeLocalMinutes(log, timeZone));
+  const bedtimeSuggestion = buildBedtimeSuggestion(weekLogs, localToday);
 
   return {
     unlocked: true,
@@ -203,5 +216,6 @@ export async function getSleepContext(
     hasSleepData,
     series,
     weekStats: computeStats(weekLogs),
+    bedtimeSuggestion,
   };
 }

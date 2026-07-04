@@ -57,6 +57,10 @@ export interface DailySleepSummary {
   deepMinutes: number | null;
   remMinutes: number | null;
   awakeMinutes: number | null;
+  /** UTC wake instant from session interval endTime, when available. */
+  wakeAtUtc: string | null;
+  /** Local wake clock time as minutes since midnight (0–1439), from civilEndTime. */
+  wakeLocalMinutes: number | null;
 }
 
 export interface DailyRecoverySummary {
@@ -561,7 +565,9 @@ interface SleepSummaryBlock {
 interface SleepSession {
   interval?: {
     civilEndTime?: CivilDateTime;
+    civilStartTime?: CivilDateTime;
     endTime?: string;
+    startTime?: string;
   };
   metadata?: {
     nap?: boolean;
@@ -581,6 +587,26 @@ function stageMinutes(
 ): number | null {
   const match = summary?.stagesSummary?.find((stage) => stage.type === stageType);
   return parseCount(match?.minutes);
+}
+
+function civilTimeToMinutes(civil: CivilDateTime | undefined): number | null {
+  if (!civil?.time) return null;
+  const hours = civil.time.hours ?? 0;
+  const minutes = civil.time.minutes ?? 0;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function sleepWakeAtUtc(session: SleepSession): string | null {
+  const endTime = session.interval?.endTime;
+  if (!endTime) return null;
+  const parsed = Date.parse(endTime);
+  if (!Number.isFinite(parsed)) return null;
+  return new Date(parsed).toISOString();
+}
+
+function sleepWakeLocalMinutes(session: SleepSession): number | null {
+  return civilTimeToMinutes(session.interval?.civilEndTime);
 }
 
 function sleepWakeDate(session: SleepSession): string | null {
@@ -653,6 +679,8 @@ function aggregateSleepSessions(sessions: SleepSession[]): DailySleepSummary[] {
       deepMinutes: stageMinutes(session.summary, "DEEP"),
       remMinutes: stageMinutes(session.summary, "REM"),
       awakeMinutes: parseCount(session.summary?.minutesAwake),
+      wakeAtUtc: sleepWakeAtUtc(session),
+      wakeLocalMinutes: sleepWakeLocalMinutes(session),
     };
 
     const existing = byDate.get(date);
@@ -729,6 +757,13 @@ export async function fetchDailySleepSummaries(params: {
     pageToken = page.nextPageToken;
   } while (pageToken);
 
+  return aggregateSleepSessions(sessions);
+}
+
+/** Test and debug helper — aggregates raw Google Health sleep sessions. */
+export function summarizeSleepSessions(
+  sessions: SleepSession[]
+): DailySleepSummary[] {
   return aggregateSleepSessions(sessions);
 }
 

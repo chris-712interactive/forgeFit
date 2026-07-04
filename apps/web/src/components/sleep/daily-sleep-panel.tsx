@@ -48,6 +48,17 @@ export function DailySleepPanel({ sleep }: DailySleepPanelProps) {
         </p>
       )}
 
+      {sleep.bedtimeSuggestion?.show && (
+        <div className="rounded-2xl border border-forge-steel/30 bg-forge-steel/5 p-4">
+          <p className="font-display text-sm font-semibold text-forge-text">
+            Bedtime suggestion
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-forge-muted">
+            {sleep.bedtimeSuggestion.summary}
+          </p>
+        </div>
+      )}
+
       {stats && (
         <div className="grid grid-cols-3 gap-3">
           {[
