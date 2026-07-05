@@ -8,9 +8,15 @@ interface AuthFormProps {
   mode: "login" | "signup";
   /** Post-sign-in destination when no `redirect` query param is present. */
   defaultRedirect?: string;
+  /** Preferred destination for this login surface (e.g. /admin on operator login). */
+  postAuthPath?: string;
 }
 
-export function AuthForm({ mode, defaultRedirect = "/home" }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  defaultRedirect = "/home",
+  postAuthPath,
+}: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,6 +26,16 @@ export function AuthForm({ mode, defaultRedirect = "/home" }: AuthFormProps) {
   const supabaseConfigured =
     typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string" &&
     process.env.NEXT_PUBLIC_SUPABASE_URL.length > 0;
+
+  function resolvedPostAuthPath(): string {
+    const fromQuery = new URLSearchParams(window.location.search).get(
+      "redirect"
+    );
+    if (fromQuery?.startsWith("/")) {
+      return fromQuery;
+    }
+    return postAuthPath ?? defaultRedirect;
+  }
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
@@ -59,10 +75,7 @@ export function AuthForm({ mode, defaultRedirect = "/home" }: AuthFormProps) {
       if (signInError) {
         setError(signInError.message);
       } else {
-        const redirect = new URLSearchParams(window.location.search).get(
-          "redirect"
-        );
-        window.location.href = redirect ?? defaultRedirect;
+        window.location.href = resolvedPostAuthPath();
       }
     }
 
@@ -79,10 +92,11 @@ export function AuthForm({ mode, defaultRedirect = "/home" }: AuthFormProps) {
     setError(null);
 
     const supabase = createClient();
+    const next = encodeURIComponent(resolvedPostAuthPath());
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${next}`,
       },
     });
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlreadySignedIn } from "@/components/auth/already-signed-in";
+import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { AuthForm } from "@/components/auth/auth-form";
 import { isCurrentUserAdmin } from "@/lib/admin/auth";
@@ -12,6 +12,10 @@ export default async function AdminLoginPage() {
   } = await supabase.auth.getUser();
 
   const isAdmin = user ? await isCurrentUserAdmin() : false;
+
+  if (user && isAdmin) {
+    redirect("/admin");
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-forge-surface px-6 py-10 lg:px-12">
@@ -38,13 +42,7 @@ export default async function AdminLoginPage() {
         </p>
 
         <div className="mt-8">
-          {user && isAdmin ? (
-            <AlreadySignedIn
-              email={user.email}
-              continueHref="/admin"
-              continueLabel="Open admin console"
-            />
-          ) : user && !isAdmin ? (
+          {user && !isAdmin ? (
             <div className="space-y-4 rounded-2xl border border-forge-coral/30 bg-forge-coral/5 p-5">
               <p className="text-sm text-forge-text">
                 Signed in as{" "}
@@ -61,7 +59,7 @@ export default async function AdminLoginPage() {
               <SignOutButton />
             </div>
           ) : (
-            <AuthForm mode="login" defaultRedirect="/admin" />
+            <AuthForm mode="login" postAuthPath="/admin" defaultRedirect="/admin" />
           )}
         </div>
       </div>

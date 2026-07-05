@@ -3,7 +3,7 @@ import {
   withSignupConversionParam,
 } from "@/lib/auth/is-signup-conversion";
 import { ensureUserProfile } from "@/lib/auth/ensure-profile";
-import { getPostAuthPath } from "@/lib/auth/post-auth-path";
+import { resolveAuthRedirect } from "@/lib/auth/redirect-path";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -41,7 +41,8 @@ export async function GET(request: Request) {
   }
 
   await ensureUserProfile(supabase, data.user);
-  const destination = await getPostAuthPath(supabase, data.user.id);
+  const next = searchParams.get("next");
+  const destination = await resolveAuthRedirect(supabase, data.user.id, next);
   const redirectPath = isSignupConversion(data.user)
     ? withSignupConversionParam(destination)
     : destination;

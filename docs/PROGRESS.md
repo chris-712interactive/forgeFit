@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-05 |
-| **Last session focus** | Admin login separation + read-only impersonation |
+| **Last session focus** | Fix admin login redirect to console |
 
 ---
 
@@ -35,6 +35,21 @@
 ---
 
 ## Session Log
+
+### 2026-07-05 — Admin login redirect fix
+
+**What was done**
+
+- **OAuth** — Google sign-in from `/admin/login` now passes `?next=/admin` through `/auth/callback`
+- **`resolveAuthRedirect()`** — validates post-auth paths; admin destinations require operator role
+- **Auto-redirect** — signed-in admins hitting `/admin/login` go straight to `/admin`
+
+**Files touched**
+
+- `apps/web/src/lib/auth/redirect-path.ts`, `apps/web/src/app/auth/callback/route.ts`
+- `apps/web/src/components/auth/auth-form.tsx`, `apps/web/src/app/admin/login/page.tsx`
+
+---
 
 ### 2026-07-05 — Admin login separation + impersonation
 
