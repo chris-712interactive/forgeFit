@@ -36,6 +36,30 @@
 
 ## Session Log
 
+### 2026-07-05 — Social link preview (OG image) refresh
+
+**What was done**
+
+- Fixed link previews pointing at stale static `og-image.png` that still showed **forgeFit** branding
+- Metadata now references the dynamic `/opengraph-image` route (ForgeRep logo, landing-page copy, feature pills)
+- Regenerated `public/og-image.png` as a static fallback matching the dynamic renderer
+- Added shared `buildSocialImageFields()` helper and `pnpm generate:og-image` script (requires dev server)
+
+**What's next**
+
+- After deploy, re-scrape cached previews in iMessage/WhatsApp/Slack if an old image still appears (platforms cache aggressively)
+
+**Files touched**
+
+- `apps/web/src/lib/seo/render-social-image.tsx`
+- `apps/web/src/lib/seo/social-image-metadata.ts` (new)
+- `apps/web/src/lib/seo/landing-metadata.ts`, `article-metadata.ts`
+- `apps/web/public/og-image.png`
+- `apps/web/package.json`
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-05 — Swipeable arena ribbon (week / season)
 
 **What was done**
