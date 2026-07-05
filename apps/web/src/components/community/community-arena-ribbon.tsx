@@ -57,7 +57,7 @@ function ArenaRibbonPanel({
 
   return (
     <section
-      className="relative w-full shrink-0 overflow-hidden rounded px-3 pb-3 pt-0 sm:px-3.5 sm:pb-3.5"
+      className="relative overflow-hidden rounded px-3 pb-3 pt-0 sm:px-3.5 sm:pb-3.5"
       aria-label={`${banner} league standing`}
     >
       <LeagueTierBackground tier={tier} />
@@ -192,36 +192,42 @@ export function CommunityArenaRibbon({ gamification }: CommunityArenaRibbonProps
   return (
     <div className="space-y-2">
       <div
-        className="overflow-hidden rounded"
+        className="overflow-hidden rounded touch-pan-y"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
         <div
-          className="flex transition-transform duration-300 ease-out"
-          style={{ transform: `translateX(${slide === "week" ? "0%" : "-50%"})` }}
+          className="flex w-[200%] transition-transform duration-300 ease-out"
+          style={{
+            transform: slide === "week" ? "translateX(0%)" : "translateX(-50%)",
+          }}
         >
-          <ArenaRibbonPanel
-            tier={tier}
-            banner="This week"
-            bannerClassName="text-forge-ember"
-            rankLabel="Rank"
-            rank={gamification.userRank}
-            score={breakdown?.score ?? gamification.userScore}
-            scoreLabel="habit score"
-            breakdown={breakdown}
-            chaseLabel={weekChaseLabel}
-          />
-          <ArenaRibbonPanel
-            tier={tier}
-            banner="This season"
-            bannerClassName="text-forge-gold"
-            rankLabel="Avg rank"
-            rank={season?.avgRank ?? null}
-            score={season?.avgHabitScore ?? null}
-            scoreLabel="avg score"
-            breakdown={breakdown}
-            chaseLabel={season?.chaseLabel ?? null}
-          />
+          <div className="box-border w-1/2 shrink-0">
+            <ArenaRibbonPanel
+              tier={tier}
+              banner="This week"
+              bannerClassName="text-forge-ember"
+              rankLabel="Rank"
+              rank={gamification.userRank}
+              score={breakdown?.score ?? gamification.userScore}
+              scoreLabel="habit score"
+              breakdown={breakdown}
+              chaseLabel={weekChaseLabel}
+            />
+          </div>
+          <div className="box-border w-1/2 shrink-0">
+            <ArenaRibbonPanel
+              tier={tier}
+              banner="This season"
+              bannerClassName="text-forge-gold"
+              rankLabel="Avg rank"
+              rank={season?.avgRank ?? null}
+              score={season?.avgHabitScore ?? null}
+              scoreLabel="avg score"
+              breakdown={breakdown}
+              chaseLabel={season?.chaseLabel ?? null}
+            />
+          </div>
         </div>
       </div>
 
