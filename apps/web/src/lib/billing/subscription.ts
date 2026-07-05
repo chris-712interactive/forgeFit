@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { expireCompIfNeeded } from "@/lib/admin/comp";
 import { createClient } from "@/lib/supabase/server";
 import {
   hasProAccess,
@@ -12,6 +13,8 @@ import {
 export const getSubscriptionForUser = cache(async function getSubscriptionForUser(
   userId: string
 ): Promise<SubscriptionSnapshot> {
+  await expireCompIfNeeded(userId);
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")

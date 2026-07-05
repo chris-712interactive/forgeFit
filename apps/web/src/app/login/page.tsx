@@ -6,7 +6,7 @@ import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 import { createClient } from "@/lib/supabase/server";
 
 interface LoginPageProps {
-  searchParams: Promise<{ deleted?: string }>;
+  searchParams: Promise<{ deleted?: string; redirect?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -17,7 +17,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const params = await searchParams;
   const accountDeleted = params.deleted === "1";
-  const continueHref = user ? await getPostAuthPath(supabase, user.id) : null;
+  const redirectPath = params.redirect?.startsWith("/")
+    ? params.redirect
+    : null;
+  const continueHref = user
+    ? redirectPath ?? (await getPostAuthPath(supabase, user.id))
+    : null;
 
   return (
     <div className="flex min-h-dvh flex-col bg-forge-surface px-6 py-10">
@@ -44,11 +49,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             email={user.email}
             continueHref={continueHref}
             continueLabel={
-              continueHref === "/home"
+              continueHref === "/admin"
+                ? "Open admin console"
+                : continueHref === "/home"
                 ? "Go to dashboard"
                 : continueHref === "/disclaimer"
                   ? "Review health disclaimer"
-                  : "Continue onboarding"
+                  : "Continue"
             }
           />
         ) : (

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-05 |
-| **Last session focus** | Social link preview (OG image) refresh |
+| **Last session focus** | Admin console Phase A |
 
 ---
 
@@ -35,6 +35,42 @@
 ---
 
 ## Session Log
+
+### 2026-07-05 — Admin console Phase A
+
+**What was done**
+
+- **`/admin` console** — desktop layout with Overview, Users, Audit log
+- **RBAC** — `profiles.is_admin` + `ADMIN_USER_IDS` env; non-admins get 404
+- **User search** — email, name, UUID; filter by tier/status
+- **Comp upgrades** — grant/revoke Pro/Pro+ without charge (reason + expiry required)
+- **Overview KPIs** — total users, paid count, estimated MRR/ARR, comp seats
+- **Audit log** — `admin_audit_log` table + immutable action history
+- **Stripe sync guard** — active comps not overwritten by webhooks
+- **Login** — `/login?redirect=/admin` for operator sign-in
+
+**What's next**
+
+- Phase B: Stripe discount UI, MRR charts, churn widgets
+- Phase C: Growth funnel, community ops embed, revenue/growth routes
+
+**Setup**
+
+1. Run migration `20260705120000_admin_console.sql`
+2. Set `ADMIN_USER_IDS=<your-supabase-user-uuid>` in env
+3. Optionally `UPDATE profiles SET is_admin = true WHERE id = '...'`
+4. Visit `/admin` while signed in
+
+**Files touched**
+
+- `supabase/migrations/20260705120000_admin_console.sql`
+- `apps/web/src/lib/admin/*`, `apps/web/src/app/admin/**`, `apps/web/src/app/api/admin/**`
+- `apps/web/src/components/admin/*`
+- `apps/web/src/lib/billing/subscription.ts`, `sync-subscription.ts`
+- `apps/web/src/app/login/page.tsx`, `apps/web/src/components/auth/already-signed-in.tsx`
+- `.env.example`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-05 — Social link preview (OG image) refresh
 

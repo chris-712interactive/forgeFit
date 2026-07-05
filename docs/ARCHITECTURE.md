@@ -50,6 +50,20 @@ supabase/         → PostgreSQL migrations + RLS
 4. `completeOnboarding` server action saves profile + equipment + generates program
 5. User lands on `/home` with week schedule and macro targets
 
+## Admin Console (Phase A — 2026-07-05)
+
+Internal operator UI at `/admin` (desktop-first, separate from member PWA shell).
+
+| Piece | Location |
+|-------|----------|
+| Access control | `lib/admin/auth.ts` — `ADMIN_USER_IDS` + `profiles.is_admin` |
+| Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
+| Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
+| API | `POST /api/admin/users/[id]/comp` |
+| Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |
+
+Requires `SUPABASE_SERVICE_ROLE_KEY`. Non-admins receive **404** (not 403).
+
 ## Program Generation (Phase 2)
 
 1. `generateProgram()` in `@forgefit/program-engine` reads profile + `evidence-kb` rules

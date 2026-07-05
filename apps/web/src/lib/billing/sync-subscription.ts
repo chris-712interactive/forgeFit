@@ -94,20 +94,37 @@ export async function syncSubscriptionToProfile(
   const currentPeriodEnd = readPeriodEnd(merged);
 
   const admin = createAdminClient();
-  const { error } = await admin
+
+  const { data: existingProfile } = await admin
     .from("profiles")
-    .update({
-      subscription_tier: tier,
-      subscription_status: status,
-      stripe_subscription_id: merged.id,
-      stripe_customer_id:
-        typeof merged.customer === "string"
-          ? merged.customer
-          : merged.customer.id,
-      subscription_current_period_end: currentPeriodEnd,
-      subscription_cancel_at_period_end: Boolean(merged.cancel_at_period_end),
-    })
-    .eq("id", userId);
+    .select("billing_source, comp_expires_at")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const compActive =
+    existingProfile?.billing_source === "comp" &&
+    existingProfile.comp_expires_at &&
+    new Date(existingProfile.comp_expires_at).getTime() > Date.now();
+
+  const updatePayload: Record<string, unknown> = {
+    stripe_subscription_id: merged.id,
+    stripe_customer_id:
+      typeof merged.customer === "string"
+        ? merged.customer
+        : merged.customer.id,
+    subscription_current_period_end: currentPeriodEnd,
+    subscription_cancel_at_period_end: Boolean(merged.cancel_at_period_end),
+  };
+
+  if (compActive) {
+    updatePayload.billing_source = "comp";
+  } else {
+    updatePayload.subscription_tier = tier;
+    updatePayload.subscription_status = status;
+    updatePayload.billing_source = "stripe";
+  }
+
+  const { error } = await admin.from("profiles").update(updatePayload).eq("id", userId);
 
   if (error) {
     throw new Error(error.message);
