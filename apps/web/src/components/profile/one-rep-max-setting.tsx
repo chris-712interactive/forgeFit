@@ -4,6 +4,7 @@ import {
   clearUserOneRepMax,
   saveUserOneRepMax,
 } from "@/app/actions/one-rep-maxes";
+import { readActionError } from "@/lib/auth/action-result";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { buildEvidenceHref } from "@/lib/evidence/present";
@@ -75,8 +76,9 @@ export function OneRepMaxSetting({
       startTransition(async () => {
         setError(null);
         const result = await clearUserOneRepMax(exerciseId);
-        if (result.error) {
-          setError(result.error);
+        const actionError = readActionError(result);
+        if (actionError) {
+          setError(actionError);
           return;
         }
         setSavedId(exerciseId);
@@ -96,8 +98,9 @@ export function OneRepMaxSetting({
     startTransition(async () => {
       setError(null);
       const result = await saveUserOneRepMax(exerciseId, weightKg);
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
       setSavedId(exerciseId);

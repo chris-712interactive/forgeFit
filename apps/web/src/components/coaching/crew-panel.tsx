@@ -6,6 +6,7 @@ import {
   leaveCrew,
 } from "@/app/actions/community";
 import type { CrewChallengeView, CrewContext } from "@/lib/coaching/types";
+import { readActionError } from "@/lib/auth/action-result";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -29,7 +30,7 @@ export function CrewPanel({ crew, crewChallenge }: CrewPanelProps) {
     const result = await createCrew(name);
     setBusy(false);
     if (!result.ok) {
-      setError(result.error ?? "Could not create crew.");
+      setError(readActionError(result) ?? "Could not create crew.");
       return;
     }
     setMode("idle");
@@ -43,7 +44,7 @@ export function CrewPanel({ crew, crewChallenge }: CrewPanelProps) {
     const result = await joinCrewByCode(code);
     setBusy(false);
     if (!result.ok) {
-      setError(result.error ?? "Could not join crew.");
+      setError(readActionError(result) ?? "Could not join crew.");
       return;
     }
     setMode("idle");
@@ -57,7 +58,7 @@ export function CrewPanel({ crew, crewChallenge }: CrewPanelProps) {
     const result = await leaveCrew();
     setBusy(false);
     if (!result.ok) {
-      setError(result.error ?? "Could not leave crew.");
+      setError(readActionError(result) ?? "Could not leave crew.");
       return;
     }
     router.refresh();

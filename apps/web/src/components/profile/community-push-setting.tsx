@@ -1,6 +1,7 @@
 "use client";
 
 import { saveCommunityPushPreferences } from "@/app/actions/community-push";
+import { readActionError } from "@/lib/auth/action-result";
 import type { CommunityPushSettings } from "@/lib/coaching/community-push";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -141,7 +142,7 @@ export function CommunityPushSetting({ enabled, push }: CommunityPushSettingProp
 
     if (!result.ok) {
       setPreferences(preferences);
-      setError(result.error ?? "Could not save preference.");
+      setError(readActionError(result) ?? "Could not save preference.");
       return;
     }
 

@@ -188,6 +188,9 @@ export async function rebuildProgram(input?: {
   if (!user) {
     return { error: "You must be signed in." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const start = resolveProgramStartDate(input?.schedule_start_date);
   if ("error" in start) {
@@ -241,6 +244,9 @@ export async function updatePlanSettings(input: {
   if (!user) {
     return { error: "You must be signed in." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const ctx = await loadUserProgramContext(user.id);
   if (!ctx) {

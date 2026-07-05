@@ -30,6 +30,9 @@ async function requireCommunityMember() {
   if (!user) {
     return { ok: false as const, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false as const, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -115,6 +118,9 @@ export async function toggleFollowPeer(followeeId: string): Promise<{
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -161,6 +167,9 @@ export async function markNotificationRead(notificationId: string): Promise<{
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const { data, error } = await supabase
     .from("community_notifications")
@@ -211,6 +220,9 @@ async function requireCommunityModerator() {
   if (!user) {
     return { ok: false as const, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false as const, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")

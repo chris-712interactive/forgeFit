@@ -1,6 +1,7 @@
 "use client";
 
 import { saveWeighInPushPreference } from "@/app/actions/weigh-in-push";
+import { readActionError } from "@/lib/auth/action-result";
 import type { WeighInPushSettings } from "@/lib/coaching/progress-push";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -132,7 +133,7 @@ export function WeighInPushSetting({ push }: WeighInPushSettingProps) {
 
     if (!result.ok) {
       setWeeklyNudge(!next);
-      setError(result.error ?? "Could not save preference.");
+      setError(readActionError(result) ?? "Could not save preference.");
       return;
     }
 

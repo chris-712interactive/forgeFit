@@ -16,6 +16,9 @@ export async function saveWeighInPushPreference(
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const result = await updateWeighInPushPreference(user.id, weeklyWeighInNudge);
   if (!result.ok) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { toggleFollowPeer } from "@/app/actions/community";
+import { readActionError } from "@/lib/auth/action-result";
 import type { FollowState } from "@/lib/coaching/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -31,7 +32,7 @@ export function CommunityFollowButton({
     setSaving(false);
 
     if (!result.ok) {
-      setError(result.error ?? "Could not update follow.");
+      setError(readActionError(result) ?? "Could not update follow.");
       return;
     }
 

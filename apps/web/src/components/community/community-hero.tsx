@@ -1,6 +1,7 @@
 "use client";
 
 import { setGamificationOptIn } from "@/app/actions/gamification";
+import { readActionError } from "@/lib/auth/action-result";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { LeagueTierBadge } from "@/components/coaching/league-tier-badge";
 import { defaultOnUiCopy } from "@/lib/coaching/community-opt-in-experiment";
@@ -37,7 +38,7 @@ export function CommunityHero({
     const result = await setGamificationOptIn(true);
     setSaving(false);
     if (!result.ok) {
-      setError(result.error ?? "Could not join community.");
+      setError(readActionError(result) ?? "Could not join community.");
       return;
     }
     router.refresh();

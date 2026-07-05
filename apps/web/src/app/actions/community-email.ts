@@ -17,6 +17,9 @@ export async function setCommunityWeeklyRecapEmail(enabled: boolean): Promise<{
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")

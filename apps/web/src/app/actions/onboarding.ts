@@ -254,6 +254,9 @@ export async function completeOnboarding(data: OnboardingData) {
   if (!user) {
     return { error: "You must be signed in." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const {
     equipment,

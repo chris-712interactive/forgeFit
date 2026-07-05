@@ -4,6 +4,7 @@ import {
   acceptExperiencePromotion,
   snoozeExperiencePromotion,
 } from "@/app/actions/progression";
+import { readActionError } from "@/lib/auth/action-result";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
 import { buildEvidenceHref } from "@/lib/evidence/present";
@@ -65,8 +66,9 @@ export function ExperiencePathPanel({
       const result = await acceptExperiencePromotion({
         schedule_start_date: scheduleStartDate,
       });
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
       onClose();
@@ -78,8 +80,9 @@ export function ExperiencePathPanel({
     setError(null);
     startTransition(async () => {
       const result = await snoozeExperiencePromotion();
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
       onClose();

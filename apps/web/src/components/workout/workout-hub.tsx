@@ -1,6 +1,7 @@
 "use client";
 
 import { cancelWorkoutSessionOnServer } from "@/app/actions/workouts";
+import { readActionError } from "@/lib/auth/action-result";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import {
   cacheProgramPlan,
@@ -412,8 +413,9 @@ export function WorkoutHub({
         }
 
         const serverResult = await cancelWorkoutSessionOnServer(clientId);
-        if (serverResult.error) {
-          window.alert(serverResult.error);
+        const actionError = readActionError(serverResult);
+        if (actionError) {
+          window.alert(actionError);
           return;
         }
 

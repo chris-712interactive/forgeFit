@@ -1,6 +1,7 @@
 "use client";
 
 import { updateUnitSystem } from "@/app/actions/profile";
+import { readActionError } from "@/lib/auth/action-result";
 import {
   UNIT_SYSTEM_TILES,
   type UnitSystem,
@@ -29,8 +30,9 @@ export function UnitPreferenceSetting({
 
     startTransition(async () => {
       const result = await updateUnitSystem(next);
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         setLocalUnit(previous);
         actions?.setUnit(previous);
       }

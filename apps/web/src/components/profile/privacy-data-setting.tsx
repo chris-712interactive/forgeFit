@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteAccount } from "@/app/actions/account";
+import { readActionError } from "@/lib/auth/action-result";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import type { AccountExportBundle } from "@/lib/account/export";
 import { mergeExportWithLocalWorkouts } from "@/lib/account/export-enrich";
@@ -83,8 +84,9 @@ export function PrivacyDataSetting({
     setError(null);
     startTransition(async () => {
       const result = await deleteAccount(confirmationEmail);
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
 

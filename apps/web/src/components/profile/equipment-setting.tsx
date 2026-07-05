@@ -6,6 +6,7 @@ import {
   saveUserEquipment,
 } from "@/app/actions/equipment";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { readActionError } from "@/lib/auth/action-result";
 import { ProfileSubSection } from "@/components/profile/profile-subsection";
 import {
   CARDIO_EQUIPMENT,
@@ -84,8 +85,9 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
         regenerateProgram,
         regenerateProgram ? scheduleStartDate : undefined
       );
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
       setSaved(true);
@@ -100,8 +102,9 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
         regenerateProgram,
         regenerateProgram ? scheduleStartDate : undefined
       );
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
       setSaved(true);
@@ -116,8 +119,9 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
         regenerateProgram,
         regenerateProgram ? scheduleStartDate : undefined
       );
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
       setSaved(true);

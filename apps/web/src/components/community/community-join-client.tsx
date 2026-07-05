@@ -1,6 +1,7 @@
 "use client";
 
 import { joinCrewByCode } from "@/app/actions/community";
+import { readActionError } from "@/lib/auth/action-result";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -28,7 +29,7 @@ export function CommunityJoinClient({
     setBusy(false);
 
     if (!result.ok) {
-      setError(result.error ?? "Could not join crew.");
+      setError(readActionError(result) ?? "Could not join crew.");
       return;
     }
 

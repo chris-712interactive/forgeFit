@@ -1,6 +1,7 @@
 "use client";
 
 import { rebuildProgram } from "@/app/actions/program";
+import { readActionError } from "@/lib/auth/action-result";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
 import {
   formatPlanStartDateLabel,
@@ -61,9 +62,15 @@ export function RebuildPlanModal({
         last_completed_session_kind: lastCompletedSessionKind,
       });
 
-      if (result.error) {
-        setError(result.error);
-        onComplete({ error: result.error });
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
+        onComplete({ error: actionError });
+        return;
+      }
+
+      if (!("success" in result) || !result.success) {
+        setError("Could not rebuild your plan.");
         return;
       }
 

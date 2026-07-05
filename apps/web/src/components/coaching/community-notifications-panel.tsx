@@ -5,6 +5,7 @@ import {
   markNotificationRead,
 } from "@/app/actions/community";
 import type { CommunityNotificationRow } from "@/lib/coaching/types";
+import { readActionError } from "@/lib/auth/action-result";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -76,7 +77,7 @@ export function CommunityNotificationsPanel({
         next.delete(id);
         return next;
       });
-      setError(result.error ?? "Could not mark notification read.");
+      setError(readActionError(result) ?? "Could not mark notification read.");
       return;
     }
 

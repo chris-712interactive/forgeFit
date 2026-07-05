@@ -1,6 +1,7 @@
 "use client";
 
 import { setCommunityWeeklyRecapEmail } from "@/app/actions/community-email";
+import { readActionError } from "@/lib/auth/action-result";
 import type { CommunityEmailSettings } from "@/lib/coaching/community-email";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -43,7 +44,7 @@ export function CommunityEmailSetting({
     setSaving(false);
 
     if (!result.ok) {
-      setError(result.error ?? "Could not update email preference.");
+      setError(readActionError(result) ?? "Could not update email preference.");
       return;
     }
 

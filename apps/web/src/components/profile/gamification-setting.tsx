@@ -1,6 +1,7 @@
 "use client";
 
 import { setGamificationOptIn } from "@/app/actions/gamification";
+import { readActionError } from "@/lib/auth/action-result";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,7 +38,7 @@ export function GamificationSetting({
     setSaving(false);
 
     if (!result.ok) {
-      setError(result.error ?? "Could not update setting.");
+      setError(readActionError(result) ?? "Could not update setting.");
       return;
     }
 

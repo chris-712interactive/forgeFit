@@ -5,6 +5,7 @@ import {
   moderateSetSuspended,
 } from "@/app/actions/community";
 import type { ModerationQueue } from "@/lib/coaching/types";
+import { readActionError } from "@/lib/auth/action-result";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -26,7 +27,7 @@ export function CommunityModerationPanel({
     setBusyKey(null);
 
     if (!result.ok) {
-      setError(result.error ?? "Action failed.");
+      setError(readActionError(result) ?? "Action failed.");
       return;
     }
 

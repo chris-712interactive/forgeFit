@@ -4,6 +4,7 @@ import {
   updatePlanSettings,
 } from "@/app/actions/program";
 import { PlanScheduleStartField } from "@/components/profile/plan-schedule-start-field";
+import { readActionError } from "@/lib/auth/action-result";
 import { RebuildPlanModal } from "@/components/profile/rebuild-plan-modal";
 import { ProfileSubSection } from "@/components/profile/profile-subsection";
 import { SportPlanFields } from "@/components/profile/sport-plan-fields";
@@ -165,8 +166,9 @@ export function ProgramPlanSetting({
         isDeloadWeek?: boolean;
       };
 
-      if (result.error) {
-        setError(result.error);
+      const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
         return;
       }
 
@@ -457,8 +459,9 @@ export function ProgramPlanSetting({
           userId={userId}
           onClose={() => setShowRebuildModal(false)}
           onComplete={(result) => {
-            if (result.error) {
-              setError(result.error);
+            const actionError = readActionError(result);
+      if (actionError) {
+        setError(actionError);
               return;
             }
             setError(null);

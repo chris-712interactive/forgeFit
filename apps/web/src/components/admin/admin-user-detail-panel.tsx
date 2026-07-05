@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AdminCompUpgradeForm } from "@/components/admin/admin-comp-upgrade-form";
 import { AdminImpersonateButton } from "@/components/admin/admin-impersonate-button";
 import type { AdminUserDetail } from "@/lib/admin/users";

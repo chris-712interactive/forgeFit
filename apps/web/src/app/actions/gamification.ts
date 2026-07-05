@@ -24,6 +24,9 @@ export async function setGamificationOptIn(optIn: boolean): Promise<{
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -85,6 +88,9 @@ export async function finishWorkoutCommunitySync(): Promise<{
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const { getSubscriptionForUser } = await import("@/lib/billing/subscription");
   const { getServerSessionRecords } = await import(
@@ -121,6 +127,9 @@ export async function toggleCommunityWinCheer(winId: string): Promise<{
   if (!user) {
     return { ok: false, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -237,6 +246,9 @@ async function requireCommunityMemberForInteractions() {
   if (!user) {
     return { ok: false as const, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false as const, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")

@@ -17,6 +17,9 @@ async function requireCommunityUser() {
   if (!user) {
     return { ok: false as const, error: "Sign in required." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return { ok: false as const, error: impersonationBlock.error };
+
 
   const { data: profile } = await supabase
     .from("profiles")

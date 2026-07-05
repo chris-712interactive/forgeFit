@@ -1,6 +1,7 @@
 "use client";
 
 import type { SpotifyPlaybackView } from "@/lib/integrations/spotify-service";
+import { readActionError } from "@/lib/auth/action-result";
 import {
   getWorkoutMusicPlaylist,
 } from "@/lib/workout-music/catalog";
@@ -118,7 +119,7 @@ export function WorkoutMusicTransport({
         setPlayback((current) =>
           current ? { ...current, isPlaying: previousPlaying } : current
         );
-        setError(formatPlaybackError(result.error));
+        setError(formatPlaybackError(readActionError(result) ?? "Playback failed."));
         return;
       }
 

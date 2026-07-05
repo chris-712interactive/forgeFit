@@ -26,6 +26,9 @@ export async function acceptHealthDisclaimer(input: {
   if (!user) {
     return { error: "You must be signed in." };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const { error } = await supabase
     .from("profiles")

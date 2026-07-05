@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { readActionError } from "@/lib/auth/action-result";
 import { completeOnboarding } from "@/app/actions/onboarding";
 import {
   CARDIO_EQUIPMENT,
@@ -148,7 +149,7 @@ export function OnboardingWizard() {
 
     const result = await completeOnboarding(data as OnboardingData);
     if (result?.error) {
-      setError(result.error);
+      setError(readActionError(result) ?? "Something went wrong.");
       setSubmitting(false);
     }
   }
