@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>ForgeRep Admin Console — UI Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ember: #ff6b35;
+      --glow: #ff8c42;
+      --gold: #fbbf24;
+      --steel: #38bdf8;
+      --success: #22c55e;
+      --coral: #ff4d6d;
+      --surface: #1c1917;
+      --raised: #292524;
+      --border: rgba(255,255,255,0.08);
+      --text: #fafaf9;
+      --muted: #a8a29e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: #0f0e0d;
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .banner {
+      background: var(--raised);
+      border-bottom: 1px solid var(--border);
+      padding: 0.6rem 1.25rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .banner strong { color: var(--gold); }
+    .shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 36px);
+    }
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.5rem 0.75rem 1.25rem;
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--ember), var(--gold));
+      display: grid;
+      place-items: center;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .brand-text {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.2;
+    }
+    .brand-sub { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+    .nav-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 1rem 0.75rem 0.35rem;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .nav-item.active {
+      background: rgba(255,107,53,0.15);
+      color: var(--text);
+      box-shadow: inset 3px 0 0 var(--ember);
+    }
+    .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
+    .nav-item.active .nav-dot { background: var(--ember); opacity: 1; }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem 0.75rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .admin-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--raised);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.7rem;
+      color: var(--text);
+    }
+    .main { padding: 1.5rem 2rem 2.5rem; overflow-x: auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .page-header h1 {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      margin: 0;
+    }
+    .page-header p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.9rem; }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 0.55rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--ember); color: #fff; }
+    .btn-secondary { background: var(--raised); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi {
+      background: var(--raised);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+    }
+    .kpi-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.35rem; }
+    .kpi-value {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+    }
+    .kpi-delta { font-size: 0.75rem; margin-top: 0.35rem; }
+    .up { color: var(--success); }
+    .down { color: var(--coral); }
+    .panel {
+      background: var(--raised);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .panel h2 {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0 0 1rem;
+    }
+    .two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem; }
+    .chart-placeholder {
+      height: 220px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,107,53,0.12) 0%, transparent 70%);
+      border: 1px dashed var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-line {
+      position: absolute;
+      bottom: 20%;
+      left: 5%;
+      right: 5%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--ember), var(--gold), var(--ember));
+      border-radius: 2px;
+      transform: skewY(-2deg);
+    }
+    .chart-bars {
+      position: absolute;
+      bottom: 0;
+      left: 8%;
+      right: 8%;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 70%;
+    }
+    .bar {
+      flex: 1;
+      background: rgba(255,107,53,0.35);
+      border-radius: 4px 4px 0 0;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    tr.selected td { background: rgba(255,107,53,0.08); }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 600;
+    }
+    .badge-pro { background: rgba(255,107,53,0.2); color: var(--glow); }
+    .badge-proplus { background: rgba(251,191,36,0.2); color: var(--gold); }
+    .badge-free { background: rgba(255,255,255,0.06); color: var(--muted); }
+    .badge-comp { background: rgba(56,189,248,0.15); color: var(--steel); }
+    .badge-active { background: rgba(34,197,94,0.15); color: var(--success); }
+    .search-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+    .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.25rem; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .field label { display: block; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.65rem;
+      color: var(--text);
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+    .field textarea { min-height: 72px; resize: vertical; }
+    .action-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .action-card h3 { font-size: 0.85rem; margin: 0 0 0.75rem; font-weight: 600; }
+    .alert {
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.25);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .funnel { display: flex; flex-direction: column; gap: 0.5rem; }
+    .funnel-step {
+      display: grid;
+      grid-template-columns: 140px 1fr 60px;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+    }
+    .funnel-bar {
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(255,107,53,0.25);
+      border: 1px solid rgba(255,107,53,0.35);
+    }
+    .audit-row { font-size: 0.78rem; color: var(--muted); padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .audit-row strong { color: var(--text); }
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col, .detail-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <strong>UI mockup only</strong> — not wired to production. Open this file in a browser to explore the proposed ForgeRep Admin Console.
+  </div>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">F</div>
+        <div>
+          <div class="brand-text">ForgeRep</div>
+          <div class="brand-sub">Admin Console</div>
+        </div>
+      </div>
+
+      <div class="nav-label">Operations</div>
+      <button class="nav-item active" data-page="overview"><span class="nav-dot"></span> Overview</button>
+      <button class="nav-item" data-page="users"><span class="nav-dot"></span> Users</button>
+      <button class="nav-item" data-page="revenue"><span class="nav-dot"></span> Revenue</button>
+      <button class="nav-item" data-page="growth"><span class="nav-dot"></span> Growth</button>
+      <button class="nav-item" data-page="community"><span class="nav-dot"></span> Community</button>
+      <button class="nav-item" data-page="audit"><span class="nav-dot"></span> Audit log</button>
+
+      <div class="sidebar-footer">
+        <div class="admin-chip">● chris@forgerep.com</div>
+        <div style="margin-top:0.5rem">Signed in as <strong>Admin</strong></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- OVERVIEW -->
+      <section class="page active" id="page-overview">
+        <div class="page-header">
+          <div>
+            <h1>Overview</h1>
+            <p>Sunday, Jul 5, 2026 · Last synced 2 min ago</p>
+          </div>
+          <button class="btn btn-secondary">Export snapshot</button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">MRR</div>
+            <div class="kpi-value">$4,280</div>
+            <div class="kpi-delta up">↑ 8.2% vs last 30d</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">ARR (MRR × 12)</div>
+            <div class="kpi-value">$51.4K</div>
+            <div class="kpi-delta up">↑ 6 paid this week</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Paid subscribers</div>
+            <div class="kpi-value">412</div>
+            <div class="kpi-delta">Pro 318 · Pro+ 94</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Total users</div>
+            <div class="kpi-value">2,847</div>
+            <div class="kpi-delta up">↑ 124 signups (30d)</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <h2>MRR trend (90 days)</h2>
+            <div class="chart-placeholder">
+              <div class="chart-bars">
+                <div class="bar" style="height:35%"></div>
+                <div class="bar" style="height:42%"></div>
+                <div class="bar" style="height:48%"></div>
+                <div class="bar" style="height:55%"></div>
+                <div class="bar" style="height:58%"></div>
+                <div class="bar" style="height:62%"></div>
+                <div class="bar" style="height:70%"></div>
+                <div class="bar" style="height:75%"></div>
+                <div class="bar" style="height:82%"></div>
+                <div class="bar" style="height:88%"></div>
+                <div class="bar" style="height:92%"></div>
+                <div class="bar" style="height:100%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Needs attention</h2>
+            <div class="alert">3 comp accounts expire in 7 days — review renewals.</div>
+            <table>
+              <tbody>
+                <tr><td>Past-due subs</td><td style="text-align:right"><strong style="color:var(--coral)">7</strong></td></tr>
+                <tr><td>Flagged community scores</td><td style="text-align:right"><strong>4</strong></td></tr>
+                <tr><td>Pending ingredient reviews</td><td style="text-align:right"><strong>12</strong></td></tr>
+                <tr><td>Free → paid (30d)</td><td style="text-align:right"><strong style="color:var(--success)">4.8%</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section class="page" id="page-users">
+        <div class="page-header">
+          <div>
+            <h1>Users</h1>
+            <p>Search, inspect, comp upgrades, and apply discounts</p>
+          </div>
+          <button class="btn btn-primary">+ Grant comp (quick)</button>
+        </div>
+
+        <div class="search-row">
+          <input class="search-input" type="search" placeholder="Search email, name, or user ID…" value="sarah.m" />
+          <select class="search-input" style="flex:0 0 140px">
+            <option>All tiers</option>
+            <option>Free</option>
+            <option>Pro</option>
+            <option>Pro+</option>
+            <option>Comp</option>
+          </select>
+          <select class="search-input" style="flex:0 0 140px">
+            <option>All status</option>
+            <option>Active</option>
+            <option>Trialing</option>
+            <option>Canceled</option>
+          </select>
+        </div>
+
+        <div class="detail-layout">
+          <div class="panel" style="margin:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Tier</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Last active</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="selected">
+                  <td><strong>sarah.m@email.com</strong><br><span style="color:var(--muted);font-size:0.75rem">Sarah M. · uuid-a1b2…</span></td>
+                  <td><span class="badge badge-pro">Pro</span></td>
+                  <td><span class="badge badge-active">Active</span></td>
+                  <td>Mar 12, 2026</td>
+                  <td>Today</td>
+                </tr>
+                <tr>
+                  <td><strong>coach.j@email.com</strong><br><span style="color:var(--muted);font-size:0.75rem">Coach Jay · uuid-c3d4…</span></td>
+                  <td><span class="badge badge-comp">Pro+ comp</span></td>
+                  <td><span class="badge badge-active">Comp</span></td>
+                  <td>Jan 4, 2026</td>
+                  <td>Yesterday</td>
+                </tr>
+                <tr>
+                  <td><strong>alex.k@email.com</strong><br><span style="color:var(--muted);font-size:0.75rem">Alex K. · uuid-e5f6…</span></td>
+                  <td><span class="badge badge-free">Free</span></td>
+                  <td>—</td>
+                  <td>Jun 28, 2026</td>
+                  <td>2d ago</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="panel" style="margin:0 0 1rem">
+              <h2>sarah.m@email.com</h2>
+              <div class="field-grid" style="margin-bottom:0.75rem">
+                <div><span style="font-size:0.7rem;color:var(--muted)">Stripe customer</span><br><a href="#" style="color:var(--steel);font-size:0.8rem">cus_abc123 ↗</a></div>
+                <div><span style="font-size:0.7rem;color:var(--muted)">Signup source</span><br><span style="font-size:0.8rem">instagram / guides</span></div>
+                <div><span style="font-size:0.7rem;color:var(--muted)">Workouts logged</span><br><strong>47</strong></div>
+                <div><span style="font-size:0.7rem;color:var(--muted)">Community</span><br><strong>Opted in</strong></div>
+              </div>
+            </div>
+
+            <div class="action-card">
+              <h3>Comp upgrade (no charge)</h3>
+              <div class="field" style="margin-bottom:0.5rem">
+                <label>Tier</label>
+                <select><option>Pro</option><option selected>Pro+</option></select>
+              </div>
+              <div class="field" style="margin-bottom:0.5rem">
+                <label>Expires</label>
+                <input type="date" value="2026-12-31" />
+              </div>
+              <div class="field" style="margin-bottom:0.75rem">
+                <label>Reason (required)</label>
+                <textarea>Coach partnership — 6-month beta access</textarea>
+              </div>
+              <button class="btn btn-primary" style="width:100%">Apply comp upgrade</button>
+            </div>
+
+            <div class="action-card">
+              <h3>Apply discount (Stripe)</h3>
+              <div class="field" style="margin-bottom:0.5rem">
+                <label>Coupon / promo</label>
+                <select><option>50% off 3 months (COACH50)</option><option>100% founder (FOUNDER100)</option></select>
+              </div>
+              <button class="btn btn-secondary" style="width:100%">Attach to subscription</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REVENUE -->
+      <section class="page" id="page-revenue">
+        <div class="page-header">
+          <div>
+            <h1>Revenue</h1>
+            <p>ARR, MRR, churn, and tier mix from Stripe + profile comps</p>
+          </div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Net MRR</div><div class="kpi-value">$4,280</div><div class="kpi-delta up">+$340 new · −$58 churn</div></div>
+          <div class="kpi"><div class="kpi-label">ARR</div><div class="kpi-value">$51.4K</div></div>
+          <div class="kpi"><div class="kpi-label">Churn (30d)</div><div class="kpi-value">2.1%</div><div class="kpi-delta down">↑ 0.3pp</div></div>
+          <div class="kpi"><div class="kpi-label">Comp ARR equiv.</div><div class="kpi-value">$8.2K</div><div class="kpi-delta">18 comp seats</div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <h2>Tier & billing interval mix</h2>
+            <table>
+              <thead><tr><th>Tier</th><th>Monthly</th><th>Annual</th><th>Comp</th><th>MRR contrib.</th></tr></thead>
+              <tbody>
+                <tr><td>Pro</td><td>198</td><td>120</td><td>12</td><td>$2,640</td></tr>
+                <tr><td>Pro+</td><td>62</td><td>32</td><td>6</td><td>$1,640</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h2>Recent billing events</h2>
+            <div class="audit-row"><strong>New Pro annual</strong> — sarah.m@ · $69.99 · 2h ago</div>
+            <div class="audit-row"><strong>Comp Pro+ granted</strong> — coach.j@ · expires Dec 2026</div>
+            <div class="audit-row"><strong>Canceled</strong> — mike.t@ · churn survey: "too expensive"</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GROWTH -->
+      <section class="page" id="page-growth">
+        <div class="page-header">
+          <div>
+            <h1>Growth</h1>
+            <p>Activation funnel, signup sources, and retention</p>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Activation funnel (last 30 days signups)</h2>
+          <div class="funnel">
+            <div class="funnel-step"><span>Signed up</span><div class="funnel-bar" style="width:100%"></div><strong>124</strong></div>
+            <div class="funnel-step"><span>Onboarding done</span><div class="funnel-bar" style="width:78%"></div><strong>97</strong></div>
+            <div class="funnel-step"><span>First workout</span><div class="funnel-bar" style="width:61%"></div><strong>76</strong></div>
+            <div class="funnel-step"><span>7-day return</span><div class="funnel-bar" style="width:44%"></div><strong>55</strong></div>
+            <div class="funnel-step"><span>Upgraded to paid</span><div class="funnel-bar" style="width:12%"></div><strong>6</strong></div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <h2>Signup sources</h2>
+            <table>
+              <thead><tr><th>Source</th><th>Users</th><th>Paid %</th></tr></thead>
+              <tbody>
+                <tr><td>Organic / direct</td><td>892</td><td>11%</td></tr>
+                <tr><td>Instagram</td><td>534</td><td>9%</td></tr>
+                <tr><td>SEO guides</td><td>412</td><td>18%</td></tr>
+                <tr><td>Referral</td><td>186</td><td>22%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <h2>D30 retention (workout logged)</h2>
+            <div class="chart-placeholder" style="height:160px"><div class="chart-line"></div></div>
+            <p style="font-size:0.8rem;color:var(--muted);margin:0.75rem 0 0">Cohort May 2026: <strong style="color:var(--success)">34%</strong> still active</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMUNITY -->
+      <section class="page" id="page-community">
+        <div class="page-header">
+          <div>
+            <h1>Community ops</h1>
+            <p>Reuses existing WACP / opt-in metrics · deep moderation at <code style="color:var(--steel)">/community/moderation</code></p>
+          </div>
+          <button class="btn btn-secondary">Open moderation tools ↗</button>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">WACP (this week)</div><div class="kpi-value">218</div></div>
+          <div class="kpi"><div class="kpi-label">Opt-in rate</div><div class="kpi-value">62%</div></div>
+          <div class="kpi"><div class="kpi-label">Flagged scores</div><div class="kpi-value">4</div></div>
+          <div class="kpi"><div class="kpi-label">First action &lt;7d</div><div class="kpi-value">71%</div></div>
+        </div>
+      </section>
+
+      <!-- AUDIT -->
+      <section class="page" id="page-audit">
+        <div class="page-header">
+          <div>
+            <h1>Audit log</h1>
+            <p>Immutable record of every admin action</p>
+          </div>
+        </div>
+        <div class="panel">
+          <table>
+            <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+            <tbody>
+              <tr><td>Jul 5, 1:12 PM</td><td>chris@</td><td>comp.grant</td><td>coach.j@</td><td>Pro+ until 2026-12-31 · Coach partnership</td></tr>
+              <tr><td>Jul 4, 4:30 PM</td><td>chris@</td><td>discount.attach</td><td>sarah.m@</td><td>COACH50 · 3 months</td></tr>
+              <tr><td>Jul 3, 9:01 AM</td><td>chris@</td><td>user.view</td><td>alex.k@</td><td>Profile inspection</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll(".nav-item").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".page").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("page-" + btn.dataset.page).classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>

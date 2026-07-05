@@ -54,6 +54,8 @@ supabase/         → PostgreSQL migrations + RLS
 
 Internal operator UI at `/admin` (desktop-first, separate from member PWA shell).
 
+**Full plan:** [ADRs/002-forgerep-admin-console.md](./ADRs/002-forgerep-admin-console.md) · **Acceptance criteria:** [phases/admin-console.md](./phases/admin-console.md) · **UI mockup:** `apps/web/content/admin/console-mockup.html`
+
 | Piece | Location |
 |-------|----------|
 | Access control | `lib/admin/auth.ts` — `ADMIN_USER_IDS` + `profiles.is_admin` |
@@ -63,6 +65,8 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |
 
 Requires `SUPABASE_SERVICE_ROLE_KEY`. Non-admins receive **404** (not 403).
+
+**Planned (Phases B–D):** `/admin/revenue` (Stripe MRR/ARR, discounts), `/admin/growth` (funnels, cohorts), `/admin/community` (ops metrics), impersonation, broadcasts, refunds.
 
 ## Program Generation (Phase 2)
 
