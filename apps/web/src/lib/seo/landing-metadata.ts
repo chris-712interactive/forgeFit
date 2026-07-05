@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildSocialImageFields } from "./social-image-metadata";
 import { getSiteUrl } from "./site-url";
 
 const title =
@@ -31,6 +32,8 @@ const keywords = [
 
 export function buildLandingMetadata(): Metadata {
   const siteUrl = getSiteUrl();
+  const { openGraphImages, twitterImages, twitterCard } =
+    buildSocialImageFields();
 
   return {
     title,
@@ -47,20 +50,13 @@ export function buildLandingMetadata(): Metadata {
       siteName: "ForgeRep",
       title,
       description,
-      images: [
-        {
-          url: "/og-image.png",
-          width: 1200,
-          height: 630,
-          alt: "ForgeRep — evidence-based fitness and nutrition app",
-        },
-      ],
+      images: openGraphImages,
     },
     twitter: {
-      card: "summary_large_image",
+      card: twitterCard,
       title,
       description,
-      images: ["/og-image.png"],
+      images: twitterImages,
     },
     robots: {
       index: true,

@@ -10,7 +10,12 @@ export const socialImageSize = {
 export const socialImageContentType = "image/png";
 
 export const socialImageAlt =
-  "ForgeRep — evidence-based fitness that keeps you accountable";
+  "ForgeRep — personalized workout and macro tracker app";
+
+const headline = "ForgeRep";
+const tagline = "Personalized Workout & Macro Tracker";
+const description =
+  "Evidence-based programs, offline gym logging, and macro tracking. Free to start — no credit card required.";
 
 const pills = ["Works offline", "Evidence-based", "Free to start"] as const;
 
@@ -150,18 +155,18 @@ export async function renderSocialImage() {
                 letterSpacing: "-0.02em",
               }}
             >
-              ForgeRep
+              {headline}
             </div>
             <div
               style={{
                 fontSize: 34,
                 fontWeight: 700,
-                color: "#fafaf9",
+                color: "#ff8c42",
                 lineHeight: 1.25,
                 maxWidth: 760,
               }}
             >
-              Evidence-based fitness that keeps you accountable
+              {tagline}
             </div>
             <div
               style={{
@@ -172,7 +177,7 @@ export async function renderSocialImage() {
                 maxWidth: 720,
               }}
             >
-              Personalized programs · Macro tracking · Works offline in the gym
+              {description}
             </div>
           </div>
         </div>

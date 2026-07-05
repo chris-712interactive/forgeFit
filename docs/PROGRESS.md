@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
-| **Last updated** | 2026-07-04 |
-| **Last session focus** | Community page arena redesign |
+| **Last updated** | 2026-07-05 |
+| **Last session focus** | Social link preview (OG image) refresh |
 
 ---
 

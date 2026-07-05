@@ -7,7 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:og-image": "curl -fsS http://localhost:3000/opengraph-image -o public/og-image.png"
   },
   "dependencies": {
     "@forgefit/coaching": "workspace:*",
