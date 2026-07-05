@@ -84,7 +84,7 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 
 - **Layout:** Single-scroll arena — no week/squad/feed tabs; competition and involvement on one page
 - **Week countdown:** Twin arc dials in the page header (ember = week, gold = season) — no separate progress bar card
-- **Arena ribbon:** Forged rank plate (bronze / silver / gold SVG backgrounds), hex rank badge, habit score breakdown bar, league pill
+- **Arena ribbon:** Forged rank plate (bronze / silver / gold SVG backgrounds), hex rank badge, habit score breakdown bar, league pill — swipe between **This week** (live rank) and **This season** (avg rank + promotion chase)
 - **Rival showdown:** Head-to-head vs card with split score bar
 - **Quick actions:** Cheer wins · Squad · Alerts — smooth-scroll to anchored sections
 - **Podium standings:** Top 3 visual podium + compact list; expand for full board

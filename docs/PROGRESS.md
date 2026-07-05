@@ -36,6 +36,23 @@
 
 ## Session Log
 
+### 2026-07-05 — Swipeable arena ribbon (week / season)
+
+**What was done**
+
+- **CommunityArenaRibbon** swipe carousel — same forged plate for weekly rank/score and season avg rank/score
+- Period banner: "This week" (ember) / "This season" (gold) with dot indicators
+- `getCurrentSeasonStanding()` — live monthly avg rank in tier + promotion zone chase copy
+- Touch swipe + tab dots to switch panels
+
+**Files touched**
+
+- `apps/web/src/components/community/community-arena-ribbon.tsx`
+- `apps/web/src/lib/coaching/community-leagues.ts`, `service.ts`, `types.ts`
+- `docs/DESIGN.md`, `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-04 — Community PR win dedupe
 
 **What was done**

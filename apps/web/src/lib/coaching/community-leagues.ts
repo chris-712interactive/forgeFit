@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { LeaderboardEntryRow } from "./types";
+import { getWeekBounds } from "@/lib/home/weekly-stats";
+import type { LeaderboardEntryRow, SeasonStanding } from "./types";
 import { leagueTierLabel } from "./community-labels";
 import {
   filterLeaderboardRows,
@@ -137,6 +138,217 @@ function weekStartsInMonth(seasonMonth: string): string[] {
   }
 
   return [...new Set(weeks)];
+}
+
+function currentWeekStartIso(reference = new Date()): string {
+  return getWeekBounds(reference).startIso;
+}
+
+function buildSeasonChaseLabel(input: {
+  tier: LeagueTier;
+  weeksScored: number;
+  weeksRequired: number;
+  tierPeerCount: number;
+  promotionZone: SeasonStanding["promotionZone"];
+}): string {
+  if (input.weeksScored < input.weeksRequired) {
+    const remaining = input.weeksRequired - input.weeksScored;
+    return remaining === 1
+      ? "1 more scored week to qualify"
+      : `${remaining} more scored weeks to qualify`;
+  }
+
+  if (input.tierPeerCount < MIN_GROUP_SIZE) {
+    return "Keep scoring — more peers needed";
+  }
+
+  const promoteTarget = nextTier(input.tier);
+  if (input.promotionZone === "promotion" && promoteTarget) {
+    return `On track for ${leagueTierLabel(promoteTarget)}`;
+  }
+
+  if (input.promotionZone === "relegation") {
+    const dropTarget = previousTier(input.tier);
+    return dropTarget ? `${leagueTierLabel(dropTarget)} zone` : "Relegation zone";
+  }
+
+  if (input.tier === "gold") {
+    return "Holding Gold";
+  }
+
+  return "Mid tier — keep climbing";
+}
+
+/** Live season standing for the current calendar month within the user's league tier. */
+export async function getCurrentSeasonStanding(input: {
+  userId: string;
+  bucketGoal: string;
+  bucketExperience: string;
+  tier: LeagueTier;
+  reference?: Date;
+}): Promise<SeasonStanding | null> {
+  const reference = input.reference ?? new Date();
+  const seasonMonth = seasonMonthStart(reference);
+  const currentWeekStart = currentWeekStartIso(reference);
+  const elapsedWeekStarts = weekStartsInMonth(seasonMonth).filter(
+    (weekStart) => weekStart <= currentWeekStart
+  );
+
+  const base: SeasonStanding = {
+    seasonMonth,
+    seasonLabel: formatSeasonLabel(seasonMonth),
+    avgRank: null,
+    avgHabitScore: null,
+    weeksScored: 0,
+    weeksRequired: MIN_WEEKS_FOR_SEASON,
+    tierPeerCount: 0,
+    promotionZone: "unqualified",
+    chaseLabel: buildSeasonChaseLabel({
+      tier: input.tier,
+      weeksScored: 0,
+      weeksRequired: MIN_WEEKS_FOR_SEASON,
+      tierPeerCount: 0,
+      promotionZone: "unqualified",
+    }),
+  };
+
+  if (elapsedWeekStarts.length === 0) {
+    return base;
+  }
+
+  const supabase = await createClient();
+  const { data: scoreRows, error } = await supabase
+    .from("leaderboard_entries")
+    .select("user_id, week_start, habit_score, display_label")
+    .eq("bucket_goal", input.bucketGoal)
+    .eq("bucket_experience", input.bucketExperience)
+    .in("week_start", elapsedWeekStarts);
+
+  if (error) {
+    if (!isLeagueTableMissing(error)) {
+      console.error("season standing lookup failed:", error.message);
+    }
+    return base;
+  }
+
+  if (!scoreRows?.length) {
+    return base;
+  }
+
+  const userIds = [...new Set(scoreRows.map((row) => row.user_id as string))];
+  const tierMap = await getTierMapForUserIds(userIds);
+
+  type Participant = {
+    userId: string;
+    weeksScored: number;
+    totalScore: number;
+    weeklyRanks: number[];
+  };
+
+  const participants = new Map<string, Participant>();
+
+  for (const weekStart of elapsedWeekStarts) {
+    const tierBoard = scoreRows
+      .filter((row) => row.week_start === weekStart)
+      .filter(
+        (row) => (tierMap.get(row.user_id as string) ?? "bronze") === input.tier
+      )
+      .sort(
+        (a, b) => Number(b.habit_score) - Number(a.habit_score)
+      );
+
+    tierBoard.forEach((row, index) => {
+      const userId = row.user_id as string;
+      const existing = participants.get(userId) ?? {
+        userId,
+        weeksScored: 0,
+        totalScore: 0,
+        weeklyRanks: [],
+      };
+      existing.weeksScored += 1;
+      existing.totalScore += Number(row.habit_score);
+      existing.weeklyRanks.push(index + 1);
+      participants.set(userId, existing);
+    });
+  }
+
+  const tierParticipants = [...participants.values()];
+  const userParticipant = participants.get(input.userId);
+
+  if (!userParticipant || userParticipant.weeksScored === 0) {
+    return {
+      ...base,
+      tierPeerCount: tierParticipants.length,
+      chaseLabel: buildSeasonChaseLabel({
+        tier: input.tier,
+        weeksScored: 0,
+        weeksRequired: MIN_WEEKS_FOR_SEASON,
+        tierPeerCount: tierParticipants.length,
+        promotionZone: "unqualified",
+      }),
+    };
+  }
+
+  const avgHabitScore = Math.round(
+    userParticipant.totalScore / userParticipant.weeksScored
+  );
+  const avgRank = Math.round(
+    userParticipant.weeklyRanks.reduce((sum, rank) => sum + rank, 0) /
+      userParticipant.weeklyRanks.length
+  );
+
+  const ranked = tierParticipants
+    .map((participant) => ({
+      userId: participant.userId,
+      avgScore: participant.totalScore / participant.weeksScored,
+      weeksScored: participant.weeksScored,
+    }))
+    .sort((a, b) => b.avgScore - a.avgScore);
+
+  const tierPeerCount = ranked.length;
+  let promotionZone: SeasonStanding["promotionZone"] = "unqualified";
+
+  if (userParticipant.weeksScored < MIN_WEEKS_FOR_SEASON) {
+    promotionZone = "unqualified";
+  } else if (tierPeerCount < MIN_GROUP_SIZE) {
+    promotionZone = "safe";
+  } else {
+    const userIndex = ranked.findIndex((row) => row.userId === input.userId);
+    const promoteCount = Math.max(
+      1,
+      Math.floor(tierPeerCount * PROMOTE_FRACTION)
+    );
+    const relegateCount = Math.max(
+      1,
+      Math.floor(tierPeerCount * RELEGATE_FRACTION)
+    );
+
+    if (userIndex >= 0 && userIndex < promoteCount) {
+      promotionZone = "promotion";
+    } else if (userIndex >= tierPeerCount - relegateCount) {
+      promotionZone = "relegation";
+    } else {
+      promotionZone = "safe";
+    }
+  }
+
+  return {
+    seasonMonth,
+    seasonLabel: formatSeasonLabel(seasonMonth),
+    avgRank,
+    avgHabitScore,
+    weeksScored: userParticipant.weeksScored,
+    weeksRequired: MIN_WEEKS_FOR_SEASON,
+    tierPeerCount,
+    promotionZone,
+    chaseLabel: buildSeasonChaseLabel({
+      tier: input.tier,
+      weeksScored: userParticipant.weeksScored,
+      weeksRequired: MIN_WEEKS_FOR_SEASON,
+      tierPeerCount,
+      promotionZone,
+    }),
+  };
 }
 
 export async function ensureLeagueTier(input: {

@@ -20,6 +20,7 @@ import {
   buildSeasonRecap,
   ensureLeagueTier,
   fetchTierLeaderboard,
+  getCurrentSeasonStanding,
   getHallOfFame,
   getUserBadges,
   getUserLeagueTier,
@@ -681,7 +682,7 @@ export async function getGamificationContext(
   const activePeerCount = activeWeekCountResult.count ?? 0;
   const bucketPeerCount = peerCountResult.count ?? activePeerCount;
 
-  const [habitBreakdown, weeklyRecap, weeklyRival, unreadNotificationCount, recentNotifications, seasonRecap, badges, hallOfFame] =
+  const [habitBreakdown, weeklyRecap, weeklyRival, unreadNotificationCount, recentNotifications, seasonRecap, seasonStanding, badges, hallOfFame] =
     optedIn
     ? await Promise.all([
         computeUserHabitBreakdown(userId, sessions),
@@ -696,6 +697,12 @@ export async function getGamificationContext(
         getUnreadCommunityNotificationCount(userId),
         getCommunityNotifications(userId, 5),
         buildSeasonRecap(userId, goal, experience),
+        getCurrentSeasonStanding({
+          userId,
+          bucketGoal: goal,
+          bucketExperience: experience,
+          tier: effectiveTier,
+        }),
         getUserBadges(userId),
         getHallOfFame({
           bucketGoal: goal,
@@ -703,7 +710,7 @@ export async function getGamificationContext(
           userId,
         }),
       ])
-    : [null, null, null, 0, [], null, [], []];
+    : [null, null, null, 0, [], null, null, [], []];
 
   const league: LeagueContext | null =
     optedIn && userTier
@@ -711,6 +718,7 @@ export async function getGamificationContext(
           tier: effectiveTier,
           tierLabel: leagueTierLabel(effectiveTier),
           tierPeerCount: tierLeaderboard.length,
+          seasonStanding: seasonStanding,
           seasonRecap: seasonRecap
             ? { ...seasonRecap, bucketLabel: bucketLabelValue }
             : null,
@@ -722,6 +730,7 @@ export async function getGamificationContext(
             tier: "bronze",
             tierLabel: leagueTierLabel("bronze"),
             tierPeerCount: tierLeaderboard.length,
+            seasonStanding: seasonStanding,
             seasonRecap: seasonRecap
               ? { ...seasonRecap, bucketLabel: bucketLabelValue }
               : null,

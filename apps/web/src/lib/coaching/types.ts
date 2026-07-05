@@ -89,9 +89,28 @@ export interface LeagueContext {
   tier: LeagueTier;
   tierLabel: string;
   tierPeerCount: number;
+  seasonStanding: SeasonStanding | null;
   seasonRecap: SeasonRecap | null;
   badges: CommunityBadgeRow[];
   hallOfFame: HallOfFameEntry[];
+}
+
+export type SeasonPromotionZone =
+  | "promotion"
+  | "safe"
+  | "relegation"
+  | "unqualified";
+
+export interface SeasonStanding {
+  seasonMonth: string;
+  seasonLabel: string;
+  avgRank: number | null;
+  avgHabitScore: number | null;
+  weeksScored: number;
+  weeksRequired: number;
+  tierPeerCount: number;
+  promotionZone: SeasonPromotionZone;
+  chaseLabel: string;
 }
 
 export interface CrewMemberRow {
