@@ -36,6 +36,25 @@
 
 ## Session Log
 
+### 2026-07-05 — Admin console plan + UI mockup
+
+**What was done**
+
+- **ADR 002** — phased plan for `/admin` console: auth, user management, comp upgrades, Stripe discounts, ARR/MRR/growth metrics, audit log
+- **Interactive HTML mockup** — `apps/web/content/admin/console-mockup.html` (Overview, Users, Revenue, Growth, Community, Audit)
+
+**What's next**
+
+- Implement Phase A: `is_admin` flag, `/admin` layout, user search, comp upgrade form
+
+**Files touched**
+
+- `docs/ADRs/002-forgerep-admin-console.md` (new)
+- `apps/web/content/admin/console-mockup.html` (new)
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-05 — Social link preview (OG image) refresh
 
 **What was done**
