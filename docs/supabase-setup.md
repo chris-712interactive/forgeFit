@@ -99,7 +99,7 @@ After running SQL in the dashboard, reload the API schema if errors persist: **P
 **Authentication → URL Configuration:**
 
 - Site URL: `http://localhost:3000`
-- Redirect URLs: `http://localhost:3000/auth/callback`
+- Redirect URLs: `http://localhost:3000/auth/callback**` (wildcard preserves `?next=/admin` on operator login; app also stores intent in a short-lived cookie before OAuth)
 
 ## 5. Verify
 

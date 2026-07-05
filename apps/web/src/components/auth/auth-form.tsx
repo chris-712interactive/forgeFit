@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { pushSignupConversionEvent } from "@/lib/analytics/events";
+import { setAuthRedirectCookie } from "@/lib/auth/redirect-cookie";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthFormProps {
@@ -92,7 +93,9 @@ export function AuthForm({
     setError(null);
 
     const supabase = createClient();
-    const next = encodeURIComponent(resolvedPostAuthPath());
+    const postAuthPath = resolvedPostAuthPath();
+    setAuthRedirectCookie(postAuthPath);
+    const next = encodeURIComponent(postAuthPath);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

@@ -9,7 +9,8 @@ export async function updateSession(request: NextRequest) {
   const authCode = request.nextUrl.searchParams.get("code");
 
   // Supabase falls back to Site URL (/) when redirectTo isn't allowlisted — forward
-  // the PKCE code to our callback route so the session can be established.
+  // the PKCE code (and any surviving query params) to /auth/callback. Post-auth path
+  // is also stored in forge_auth_redirect cookie before OAuth starts.
   // Skip device integration OAuth callbacks — they also use ?code= from Google/Withings.
   const isIntegrationOAuthCallback = /^\/api\/integrations\/[^/]+\/callback\/?$/.test(
     path

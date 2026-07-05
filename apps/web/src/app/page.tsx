@@ -7,13 +7,21 @@ import { redirect } from "next/navigation";
 export const metadata = buildLandingMetadata();
 
 interface HomeProps {
-  searchParams: Promise<{ code?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
   if (params.code) {
-    redirect(`/auth/callback?code=${encodeURIComponent(params.code)}`);
+    const callbackQuery = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (typeof value === "string") {
+        callbackQuery.set(key, value);
+      } else if (Array.isArray(value) && value[0]) {
+        callbackQuery.set(key, value[0]);
+      }
+    }
+    redirect(`/auth/callback?${callbackQuery.toString()}`);
   }
 
   const supabase = await createClient();

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-05 |
-| **Last session focus** | Fix admin login redirect to console |
+| **Last session focus** | Admin OAuth redirect cookie fallback |
 
 ---
 
@@ -35,6 +35,28 @@
 ---
 
 ## Session Log
+
+### 2026-07-05 — Admin OAuth redirect cookie fallback
+
+**What was done**
+
+- **`forge_auth_redirect` cookie** — set before Google OAuth with intended post-auth path (`/admin` from operator login, `/home` from member login)
+- **Callback** — reads cookie when Supabase drops `?next=` from `redirectTo`; clears cookie after use
+- **Root OAuth recovery** — forwards all query params to `/auth/callback`, not just `code`
+- **Docs** — Supabase redirect URL wildcard (`/auth/callback**`) noted in `.env.example` and `docs/supabase-setup.md`
+
+**What's next**
+
+- Confirm operator Google sign-in at `/admin/login` lands on `/admin` in production
+- Add Supabase redirect allowlist wildcard if not already configured
+
+**Files touched**
+
+- `apps/web/src/lib/auth/redirect-cookie.ts`, `apps/web/src/components/auth/auth-form.tsx`
+- `apps/web/src/app/auth/callback/route.ts`, `apps/web/src/app/page.tsx`
+- `apps/web/src/lib/supabase/middleware.ts`, `.env.example`, `docs/supabase-setup.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-05 — Admin login redirect fix
 

@@ -3,6 +3,7 @@ import {
   withSignupConversionParam,
 } from "@/lib/auth/is-signup-conversion";
 import { ensureUserProfile } from "@/lib/auth/ensure-profile";
+import { consumeAuthRedirectCookie } from "@/lib/auth/redirect-cookie";
 import { resolveAuthRedirect } from "@/lib/auth/redirect-path";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -41,7 +42,9 @@ export async function GET(request: Request) {
   }
 
   await ensureUserProfile(supabase, data.user);
-  const next = searchParams.get("next");
+  const nextFromQuery = searchParams.get("next");
+  const nextFromCookie = await consumeAuthRedirectCookie();
+  const next = nextFromQuery ?? nextFromCookie;
   const destination = await resolveAuthRedirect(supabase, data.user.id, next);
   const redirectPath = isSignupConversion(data.user)
     ? withSignupConversionParam(destination)
