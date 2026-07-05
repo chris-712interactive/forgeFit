@@ -3,7 +3,7 @@ import {
   withSignupConversionParam,
 } from "@/lib/auth/is-signup-conversion";
 import { ensureUserProfile } from "@/lib/auth/ensure-profile";
-import { consumeAuthRedirectCookie } from "@/lib/auth/redirect-cookie";
+import { consumeAuthRedirectCookie } from "@/lib/auth/redirect-cookie.server";
 import { resolveAuthRedirect } from "@/lib/auth/redirect-path";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";

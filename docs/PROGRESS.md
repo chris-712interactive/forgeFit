@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-05 |
-| **Last session focus** | Admin OAuth redirect cookie fallback |
+| **Last session focus** | Fix Vercel build — split auth redirect cookie server module |
 
 ---
 
@@ -35,6 +35,19 @@
 ---
 
 ## Session Log
+
+### 2026-07-05 — Fix Vercel build (auth redirect cookie)
+
+**What was done**
+
+- Split `redirect-cookie.ts` (client-safe constants + setter) from `redirect-cookie.server.ts` (`server-only` + `next/headers`) so client `AuthForm` no longer pulls server APIs into the bundle
+
+**Files touched**
+
+- `apps/web/src/lib/auth/redirect-cookie.ts`, `apps/web/src/lib/auth/redirect-cookie.server.ts`
+- `apps/web/src/app/auth/callback/route.ts`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-05 — Admin OAuth redirect cookie fallback
 
