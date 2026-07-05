@@ -1,7 +1,7 @@
 import { HomeDashboard } from "@/components/home/home-dashboard";
 import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getHomeDashboardData } from "@/lib/home/service";
-import { createClient } from "@/lib/supabase/server";
 
 function formatHomeDate(date: Date): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -12,12 +12,9 @@ function formatHomeDate(date: Date): string {
 }
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  if (!user) {
+  if (!member) {
     return (
       <div className="px-6 py-8">
         <p className="text-forge-muted">Sign in to view your dashboard.</p>
@@ -25,7 +22,7 @@ export default async function HomePage() {
     );
   }
 
-  const data = await getHomeDashboardData(user.id);
+  const data = await getHomeDashboardData(member.effectiveUserId);
 
   const greeting = data.displayName ? `Hey, ${data.displayName}` : "Let's forge it";
 

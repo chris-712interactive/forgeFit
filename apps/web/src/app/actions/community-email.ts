@@ -3,6 +3,7 @@
 import { saveCommunityEmailPreferences } from "@/lib/coaching/community-email";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 export async function setCommunityWeeklyRecapEmail(enabled: boolean): Promise<{
   ok: boolean;

@@ -1,7 +1,7 @@
 import { LogMacrosScreen } from "@/components/nutrition/log-macros-screen";
 import { parseNutritionMealParam } from "@/lib/nutrition/date-param";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getNutritionPageData } from "@/lib/nutrition/page-data";
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function LogMacrosPage({
@@ -10,16 +10,13 @@ export default async function LogMacrosPage({
   searchParams: Promise<{ date?: string; meal?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  if (!user) {
+  if (!member) {
     redirect("/nutrition");
   }
 
-  const pageData = await getNutritionPageData(user.id, params.date);
+  const pageData = await getNutritionPageData(member.effectiveUserId, params.date);
 
   if (!pageData.summary) {
     redirect("/nutrition");

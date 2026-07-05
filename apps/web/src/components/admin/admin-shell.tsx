@@ -58,10 +58,10 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
               {adminEmail ?? "Admin"}
             </p>
             <Link
-              href="/home"
+              href="/login"
               className="mt-3 inline-block text-xs font-medium text-forge-ember hover:underline"
             >
-              ← Member app
+              Member login →
             </Link>
           </div>
         </aside>

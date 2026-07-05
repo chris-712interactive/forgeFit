@@ -27,6 +27,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const fitnessGoalSchema = z.enum([
   "fat_loss",

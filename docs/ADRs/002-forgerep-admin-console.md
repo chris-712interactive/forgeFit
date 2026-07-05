@@ -41,7 +41,28 @@ Build a **ForgeRep Admin Console** at `/admin` (desktop-first, separate from the
 1. `profiles.is_admin boolean default false` (migration `20260705120000_admin_console.sql`).
 2. Seed admins via env `ADMIN_USER_IDS` (comma-separated UUIDs) — same pattern as `COMMUNITY_MODERATOR_USER_IDS`.
 3. Server-side guard on every `/admin` page and `/api/admin/*` route via `requireAdminUser()` / `getAdminApiActor()`.
-4. Optional hardening (later): require MFA before enabling `is_admin`.
+4. **Separate operator login** at `/admin/login` — distinct from member `/login`; both use Supabase Auth but different entry points and redirects.
+5. **Read-only impersonation** — admins view the member app as a target user without signing out (signed httpOnly cookie, audit trail, mutations blocked).
+6. Optional hardening (later): require MFA before enabling `is_admin`.
+
+### Auth separation (operator vs member)
+
+| Surface | Login | Session | Purpose |
+|---------|-------|---------|---------|
+| **Admin console** | `/admin/login` → `/admin` | Same Supabase cookie | Operator tools, comp grants, audit |
+| **Member PWA** | `/login` → `/home` | Same Supabase cookie | Normal product use |
+
+**One browser = one Supabase session.** Admin and member logins are separate *entry points*, not concurrent identities. To verify as another user while staying signed in as admin, use **View as user** on `/admin/users/[id]` (impersonation).
+
+**Future (not built):** simultaneous dual sessions via subdomain-scoped cookies (`admin.` vs `app.` origin) — see Open questions.
+
+### Impersonation
+
+- Start: `POST /api/admin/users/[id]/impersonate` from user detail → sets `forge_impersonate` cookie (4h, HMAC-signed).
+- Exit: `DELETE /api/admin/impersonate` or banner “Exit to admin”.
+- Member pages use `getMemberContext()` → `effectiveUserId` for reads; server actions and non-admin API POSTs return 403 while impersonating.
+- Audit actions: `impersonation_start`, `impersonation_end`.
+- Cannot impersonate another admin account.
 
 ### Architecture
 
@@ -101,7 +122,9 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 - [x] `is_admin` + comp columns + `admin_audit_log` table
 - [x] `lib/admin/auth.ts` — `requireAdminUser()`, `getAdminApiActor()`
 - [x] `/admin` layout (sidebar, desktop) — `AdminShell`
-- [x] Login redirect `/login?redirect=/admin`
+- [x] Operator login `/admin/login` (separate from member `/login`)
+- [x] Read-only impersonation — view member app as target user with audit trail
+- [x] Middleware skips onboarding/disclaimer on `/admin/*`
 - [x] **Users** list — search email/name/UUID; filter tier/status
 - [x] **User detail** — profile, workouts, Stripe link, comp form
 - [x] **Comp upgrade / revoke** — `POST /api/admin/users/[id]/comp`
@@ -128,7 +151,6 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 
 ### Phase D — Advanced
 
-- [ ] Read-only impersonation (“view as user”) with audit
 - [ ] Broadcast email / push to segments
 - [ ] Per-user feature flags
 - [ ] Ingredient suggestion review UI (wrap `/api/internal/nutrition-ingredient-suggestions`)
@@ -152,6 +174,7 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 
 | Route | Status | Purpose |
 |-------|--------|---------|
+| `/admin/login` | ✅ | Operator sign-in (separate from `/login`) |
 | `/admin` | ✅ | Overview KPIs |
 | `/admin/users` | ✅ | Searchable user table |
 | `/admin/users/[id]` | ✅ | Detail + comp actions |
@@ -168,7 +191,8 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 2. Set `ADMIN_USER_IDS=<uuid>` in env (comma-separated for multiple)
 3. Set `SUPABASE_SERVICE_ROLE_KEY` (required for admin queries)
 4. Optional: `UPDATE profiles SET is_admin = true WHERE id = '<uuid>';`
-5. Sign in at `/login?redirect=/admin` → visit `/admin`
+5. Sign in at `/admin/login` → visit `/admin`
+6. To verify member UX: user detail → **View as user** (read-only impersonation)
 
 ---
 
@@ -178,12 +202,13 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 |------|------|
 | Migration | `supabase/migrations/20260705120000_admin_console.sql` |
 | Auth | `apps/web/src/lib/admin/auth.ts` |
+| Impersonation | `apps/web/src/lib/admin/impersonation.ts`, `apps/web/src/lib/auth/member-context.ts` |
 | Users | `apps/web/src/lib/admin/users.ts` |
 | Comp | `apps/web/src/lib/admin/comp.ts` |
 | Metrics | `apps/web/src/lib/admin/metrics.ts` |
 | Audit | `apps/web/src/lib/admin/audit.ts` |
 | Pages | `apps/web/src/app/admin/**` |
-| API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts` |
+| API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts`, `.../impersonate/route.ts`, `/api/admin/impersonate` |
 | UI | `apps/web/src/components/admin/*` |
 | Stripe guard | `apps/web/src/lib/billing/sync-subscription.ts` |
 | Comp expiry | `apps/web/src/lib/billing/subscription.ts` |
@@ -204,6 +229,7 @@ Interactive HTML prototype (design reference — not production UI):
 2. **Annual ARR** — Phase A uses MRR×12 at monthly list price; Phase B should use Stripe interval
 3. **Multi-admin invite** — env + DB flag only for now; UI in Phase D
 4. **Moderator overlap** — separate flags; same user can hold both
+5. **Dual concurrent sessions** — deferred; would need subdomain cookie partitioning (future ADR if required)
 
 ---
 

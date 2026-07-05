@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import type { ExperienceLevel } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const SNOOZE_DAYS = 14;
 
@@ -52,6 +53,9 @@ export async function acceptExperiencePromotion(input?: {
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const ctx = await loadPromotionContext(user.id);
   if ("error" in ctx) return { error: ctx.error };
@@ -112,6 +116,9 @@ export async function snoozeExperiencePromotion() {
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const snoozeUntil = new Date();
   snoozeUntil.setDate(snoozeUntil.getDate() + SNOOZE_DAYS);

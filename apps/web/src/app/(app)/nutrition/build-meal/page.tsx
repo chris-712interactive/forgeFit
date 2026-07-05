@@ -1,6 +1,6 @@
 import { BuildMealScreen } from "@/components/nutrition/build-meal-screen";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getNutritionPageData } from "@/lib/nutrition/page-data";
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function BuildMealPage({
@@ -9,16 +9,13 @@ export default async function BuildMealPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  if (!user) {
+  if (!member) {
     redirect("/nutrition");
   }
 
-  const pageData = await getNutritionPageData(user.id, params.date);
+  const pageData = await getNutritionPageData(member.effectiveUserId, params.date);
 
   if (!pageData.summary) {
     redirect("/nutrition");

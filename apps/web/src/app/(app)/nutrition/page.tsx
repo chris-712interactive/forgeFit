@@ -12,8 +12,8 @@ import { NutritionFab } from "@/components/nutrition/nutrition-fab";
 import { getNutritionAdherenceForUser } from "@/lib/analytics/service";
 import { hasFeature } from "@/lib/billing/gates";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getNutritionPageData } from "@/lib/nutrition/page-data";
-import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 
 function NutritionDiaryFallback() {
@@ -32,12 +32,10 @@ export default async function NutritionPage({
   searchParams: Promise<{ date?: string; tab?: string }>;
 }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
+  const userId = member?.effectiveUserId;
 
-  const pageData = await getNutritionPageData(user?.id, params.date);
+  const pageData = await getNutritionPageData(userId, params.date);
   const {
     summary,
     selectedDate,
@@ -53,10 +51,10 @@ export default async function NutritionPage({
     nutritionLoggedDayCount,
   } = pageData;
 
-  const subscription = user ? await getSubscriptionForUser(user.id) : null;
+  const subscription = userId ? await getSubscriptionForUser(userId) : null;
   const adherence =
-    user && subscription
-      ? await getNutritionAdherenceForUser(user.id, subscription)
+    userId && subscription
+      ? await getNutritionAdherenceForUser(userId, subscription)
       : null;
   const adherenceUnlocked =
     subscription != null && hasFeature(subscription, "nutrition_adherence");

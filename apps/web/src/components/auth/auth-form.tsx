@@ -6,9 +6,11 @@ import { createClient } from "@/lib/supabase/client";
 
 interface AuthFormProps {
   mode: "login" | "signup";
+  /** Post-sign-in destination when no `redirect` query param is present. */
+  defaultRedirect?: string;
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, defaultRedirect = "/home" }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         const redirect = new URLSearchParams(window.location.search).get(
           "redirect"
         );
-        window.location.href = redirect ?? "/home";
+        window.location.href = redirect ?? defaultRedirect;
       }
     }
 

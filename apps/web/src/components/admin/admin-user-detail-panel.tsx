@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminCompUpgradeForm } from "@/components/admin/admin-comp-upgrade-form";
+import { AdminImpersonateButton } from "@/components/admin/admin-impersonate-button";
 import type { AdminUserDetail } from "@/lib/admin/users";
 
 function DetailItem({ label, children }: { label: string; children: React.ReactNode }) {
@@ -85,7 +86,10 @@ export function AdminUserDetailPanel({ user }: AdminUserDetailPanelProps) {
         ) : null}
       </section>
 
-      <AdminCompUpgradeForm user={user} />
+      <div className="space-y-4">
+        <AdminImpersonateButton userId={user.id} email={user.email} />
+        <AdminCompUpgradeForm user={user} />
+      </div>
     </div>
   );
 }

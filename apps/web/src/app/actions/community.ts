@@ -19,6 +19,7 @@ import {
   unhideCommunityWin,
 } from "@/lib/coaching/community-moderation";
 import { recordCommunityAction } from "@/lib/coaching/community-metrics";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 async function requireCommunityMember() {
   const supabase = await createClient();

@@ -6,6 +6,7 @@ import {
 } from "@/lib/coaching/community-push";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 async function requireCommunityUser() {
   const supabase = await createClient();

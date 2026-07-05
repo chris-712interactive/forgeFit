@@ -1,15 +1,12 @@
 import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
 import { ProgressDashboard } from "@/components/progress/progress-dashboard";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getProgressDashboardData } from "@/lib/measurements/service";
-import { createClient } from "@/lib/supabase/server";
 
 export default async function ProgressPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  const data = user ? await getProgressDashboardData(user.id) : null;
+  const data = member ? await getProgressDashboardData(member.effectiveUserId) : null;
 
   return (
     <div className={appPagePadding}>

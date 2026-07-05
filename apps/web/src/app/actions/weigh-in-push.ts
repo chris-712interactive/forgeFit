@@ -3,6 +3,7 @@
 import { updateWeighInPushPreference } from "@/lib/coaching/progress-push";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 export async function saveWeighInPushPreference(
   weeklyWeighInNudge: boolean

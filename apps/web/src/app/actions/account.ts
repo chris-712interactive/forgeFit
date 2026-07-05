@@ -1,5 +1,6 @@
 "use server";
 
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -22,6 +23,9 @@ export async function deleteAccount(confirmationEmail: string) {
   if (!user?.email) {
     return { error: "Unauthorized" };
   }
+
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
 
   if (
     parsed.data.confirmationEmail.trim().toLowerCase() !==

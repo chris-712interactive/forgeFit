@@ -27,6 +27,7 @@ import {
   withingsOAuthRedirectUri,
 } from "@/lib/integrations/config";
 import { hasProAccess } from "@/lib/billing/types";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { createClient } from "@/lib/supabase/server";
 import {
   formatHeight,
@@ -55,31 +56,31 @@ export default async function ProfilePage({
   const spotifyStatus = params.spotify ?? null;
   const spotifyError = params.spotify_error ?? null;
 
+  const member = await getMemberContext();
+  const user = member?.user ?? null;
+  const userId = member?.effectiveUserId ?? null;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const { data: profile } = user
+  const { data: profile } = userId
     ? await supabase
         .from("profiles")
         .select(
           "*, workout_music_auto_start, workout_music_default_vibe"
         )
-        .eq("id", user.id)
+        .eq("id", userId)
         .single()
     : { data: null };
 
   const unit = normalizeUnitSystem(profile?.unit_system);
 
-  const [oneRepMaxes, equipmentSettings, subscription, communityPush, communityEmail, weighInPush] = user
+  const [oneRepMaxes, equipmentSettings, subscription, communityPush, communityEmail, weighInPush] = userId
     ? await Promise.all([
-        getUserOneRepMaxes(user.id),
-        getUserEquipmentSettings(user.id),
-        getSubscriptionForUser(user.id),
-        getCommunityPushSettings(user.id),
-        getCommunityEmailSettings(user.id),
-        getWeighInPushSettings(user.id),
+        getUserOneRepMaxes(userId),
+        getUserEquipmentSettings(userId),
+        getSubscriptionForUser(userId),
+        getCommunityPushSettings(userId),
+        getCommunityEmailSettings(userId),
+        getWeighInPushSettings(userId),
       ])
     : [
         { rows: [], tableReady: true },
@@ -121,8 +122,8 @@ export default async function ProfilePage({
       ];
 
   const integrationsUnlocked = hasFeature(subscription, "device_integrations");
-  if (user && integrationsUnlocked) {
-    await scheduleFitbitBackgroundSync(user.id, subscription);
+  if (userId && integrationsUnlocked && !member?.isImpersonating) {
+    await scheduleFitbitBackgroundSync(userId, subscription);
   }
 
   let initialIntegrations = buildIntegrationsHubView([]);
@@ -135,9 +136,9 @@ export default async function ProfilePage({
     lastError: null as string | null,
   };
 
-  if (user) {
+  if (userId) {
     try {
-      spotifyMusic = await getSpotifyPublicStatus(user.id, profile);
+      spotifyMusic = await getSpotifyPublicStatus(userId, profile);
     } catch {
       spotifyMusic = {
         configured: false,
@@ -149,9 +150,9 @@ export default async function ProfilePage({
     }
   }
 
-  if (user && integrationsUnlocked) {
+  if (userId && integrationsUnlocked) {
     try {
-      const statuses = await listIntegrationStatuses(user.id);
+      const statuses = await listIntegrationStatuses(userId);
       initialIntegrations = buildIntegrationsHubView(statuses);
     } catch (error) {
       integrationsLoadError =
@@ -165,11 +166,11 @@ export default async function ProfilePage({
   return (
     <div className={appPagePadding}>
       <h1 className="font-display text-2xl font-bold text-forge-text">Profile</h1>
-      <p className="mt-2 text-forge-muted">{user?.email}</p>
+      <p className="mt-2 text-forge-muted">{profile?.email ?? user?.email}</p>
 
       <div className={`${appHeaderGap} ${appSectionStack}`}>
         <ProfileSettingsHub
-          userId={user?.id ?? ""}
+          userId={userId ?? ""}
           subscription={subscription}
           stripeConfigured={isStripeProConfigured()}
           checkoutStatus={checkoutStatus}
@@ -254,21 +255,21 @@ export default async function ProfilePage({
           aria-label="Account actions"
           className="flex flex-col gap-4 border-t border-[var(--border)] pt-6 sm:gap-5 sm:pt-8"
         >
-          {user?.email && (
+          {profile?.email && !member?.isImpersonating && (
             <CollapsibleSection title="Privacy & data" hint="Export or delete">
               <p className="mb-4 text-xs text-forge-muted">
                 Download everything ForgeRep stores about you, or permanently delete
                 your account and all associated data.
               </p>
               <PrivacyDataSetting
-                email={user.email}
-                userId={user.id}
+                email={profile.email}
+                userId={userId ?? ""}
                 canExport={hasProAccess(subscription)}
               />
             </CollapsibleSection>
           )}
 
-          <SignOutButton />
+          {!member?.isImpersonating ? <SignOutButton /> : null}
 
           <LegalFooter className="pt-1 text-center text-xs sm:pt-2" />
         </section>

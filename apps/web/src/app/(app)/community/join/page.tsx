@@ -1,7 +1,7 @@
 import { CommunityJoinClient } from "@/components/community/community-join-client";
 import { appPagePadding } from "@/components/layout/page-layout";
 import { getCrewPreviewByCode } from "@/lib/coaching/community-crews";
-import { createClient } from "@/lib/supabase/server";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { redirect } from "next/navigation";
 
 interface CommunityJoinPageProps {
@@ -11,12 +11,9 @@ interface CommunityJoinPageProps {
 export default async function CommunityJoinPage({
   searchParams,
 }: CommunityJoinPageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  if (!user) {
+  if (!member) {
     redirect("/login");
   }
 
@@ -24,7 +21,7 @@ export default async function CommunityJoinPage({
   const initialCode = (params.code ?? "").trim().toUpperCase();
   const preview =
     initialCode.length >= 4
-      ? await getCrewPreviewByCode(user.id, initialCode)
+      ? await getCrewPreviewByCode(member.effectiveUserId, initialCode)
       : null;
 
   return (

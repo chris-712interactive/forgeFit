@@ -2,24 +2,22 @@ import { CommunityModerationPageClient } from "@/components/community/community-
 import { appPagePadding } from "@/components/layout/page-layout";
 import { getCommunityModerationPageData } from "@/lib/coaching/service";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
-import { createClient } from "@/lib/supabase/server";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import { redirect } from "next/navigation";
 
 export default async function CommunityModerationPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  if (!user) {
+  if (!member) {
     redirect("/login");
   }
 
-  const subscription = await getSubscriptionForUser(user.id);
-  const { records } = await getServerSessionRecords(user.id, 120);
+  const userId = member.effectiveUserId;
+  const subscription = await getSubscriptionForUser(userId);
+  const { records } = await getServerSessionRecords(userId, 120);
   const data = await getCommunityModerationPageData(
-    user.id,
+    userId,
     subscription,
     records
   );

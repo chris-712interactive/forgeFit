@@ -10,7 +10,7 @@ import { ExerciseWorkoutSwapAction } from "@/components/exercises/exercise-worko
 import { getExerciseDetailData } from "@/lib/exercises/service";
 import { formatEquipment, formatPattern } from "@/lib/exercises/labels";
 import { parseWorkoutSwapReturnTo } from "@/lib/workouts/exercise-swap-return";
-import { createClient } from "@/lib/supabase/server";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { notFound } from "next/navigation";
 
 interface ExerciseDetailPageProps {
@@ -24,12 +24,9 @@ export default async function ExerciseDetailPage({
 }: ExerciseDetailPageProps) {
   const { id } = await params;
   const { returnTo } = await searchParams;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  if (!user) {
+  if (!member) {
     return (
       <div className="px-6 py-8">
         <p className="text-forge-muted">Sign in to view exercise details.</p>
@@ -37,7 +34,7 @@ export default async function ExerciseDetailPage({
     );
   }
 
-  const data = await getExerciseDetailData(user.id, id);
+  const data = await getExerciseDetailData(member.effectiveUserId, id);
   if (!data) notFound();
 
   const { exercise, substitutions, userEquipment } = data;

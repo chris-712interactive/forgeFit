@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAdminUser } from "@/lib/admin/auth";
+import { verifyImpersonationFromRequest } from "@/lib/admin/impersonation";
 import { getPostAuthPath } from "@/lib/auth/post-auth-path";
 
 export async function updateSession(request: NextRequest) {
@@ -49,6 +51,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/login") ||
     path.startsWith("/signup") ||
     path.startsWith("/auth") ||
+    path.startsWith("/admin/login") ||
     path.startsWith("/serwist") ||
     path.startsWith("/~offline");
   const isPublicRoute =
@@ -56,6 +59,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/privacy") ||
     path.startsWith("/terms") ||
     path.startsWith("/docs");
+  const isAdminRoute = path.startsWith("/admin");
   const isAppRoute =
     path.startsWith("/home") ||
     path.startsWith("/workout") ||
@@ -84,11 +88,61 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (user && isAdminRoute) {
+    return supabaseResponse;
+  }
+
+  if (
+    user &&
+    !isPublicRoute &&
+    !isAuthRoute &&
+    request.method !== "GET" &&
+    request.method !== "HEAD" &&
+    path.startsWith("/api/") &&
+    !path.startsWith("/api/admin/")
+  ) {
+    const { data: actorProfile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (isAdminUser({ userId: user.id, profileFlag: actorProfile?.is_admin })) {
+      const impersonation = await verifyImpersonationFromRequest(request, user.id);
+      if (impersonation) {
+        return NextResponse.json(
+          {
+            error:
+              "Read-only while viewing as another member. Exit impersonation to make changes.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   if (user && !isPublicRoute && !isAuthRoute) {
+    const { data: actorProfile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const actorIsAdmin = isAdminUser({
+      userId: user.id,
+      profileFlag: actorProfile?.is_admin,
+    });
+
+    const impersonation = actorIsAdmin
+      ? await verifyImpersonationFromRequest(request, user.id)
+      : null;
+
+    const onboardingUserId = impersonation?.targetUserId ?? user.id;
+
     const { data: profile } = await supabase
       .from("profiles")
       .select("onboarding_complete, health_disclaimer_accepted_at")
-      .eq("id", user.id)
+      .eq("id", onboardingUserId)
       .single();
 
     const onboardingComplete = profile?.onboarding_complete ?? false;

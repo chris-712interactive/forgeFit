@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { normalizeUnitSystem, type UnitSystem } from "@/lib/units/measurements";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const unitSchema = z.enum(["metric", "imperial"]);
 
@@ -16,6 +17,9 @@ export async function updateUnitSystem(unit: UnitSystem) {
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const parsed = unitSchema.safeParse(unit);
   if (!parsed.success) {

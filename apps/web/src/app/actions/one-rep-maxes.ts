@@ -7,6 +7,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const liftIdSchema = z.enum(
   ONE_REP_MAX_LIFTS.map((lift) => lift.exerciseId) as [
@@ -37,6 +38,9 @@ export async function saveUserOneRepMax(
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const { error } = await supabase.from("user_one_rep_maxes").upsert(
     {
@@ -76,6 +80,9 @@ export async function clearUserOneRepMax(exerciseId: OneRepMaxLiftId) {
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const { error } = await supabase
     .from("user_one_rep_maxes")

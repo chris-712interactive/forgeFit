@@ -6,8 +6,8 @@ import {
   appPagePadding,
   appSectionStack,
 } from "@/components/layout/page-layout";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getExerciseLibraryData } from "@/lib/exercises/service";
-import { createClient } from "@/lib/supabase/server";
 
 interface ExercisesPageProps {
   searchParams: Promise<{
@@ -20,13 +20,10 @@ interface ExercisesPageProps {
 
 export default async function ExercisesPage({ searchParams }: ExercisesPageProps) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
-  const data = user
-    ? await getExerciseLibraryData(user.id, params)
+  const data = member
+    ? await getExerciseLibraryData(member.effectiveUserId, params)
     : { total: 0, results: [], userEquipment: [] };
 
   return (
@@ -38,7 +35,7 @@ export default async function ExercisesPage({ searchParams }: ExercisesPageProps
         Browse demos, muscle maps, and equipment swaps for your program.
       </p>
 
-      {user ? (
+      {member ? (
         <div className={`${appHeaderGap} ${appSectionStack}`}>
           <Suspense fallback={<p className="text-sm text-forge-muted">Loading search…</p>}>
             <ExerciseSearch total={data.total} />

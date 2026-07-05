@@ -10,6 +10,7 @@ import type {
 } from "@/lib/coaching/community-reactions";
 import { recordCommunityWin as persistCommunityWin } from "@/lib/coaching/service";
 import { createClient } from "@/lib/supabase/server";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 export async function setGamificationOptIn(optIn: boolean): Promise<{
   ok: boolean;

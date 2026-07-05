@@ -54,17 +54,21 @@ supabase/         → PostgreSQL migrations + RLS
 
 Internal operator UI at `/admin` (desktop-first, separate from member PWA shell).
 
+**Operator login:** `/admin/login` (not member `/login`). **View as user:** read-only impersonation from user detail — admin session stays active.
+
 **Full plan:** [ADRs/002-forgerep-admin-console.md](./ADRs/002-forgerep-admin-console.md) · **Acceptance criteria:** [phases/admin-console.md](./phases/admin-console.md) · **UI mockup:** `apps/web/content/admin/console-mockup.html`
 
 | Piece | Location |
 |-------|----------|
 | Access control | `lib/admin/auth.ts` — `ADMIN_USER_IDS` + `profiles.is_admin` |
+| Operator login | `app/admin/login` — separate from `app/login` |
+| Impersonation | `lib/admin/impersonation.ts`, `lib/auth/member-context.ts` |
 | Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
-| API | `POST /api/admin/users/[id]/comp` |
+| API | `POST /api/admin/users/[id]/comp`, `POST .../impersonate`, `DELETE /api/admin/impersonate` |
 | Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |
 
-Requires `SUPABASE_SERVICE_ROLE_KEY`. Non-admins receive **404** (not 403).
+Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSONATION_SECRET` or `CRON_SECRET`. Non-admins receive **404** (not 403).
 
 **Planned (Phases B–D):** `/admin/revenue` (Stripe MRR/ARR, discounts), `/admin/growth` (funnels, cohorts), `/admin/community` (ops metrics), impersonation, broadcasts, refunds.
 

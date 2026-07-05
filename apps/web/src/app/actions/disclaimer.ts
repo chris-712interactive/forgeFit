@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const disclaimerSchema = z.object({
   health_disclaimer_accepted: z.literal(true),

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const clientIdSchema = z.string().uuid();
 
@@ -20,6 +21,9 @@ export async function cancelWorkoutSessionOnServer(clientId: string) {
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const { data: existing, error: lookupError } = await supabase
     .from("workout_sessions")

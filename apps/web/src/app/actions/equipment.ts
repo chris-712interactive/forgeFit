@@ -13,6 +13,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
 
 const equipmentSchema = z.object({
   equipment: z.array(z.string()).min(1),
@@ -74,6 +75,9 @@ export async function saveUserEquipment(
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -127,6 +131,9 @@ export async function enterTravelMode(
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const result = await enterTravelModeService(user.id);
   if (result.error) {
@@ -159,6 +166,9 @@ export async function exitTravelMode(
   if (!user) {
     return { error: "Unauthorized" };
   }
+  const impersonationBlock = await getImpersonationMutationBlock();
+  if (impersonationBlock) return impersonationBlock;
+
 
   const result = await exitTravelModeService(user.id);
   if (result.error) {

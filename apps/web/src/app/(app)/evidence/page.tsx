@@ -1,8 +1,8 @@
 import { EvidenceBrowser } from "@/components/evidence/evidence-browser";
 import { appHeaderGap, appPagePadding } from "@/components/layout/page-layout";
 import { getRules } from "@forgefit/evidence-kb";
+import { getMemberContext } from "@/lib/auth/member-context";
 import { getEvidencePageData } from "@/lib/evidence/service";
-import { createClient } from "@/lib/supabase/server";
 
 interface EvidencePageProps {
   searchParams: Promise<{
@@ -12,10 +12,7 @@ interface EvidencePageProps {
 }
 
 export default async function EvidencePage({ searchParams }: EvidencePageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const member = await getMemberContext();
 
   const params = await searchParams;
   const focusRuleId = params.focus;
@@ -23,8 +20,8 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
     ? params.related.split(",").filter(Boolean)
     : [];
 
-  const data = user
-    ? await getEvidencePageData(user.id)
+  const data = member
+    ? await getEvidencePageData(member.effectiveUserId)
     : {
         knowledgeBaseVersion: "0.2.0",
         hasProgram: false,
@@ -78,7 +75,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
           focusRuleId={focusRuleId}
           relatedRuleIds={relatedRuleIds}
         />
-        {!user && (
+        {!member && (
           <p className="text-sm text-forge-muted">
             Sign in to highlight which rules are active in your personalized plan.
           </p>

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-05 |
-| **Last session focus** | Admin console plan documentation |
+| **Last session focus** | Admin login separation + read-only impersonation |
 
 ---
 
@@ -35,6 +35,31 @@
 ---
 
 ## Session Log
+
+### 2026-07-05 — Admin login separation + impersonation
+
+**What was done**
+
+- **`/admin/login`** — operator sign-in separate from member `/login`; `requireAdminUser()` redirects here
+- **Route groups** — `admin/(authenticated)/` for guarded console pages; `/admin/login` unguarded
+- **Read-only impersonation** — “View as user” on user detail; HMAC cookie; audit `impersonation_start` / `impersonation_end`
+- **`getMemberContext()`** — member pages use `effectiveUserId` when impersonating; mutations blocked (middleware + server actions)
+- **Middleware** — `/admin/*` skips onboarding/disclaimer; impersonation uses target user's onboarding state
+- **Docs** — ADR 002, phase doc, ARCHITECTURE updated; dual-session deferred to future ADR
+
+**What's next**
+
+- Phase B: `/admin/revenue`, Stripe discount UI, MRR charts, CSV export
+- Phase C: `/admin/growth`, funnels, `/admin/community`
+
+**Files touched**
+
+- `apps/web/src/app/admin/**`, `apps/web/src/lib/admin/**`, `apps/web/src/lib/auth/member-context.ts`
+- `apps/web/src/lib/supabase/middleware.ts`, `apps/web/src/app/(app)/**`, `apps/web/src/app/actions/**`
+- `apps/web/src/app/api/admin/**`, `apps/web/src/components/admin/**`, `apps/web/src/components/auth/**`
+- `docs/ADRs/002-forgerep-admin-console.md`, `docs/phases/admin-console.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`, `.env.example`
+
+---
 
 ### 2026-07-05 — Admin console implementation plan saved
 
@@ -70,7 +95,8 @@
 - **Overview KPIs** — total users, paid count, estimated MRR/ARR, comp seats
 - **Audit log** — `admin_audit_log` table + immutable action history
 - **Stripe sync guard** — active comps not overwritten by webhooks
-- **Login** — `/login?redirect=/admin` for operator sign-in
+- **Login** — `/admin/login` for operators; `/login` for members
+- **Impersonation** — read-only view-as-user from user detail
 
 **What's next**
 
