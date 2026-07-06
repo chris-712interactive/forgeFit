@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin console Phase D complete |
+| **Last session focus** | Admin community moderation moved into console |
 
 ---
 
@@ -35,6 +35,33 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Community moderation in admin console
+
+**What was done**
+
+- **`/admin/community`** — embedded moderation queue (all buckets): flagged scores, this week's wins (incl. hidden), hide/unhide, clear flags, suspend users
+- **`POST /api/admin/community/moderation`** — admin-only mutations with `admin_audit_log` + `community_moderation_log`
+- **`lib/admin/community-moderation.ts`** — service-role data loader + mutation helpers
+- **Retired member route** — `/community/moderation` redirects to `/community`; removed Profile → "Open moderator tools" link
+
+**What's next**
+
+- Optional: deprecate `is_community_moderator` / `COMMUNITY_MODERATOR_USER_IDS` if all ops are admin-only
+- Wire `userHasAdminFeatureFlag()` into product gates as needed
+
+**Files touched**
+
+- `apps/web/src/lib/admin/community-moderation.ts`
+- `apps/web/src/app/api/admin/community/moderation/route.ts`
+- `apps/web/src/components/admin/admin-community-moderation-panel.tsx`
+- `apps/web/src/app/admin/(authenticated)/community/page.tsx`
+- `apps/web/src/app/(app)/community/moderation/page.tsx`
+- `apps/web/src/components/profile/gamification-setting.tsx`, `profile-settings-hub.tsx`
+- `apps/web/src/app/(app)/profile/page.tsx`
+- `docs/PROGRESS.md`, `docs/phases/admin-console.md`, `docs/ADRs/002-forgerep-admin-console.md`, `docs/DESIGN.md`
+
+---
 
 ### 2026-07-06 — Admin console Phase D (advanced ops)
 
@@ -68,7 +95,7 @@
 **What was done**
 
 - **`/admin/growth`** — signups (7d/30d), activation funnel, signup sources, free→paid %, D7/D30 workout retention cohorts
-- **`/admin/community`** — WACP, opt-in, action mix via `getCommunityMetrics()` + link to `/community/moderation`
+- **`/admin/community`** — WACP, opt-in, action mix via `getCommunityMetrics()`; moderation now embedded in admin console (no member `/community/moderation` link)
 - **Nav** — Growth and Community in admin sidebar
 
 **What's next**

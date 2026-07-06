@@ -58,7 +58,6 @@ interface ProfileSettingsHubProps {
   integrationError: string | null;
   gamificationUnlocked: boolean;
   gamificationOptIn: boolean;
-  isCommunityModerator?: boolean;
   communityOptInVariant?: import("@/lib/coaching/types").CommunityOptInVariant;
   communityPush: CommunityPushSettings;
   communityEmail: CommunityEmailSettings;
@@ -103,7 +102,6 @@ export function ProfileSettingsHub({
   integrationError,
   gamificationUnlocked,
   gamificationOptIn,
-  isCommunityModerator = false,
   communityOptInVariant = "control",
   communityPush,
   communityEmail,
@@ -225,7 +223,6 @@ export function ProfileSettingsHub({
             unlocked={gamificationUnlocked}
             optedIn={gamificationOptIn}
             optInVariant={communityOptInVariant}
-            isCommunityModerator={isCommunityModerator}
           />
           <CommunityPushSetting
             enabled={gamificationUnlocked && gamificationOptIn}

@@ -24,7 +24,7 @@ ForgeRep needs a secure internal console for founders/operators to:
 |------------|----------------|-----|
 | Auth | Supabase email/OAuth | No admin role |
 | Billing | Stripe checkout, webhooks, plan changes | No comp / manual tier override |
-| Moderation | `/community/moderation`, `is_community_moderator` | Community-only, mobile layout |
+| Moderation | `/admin/community` (admin-only), legacy `is_community_moderator` | Moved from member PWA; cross-bucket queue via service role |
 | Internal APIs | `CRON_SECRET` + `/api/internal/*` | No UI, no human RBAC |
 | Profiles | `subscription_tier`, Stripe IDs, `signup_source` | No audit log for admin actions |
 
@@ -148,8 +148,7 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 - [x] Funnel visualization (signup → onboard → first workout → nutrition → paid)
 - [x] Cohort retention table (D7/D30 workout logged)
 - [x] Signup source + paid % breakdown
-- [x] `/admin/community` — embed `CommunityOpsMetricsPanel`
-- [x] Link to `/community/moderation` for dual-role admins
+- [x] `/admin/community` — WACP metrics, `CommunityOpsMetricsPanel`, embedded moderation queue (all buckets)
 
 ### Phase D — Advanced ✅ Shipped 2026-07-06
 
@@ -185,7 +184,8 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 | `/admin/audit` | ✅ | Admin action log |
 | `/admin/revenue` | ✅ | MRR, ARR, churn, tier mix, net revenue |
 | `/admin/growth` | ✅ | Funnels, activation, sources |
-| `/admin/community` | ✅ | Community ops metrics |
+| `/admin/community` | ✅ | Community ops metrics + moderation queue |
+| `/api/admin/community/moderation` | ✅ | Hide/unhide wins, clear flags, suspend users |
 
 ---
 

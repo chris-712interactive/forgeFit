@@ -97,8 +97,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 - [x] Signup source breakdown (`profiles.signup_source`)
 - [x] Free → Pro conversion rate
 - [x] D7 / D30 workout retention cohort table
-- [x] `/admin/community` — community opt-in, WACP (`getCommunityMetrics()`)
-- [x] Link to `/community/moderation` for dual-role admins
+- [x] `/admin/community` — community opt-in, WACP (`getCommunityMetrics()`), **embedded moderation** (flagged scores, wins, suspend/hide — all buckets, admin-only)
 
 ---
 
@@ -124,7 +123,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 - Impersonation cookie is httpOnly, HMAC-signed, scoped to admin session user id
 - Member mutations blocked during impersonation (server actions + non-admin API POST)
 - Audit log fields: `admin_user_id`, `action`, `target_user_id`, `payload`, `created_at`
-- Community moderators (`is_community_moderator`) are **not** admins — billing changes never available to moderators
+- Community moderation runs in admin console only (`/admin/community`); legacy `is_community_moderator` flag is unused for UI — billing changes never available to community moderators
 
 ---
 
@@ -139,6 +138,8 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | `/admin/audit` | A ✅ | Admin action log |
 | `/admin/revenue` | B ✅ | MRR, ARR, churn, tier mix, net revenue chart |
 | `/admin/growth` | C ✅ | Funnels, activation, sources |
+| `/admin/community` | C ✅ | WACP metrics + moderation queue |
+| `/api/admin/community/moderation` | C ✅ | Hide/unhide wins, clear flags, suspend |
 | `/admin/broadcast` | D ✅ | Email/push segments |
 | `/admin/ingredients` | D ✅ | Ingredient suggestion review |
 | `/admin/admins` | D ✅ | Grant/revoke `is_admin` |
