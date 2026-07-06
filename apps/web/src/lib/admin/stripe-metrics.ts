@@ -18,6 +18,8 @@ const CACHE_TTL_MS = 15 * 60 * 1000;
 export interface StripeRevenueSnapshot {
   mrrUsd: number;
   arrUsd: number;
+  proMrrUsd: number;
+  proPlusMrrUsd: number;
   paidSubscribers: number;
   trialingCount: number;
   pastDueCount: number;
@@ -43,6 +45,8 @@ let revenueCache: CacheEntry | null = null;
 const EMPTY_SNAPSHOT: Omit<StripeRevenueSnapshot, "fetchedAt"> = {
   mrrUsd: 0,
   arrUsd: 0,
+  proMrrUsd: 0,
+  proPlusMrrUsd: 0,
   paidSubscribers: 0,
   trialingCount: 0,
   pastDueCount: 0,
@@ -159,6 +163,8 @@ function aggregateStripeSubscriptions(
   compExclusions: CompStripeExclusions
 ): Omit<StripeRevenueSnapshot, "fetchedAt" | "error"> {
   let mrrUsd = 0;
+  let proMrrUsd = 0;
+  let proPlusMrrUsd = 0;
   let paidSubscribers = 0;
   let trialingCount = 0;
   let pastDueCount = 0;
@@ -205,15 +211,18 @@ function aggregateStripeSubscriptions(
       continue;
     }
 
+    const subMrr = subscriptionMrrUsd(subscription);
     paidSubscribers += 1;
-    mrrUsd += subscriptionMrrUsd(subscription);
+    mrrUsd += subMrr;
 
     if (tier === "pro") {
       proCount += 1;
+      proMrrUsd += subMrr;
       if (mapped?.interval === "monthly") proMonthlyCount += 1;
       else if (mapped?.interval === "annual") proAnnualCount += 1;
     } else if (tier === "pro_plus") {
       proPlusCount += 1;
+      proPlusMrrUsd += subMrr;
       if (mapped?.interval === "monthly") proPlusMonthlyCount += 1;
       else if (mapped?.interval === "annual") proPlusAnnualCount += 1;
     }
@@ -224,6 +233,8 @@ function aggregateStripeSubscriptions(
   return {
     mrrUsd: roundedMrr,
     arrUsd: Math.round(roundedMrr * 12 * 100) / 100,
+    proMrrUsd: Math.round(proMrrUsd * 100) / 100,
+    proPlusMrrUsd: Math.round(proPlusMrrUsd * 100) / 100,
     paidSubscribers,
     trialingCount,
     pastDueCount,

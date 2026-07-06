@@ -1,6 +1,6 @@
 # Admin Console — Operator Tools
 
-**Status:** Phase A shipped (2026-07-05) · Phases B–D planned  
+**Status:** Phase A shipped (2026-07-05) · Phase B in progress · Phases C–D planned  
 **ADR:** [002-forgerep-admin-console.md](../ADRs/002-forgerep-admin-console.md)  
 **Mockup:** `apps/web/content/admin/console-mockup.html`  
 **Depends on:** Phase 7 billing (Stripe), Supabase Auth, community metrics (Phase 6+)
@@ -58,7 +58,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | Impersonation | `apps/web/src/lib/admin/impersonation.ts`, `apps/web/src/lib/auth/member-context.ts` |
 | Users | `apps/web/src/lib/admin/users.ts` |
 | Comp | `apps/web/src/lib/admin/comp.ts` |
-| Metrics | `apps/web/src/lib/admin/metrics.ts`, `apps/web/src/lib/admin/stripe-metrics.ts` |
+| Metrics | `apps/web/src/lib/admin/metrics.ts`, `stripe-metrics.ts`, `revenue-metrics.ts` |
 | Audit | `apps/web/src/lib/admin/audit.ts` |
 | Pages | `apps/web/src/app/admin/(authenticated)/**`, `apps/web/src/app/admin/login/**` |
 | API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts`, `.../impersonate/route.ts`, `/api/admin/impersonate` |
@@ -68,20 +68,22 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 
 ---
 
-## Phase B — Revenue & discounts
+## Phase B — Revenue & discounts (in progress)
 
 ### Done when
 
-- [ ] `/admin/revenue` page with MRR, ARR (MRR × 12), paid subs by tier/interval
+- [x] `/admin/revenue` page with MRR, ARR (MRR × 12), paid subs by tier/interval
 - [x] Accurate MRR from Stripe (monthly vs annual interval, not list-price estimate) — overview KPIs
-- [ ] New paid subs (7d / 30d), churned/canceled counts, past-due alerts
-- [ ] Net revenue from Stripe balance transactions (15 min cache)
-- [ ] Comp accounts count + ARR equivalent
-- [ ] ARR/MRR trend charts (Recharts, 90-day)
+- [x] New paid subs (7d / 30d), churned/canceled counts, past-due alerts
+- [x] Net revenue from Stripe balance transactions (15 min cache)
+- [x] Comp accounts count + ARR equivalent
+- [x] Net revenue trend chart (Recharts, 90-day weekly)
+- [x] Export CSV (subscriptions — paid Stripe + comp)
+- [x] Rate-limit `/api/admin/*` routes
+- [ ] ARR/MRR trend charts (historical MRR — needs snapshot storage or Stripe Sigma)
 - [ ] Stripe discount / coupon attach UI on user detail
 - [ ] Extend trial via Stripe `trial_end` update
-- [ ] Export CSV (users, subscriptions)
-- [ ] Rate-limit `/api/admin/*` routes
+- [ ] Export CSV (users)
 
 ---
 
@@ -135,6 +137,6 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | `/admin/users` | A ✅ | Searchable user table |
 | `/admin/users/[id]` | A ✅ | Detail + comp + view-as-user |
 | `/admin/audit` | A ✅ | Admin action log |
-| `/admin/revenue` | B | MRR, ARR, churn, tier mix |
+| `/admin/revenue` | B ✅ | MRR, ARR, churn, tier mix, net revenue chart |
 | `/admin/growth` | C | Funnels, activation, sources |
 | `/admin/community` | C | Community ops metrics |

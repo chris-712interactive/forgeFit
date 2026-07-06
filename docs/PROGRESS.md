@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Stripe-only admin revenue metrics (no profile fallback) |
+| **Last session focus** | Admin console Phase B — `/admin/revenue` dashboard |
 
 ---
 
@@ -35,6 +35,35 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Admin console Phase B (revenue dashboard)
+
+**What was done**
+
+- **`/admin/revenue`** — MRR/ARR, churn (30d), comp ARR equivalent, new paid (7d/30d), net revenue (30d)
+- **Tier mix table** — Stripe paid by interval + comp seats + MRR contribution per tier
+- **Net revenue chart** — weekly Stripe balance transactions (90d, Recharts)
+- **Billing events** — recent comp grant/revoke from audit log
+- **CSV export** — `GET /api/admin/export/subscriptions` (paid Stripe + comp rows)
+- **Rate limits** — in-memory limiter on all `/api/admin/*` routes
+- **Comp MRR fix** — pushed comp Stripe sub exclusion (prior commit)
+
+**What's next**
+
+- Phase B remainder: discount/coupon attach on user detail, extend trial, users CSV export
+- Phase C: `/admin/growth`, `/admin/community`
+- Align Vercel Stripe price ID env vars with live Stripe prices
+
+**Files touched**
+
+- `apps/web/src/lib/admin/revenue-metrics.ts`, `list-prices.ts`, `export-subscriptions.ts`, `rate-limit.ts`
+- `apps/web/src/lib/admin/stripe-metrics.ts`, `comp.ts`
+- `apps/web/src/app/admin/(authenticated)/revenue/page.tsx`
+- `apps/web/src/components/admin/admin-revenue-*.tsx`, `admin-shell.tsx`
+- `apps/web/src/app/api/admin/export/subscriptions/route.ts`
+- `docs/PROGRESS.md`, `docs/phases/admin-console.md`, `docs/ADRs/002-forgerep-admin-console.md`, `docs/ARCHITECTURE.md`
+
+---
 
 ### 2026-07-06 — Exclude comp Stripe subs from admin MRR
 

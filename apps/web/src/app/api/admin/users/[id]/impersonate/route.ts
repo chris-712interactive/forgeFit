@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { writeAdminAuditLog } from "@/lib/admin/audit";
 import { getAdminApiActor } from "@/lib/admin/auth";
+import {
+  adminRateLimitResponse,
+  checkAdminRateLimit,
+} from "@/lib/admin/rate-limit";
 import { setImpersonationCookie } from "@/lib/admin/impersonation";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -12,6 +16,10 @@ export async function POST(_request: Request, context: RouteContext) {
   const actor = await getAdminApiActor();
   if (!actor) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (!checkAdminRateLimit(actor.userId)) {
+    return adminRateLimitResponse();
   }
 
   const { id: targetUserId } = await context.params;

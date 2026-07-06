@@ -1,7 +1,7 @@
 # ADR 002 — ForgeRep Admin Console
 
-**Status:** Phase A shipped · Phases B–D planned  
-**Last updated:** 2026-07-05  
+**Status:** Phase A shipped · Phase B in progress · Phases C–D planned  
+**Last updated:** 2026-07-06  
 **Depends on:** Phase 7 billing (Stripe), community moderation (Phase 6), Supabase Auth  
 **Phase doc:** [admin-console.md](../phases/admin-console.md) (acceptance criteria + file map)
 
@@ -131,14 +131,17 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 - [x] **Overview** — MRR/ARR estimate, paid count, comp seats
 - [x] **Audit log** — `/admin/audit`
 
-### Phase B — Revenue & discounts
+### Phase B — Revenue & discounts (in progress)
 
-- [ ] `/admin/revenue` page
+- [x] `/admin/revenue` page — MRR, ARR, churn, tier mix, comp ARR equiv., net revenue chart
+- [x] New paid (7d/30d), churn (30d), past-due/trialing KPIs
+- [x] Net revenue from Stripe balance transactions (15 min cache)
+- [x] Subscription CSV export (`GET /api/admin/export/subscriptions`)
+- [x] Rate-limit admin API routes
 - [ ] Stripe-backed discount / coupon attach UI on user detail
-- [ ] ARR/MRR charts (Recharts, 90-day trend)
-- [ ] Churn + new MRR widgets; past-due alerts
-- [ ] Export CSV (users, subscriptions)
-- [ ] Accurate MRR (monthly vs annual interval from Stripe)
+- [ ] Extend trial via Stripe `trial_end`
+- [ ] Historical MRR trend (needs daily snapshot table or Stripe Sigma)
+- [ ] Users CSV export
 
 ### Phase C — Growth ops
 
@@ -179,7 +182,7 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 | `/admin/users` | ✅ | Searchable user table |
 | `/admin/users/[id]` | ✅ | Detail + comp actions |
 | `/admin/audit` | ✅ | Admin action log |
-| `/admin/revenue` | Planned B | MRR, ARR, churn, tier mix |
+| `/admin/revenue` | ✅ | MRR, ARR, churn, tier mix, net revenue |
 | `/admin/growth` | Planned C | Funnels, activation, sources |
 | `/admin/community` | Planned C | Community ops metrics |
 
@@ -205,7 +208,8 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 | Impersonation | `apps/web/src/lib/admin/impersonation.ts`, `apps/web/src/lib/auth/member-context.ts` |
 | Users | `apps/web/src/lib/admin/users.ts` |
 | Comp | `apps/web/src/lib/admin/comp.ts` |
-| Metrics | `apps/web/src/lib/admin/metrics.ts`, `apps/web/src/lib/admin/stripe-metrics.ts` |
+| Metrics | `apps/web/src/lib/admin/metrics.ts`, `stripe-metrics.ts`, `revenue-metrics.ts` |
+| Export | `apps/web/src/lib/admin/export-subscriptions.ts`, `GET /api/admin/export/subscriptions` |
 | Audit | `apps/web/src/lib/admin/audit.ts` |
 | Pages | `apps/web/src/app/admin/**` |
 | API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts`, `.../impersonate/route.ts`, `/api/admin/impersonate` |

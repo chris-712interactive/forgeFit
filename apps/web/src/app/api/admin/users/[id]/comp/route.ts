@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getAdminApiActor } from "@/lib/admin/auth";
 import { grantCompUpgrade, revokeCompAccess } from "@/lib/admin/comp";
+import {
+  adminRateLimitResponse,
+  checkAdminRateLimit,
+} from "@/lib/admin/rate-limit";
 import type { PaidTier } from "@/lib/billing/types";
 
 interface CompRequestBody {
@@ -17,6 +21,10 @@ export async function POST(
   const actor = await getAdminApiActor();
   if (!actor) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (!checkAdminRateLimit(actor.userId)) {
+    return adminRateLimitResponse();
   }
 
   const { id: targetUserId } = await context.params;

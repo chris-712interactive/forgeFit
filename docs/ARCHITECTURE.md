@@ -50,7 +50,7 @@ supabase/         → PostgreSQL migrations + RLS
 4. `completeOnboarding` server action saves profile + equipment + generates program
 5. User lands on `/home` with week schedule and macro targets
 
-## Admin Console (Phase A — 2026-07-05)
+## Admin Console (Phase A — 2026-07-05 · Phase B revenue — 2026-07-06)
 
 Internal operator UI at `/admin` (desktop-first, separate from member PWA shell).
 
@@ -64,14 +64,16 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Operator login | `app/admin/login` — separate from `app/login` |
 | Impersonation | `lib/admin/impersonation.ts`, `lib/auth/member-context.ts` |
 | Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
-| Revenue KPIs | `lib/admin/stripe-metrics.ts` — MRR/ARR + paid counts from Stripe (15 min cache) |
+| Overview KPIs | `lib/admin/metrics.ts`, `stripe-metrics.ts` — MRR/ARR from Stripe (15 min cache) |
+| Revenue dashboard | `app/admin/(authenticated)/revenue`, `lib/admin/revenue-metrics.ts` |
+| CSV export | `GET /api/admin/export/subscriptions` |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
 | API | `POST /api/admin/users/[id]/comp`, `POST .../impersonate`, `DELETE /api/admin/impersonate` |
 | Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |
 
 Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSONATION_SECRET` or `CRON_SECRET`. Non-admins receive **404** (not 403).
 
-**Planned (Phases B–D):** `/admin/revenue` (Stripe MRR/ARR, discounts), `/admin/growth` (funnels, cohorts), `/admin/community` (ops metrics), impersonation, broadcasts, refunds.
+**Planned (Phases B–D remainder):** discount attach, trial extend, `/admin/growth` (funnels, cohorts), `/admin/community` (ops metrics), broadcasts, refunds.
 
 ## Program Generation (Phase 2)
 

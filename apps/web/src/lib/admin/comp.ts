@@ -4,6 +4,7 @@ import { syncSubscriptionToProfile } from "@/lib/billing/sync-subscription";
 import type { PaidTier } from "@/lib/billing/types";
 import { writeAdminAuditLog } from "./audit";
 import { clearStripeRevenueCache } from "./stripe-metrics";
+import { clearAdminRevenueCache } from "./revenue-metrics";
 
 const MIN_COMP_REASON_LENGTH = 10;
 
@@ -85,6 +86,7 @@ export async function grantCompUpgrade(
   });
 
   clearStripeRevenueCache();
+  clearAdminRevenueCache();
 
   return { ok: true };
 }
@@ -153,6 +155,7 @@ export async function revokeCompAccess(
   });
 
   clearStripeRevenueCache();
+  clearAdminRevenueCache();
 
   return { ok: true };
 }
