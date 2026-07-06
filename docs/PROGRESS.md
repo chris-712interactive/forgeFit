@@ -36,6 +36,22 @@
 
 ## Session Log
 
+### 2026-07-06 — Exclude comp Stripe subs from admin MRR
+
+**What was done**
+
+- **Comp exclusion** — Stripe subscriptions linked to `billing_source = 'comp'` users excluded from MRR/paid counts
+- **Recognized prices only** — subscriptions with unrecognized price IDs excluded from revenue (warned in UI)
+- **Cache bust** — `clearStripeRevenueCache()` on comp grant/revoke
+
+**Files touched**
+
+- `apps/web/src/lib/admin/comp-exclusions.ts`, `apps/web/src/lib/admin/stripe-metrics.ts`
+- `apps/web/src/lib/admin/metrics.ts`, `apps/web/src/lib/admin/comp.ts`
+- `apps/web/src/components/admin/admin-overview-cards.tsx`, `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-06 — Stripe-only admin revenue metrics
 
 **What was done**

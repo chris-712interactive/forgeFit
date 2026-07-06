@@ -20,6 +20,7 @@ export interface AdminOverviewMetrics {
   trialingCount: number;
   pastDueCount: number;
   unknownPriceCount: number;
+  excludedCompSubscriptions: number;
   mrrUsd: number;
   arrUsd: number;
   revenueSource: "stripe" | "unavailable";
@@ -109,6 +110,7 @@ const ZERO_REVENUE = {
   trialingCount: 0,
   pastDueCount: 0,
   unknownPriceCount: 0,
+  excludedCompSubscriptions: 0,
   mrrUsd: 0,
   arrUsd: 0,
 } as const;
@@ -141,6 +143,7 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
       trialingCount: stripeSnapshot.trialingCount,
       pastDueCount: stripeSnapshot.pastDueCount,
       unknownPriceCount: stripeSnapshot.unknownPriceCount,
+      excludedCompSubscriptions: stripeSnapshot.excludedCompSubscriptions,
       mrrUsd: stripeSnapshot.mrrUsd,
       arrUsd: stripeSnapshot.arrUsd,
       revenueSource: "stripe",

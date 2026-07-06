@@ -1,5 +1,10 @@
 import type Stripe from "stripe";
 import {
+  getCompStripeExclusions,
+  isCompStripeSubscription,
+  type CompStripeExclusions,
+} from "@/lib/admin/comp-exclusions";
+import {
   getAllStripePriceIds,
   getStripe,
   hasStripeSecretKey,
@@ -23,6 +28,7 @@ export interface StripeRevenueSnapshot {
   proPlusMonthlyCount: number;
   proPlusAnnualCount: number;
   unknownPriceCount: number;
+  excludedCompSubscriptions: number;
   fetchedAt: string;
   error?: string;
 }
@@ -47,6 +53,7 @@ const EMPTY_SNAPSHOT: Omit<StripeRevenueSnapshot, "fetchedAt"> = {
   proPlusMonthlyCount: 0,
   proPlusAnnualCount: 0,
   unknownPriceCount: 0,
+  excludedCompSubscriptions: 0,
 };
 
 function tierIntervalFromPriceId(
@@ -148,7 +155,8 @@ async function fetchSubscriptionsByStatus(
 }
 
 function aggregateStripeSubscriptions(
-  subscriptions: Stripe.Subscription[]
+  subscriptions: Stripe.Subscription[],
+  compExclusions: CompStripeExclusions
 ): Omit<StripeRevenueSnapshot, "fetchedAt" | "error"> {
   let mrrUsd = 0;
   let paidSubscribers = 0;
@@ -161,8 +169,14 @@ function aggregateStripeSubscriptions(
   let proPlusMonthlyCount = 0;
   let proPlusAnnualCount = 0;
   let unknownPriceCount = 0;
+  let excludedCompSubscriptions = 0;
 
   for (const subscription of subscriptions) {
+    if (isCompStripeSubscription(subscription, compExclusions)) {
+      excludedCompSubscriptions += 1;
+      continue;
+    }
+
     if (subscription.status === "past_due") {
       pastDueCount += 1;
     }
@@ -180,12 +194,19 @@ function aggregateStripeSubscriptions(
       continue;
     }
 
-    paidSubscribers += 1;
-    mrrUsd += subscriptionMrrUsd(subscription);
-
     const priceId = readSubscriptionItemPriceId(subscription);
     const mapped = priceId ? tierIntervalFromPriceId(priceId) : null;
     const tier = mapped?.tier ?? tierFromStripePriceId(priceId);
+
+    if (!tier) {
+      if (priceId) {
+        unknownPriceCount += 1;
+      }
+      continue;
+    }
+
+    paidSubscribers += 1;
+    mrrUsd += subscriptionMrrUsd(subscription);
 
     if (tier === "pro") {
       proCount += 1;
@@ -195,8 +216,6 @@ function aggregateStripeSubscriptions(
       proPlusCount += 1;
       if (mapped?.interval === "monthly") proPlusMonthlyCount += 1;
       else if (mapped?.interval === "annual") proPlusAnnualCount += 1;
-    } else if (priceId) {
-      unknownPriceCount += 1;
     }
   }
 
@@ -215,6 +234,7 @@ function aggregateStripeSubscriptions(
     proPlusMonthlyCount,
     proPlusAnnualCount,
     unknownPriceCount,
+    excludedCompSubscriptions,
   };
 }
 
@@ -234,10 +254,11 @@ export async function getStripeRevenueSnapshot(): Promise<StripeRevenueSnapshot 
 
   try {
     const stripe = getStripe();
-    const [active, trialing, pastDue] = await Promise.all([
+    const [active, trialing, pastDue, compExclusions] = await Promise.all([
       fetchSubscriptionsByStatus(stripe, "active"),
       fetchSubscriptionsByStatus(stripe, "trialing"),
       fetchSubscriptionsByStatus(stripe, "past_due"),
+      getCompStripeExclusions(),
     ]);
 
     const seen = new Set<string>();
@@ -249,7 +270,7 @@ export async function getStripeRevenueSnapshot(): Promise<StripeRevenueSnapshot 
     }
 
     const snapshot: StripeRevenueSnapshot = {
-      ...aggregateStripeSubscriptions(unique),
+      ...aggregateStripeSubscriptions(unique, compExclusions),
       fetchedAt: new Date().toISOString(),
     };
 

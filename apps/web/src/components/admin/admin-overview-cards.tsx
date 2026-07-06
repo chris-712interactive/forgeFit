@@ -138,7 +138,10 @@ export function AdminOverviewCards({ metrics }: AdminOverviewCardsProps) {
               tracked separately.
               {stripeHint ? ` ${stripeHint}.` : null}
               {metrics.unknownPriceCount > 0
-                ? ` ${metrics.unknownPriceCount} Stripe subscription(s) use unrecognized price IDs.`
+                ? ` ${metrics.unknownPriceCount} Stripe subscription(s) use unrecognized price IDs and are excluded from MRR.`
+                : null}
+              {metrics.excludedCompSubscriptions > 0
+                ? ` ${metrics.excludedCompSubscriptions} Stripe subscription(s) belong to comp accounts and are excluded from MRR.`
                 : null}
               {metrics.profilePaidWithoutStripe > 0
                 ? ` ${metrics.profilePaidWithoutStripe} user(s) have paid tier access in the database without a Stripe subscription (comps excluded).`
