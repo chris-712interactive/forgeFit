@@ -6,6 +6,11 @@ import {
 import { listAdminAuditLog, type AdminAuditEntry } from "@/lib/admin/audit";
 import { compArrEquivalentUsd } from "@/lib/admin/list-prices";
 import {
+  getRevenueSnapshotHistory,
+  recordDailyRevenueSnapshot,
+  type RevenueSnapshotPoint,
+} from "@/lib/admin/revenue-snapshots";
+import {
   getStripeRevenueSnapshot,
   type StripeRevenueSnapshot,
 } from "@/lib/admin/stripe-metrics";
@@ -53,6 +58,7 @@ export interface AdminRevenueMetrics {
   churnRate30d: number | null;
   netRevenue30dUsd: number;
   netRevenueChart: NetRevenueWeekPoint[];
+  mrrTrend: RevenueSnapshotPoint[];
   billingEvents: AdminAuditEntry[];
 }
 
@@ -393,9 +399,13 @@ function buildTierRows(
 
 async function getBillingEvents(): Promise<AdminAuditEntry[]> {
   const entries = await listAdminAuditLog(100);
-  return entries.filter((entry) =>
-    ["comp.grant", "comp.revoke"].includes(entry.action)
-  ).slice(0, 12);
+  return entries
+    .filter((entry) =>
+      ["comp.grant", "comp.revoke", "discount.apply", "discount.remove"].includes(
+        entry.action
+      )
+    )
+    .slice(0, 12);
 }
 
 export async function getAdminRevenueMetrics(): Promise<AdminRevenueMetrics> {
@@ -412,6 +422,17 @@ export async function getAdminRevenueMetrics(): Promise<AdminRevenueMetrics> {
     getNetRevenueMetrics(),
   ]);
 
+  if (snapshot && !snapshot.error) {
+    await recordDailyRevenueSnapshot({
+      mrrUsd: snapshot.mrrUsd,
+      arrUsd: snapshot.arrUsd,
+      paidSubscribers: snapshot.paidSubscribers,
+      compCount: compBreakdown.pro + compBreakdown.proPlus,
+    });
+  }
+
+  const mrrTrend = await getRevenueSnapshotHistory(90);
+
   return {
     stripeConnected: Boolean(snapshot && !snapshot.error),
     stripeError: snapshot?.error ?? null,
@@ -425,6 +446,7 @@ export async function getAdminRevenueMetrics(): Promise<AdminRevenueMetrics> {
     churnRate30d: lifecycle.churnRate30d,
     netRevenue30dUsd: netRevenue.netRevenue30dUsd,
     netRevenueChart: netRevenue.netRevenueChart,
+    mrrTrend,
     billingEvents,
   };
 }

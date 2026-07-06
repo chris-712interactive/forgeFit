@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AdminUserFilters } from "@/components/admin/admin-user-filters";
 import { AdminUsersTable } from "@/components/admin/admin-users-table";
 import { searchAdminUsers } from "@/lib/admin/users";
@@ -55,13 +56,21 @@ export default async function AdminUsersPage({
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-extrabold text-forge-text sm:text-3xl">
-          Users
-        </h1>
-        <p className="mt-1 text-sm text-forge-muted">
-          Search members, inspect subscriptions, and grant comp access.
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-extrabold text-forge-text sm:text-3xl">
+            Users
+          </h1>
+          <p className="mt-1 text-sm text-forge-muted">
+            Search members, inspect subscriptions, and grant comp access.
+          </p>
+        </div>
+        <Link
+          href="/api/admin/export/users"
+          className="text-sm font-medium text-forge-ember hover:underline"
+        >
+          Export users CSV ↓
+        </Link>
       </header>
 
       <AdminUserFilters query={query} tier={tier} status={status} />

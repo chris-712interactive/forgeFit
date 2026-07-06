@@ -65,8 +65,9 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Impersonation | `lib/admin/impersonation.ts`, `lib/auth/member-context.ts` |
 | Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
 | Overview KPIs | `lib/admin/metrics.ts`, `stripe-metrics.ts` — MRR/ARR from Stripe (15 min cache) |
-| Revenue dashboard | `app/admin/(authenticated)/revenue`, `lib/admin/revenue-metrics.ts` |
-| CSV export | `GET /api/admin/export/subscriptions` |
+| Revenue dashboard | `app/admin/(authenticated)/revenue`, `lib/admin/revenue-metrics.ts`, `revenue-snapshots.ts` |
+| Discounts | `lib/admin/discount.ts`, `POST/DELETE /api/admin/users/[id]/discount` |
+| CSV export | `GET /api/admin/export/subscriptions`, `GET /api/admin/export/users` |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
 | API | `POST /api/admin/users/[id]/comp`, `POST .../impersonate`, `DELETE /api/admin/impersonate` |
 | Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |

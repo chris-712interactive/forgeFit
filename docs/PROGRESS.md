@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin console Phase B — `/admin/revenue` dashboard |
+| **Last session focus** | Admin console Phase B complete (discounts, exports, MRR trend) |
 
 ---
 
@@ -35,6 +35,30 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Admin console Phase B complete
+
+**What was done**
+
+- **Stripe discount UI** — attach/remove coupons on user detail; audit `discount.apply` / `discount.remove`
+- **Users CSV export** — `GET /api/admin/export/users`
+- **MRR trend chart** — `admin_revenue_snapshots` migration; daily snapshot on revenue page load
+- **Trial extension** — explicitly skipped (freemium model)
+
+**What's next**
+
+- Apply migration `20260706130000_admin_revenue_snapshots.sql`
+- Phase C: `/admin/growth`, `/admin/community`
+
+**Files touched**
+
+- `supabase/migrations/20260706130000_admin_revenue_snapshots.sql`
+- `apps/web/src/lib/admin/discount.ts`, `stripe-discount.ts`, `export-users.ts`, `revenue-snapshots.ts`
+- `apps/web/src/components/admin/admin-discount-form.tsx`, `admin-revenue-mrr-chart.tsx`
+- `apps/web/src/app/api/admin/users/[id]/discount/route.ts`, `export/users/route.ts`
+- `docs/PROGRESS.md`, `docs/phases/admin-console.md`, `docs/ADRs/002-forgerep-admin-console.md`
+
+---
 
 ### 2026-07-06 — Admin console Phase B (revenue dashboard)
 

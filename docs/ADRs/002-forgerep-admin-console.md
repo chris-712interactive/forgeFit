@@ -1,6 +1,6 @@
 # ADR 002 — ForgeRep Admin Console
 
-**Status:** Phase A shipped · Phase B in progress · Phases C–D planned  
+**Status:** Phase A shipped · Phase B shipped · Phases C–D planned  
 **Last updated:** 2026-07-06  
 **Depends on:** Phase 7 billing (Stripe), community moderation (Phase 6), Supabase Auth  
 **Phase doc:** [admin-console.md](../phases/admin-console.md) (acceptance criteria + file map)
@@ -83,8 +83,8 @@ All mutating admin actions write to `admin_audit_log` before returning success.
 | **Revoke comp** | Clear comp fields; re-sync Stripe if `stripe_subscription_id` exists | A ✅ |
 | **Comp expiry** | Lazy revert in `getSubscriptionForUser()` via `expireCompIfNeeded()` | A ✅ |
 | **Stripe guard** | `syncSubscriptionToProfile()` skips tier overwrite for active comps | A ✅ |
-| **Apply discount** | Stripe coupon on subscription; optional `admin_discount_note` on profile | B |
-| **Extend trial** | Stripe `trial_end` update | B |
+| **Apply discount** | Stripe coupon on subscription; audit `discount.apply` / `discount.remove` | B ✅ |
+| **Extend trial** | N/A — freemium model (Free tier, no Stripe trials) | — |
 | **Refund / cancel** | Stripe API from admin UI | D |
 
 **Rule:** Profile tier is the runtime gate (`gates.ts`). Stripe is source of truth for *paid* users; comps use `billing_source: 'comp'`.
@@ -131,17 +131,16 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 - [x] **Overview** — MRR/ARR estimate, paid count, comp seats
 - [x] **Audit log** — `/admin/audit`
 
-### Phase B — Revenue & discounts (in progress)
+### Phase B — Revenue & discounts ✅ Shipped 2026-07-06
 
 - [x] `/admin/revenue` page — MRR, ARR, churn, tier mix, comp ARR equiv., net revenue chart
 - [x] New paid (7d/30d), churn (30d), past-due/trialing KPIs
 - [x] Net revenue from Stripe balance transactions (15 min cache)
-- [x] Subscription CSV export (`GET /api/admin/export/subscriptions`)
+- [x] MRR trend — daily `admin_revenue_snapshots` table + 90d chart
+- [x] Subscription + users CSV export
+- [x] Stripe coupon attach/remove on user detail (`POST/DELETE /api/admin/users/[id]/discount`)
 - [x] Rate-limit admin API routes
-- [ ] Stripe-backed discount / coupon attach UI on user detail
-- [ ] Extend trial via Stripe `trial_end`
-- [ ] Historical MRR trend (needs daily snapshot table or Stripe Sigma)
-- [ ] Users CSV export
+- [ ] ~~Extend trial~~ — N/A (freemium)
 
 ### Phase C — Growth ops
 

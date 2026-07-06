@@ -1,5 +1,7 @@
 import { AdminCompUpgradeForm } from "@/components/admin/admin-comp-upgrade-form";
+import { AdminDiscountForm } from "@/components/admin/admin-discount-form";
 import { AdminImpersonateButton } from "@/components/admin/admin-impersonate-button";
+import type { AdminUserDiscountContext } from "@/lib/admin/discount";
 import type { AdminUserDetail } from "@/lib/admin/users";
 
 function DetailItem({ label, children }: { label: string; children: React.ReactNode }) {
@@ -13,9 +15,13 @@ function DetailItem({ label, children }: { label: string; children: React.ReactN
 
 interface AdminUserDetailPanelProps {
   user: AdminUserDetail;
+  discountContext: AdminUserDiscountContext;
 }
 
-export function AdminUserDetailPanel({ user }: AdminUserDetailPanelProps) {
+export function AdminUserDetailPanel({
+  user,
+  discountContext,
+}: AdminUserDetailPanelProps) {
   const stripeCustomerUrl = user.stripeCustomerId
     ? `https://dashboard.stripe.com/customers/${user.stripeCustomerId}`
     : null;
@@ -87,6 +93,7 @@ export function AdminUserDetailPanel({ user }: AdminUserDetailPanelProps) {
 
       <div className="space-y-4">
         <AdminImpersonateButton userId={user.id} email={user.email} />
+        <AdminDiscountForm userId={user.id} context={discountContext} />
         <AdminCompUpgradeForm user={user} />
       </div>
     </div>

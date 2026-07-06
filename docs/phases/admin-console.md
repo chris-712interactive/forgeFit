@@ -1,6 +1,6 @@
 # Admin Console — Operator Tools
 
-**Status:** Phase A shipped (2026-07-05) · Phase B in progress · Phases C–D planned  
+**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phases C–D planned  
 **ADR:** [002-forgerep-admin-console.md](../ADRs/002-forgerep-admin-console.md)  
 **Mockup:** `apps/web/content/admin/console-mockup.html`  
 **Depends on:** Phase 7 billing (Stripe), Supabase Auth, community metrics (Phase 6+)
@@ -80,10 +80,10 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 - [x] Net revenue trend chart (Recharts, 90-day weekly)
 - [x] Export CSV (subscriptions — paid Stripe + comp)
 - [x] Rate-limit `/api/admin/*` routes
-- [ ] ARR/MRR trend charts (historical MRR — needs snapshot storage or Stripe Sigma)
-- [ ] Stripe discount / coupon attach UI on user detail
-- [ ] Extend trial via Stripe `trial_end` update
-- [ ] Export CSV (users)
+- [x] ARR/MRR trend charts — daily snapshots in `admin_revenue_snapshots` (90d MRR line chart)
+- [x] Stripe discount / coupon attach UI on user detail
+- [x] Export CSV (users)
+- [ ] ~~Extend trial via Stripe `trial_end` update~~ — **N/A** (freemium model; no product trials)
 
 ---
 

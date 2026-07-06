@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminRevenueMrrChart } from "@/components/admin/admin-revenue-mrr-chart";
 import { AdminRevenueNetChart } from "@/components/admin/admin-revenue-net-chart";
 import type { AdminRevenueMetrics } from "@/lib/admin/revenue-metrics";
 
@@ -51,7 +52,17 @@ function formatEventSummary(entry: AdminRevenueMetrics["billingEvents"][number])
       : "no expiry";
     return `Comp ${String(tier)} granted — ${email} · expires ${expiresAt}`;
   }
-  return `Comp revoked — ${email}`;
+  if (entry.action === "comp.revoke") {
+    return `Comp revoked — ${email}`;
+  }
+  if (entry.action === "discount.apply") {
+    const couponId = entry.payload.couponId ?? "coupon";
+    return `Discount applied (${String(couponId)}) — ${email}`;
+  }
+  if (entry.action === "discount.remove") {
+    return `Discount removed — ${email}`;
+  }
+  return entry.action;
 }
 
 export function AdminRevenueDashboard({ metrics }: AdminRevenueDashboardProps) {
@@ -126,12 +137,20 @@ export function AdminRevenueDashboard({ metrics }: AdminRevenueDashboardProps) {
             <h2 className="font-display text-lg font-bold text-forge-text">
               Tier & billing interval mix
             </h2>
-            <Link
-              href="/api/admin/export/subscriptions"
-              className="text-xs font-medium text-forge-ember hover:underline"
-            >
-              Export CSV ↓
-            </Link>
+            <div className="flex flex-wrap gap-3 text-xs font-medium">
+              <Link
+                href="/api/admin/export/subscriptions"
+                className="text-forge-ember hover:underline"
+              >
+                Subscriptions CSV ↓
+              </Link>
+              <Link
+                href="/api/admin/export/users"
+                className="text-forge-ember hover:underline"
+              >
+                Users CSV ↓
+              </Link>
+            </div>
           </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[420px] text-left text-sm">
@@ -208,15 +227,29 @@ export function AdminRevenueDashboard({ metrics }: AdminRevenueDashboardProps) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
-        <h2 className="font-display text-lg font-bold text-forge-text">
-          Net revenue by week (90d)
-        </h2>
-        <p className="mt-1 text-xs text-forge-muted">
-          Stripe balance transactions — fees and refunds included in net amount.
-        </p>
-        <div className="mt-4">
-          <AdminRevenueNetChart points={metrics.netRevenueChart} />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <div className="rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
+          <h2 className="font-display text-lg font-bold text-forge-text">
+            MRR trend (90d)
+          </h2>
+          <p className="mt-1 text-xs text-forge-muted">
+            One snapshot per day when an admin loads this page.
+          </p>
+          <div className="mt-4">
+            <AdminRevenueMrrChart points={metrics.mrrTrend} />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
+          <h2 className="font-display text-lg font-bold text-forge-text">
+            Net revenue by week (90d)
+          </h2>
+          <p className="mt-1 text-xs text-forge-muted">
+            Stripe balance transactions — fees and refunds included in net amount.
+          </p>
+          <div className="mt-4">
+            <AdminRevenueNetChart points={metrics.netRevenueChart} />
+          </div>
         </div>
       </div>
     </div>

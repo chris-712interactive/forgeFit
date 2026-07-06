@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminUserDetailPanel } from "@/components/admin/admin-user-detail-panel";
+import { getAdminUserDiscountContext } from "@/lib/admin/discount";
 import { getAdminUserDetail } from "@/lib/admin/users";
 
 interface AdminUserDetailPageProps {
@@ -11,7 +12,10 @@ export default async function AdminUserDetailPage({
   params,
 }: AdminUserDetailPageProps) {
   const { id } = await params;
-  const user = await getAdminUserDetail(id);
+  const [user, discountContext] = await Promise.all([
+    getAdminUserDetail(id),
+    getAdminUserDiscountContext(id),
+  ]);
 
   if (!user) {
     notFound();
@@ -31,7 +35,7 @@ export default async function AdminUserDetailPage({
         </h1>
       </header>
 
-      <AdminUserDetailPanel user={user} />
+      <AdminUserDetailPanel user={user} discountContext={discountContext} />
     </div>
   );
 }
