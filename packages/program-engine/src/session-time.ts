@@ -37,10 +37,11 @@ export function sessionActiveMinutes(session: WorkoutSession): number {
 
 export function sessionWorkingSets(session: WorkoutSession): number {
   if (session.conditioningBlock) {
-    return (
-      session.conditioningBlock.rounds *
-      session.conditioningBlock.movements.length
-    );
+    const block = session.conditioningBlock;
+    if (block.format === "amrap") {
+      return block.movements.length * 3;
+    }
+    return block.rounds * block.movements.length;
   }
   return session.exercises
     .filter((exercise) => exercise.primaryMuscles[0] !== "cardio")

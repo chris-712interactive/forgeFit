@@ -303,6 +303,43 @@ export const EXTRA_RULES: EvidenceRule[] = [
     confidence: "moderate",
   },
   {
+    id: "functional_conditioning_amrap",
+    domain: "training",
+    applies_to: ["goal:functional_conditioning"],
+    recommendation: {
+      conditioning_amrap_minutes: { min: 8, optimal: 12, max: 15 },
+      note: "As-many-rounds-as-possible circuits use a fixed time cap; scale duration to experience and session length",
+    },
+    citations: [
+      {
+        url: "https://sportrxiv.org/index.php/server/preprint/view/460",
+        summary: "Time-capped circuit training improves work capacity when intensity is self-regulated",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "conditioning_finisher",
+    domain: "training",
+    applies_to: [
+      "goal:general_strength",
+      "goal:recomposition",
+      "goal:bodybuilding",
+      "goal:sport_performance",
+    ],
+    recommendation: {
+      conditioning_finisher_minutes: { min: 4, optimal: 5, max: 8 },
+      note: "Optional short metabolic finisher after main lifts when session length allows",
+    },
+    citations: [
+      {
+        url: "https://www.acsm.org",
+        summary: "Brief conditioning finishers can add work capacity without replacing primary strength work",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
     id: "progressive_overload",
     domain: "training",
     applies_to: ["*"],

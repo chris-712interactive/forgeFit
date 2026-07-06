@@ -29,8 +29,8 @@ Users get **hybrid weekly plans**: compound strength days plus dedicated **condi
 
 | Slice | Scope | Status |
 |-------|-------|--------|
-| **10A** | Goal enum, onboarding, engine splits, fixed-round conditioning blocks, workout logging | ✅ (this session) |
-| **10B** | AMRAP / time-cap presets, conditioning finisher option on other goals | ⏳ |
+| **10A** | Goal enum, onboarding, engine splits, fixed-round conditioning blocks, workout logging | ✅ Shipped |
+| **10B** | AMRAP / time-cap presets, conditioning finisher option on other goals | ✅ Shipped |
 | **10C** | Dedicated landing page + SEO (“functional conditioning app”) | ⏳ |
 
 ---
@@ -82,14 +82,25 @@ Users get **hybrid weekly plans**: compound strength days plus dedicated **condi
 
 ## Acceptance criteria (10A done when)
 
-- [ ] Migration applied; `functional_conditioning` selectable in onboarding
-- [ ] Generated plan includes ≥1 conditioning session with `conditioningBlock` (rounds + movements)
-- [ ] Strength days use compound patterns with high functional bias
-- [ ] Active workout logs conditioning rounds offline
-- [ ] Phase preview shows conditioning movements
-- [ ] No “CrossFit” string in user-facing copy
-- [ ] `pnpm exec tsc --noEmit` in `apps/web` passes
-- [ ] Engine tests for splits + conditioning builder pass
+- [x] Migration applied; `functional_conditioning` selectable in onboarding
+- [x] Generated plan includes ≥1 conditioning session with `conditioningBlock` (rounds + movements)
+- [x] Strength days use compound patterns with high functional bias
+- [x] Active workout logs conditioning rounds offline
+- [x] Phase preview shows conditioning movements
+- [x] No “CrossFit” string in user-facing copy
+- [x] `pnpm exec tsc --noEmit` in `apps/web` passes
+- [x] Engine tests for splits + conditioning builder pass
+
+## 10B — AMRAP + finishers
+
+### Done when
+
+- [x] Second weekly conditioning session uses **AMRAP** time-cap format (first stays fixed rounds)
+- [x] Evidence rules: `functional_conditioning_amrap`, `conditioning_finisher`
+- [x] Metabolic finisher on eligible strength goals (general strength, recomposition, bodybuilding, sport) when session ≥45 min and ≥3 days/week
+- [x] Finisher step runs **after** main lifts; dedicated conditioning days stay before/without strength work
+- [x] Workout UI supports AMRAP complete flow + finisher labeling
+- [x] Engine tests for AMRAP alternation and finisher attachment
 
 ---
 

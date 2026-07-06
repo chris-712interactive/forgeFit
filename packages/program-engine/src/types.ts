@@ -50,9 +50,13 @@ export interface ConditioningMovement {
 
 export type ConditioningFormat = "fixed_rounds" | "amrap";
 
+/** Dedicated conditioning day vs post-lift finisher on strength sessions. */
+export type ConditioningScope = "circuit" | "finisher";
+
 export interface ConditioningBlock {
   name: string;
   format: ConditioningFormat;
+  scope?: ConditioningScope;
   rounds: number;
   timeCapMinutes: number;
   restBetweenRoundsSeconds: number;

@@ -62,6 +62,13 @@ export function buildSessionExpectation(
 ): string {
   if (session.conditioningBlock) {
     const block = session.conditioningBlock;
+    if (block.format === "amrap") {
+      const label =
+        block.scope === "finisher"
+          ? `${block.timeCapMinutes} min finisher AMRAP`
+          : `${block.timeCapMinutes} min AMRAP`;
+      return `${label} · ${block.movements.length} movements`;
+    }
     return `${block.rounds} rounds · ${block.movements.length} movements · ${block.restBetweenRoundsSeconds}s rest`;
   }
 
@@ -137,10 +144,14 @@ export function PhasePreviewContent({
   if (tone === "workout") {
     if (session.conditioningBlock) {
       const block = session.conditioningBlock;
+      const header =
+        block.format === "amrap"
+          ? `${block.timeCapMinutes} min AMRAP`
+          : `${block.rounds} rounds · ${block.restBetweenRoundsSeconds}s rest`;
       return (
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-forge-coral">
-            {block.rounds} rounds · {block.restBetweenRoundsSeconds}s rest
+            {header}
           </p>
           <ul className="space-y-2">
             {block.movements.map((movement) => (

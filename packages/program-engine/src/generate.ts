@@ -27,7 +27,12 @@ import {
   estimateExerciseMinutes,
   estimateMainWorkMinutes,
 } from "./session-time";
-import { buildConditioningBlock } from "./conditioning";
+import {
+  buildConditioningBlock,
+  buildConditioningFinisherBlock,
+  shouldAttachConditioningFinisher,
+  shouldUseAmrapFormat,
+} from "./conditioning";
 import {
   avoidConsecutiveSameKind,
   ensureAnchorDayAvoidsKind,
@@ -48,6 +53,18 @@ import {
 import { computeTrainingLoad } from "./training-load";
 import { estimateTrainingExpenditure } from "./training-expenditure";
 import { getWeeklySplit, type SessionTemplate } from "./splits";
+
+interface BuildSessionContext {
+  templateIndex: number;
+  split: SessionTemplate[];
+  conditioningSessionIndex: number;
+}
+
+const EMPTY_BUILD_CONTEXT: BuildSessionContext = {
+  templateIndex: 0,
+  split: [],
+  conditioningSessionIndex: 0,
+};
 import {
   mergeSessionPatterns,
   sportRepsRange,
@@ -545,15 +562,20 @@ function buildConditioningSession(
   dayIndex: number,
   profile: ProgramUserProfile,
   rules: EvidenceRule[],
-  memory?: WeekExerciseMemory
+  memory?: WeekExerciseMemory,
+  conditioningSessionIndex = 0
 ): WorkoutSession {
   const warmupBlock = buildWarmupBlock(template, profile, rules);
+  const format = shouldUseAmrapFormat(conditioningSessionIndex)
+    ? "amrap"
+    : "fixed_rounds";
   const conditioningBlock = buildConditioningBlock(
     template.name,
     template.patterns,
     profile,
     rules,
-    memory
+    memory,
+    { format, scope: "circuit" }
   );
   const recoveryBlock = buildRecoveryBlock(profile.recoveryEquipment, rules);
   const recoveryMins = recoveryBlock
@@ -567,6 +589,13 @@ function buildConditioningSession(
     profile.minutesPerSession - warmupBlock.durationMinutes - recoveryMins
   );
 
+  const citationRuleIds = [
+    "functional_conditioning_hybrid_split",
+    format === "amrap"
+      ? "functional_conditioning_amrap"
+      : "functional_conditioning_rounds",
+  ];
+
   return {
     dayIndex,
     dayLabel: dayLabelForIndex(dayIndex),
@@ -576,10 +605,7 @@ function buildConditioningSession(
     exercises: [],
     conditioningBlock,
     recoveryBlock: scaledRecoveryBlock,
-    citationRuleIds: [
-      "functional_conditioning_hybrid_split",
-      "functional_conditioning_rounds",
-    ],
+    citationRuleIds,
   };
 }
 
@@ -590,7 +616,8 @@ function buildSession(
   rules: EvidenceRule[],
   volumeMult: number,
   memory: WeekExerciseMemory,
-  useWeekMemory: boolean
+  useWeekMemory: boolean,
+  context: BuildSessionContext = EMPTY_BUILD_CONTEXT
 ): WorkoutSession {
   if (template.sessionType === "conditioning") {
     return buildConditioningSession(
@@ -598,7 +625,8 @@ function buildSession(
       dayIndex,
       profile,
       rules,
-      useWeekMemory ? memory : undefined
+      useWeekMemory ? memory : undefined,
+      context.conditioningSessionIndex
     );
   }
 
@@ -724,27 +752,47 @@ function buildSession(
   }
 
   const exerciseMinutes = estimateMainWorkMinutes(exercises);
-  const estimatedMinutes = Math.min(
-    profile.minutesPerSession,
-    Math.round(
-      warmupBlock.durationMinutes + exerciseMinutes + recoveryMins
-    )
-  );
 
   const citationRuleIds = rules
     .filter((r) => r.domain === "training" || r.domain === "recovery")
     .slice(0, 3)
     .map((r) => r.id);
 
+  const conditioningFinisher = shouldAttachConditioningFinisher(
+    profile,
+    template,
+    context.split,
+    context.templateIndex
+  )
+    ? buildConditioningFinisherBlock(
+        profile,
+        rules,
+        useWeekMemory ? memory : undefined
+      )
+    : undefined;
+
+  const finisherMinutes = conditioningFinisher?.timeCapMinutes ?? 0;
+
   return {
     dayIndex,
     dayLabel: dayLabelForIndex(dayIndex),
     name: template.name,
-    estimatedMinutes,
+    estimatedMinutes: Math.min(
+      profile.minutesPerSession,
+      Math.round(
+        warmupBlock.durationMinutes +
+          exerciseMinutes +
+          recoveryMins +
+          finisherMinutes
+      )
+    ),
     warmupBlock,
     exercises,
+    conditioningBlock: conditioningFinisher,
     recoveryBlock: scaledRecoveryBlock,
-    citationRuleIds,
+    citationRuleIds: conditioningFinisher
+      ? [...citationRuleIds, "conditioning_finisher"]
+      : citationRuleIds,
   };
 }
 
@@ -792,7 +840,9 @@ export function generateProgram(
     );
   }
 
-  const week = templatesWithDays.map(({ template, dayIndex }) => {
+  const splitTemplates = templatesWithDays.map(({ template }) => template);
+  let conditioningSessionIndex = 0;
+  const week = templatesWithDays.map(({ template, dayIndex }, templateIndex) => {
     const session = buildSession(
       template,
       dayIndex,
@@ -800,7 +850,15 @@ export function generateProgram(
       matchedRules,
       volumeMult,
       memory,
-      useWeekMemory
+      useWeekMemory,
+      {
+        templateIndex,
+        split: splitTemplates,
+        conditioningSessionIndex:
+          template.sessionType === "conditioning"
+            ? conditioningSessionIndex++
+            : 0,
+      }
     );
     if (useWeekMemory) {
       absorbSessionIntoMemory(memory, session);

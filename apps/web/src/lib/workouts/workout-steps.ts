@@ -16,13 +16,19 @@ export function buildWorkoutSteps(session: LocalWorkoutSession): WorkoutStep[] {
     steps.push({ kind: "warmup" });
   }
 
-  if (session.conditioningBlock) {
+  const finisherBlock = session.conditioningBlock?.scope === "finisher";
+
+  if (session.conditioningBlock && !finisherBlock) {
     steps.push({ kind: "conditioning" });
   }
 
   session.exercises.forEach((_, exerciseIndex) => {
     steps.push({ kind: "exercise", exerciseIndex });
   });
+
+  if (session.conditioningBlock && finisherBlock) {
+    steps.push({ kind: "conditioning" });
+  }
 
   if (session.recoveryBlock) {
     steps.push({ kind: "recovery" });
