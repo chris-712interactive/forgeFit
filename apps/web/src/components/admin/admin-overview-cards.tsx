@@ -42,26 +42,27 @@ function KpiCard({
 
 export function AdminOverviewCards({ metrics }: AdminOverviewCardsProps) {
   const stripeHint = formatFetchedAt(metrics.revenueFetchedAt);
-  const intervalHint = metrics.stripeConnected
+  const stripeLive = metrics.revenueSource === "stripe" && metrics.stripeConnected;
+  const intervalHint = stripeLive
     ? `Pro ${metrics.proCount} (${metrics.proMonthlyCount}mo · ${metrics.proAnnualCount}yr) · Pro+ ${metrics.proPlusCount} (${metrics.proPlusMonthlyCount}mo · ${metrics.proPlusAnnualCount}yr)`
-    : `Pro ${metrics.proCount} · Pro+ ${metrics.proPlusCount}`;
+    : "Requires Stripe API (STRIPE_SECRET_KEY)";
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          label={metrics.stripeConnected ? "MRR" : "Est. MRR"}
+          label="MRR"
           value={formatUsd(metrics.mrrUsd)}
           hint={
-            metrics.stripeConnected
-              ? "Normalized monthly revenue from Stripe subs"
-              : "Profile tiers at monthly list price (Stripe unavailable)"
+            stripeLive
+              ? "From Stripe subscriptions only"
+              : "Stripe unavailable — shows $0 until connected"
           }
         />
         <KpiCard
-          label={metrics.stripeConnected ? "ARR" : "Est. ARR"}
+          label="ARR"
           value={formatUsd(metrics.arrUsd)}
-          hint={metrics.stripeConnected ? "MRR × 12" : "Estimate only"}
+          hint={stripeLive ? "MRR × 12" : "Stripe source of truth for revenue"}
         />
         <KpiCard
           label="Paid subscribers"
@@ -75,63 +76,79 @@ export function AdminOverviewCards({ metrics }: AdminOverviewCardsProps) {
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Comp accounts"
           value={String(metrics.compCount)}
-          hint="Admin-granted, no charge"
+          hint="DB-granted access — not counted in MRR"
+        />
+        <KpiCard
+          label="Profile-paid (no Stripe)"
+          value={String(metrics.profilePaidWithoutStripe)}
+          hint="Active tier in DB without a Stripe subscription"
         />
         <KpiCard
           label="Past due"
           value={String(metrics.pastDueCount)}
           hint={
-            metrics.stripeConnected
+            stripeLive
               ? "Stripe subscriptions with failed payment"
-              : "From profile subscription status"
+              : "From Stripe when connected"
           }
         />
         <KpiCard
           label="Trialing"
           value={String(metrics.trialingCount)}
-          hint={
-            metrics.stripeConnected
-              ? "Active Stripe trials"
-              : "Requires Stripe connection"
-          }
+          hint={stripeLive ? "Active Stripe trials" : "From Stripe when connected"}
         />
       </div>
 
       <div
         className={`rounded-2xl border p-4 sm:p-5 ${
-          metrics.stripeConnected
+          stripeLive
             ? "border-forge-steel/25 bg-forge-steel/5"
-            : "border-forge-gold/25 bg-forge-gold/5"
+            : metrics.stripeError
+              ? "border-forge-coral/25 bg-forge-coral/5"
+              : "border-forge-gold/25 bg-forge-gold/5"
         }`}
       >
         <p
           className={`text-xs font-medium ${
-            metrics.stripeConnected ? "text-forge-steel" : "text-forge-gold"
+            stripeLive
+              ? "text-forge-steel"
+              : metrics.stripeError
+                ? "text-forge-coral"
+                : "text-forge-gold"
           }`}
         >
           Revenue source
         </p>
         <p className="mt-2 text-sm text-forge-muted">
-          {metrics.stripeConnected ? (
+          {metrics.stripeError ? (
             <>
-              Paid counts and MRR come from live Stripe subscriptions (monthly and
-              annual prices normalized to MRR, including coupons). Comp seats still
-              come from Supabase.
+              Stripe API error: {metrics.stripeError}. Paid counts and MRR show $0
+              until the request succeeds. Comp and profile-paid counts still come
+              from Supabase.
+            </>
+          ) : stripeLive ? (
+            <>
+              Paid subscribers and MRR come{" "}
+              <span className="font-medium text-forge-text">only</span> from Stripe
+              — profile tiers and comp grants do not add revenue. Comp seats are
+              tracked separately.
               {stripeHint ? ` ${stripeHint}.` : null}
               {metrics.unknownPriceCount > 0
-                ? ` ${metrics.unknownPriceCount} subscription(s) use unrecognized price IDs.`
+                ? ` ${metrics.unknownPriceCount} Stripe subscription(s) use unrecognized price IDs.`
+                : null}
+              {metrics.profilePaidWithoutStripe > 0
+                ? ` ${metrics.profilePaidWithoutStripe} user(s) have paid tier access in the database without a Stripe subscription (comps excluded).`
                 : null}
             </>
           ) : (
             <>
-              Stripe is not fully configured in this environment. Revenue KPIs fall
-              back to active paid tiers on profiles at monthly list price — configure{" "}
-              <code className="text-forge-text">STRIPE_SECRET_KEY</code> and price
-              IDs for accurate metrics.
+              Set <code className="text-forge-text">STRIPE_SECRET_KEY</code> to load
+              live subscription metrics. Revenue KPIs stay at $0 — never estimated from
+              profile tiers. Comp accounts still come from Supabase.
             </>
           )}
         </p>

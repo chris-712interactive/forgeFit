@@ -1,5 +1,4 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { PRO_PLUS_PRICING, PRO_PRICING } from "@/lib/billing/pricing";
 import type { SubscriptionTier } from "@/lib/billing/types";
 import { getStripeRevenueSnapshot } from "@/lib/admin/stripe-metrics";
 
@@ -7,7 +6,10 @@ export interface AdminOverviewMetrics {
   totalUsers: number;
   signupsLast30Days: number;
   compCount: number;
+  /** Users with paid tier in DB but no Stripe sub (excludes comps). */
+  profilePaidWithoutStripe: number;
   stripeConnected: boolean;
+  stripeError: string | null;
   paidSubscribers: number;
   proCount: number;
   proPlusCount: number;
@@ -20,7 +22,7 @@ export interface AdminOverviewMetrics {
   unknownPriceCount: number;
   mrrUsd: number;
   arrUsd: number;
-  revenueSource: "stripe" | "profile_estimate";
+  revenueSource: "stripe" | "unavailable";
   revenueFetchedAt: string | null;
 }
 
@@ -31,64 +33,41 @@ function isPaidActive(tier: SubscriptionTier, status: string): boolean {
   );
 }
 
-function profileBasedEstimate(rows: Array<Record<string, unknown>>): Omit<
-  AdminOverviewMetrics,
-  "totalUsers" | "signupsLast30Days" | "compCount" | "stripeConnected" | "revenueSource" | "revenueFetchedAt"
-> {
-  let proCount = 0;
-  let proPlusCount = 0;
-  let pastDueCount = 0;
-  let mrrUsd = 0;
+function countProfileAccess(rows: Array<Record<string, unknown>>): {
+  compCount: number;
+  profilePaidWithoutStripe: number;
+} {
+  let compCount = 0;
+  let profilePaidWithoutStripe = 0;
 
   for (const row of rows) {
     const tier = row.subscription_tier as SubscriptionTier;
     const status = row.subscription_status as string;
     const billingSource = row.billing_source as string | null;
+    const stripeSubscriptionId = row.stripe_subscription_id as string | null;
 
-    if (status === "past_due") {
-      pastDueCount += 1;
-    }
-
-    if (billingSource === "comp") {
+    if (billingSource === "comp" && isPaidActive(tier, status)) {
+      compCount += 1;
       continue;
     }
 
-    if (!isPaidActive(tier, status)) {
-      continue;
-    }
-
-    if (tier === "pro") {
-      proCount += 1;
-      mrrUsd += PRO_PRICING.monthly.amountUsd;
-    } else if (tier === "pro_plus") {
-      proPlusCount += 1;
-      mrrUsd += PRO_PLUS_PRICING.monthly.amountUsd;
+    if (
+      isPaidActive(tier, status) &&
+      !stripeSubscriptionId &&
+      billingSource !== "comp"
+    ) {
+      profilePaidWithoutStripe += 1;
     }
   }
 
-  const roundedMrr = Math.round(mrrUsd * 100) / 100;
-
-  return {
-    paidSubscribers: proCount + proPlusCount,
-    proCount,
-    proPlusCount,
-    proMonthlyCount: proCount,
-    proAnnualCount: 0,
-    proPlusMonthlyCount: proPlusCount,
-    proPlusAnnualCount: 0,
-    trialingCount: 0,
-    pastDueCount,
-    unknownPriceCount: 0,
-    mrrUsd: roundedMrr,
-    arrUsd: Math.round(roundedMrr * 12 * 100) / 100,
-  };
+  return { compCount, profilePaidWithoutStripe };
 }
 
 async function getProfileCounts(): Promise<{
   totalUsers: number;
   signupsLast30Days: number;
   compCount: number;
-  rows: Array<Record<string, unknown>>;
+  profilePaidWithoutStripe: number;
 }> {
   const admin = createAdminClient();
 
@@ -100,7 +79,7 @@ async function getProfileCounts(): Promise<{
     admin
       .from("profiles")
       .select(
-        "subscription_tier, subscription_status, billing_source, created_at"
+        "subscription_tier, subscription_status, billing_source, stripe_subscription_id, created_at"
       ),
     admin
       .from("profiles")
@@ -109,36 +88,49 @@ async function getProfileCounts(): Promise<{
   ]);
 
   const rows = (profilesResult.data ?? []) as Array<Record<string, unknown>>;
-  let compCount = 0;
-
-  for (const row of rows) {
-    const tier = row.subscription_tier as SubscriptionTier;
-    const status = row.subscription_status as string;
-    const billingSource = row.billing_source as string | null;
-
-    if (billingSource === "comp" && isPaidActive(tier, status)) {
-      compCount += 1;
-    }
-  }
+  const { compCount, profilePaidWithoutStripe } = countProfileAccess(rows);
 
   return {
     totalUsers: rows.length,
     signupsLast30Days: recentResult.count ?? 0,
     compCount,
-    rows,
+    profilePaidWithoutStripe,
   };
 }
 
+const ZERO_REVENUE = {
+  paidSubscribers: 0,
+  proCount: 0,
+  proPlusCount: 0,
+  proMonthlyCount: 0,
+  proAnnualCount: 0,
+  proPlusMonthlyCount: 0,
+  proPlusAnnualCount: 0,
+  trialingCount: 0,
+  pastDueCount: 0,
+  unknownPriceCount: 0,
+  mrrUsd: 0,
+  arrUsd: 0,
+} as const;
+
 export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
-  const [{ totalUsers, signupsLast30Days, compCount, rows }, stripeSnapshot] =
-    await Promise.all([getProfileCounts(), getStripeRevenueSnapshot()]);
+  const [profileCounts, stripeSnapshot] = await Promise.all([
+    getProfileCounts(),
+    getStripeRevenueSnapshot(),
+  ]);
+
+  const base = {
+    totalUsers: profileCounts.totalUsers,
+    signupsLast30Days: profileCounts.signupsLast30Days,
+    compCount: profileCounts.compCount,
+    profilePaidWithoutStripe: profileCounts.profilePaidWithoutStripe,
+  };
 
   if (stripeSnapshot) {
     return {
-      totalUsers,
-      signupsLast30Days,
-      compCount,
-      stripeConnected: true,
+      ...base,
+      stripeConnected: !stripeSnapshot.error,
+      stripeError: stripeSnapshot.error ?? null,
       paidSubscribers: stripeSnapshot.paidSubscribers,
       proCount: stripeSnapshot.proCount,
       proPlusCount: stripeSnapshot.proPlusCount,
@@ -156,15 +148,12 @@ export async function getAdminOverviewMetrics(): Promise<AdminOverviewMetrics> {
     };
   }
 
-  const estimate = profileBasedEstimate(rows);
-
   return {
-    totalUsers,
-    signupsLast30Days,
-    compCount,
+    ...base,
+    ...ZERO_REVENUE,
     stripeConnected: false,
-    revenueSource: "profile_estimate",
+    stripeError: null,
+    revenueSource: "unavailable",
     revenueFetchedAt: null,
-    ...estimate,
   };
 }

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin overview Stripe-backed revenue metrics |
+| **Last session focus** | Stripe-only admin revenue metrics (no profile fallback) |
 
 ---
 
@@ -35,6 +35,22 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Stripe-only admin revenue metrics
+
+**What was done**
+
+- **Removed profile fallback** — MRR and paid counts never estimated from DB tiers; Stripe is sole revenue source when `STRIPE_SECRET_KEY` is set
+- **`hasStripeSecretKey()`** — admin metrics query Stripe with secret key only (not full checkout/webhook config)
+- **New KPI** — “Profile-paid (no Stripe)” surfaces DB-granted paid access separate from comps and Stripe revenue
+- **UI** — clarifies comps are excluded from MRR; shows $0 when Stripe has no subs
+
+**Files touched**
+
+- `apps/web/src/lib/billing/stripe.ts`, `apps/web/src/lib/admin/stripe-metrics.ts`, `apps/web/src/lib/admin/metrics.ts`
+- `apps/web/src/components/admin/admin-overview-cards.tsx`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-06 — Admin overview Stripe revenue metrics
 

@@ -147,6 +147,11 @@ export function isStripeConfigured(): boolean {
   );
 }
 
+/** True when server can query Stripe API (admin metrics, subscription sync). */
+export function hasStripeSecretKey(): boolean {
+  return Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+}
+
 /** True when Pro checkout can run (Pro+ prices optional). */
 export function isStripeProConfigured(): boolean {
   return Boolean(

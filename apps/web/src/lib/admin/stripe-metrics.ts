@@ -2,7 +2,7 @@ import type Stripe from "stripe";
 import {
   getAllStripePriceIds,
   getStripe,
-  isStripeConfigured,
+  hasStripeSecretKey,
   readSubscriptionItemPriceId,
   tierFromStripePriceId,
 } from "@/lib/billing/stripe";
@@ -24,6 +24,7 @@ export interface StripeRevenueSnapshot {
   proPlusAnnualCount: number;
   unknownPriceCount: number;
   fetchedAt: string;
+  error?: string;
 }
 
 interface CacheEntry {
@@ -32,6 +33,21 @@ interface CacheEntry {
 }
 
 let revenueCache: CacheEntry | null = null;
+
+const EMPTY_SNAPSHOT: Omit<StripeRevenueSnapshot, "fetchedAt"> = {
+  mrrUsd: 0,
+  arrUsd: 0,
+  paidSubscribers: 0,
+  trialingCount: 0,
+  pastDueCount: 0,
+  proCount: 0,
+  proPlusCount: 0,
+  proMonthlyCount: 0,
+  proAnnualCount: 0,
+  proPlusMonthlyCount: 0,
+  proPlusAnnualCount: 0,
+  unknownPriceCount: 0,
+};
 
 function tierIntervalFromPriceId(
   priceId: string
@@ -77,7 +93,7 @@ function subscriptionMrrUsd(subscription: Stripe.Subscription): number {
   const unitAmount = price?.unit_amount;
   if (unitAmount == null) return 0;
 
-  let monthlyUsd = ((unitAmount * (item?.quantity ?? 1)) / 100);
+  let monthlyUsd = (unitAmount * (item?.quantity ?? 1)) / 100;
 
   const interval = recurringInterval(price);
   if (interval === "year") {
@@ -133,7 +149,7 @@ async function fetchSubscriptionsByStatus(
 
 function aggregateStripeSubscriptions(
   subscriptions: Stripe.Subscription[]
-): Omit<StripeRevenueSnapshot, "fetchedAt"> {
+): Omit<StripeRevenueSnapshot, "fetchedAt" | "error"> {
   let mrrUsd = 0;
   let paidSubscribers = 0;
   let trialingCount = 0;
@@ -202,8 +218,12 @@ function aggregateStripeSubscriptions(
   };
 }
 
+/**
+ * Returns Stripe subscription revenue snapshot. Requires STRIPE_SECRET_KEY only.
+ * Never falls back to profile tiers — empty counts mean zero Stripe subs.
+ */
 export async function getStripeRevenueSnapshot(): Promise<StripeRevenueSnapshot | null> {
-  if (!isStripeConfigured()) {
+  if (!hasStripeSecretKey()) {
     return null;
   }
 
@@ -212,32 +232,43 @@ export async function getStripeRevenueSnapshot(): Promise<StripeRevenueSnapshot 
     return revenueCache.snapshot;
   }
 
-  const stripe = getStripe();
-  const [active, trialing, pastDue] = await Promise.all([
-    fetchSubscriptionsByStatus(stripe, "active"),
-    fetchSubscriptionsByStatus(stripe, "trialing"),
-    fetchSubscriptionsByStatus(stripe, "past_due"),
-  ]);
+  try {
+    const stripe = getStripe();
+    const [active, trialing, pastDue] = await Promise.all([
+      fetchSubscriptionsByStatus(stripe, "active"),
+      fetchSubscriptionsByStatus(stripe, "trialing"),
+      fetchSubscriptionsByStatus(stripe, "past_due"),
+    ]);
 
-  const seen = new Set<string>();
-  const unique: Stripe.Subscription[] = [];
-  for (const subscription of [...active, ...trialing, ...pastDue]) {
-    if (seen.has(subscription.id)) continue;
-    seen.add(subscription.id);
-    unique.push(subscription);
+    const seen = new Set<string>();
+    const unique: Stripe.Subscription[] = [];
+    for (const subscription of [...active, ...trialing, ...pastDue]) {
+      if (seen.has(subscription.id)) continue;
+      seen.add(subscription.id);
+      unique.push(subscription);
+    }
+
+    const snapshot: StripeRevenueSnapshot = {
+      ...aggregateStripeSubscriptions(unique),
+      fetchedAt: new Date().toISOString(),
+    };
+
+    revenueCache = {
+      expiresAt: now + CACHE_TTL_MS,
+      snapshot,
+    };
+
+    return snapshot;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Stripe API request failed.";
+
+    return {
+      ...EMPTY_SNAPSHOT,
+      fetchedAt: new Date().toISOString(),
+      error: message,
+    };
   }
-
-  const snapshot: StripeRevenueSnapshot = {
-    ...aggregateStripeSubscriptions(unique),
-    fetchedAt: new Date().toISOString(),
-  };
-
-  revenueCache = {
-    expiresAt: now + CACHE_TTL_MS,
-    snapshot,
-  };
-
-  return snapshot;
 }
 
 /** Clears cached Stripe metrics (for tests or after manual refresh). */
