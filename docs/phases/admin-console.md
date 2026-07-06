@@ -1,6 +1,6 @@
 # Admin Console — Operator Tools
 
-**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phase C shipped (2026-07-06) · Phase D planned  
+**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phase C shipped (2026-07-06) · Phase D shipped (2026-07-06)  
 **ADR:** [002-forgerep-admin-console.md](../ADRs/002-forgerep-admin-console.md)  
 **Mockup:** `apps/web/content/admin/console-mockup.html`  
 **Depends on:** Phase 7 billing (Stripe), Supabase Auth, community metrics (Phase 6+)
@@ -102,17 +102,17 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 
 ---
 
-## Phase D — Advanced
+## Phase D — Advanced ✅ Shipped 2026-07-06
 
 ### Done when
 
-- [ ] Broadcast email / push to user segments
-- [ ] Per-user feature flags
-- [ ] Ingredient suggestion review UI (wrap `/api/internal/nutrition-ingredient-suggestions`)
-- [ ] Refund / cancel subscription from admin UI
-- [ ] Invite additional admins (UI + `is_admin` toggle)
-- [ ] Optional: MFA required before enabling `is_admin`
-- [ ] Optional: simultaneous dual sessions via subdomain cookie partitioning (future ADR)
+- [x] Broadcast email / push to user segments (`/admin/broadcast`)
+- [x] Per-user feature flags (`profiles.admin_feature_flags`, user detail UI)
+- [x] Ingredient suggestion review UI (`/admin/ingredients`)
+- [x] Refund / cancel subscription from admin UI (user detail billing actions)
+- [x] Invite additional admins (`/admin/admins` + `is_admin` toggle)
+- [ ] ~~Optional: MFA required before enabling `is_admin`~~ — deferred
+- [ ] ~~Optional: simultaneous dual sessions via subdomain cookies~~ — deferred (future ADR)
 
 ---
 
@@ -139,4 +139,6 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | `/admin/audit` | A ✅ | Admin action log |
 | `/admin/revenue` | B ✅ | MRR, ARR, churn, tier mix, net revenue chart |
 | `/admin/growth` | C ✅ | Funnels, activation, sources |
-| `/admin/community` | C ✅ | Community ops metrics |
+| `/admin/broadcast` | D ✅ | Email/push segments |
+| `/admin/ingredients` | D ✅ | Ingredient suggestion review |
+| `/admin/admins` | D ✅ | Grant/revoke `is_admin` |

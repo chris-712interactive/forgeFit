@@ -1,6 +1,6 @@
 # ADR 002 — ForgeRep Admin Console
 
-**Status:** Phase A shipped · Phase B shipped · Phase C shipped · Phase D planned  
+**Status:** Phase A shipped · Phase B shipped · Phase C shipped · Phase D shipped  
 **Last updated:** 2026-07-06  
 **Depends on:** Phase 7 billing (Stripe), community moderation (Phase 6), Supabase Auth  
 **Phase doc:** [admin-console.md](../phases/admin-console.md) (acceptance criteria + file map)
@@ -151,13 +151,15 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 - [x] `/admin/community` — embed `CommunityOpsMetricsPanel`
 - [x] Link to `/community/moderation` for dual-role admins
 
-### Phase D — Advanced
+### Phase D — Advanced ✅ Shipped 2026-07-06
 
-- [ ] Broadcast email / push to segments
-- [ ] Per-user feature flags
-- [ ] Ingredient suggestion review UI (wrap `/api/internal/nutrition-ingredient-suggestions`)
-- [ ] Refund / cancel subscription from admin
-- [ ] Invite additional admins (UI + `is_admin` toggle)
+- [x] `/admin/broadcast` — email (Resend) + web push by segment (max 500)
+- [x] Per-user feature flags on user detail (`admin_feature_flags` jsonb)
+- [x] `/admin/ingredients` — review queue for nutrition suggestions
+- [x] Billing actions on user detail — cancel (period end / immediate), refund latest payment
+- [x] `/admin/admins` — grant/revoke `profiles.is_admin`
+- [ ] MFA before admin grant — deferred
+- [ ] Dual concurrent sessions — deferred (future ADR)
 
 ---
 
@@ -230,7 +232,7 @@ Interactive HTML prototype (design reference — not production UI):
 
 1. **Comp cap** — unlimited for now; add max comp seats in Phase B?
 2. **Annual ARR** — Phase A uses MRR×12 at monthly list price; Phase B should use Stripe interval
-3. **Multi-admin invite** — env + DB flag only for now; UI in Phase D
+3. **Multi-admin invite** — `/admin/admins` UI + `is_admin` toggle (shipped); env seed still supported
 4. **Moderator overlap** — separate flags; same user can hold both
 5. **Dual concurrent sessions** — deferred; would need subdomain cookie partitioning (future ADR if required)
 

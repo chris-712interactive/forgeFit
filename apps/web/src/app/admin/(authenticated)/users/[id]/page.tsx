@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminUserDetailPanel } from "@/components/admin/admin-user-detail-panel";
+import { getAdminBillingContext } from "@/lib/admin/billing-actions";
 import { getAdminUserDiscountContext } from "@/lib/admin/discount";
+import { getUserAdminFeatureFlags } from "@/lib/admin/feature-flags";
 import { getAdminUserDetail } from "@/lib/admin/users";
 
 interface AdminUserDetailPageProps {
@@ -12,9 +14,11 @@ export default async function AdminUserDetailPage({
   params,
 }: AdminUserDetailPageProps) {
   const { id } = await params;
-  const [user, discountContext] = await Promise.all([
+  const [user, discountContext, billingContext, featureFlags] = await Promise.all([
     getAdminUserDetail(id),
     getAdminUserDiscountContext(id),
+    getAdminBillingContext(id),
+    getUserAdminFeatureFlags(id),
   ]);
 
   if (!user) {
@@ -35,7 +39,12 @@ export default async function AdminUserDetailPage({
         </h1>
       </header>
 
-      <AdminUserDetailPanel user={user} discountContext={discountContext} />
+      <AdminUserDetailPanel
+        user={user}
+        discountContext={discountContext}
+        billingContext={billingContext}
+        featureFlags={featureFlags}
+      />
     </div>
   );
 }

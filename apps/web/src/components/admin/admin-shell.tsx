@@ -8,7 +8,10 @@ const NAV_ITEMS = [
   { href: "/admin/revenue", label: "Revenue", exact: false },
   { href: "/admin/growth", label: "Growth", exact: false },
   { href: "/admin/community", label: "Community", exact: false },
+  { href: "/admin/broadcast", label: "Broadcast", exact: false },
+  { href: "/admin/ingredients", label: "Ingredients", exact: false },
   { href: "/admin/users", label: "Users", exact: false },
+  { href: "/admin/admins", label: "Admins", exact: false },
   { href: "/admin/audit", label: "Audit log", exact: false },
 ] as const;
 

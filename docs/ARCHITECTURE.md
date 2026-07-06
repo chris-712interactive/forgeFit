@@ -50,7 +50,7 @@ supabase/         → PostgreSQL migrations + RLS
 4. `completeOnboarding` server action saves profile + equipment + generates program
 5. User lands on `/home` with week schedule and macro targets
 
-## Admin Console (Phase A — 2026-07-05 · Phase B revenue — 2026-07-06)
+## Admin Console (Phases A–D shipped — 2026-07-06)
 
 Internal operator UI at `/admin` (desktop-first, separate from member PWA shell).
 
@@ -64,19 +64,19 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Operator login | `app/admin/login` — separate from `app/login` |
 | Impersonation | `lib/admin/impersonation.ts`, `lib/auth/member-context.ts` |
 | Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
-| Overview KPIs | `lib/admin/metrics.ts`, `stripe-metrics.ts` — MRR/ARR from Stripe (15 min cache) |
-| Revenue dashboard | `app/admin/(authenticated)/revenue`, `lib/admin/revenue-metrics.ts`, `revenue-snapshots.ts` |
-| Growth dashboard | `app/admin/(authenticated)/growth`, `lib/admin/growth-metrics.ts` |
-| Community ops | `app/admin/(authenticated)/community` — reuses `getCommunityMetrics()` |
-| Discounts | `lib/admin/discount.ts`, `POST/DELETE /api/admin/users/[id]/discount` |
-| CSV export | `GET /api/admin/export/subscriptions`, `GET /api/admin/export/users` |
+| Overview KPIs | `lib/admin/metrics.ts`, `stripe-metrics.ts` |
+| Revenue dashboard | `app/admin/(authenticated)/revenue`, `revenue-metrics.ts` |
+| Growth dashboard | `app/admin/(authenticated)/growth`, `growth-metrics.ts` |
+| Community ops | `app/admin/(authenticated)/community` |
+| Broadcast | `app/admin/(authenticated)/broadcast`, `lib/admin/broadcast.ts` |
+| Ingredients review | `app/admin/(authenticated)/ingredients` |
+| Admin operators | `app/admin/(authenticated)/admins` |
+| Feature flags | `profiles.admin_feature_flags`, user detail form |
+| Billing actions | user detail — cancel/refund via `lib/admin/billing-actions.ts` |
+| CSV export | `GET /api/admin/export/subscriptions`, `.../users` |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
-| API | `POST /api/admin/users/[id]/comp`, `POST .../impersonate`, `DELETE /api/admin/impersonate` |
-| Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |
 
-Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSONATION_SECRET` or `CRON_SECRET`. Non-admins receive **404** (not 403).
-
-**Planned (Phase D):** discount attach done · broadcasts, feature flags, ingredient review, refunds, admin invite UI.
+Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSONATION_SECRET` or `CRON_SECRET`. Broadcast email needs `RESEND_API_KEY` + `EMAIL_FROM`; push needs VAPID keys. Non-admins receive **404** (not 403).
 
 ## Program Generation (Phase 2)
 

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin console Phase C — growth + community ops |
+| **Last session focus** | Admin console Phase D complete |
 
 ---
 
@@ -35,6 +35,33 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Admin console Phase D (advanced ops)
+
+**What was done**
+
+- **`/admin/broadcast`** — segment email (Resend) + web push, max 500 recipients, audit logged
+- **`/admin/ingredients`** — review nutrition ingredient suggestions (pending/reviewed/added/rejected)
+- **`/admin/admins`** — grant/revoke `profiles.is_admin` with audit trail
+- **User detail** — feature flags, Stripe cancel/refund billing actions
+- **Migration** — `profiles.admin_feature_flags` jsonb
+
+**What's next**
+
+- Apply migration `20260706140000_admin_feature_flags.sql`
+- Wire `userHasAdminFeatureFlag()` into product gates as needed
+- Optional future: MFA before admin grant, dual-session ADR
+
+**Files touched**
+
+- `supabase/migrations/20260706140000_admin_feature_flags.sql`
+- `apps/web/src/lib/admin/broadcast*.ts`, `feature-flags*.ts`, `billing-actions.ts`, `ingredient-suggestions.ts`, `admins.ts`
+- `apps/web/src/app/admin/(authenticated)/broadcast|ingredients|admins/**`
+- `apps/web/src/app/api/admin/**`
+- `apps/web/src/components/admin/admin-*-form.tsx`, `admin-operators-panel.tsx`, etc.
+- `docs/PROGRESS.md`, `docs/phases/admin-console.md`, `docs/ADRs/002-forgerep-admin-console.md`, `docs/ARCHITECTURE.md`
+
+---
 
 ### 2026-07-06 — Admin console Phase C (growth + community)
 
