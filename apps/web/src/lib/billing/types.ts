@@ -9,11 +9,18 @@ export type SubscriptionStatus =
   | "past_due"
   | "canceled";
 
+/** Operator-set overrides from profiles.admin_feature_flags (see lib/admin/feature-flags-constants.ts). */
+export type AdminFeatureFlagOverrides = Partial<
+  Record<"beta_integrations" | "early_ai_coach" | "internal_tester", boolean>
+>;
+
 export interface SubscriptionSnapshot {
   tier: SubscriptionTier;
   status: SubscriptionStatus;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  /** Loaded by getSubscriptionForUser — unlocks tier features when flags are set. */
+  adminFeatureFlags?: AdminFeatureFlagOverrides;
 }
 
 function isActiveSubscription(

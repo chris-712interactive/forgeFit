@@ -1,7 +1,6 @@
 export type {
   CommunityFollowRow,
   CommunityNotificationRow,
-  CommunityModerationPageData,
   CommunityPageData,
   CommunityRankSnapshot,
   CommunityWinRow,
@@ -19,7 +18,6 @@ export type {
 export {
   getGamificationContext,
   getCommunityPageData,
-  getCommunityModerationPageData,
   getCommunityRankSnapshot,
   recordCommunityWin,
   syncLeaderboardAfterWorkout,

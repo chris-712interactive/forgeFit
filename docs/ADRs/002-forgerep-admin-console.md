@@ -244,5 +244,5 @@ Interactive HTML prototype (design reference — not production UI):
 - [ARCHITECTURE.md](../ARCHITECTURE.md) — Admin Console section
 - [TIER-GATES.md](../TIER-GATES.md) — Pro / Pro+ pricing
 - `apps/web/src/lib/billing/` — Stripe sync, tier gates
-- `apps/web/src/lib/coaching/community-moderation.ts` — moderator pattern
+- `apps/web/src/lib/admin/community-moderation.ts` — admin moderation queue + mutations
 - `apps/web/src/app/api/internal/community-metrics/route.ts` — metrics API

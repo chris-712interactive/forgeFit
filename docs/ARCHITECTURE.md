@@ -71,7 +71,7 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Broadcast | `app/admin/(authenticated)/broadcast`, `lib/admin/broadcast.ts` |
 | Ingredients review | `app/admin/(authenticated)/ingredients` |
 | Admin operators | `app/admin/(authenticated)/admins` |
-| Feature flags | `profiles.admin_feature_flags`, user detail form |
+| Feature flags | `profiles.admin_feature_flags`, user detail form; wired into `hasFeature()` via `getSubscriptionForUser()` |
 | Billing actions | user detail — cancel/refund via `lib/admin/billing-actions.ts` |
 | CSV export | `GET /api/admin/export/subscriptions`, `.../users` |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |

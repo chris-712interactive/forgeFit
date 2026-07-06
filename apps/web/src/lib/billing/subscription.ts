@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { expireCompIfNeeded } from "@/lib/admin/comp";
+import { parseAdminFeatureFlags } from "@/lib/admin/feature-flags";
 import { createClient } from "@/lib/supabase/server";
 import {
   hasProAccess,
@@ -19,7 +20,7 @@ export const getSubscriptionForUser = cache(async function getSubscriptionForUse
   const { data } = await supabase
     .from("profiles")
     .select(
-      "subscription_tier, subscription_status, subscription_current_period_end, subscription_cancel_at_period_end"
+      "subscription_tier, subscription_status, subscription_current_period_end, subscription_cancel_at_period_end, admin_feature_flags"
     )
     .eq("id", userId)
     .single();
@@ -31,6 +32,9 @@ export const getSubscriptionForUser = cache(async function getSubscriptionForUse
       "inactive",
     currentPeriodEnd: data?.subscription_current_period_end ?? null,
     cancelAtPeriodEnd: data?.subscription_cancel_at_period_end ?? false,
+    adminFeatureFlags: parseAdminFeatureFlags(
+      data?.admin_feature_flags as Record<string, boolean> | null | undefined
+    ),
   };
 });
 

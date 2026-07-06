@@ -1,5 +1,6 @@
 import { hasFeature } from "@/lib/billing/gates";
 import type { SubscriptionSnapshot } from "@/lib/billing/types";
+import { parseAdminFeatureFlags } from "@/lib/admin/feature-flags";
 import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { after } from "next/server";
@@ -137,7 +138,7 @@ async function getSubscriptionForUserAdmin(
   const { data } = await admin
     .from("profiles")
     .select(
-      "subscription_tier, subscription_status, subscription_current_period_end, subscription_cancel_at_period_end"
+      "subscription_tier, subscription_status, subscription_current_period_end, subscription_cancel_at_period_end, admin_feature_flags"
     )
     .eq("id", userId)
     .single();
@@ -149,6 +150,9 @@ async function getSubscriptionForUserAdmin(
       "inactive",
     currentPeriodEnd: data?.subscription_current_period_end ?? null,
     cancelAtPeriodEnd: data?.subscription_cancel_at_period_end ?? false,
+    adminFeatureFlags: parseAdminFeatureFlags(
+      data?.admin_feature_flags as Record<string, boolean> | null | undefined
+    ),
   };
 }
 

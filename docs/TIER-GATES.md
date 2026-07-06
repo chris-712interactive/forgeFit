@@ -3,7 +3,7 @@
 > **Authoritative feature matrix** for Free, Pro, and Pro+.
 > Code gates live in `apps/web/src/lib/billing/gates.ts` — keep in sync with this doc.
 
-**Last updated:** 2026-06-28
+**Last updated:** 2026-07-06
 
 ---
 
@@ -94,7 +94,17 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 
 ## Implementation gates
 
-Use `hasTierFeature(tier, feature)` from `@/lib/billing/gates`.
+Use `hasFeature(snapshot, feature)` from `@/lib/billing/gates` (includes tier + admin flag overrides on `SubscriptionSnapshot.adminFeatureFlags`).
+
+### Admin feature flag overrides
+
+Set per user in `/admin/users/[id]` → Feature flags. Loaded with `getSubscriptionForUser()` and honored by `hasFeature()`.
+
+| Flag key | Grants gate | Notes |
+|----------|-------------|-------|
+| `beta_integrations` | `device_integrations` | Early wearable access below Pro+ |
+| `early_ai_coach` | `ai_motivation` | AI coaching copy preview below Pro+ |
+| `internal_tester` | — | QA marker only (no gate override yet) |
 
 | Gate key | Minimum tier | UI surface (planned) |
 |----------|--------------|----------------------|

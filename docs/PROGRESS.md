@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin community moderation moved into console |
+| **Last session focus** | Admin flags wired to gates; legacy moderator code removed |
 
 ---
 
@@ -35,6 +35,31 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Admin feature flags + legacy moderator cleanup
+
+**What was done**
+
+- **`hasFeature()`** — honors `SubscriptionSnapshot.adminFeatureFlags` (`beta_integrations` → device integrations, `early_ai_coach` → AI motivation)
+- **`getSubscriptionForUser()`** — loads `admin_feature_flags` with subscription snapshot
+- **Removed legacy member moderation** — deleted coaching moderation module, UI components, server actions, `isModerator` on gamification context
+- **Docs sync** — BIBLE (admin console complete), TIER-GATES (flag overrides), Phase B header fixed
+
+**What's next**
+
+- Optional deferred: MFA before admin grant, dual-session ADR, comp seat cap
+
+**Files touched**
+
+- `apps/web/src/lib/billing/gates.ts`, `types.ts`, `subscription.ts`
+- `apps/web/src/lib/admin/feature-flags.ts`
+- `apps/web/src/lib/coaching/service.ts`, `types.ts`, `index.ts`
+- `apps/web/src/app/actions/community.ts`
+- `apps/web/src/components/coaching/community-wins-feed.tsx`
+- Deleted moderation legacy files under `lib/coaching/` and `components/coaching/`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/TIER-GATES.md`, `docs/phases/admin-console.md`, `docs/ARCHITECTURE.md`, `docs/ADRs/002-forgerep-admin-console.md`
+
+---
 
 ### 2026-07-06 — Community moderation in admin console
 

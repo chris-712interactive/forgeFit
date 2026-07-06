@@ -20,20 +20,29 @@ function validateReason(reason: string): string | null {
 }
 
 function sanitizeFlags(
-  input: Record<string, boolean>
+  input: Record<string, boolean> | null | undefined
 ): Record<string, boolean> {
+  const raw = input ?? {};
   const allowed = new Set<string>(
     KNOWN_ADMIN_FEATURE_FLAGS.map((flag) => flag.key)
   );
   const result: Record<string, boolean> = {};
 
-  for (const [key, value] of Object.entries(input)) {
+  for (const [key, value] of Object.entries(raw)) {
     if (allowed.has(key) && value === true) {
       result[key] = true;
     }
   }
 
   return result;
+}
+
+/** Parse profiles.admin_feature_flags for subscription snapshot / runtime gates. */
+export function parseAdminFeatureFlags(
+  input: Record<string, boolean> | null | undefined
+): Record<AdminFeatureFlagKey, boolean> {
+  const sanitized = sanitizeFlags(input);
+  return sanitized as Record<AdminFeatureFlagKey, boolean>;
 }
 
 export async function getUserAdminFeatureFlags(
@@ -47,7 +56,7 @@ export async function getUserAdminFeatureFlags(
     .maybeSingle();
 
   const raw = (data?.admin_feature_flags as Record<string, boolean> | null) ?? {};
-  return sanitizeFlags(raw);
+  return parseAdminFeatureFlags(raw);
 }
 
 /** Runtime gate — user can read own flags via RLS on profiles. */

@@ -205,7 +205,7 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 7 | Pro integrations (Stripe, OAuth) | Partial — billing + DB on prod; Withings QA + Strava launch |
 | 8 | Motivation + gamification + community (Phases 1–2) | Complete |
 | 9 | Youth & sport performance (onboarding, age policy, US catalog, engine, teen community) | In progress — 9A–9G shipped | Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
-| — | **Admin console** (operator tools) | Phase A shipped · B–D planned | [docs/phases/admin-console.md](./phases/admin-console.md) · [ADR 002](./ADRs/002-forgerep-admin-console.md)
+| — | **Admin console** (operator tools) | Complete (Phases A–D) | [docs/phases/admin-console.md](./phases/admin-console.md) · [ADR 002](./ADRs/002-forgerep-admin-console.md)
 
 ---
 

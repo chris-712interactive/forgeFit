@@ -1,6 +1,6 @@
 # Admin Console — Operator Tools
 
-**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phase C shipped (2026-07-06) · Phase D shipped (2026-07-06)  
+**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phase C shipped (2026-07-06) · Phase D shipped (2026-07-06) · **Plan complete**  
 **ADR:** [002-forgerep-admin-console.md](../ADRs/002-forgerep-admin-console.md)  
 **Mockup:** `apps/web/content/admin/console-mockup.html`  
 **Depends on:** Phase 7 billing (Stripe), Supabase Auth, community metrics (Phase 6+)
@@ -68,7 +68,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 
 ---
 
-## Phase B — Revenue & discounts (in progress)
+## Phase B — Revenue & discounts ✅ Shipped 2026-07-06
 
 ### Done when
 
@@ -123,7 +123,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 - Impersonation cookie is httpOnly, HMAC-signed, scoped to admin session user id
 - Member mutations blocked during impersonation (server actions + non-admin API POST)
 - Audit log fields: `admin_user_id`, `action`, `target_user_id`, `payload`, `created_at`
-- Community moderation runs in admin console only (`/admin/community`); legacy `is_community_moderator` flag is unused for UI — billing changes never available to community moderators
+- Community moderation runs in admin console only (`/admin/community`); member moderation code removed
 
 ---
 

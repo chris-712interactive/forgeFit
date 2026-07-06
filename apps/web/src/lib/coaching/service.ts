@@ -34,7 +34,6 @@ import type {
   CommunityRankSnapshot,
   WeeklyCommunityRecap,
   CommunityPageData,
-  CommunityModerationPageData,
   LeagueContext,
 } from "./types";
 import { computeTrainingStreakWeeks, highestNewStreakMilestone } from "./streak";
@@ -65,12 +64,8 @@ import {
   filterLeaderboardRows,
   loadSuspendedUserIds,
 } from "./community-leaderboard-filters";
-import {
-  getModerationQueue,
-  isCommunityModerator,
-} from "./community-moderation";
 import { ensureOptInVariantAssigned } from "./community-opt-in-experiment";
-import { getCommunityMetrics, recordCommunityAction } from "./community-metrics";
+import { recordCommunityAction } from "./community-metrics";
 import { buildWeeklyRecapForUser } from "./community-weekly-recap";
 
 function baseGamificationContext(
@@ -98,7 +93,6 @@ function baseGamificationContext(
     recentNotifications: [],
     league: null,
     optInVariant: "control",
-    isModerator: false,
     ...overrides,
   };
 }
@@ -424,8 +418,7 @@ export async function upsertWeeklyLeaderboardScore(
 export async function getGamificationContext(
   userId: string,
   subscription: SubscriptionSnapshot,
-  sessions: WorkoutSessionRecord[],
-  options: { moderatorWinsView?: boolean } = {}
+  sessions: WorkoutSessionRecord[]
 ): Promise<GamificationContext> {
   const unlocked = hasFeature(subscription, "gamification");
 
@@ -433,7 +426,7 @@ export async function getGamificationContext(
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "primary_goal, experience_level, gamification_opt_in, community_opt_in_variant, is_community_moderator, date_of_birth, age, parent_consent_at"
+      "primary_goal, experience_level, gamification_opt_in, community_opt_in_variant, date_of_birth, age, parent_consent_at"
     )
     .eq("id", userId)
     .single();
@@ -444,11 +437,6 @@ export async function getGamificationContext(
     storedVariant: profile?.community_opt_in_variant,
     optedIn,
   });
-  const isModerator = isCommunityModerator({
-    userId,
-    profileFlag: profile?.is_community_moderator,
-  });
-  const moderatorWinsView = options.moderatorWinsView === true && isModerator;
   const goal = profile?.primary_goal ?? null;
   const experience = profile?.experience_level ?? null;
   const bucket = profile ? resolveCommunityBucket(profile) : null;
@@ -518,7 +506,7 @@ export async function getGamificationContext(
       .eq("bucket_age_cohort", ageCohort)
       .eq("week_start", weekStart),
     (async () => {
-      let query = supabase
+      return supabase
         .from("community_wins")
         .select(
           "id, user_id, win_type, headline, detail, occurred_at, hidden_at"
@@ -526,12 +514,9 @@ export async function getGamificationContext(
         .eq("bucket_goal", goal)
         .eq("bucket_experience", experience)
         .eq("bucket_age_cohort", ageCohort)
+        .is("hidden_at", null)
         .order("occurred_at", { ascending: false })
-        .limit(moderatorWinsView ? 15 : 8);
-      if (!moderatorWinsView) {
-        query = query.is("hidden_at", null);
-      }
-      return query;
+        .limit(8);
     })(),
   ]);
 
@@ -761,7 +746,6 @@ export async function getGamificationContext(
     recentNotifications,
     league,
     optInVariant,
-    isModerator,
   };
 }
 
@@ -1226,46 +1210,5 @@ export async function getCommunityPageData(
     weeklyChallenge: weeklyChallengeView,
     crewChallenge,
     crewWins,
-  };
-}
-
-export async function getCommunityModerationPageData(
-  userId: string,
-  subscription: SubscriptionSnapshot,
-  sessions: WorkoutSessionRecord[]
-): Promise<CommunityModerationPageData | null> {
-  const gamification = await getGamificationContext(
-    userId,
-    subscription,
-    sessions,
-    { moderatorWinsView: true }
-  );
-
-  if (!gamification.isModerator) {
-    return null;
-  }
-
-  if (!gamification.bucketGoal || !gamification.bucketExperience) {
-    return {
-      gamification,
-      moderationQueue: null,
-      communityMetrics: null,
-    };
-  }
-
-  const weekStart = weekStartIso();
-  const [moderationQueue, communityMetrics] = await Promise.all([
-    getModerationQueue({
-      bucketGoal: gamification.bucketGoal,
-      bucketExperience: gamification.bucketExperience,
-      weekStart,
-    }),
-    getCommunityMetrics(),
-  ]);
-
-  return {
-    gamification,
-    moderationQueue,
-    communityMetrics,
   };
 }

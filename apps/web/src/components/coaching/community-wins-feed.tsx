@@ -1,7 +1,6 @@
 "use client";
 
 import { CommunityWinInteractions } from "@/components/coaching/community-win-interactions";
-import { CommunityWinModerationControls } from "@/components/coaching/community-win-moderation-controls";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import {
   formatCommunityWinDetail,
@@ -15,7 +14,6 @@ interface CommunityWinsFeedProps {
   preview?: boolean;
   compact?: boolean;
   maxItems?: number;
-  showModerationControls?: boolean;
 }
 
 function formatWhen(iso: string): string {
@@ -32,7 +30,6 @@ export function CommunityWinsFeed({
   preview = false,
   compact = false,
   maxItems,
-  showModerationControls = false,
 }: CommunityWinsFeedProps) {
   const unit = useUnitPreference();
 
@@ -70,9 +67,6 @@ export function CommunityWinsFeed({
         <p className="mt-1 text-xs text-forge-muted">
           PRs and milestones from your bucket — cheer peers to keep momentum
           going.
-          {showModerationControls
-            ? " Hidden wins stay visible here with moderation controls."
-            : ""}
         </p>
       )}
 
@@ -92,17 +86,11 @@ export function CommunityWinsFeed({
 
       {hasWins && (
         <ul className={compact ? "mt-2.5 space-y-2" : "mt-4 space-y-3"}>
-          {wins.map((win) => {
-            const hidden = Boolean(win.hiddenAt);
-            return (
+          {wins.map((win) => (
             <li
               key={win.id}
-              className={`rounded-xl border bg-forge-surface-raised ${
+              className={`rounded-xl border border-[var(--border)] bg-forge-surface-raised ${
                 compact ? "px-2.5 py-2" : "px-3 py-3"
-              } ${
-                hidden
-                  ? "border-forge-coral/30 bg-forge-coral/5"
-                  : "border-[var(--border)]"
               } ${
                 win.isCurrentUser && !preview ? "ring-1 ring-forge-gold/25" : ""
               }`}
@@ -117,11 +105,6 @@ export function CommunityWinsFeed({
                     <span className="rounded-full border border-forge-gold/30 bg-forge-gold/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-forge-gold">
                       {winTypeLabel(win.winType)}
                     </span>
-                    {hidden && showModerationControls && (
-                      <span className="rounded-full border border-forge-coral/30 bg-forge-coral/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-forge-coral">
-                        Hidden
-                      </span>
-                    )}
                   </div>
                   <p className={`text-forge-gold ${compact ? "mt-0.5 text-xs" : "mt-1 text-sm"}`}>
                     {win.headline}
@@ -140,26 +123,21 @@ export function CommunityWinsFeed({
               </div>
 
               <div className={compact ? "mt-1.5" : "mt-3"}>
-              <CommunityWinInteractions
-                win={win}
-                compact={compact}
-                disabled={preview || !gamification.optedIn || win.isCurrentUser}
-                disabledReason={
-                  preview
-                    ? "Join community to interact"
-                    : win.isCurrentUser
-                      ? "Others react to your wins"
-                      : "Join community to interact"
-                }
-              />
+                <CommunityWinInteractions
+                  win={win}
+                  compact={compact}
+                  disabled={preview || !gamification.optedIn || win.isCurrentUser}
+                  disabledReason={
+                    preview
+                      ? "Join community to interact"
+                      : win.isCurrentUser
+                        ? "Others react to your wins"
+                        : "Join community to interact"
+                  }
+                />
               </div>
-
-              {showModerationControls && (
-                <CommunityWinModerationControls win={win} />
-              )}
             </li>
-            );
-          })}
+          ))}
         </ul>
       )}
     </section>

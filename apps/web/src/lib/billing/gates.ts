@@ -1,4 +1,4 @@
-import type { SubscriptionSnapshot, SubscriptionTier } from "./types";
+import type { SubscriptionSnapshot, SubscriptionTier, AdminFeatureFlagOverrides } from "./types";
 import { hasProAccess, hasProPlusAccess } from "./types";
 
 /** Feature keys — keep in sync with docs/TIER-GATES.md */
@@ -59,6 +59,31 @@ export const TIER_FEATURE_MATRIX: Record<
   pro_plus: new Set([...PRO_FEATURES, ...PRO_PLUS_ONLY_FEATURES]),
 };
 
+const ADMIN_FLAG_FEATURE_OVERRIDES: Partial<
+  Record<keyof AdminFeatureFlagOverrides, TierFeature>
+> = {
+  beta_integrations: "device_integrations",
+  early_ai_coach: "ai_motivation",
+};
+
+function featureGrantedByAdminFlag(
+  snapshot: Pick<SubscriptionSnapshot, "adminFeatureFlags">,
+  feature: TierFeature,
+): boolean {
+  const flags = snapshot.adminFeatureFlags;
+  if (!flags) return false;
+
+  for (const [flag, grantedFeature] of Object.entries(
+    ADMIN_FLAG_FEATURE_OVERRIDES,
+  ) as [keyof AdminFeatureFlagOverrides, TierFeature][]) {
+    if (grantedFeature === feature && flags[flag] === true) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function hasTierFeature(
   tier: SubscriptionTier,
   feature: TierFeature,
@@ -75,9 +100,13 @@ export function hasTierFeature(
 }
 
 export function hasFeature(
-  snapshot: Pick<SubscriptionSnapshot, "tier" | "status">,
+  snapshot: Pick<SubscriptionSnapshot, "tier" | "status" | "adminFeatureFlags">,
   feature: TierFeature
 ): boolean {
+  if (featureGrantedByAdminFlag(snapshot, feature)) {
+    return true;
+  }
+
   const tier = hasProPlusAccess(snapshot)
     ? "pro_plus"
     : hasProAccess(snapshot)

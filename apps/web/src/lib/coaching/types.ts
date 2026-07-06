@@ -218,18 +218,6 @@ export interface CommunityWinRow {
   myComment?: WinPresetCommentKey | null;
 }
 
-export interface FlaggedScoreRow {
-  userId: string;
-  displayLabel: string;
-  habitScore: number;
-  flagReason: string | null;
-  weekStart: string;
-}
-
-export interface ModerationQueue {
-  flaggedScores: FlaggedScoreRow[];
-}
-
 export interface GamificationContext {
   unlocked: boolean;
   optedIn: boolean;
@@ -252,7 +240,6 @@ export interface GamificationContext {
   recentNotifications: CommunityNotificationRow[];
   league: LeagueContext | null;
   optInVariant: CommunityOptInVariant;
-  isModerator: boolean;
 }
 
 export interface CommunityPageData {
@@ -267,12 +254,6 @@ export interface CommunityPageData {
   weeklyChallenge: WeeklyChallengeView | null;
   crewChallenge: CrewChallengeView | null;
   crewWins: CommunityWinRow[];
-}
-
-export interface CommunityModerationPageData {
-  gamification: GamificationContext;
-  moderationQueue: ModerationQueue | null;
-  communityMetrics: CommunityMetricsSnapshot | null;
 }
 
 export interface WorkoutCoachingContext {
