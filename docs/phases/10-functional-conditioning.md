@@ -1,6 +1,6 @@
 # Phase 10 — Functional Conditioning
 
-**Status:** In progress (10A MVP shipped in this slice)  
+**Status:** Complete (10A–10C shipped 2026-07-06)  
 **Depends on:** Phases 1–2 (onboarding, evidence engine, program engine), functional movement bias (2026-06-30)
 
 ## Goal
@@ -31,7 +31,7 @@ Users get **hybrid weekly plans**: compound strength days plus dedicated **condi
 |-------|-------|--------|
 | **10A** | Goal enum, onboarding, engine splits, fixed-round conditioning blocks, workout logging | ✅ Shipped |
 | **10B** | AMRAP / time-cap presets, conditioning finisher option on other goals | ✅ Shipped |
-| **10C** | Dedicated landing page + SEO (“functional conditioning app”) | ⏳ |
+| **10C** | Dedicated landing page + SEO (“functional conditioning app”) | ✅ Shipped |
 
 ---
 
@@ -101,6 +101,15 @@ Users get **hybrid weekly plans**: compound strength days plus dedicated **condi
 - [x] Finisher step runs **after** main lifts; dedicated conditioning days stay before/without strength work
 - [x] Workout UI supports AMRAP complete flow + finisher labeling
 - [x] Engine tests for AMRAP alternation and finisher attachment
+
+## 10C — Landing + SEO
+
+### Done when
+
+- [x] Public page at `/functional-conditioning` with goal-focused hero and CTAs
+- [x] SEO metadata + sitemap entry targeting “functional conditioning app”
+- [x] Guide article `/guides/functional-conditioning-app`
+- [x] Footer link from marketing site
 
 ---
 

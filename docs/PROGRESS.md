@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 10 in progress (10A shipped) |
+| **Active phase** | Phase 9 in progress (9H catalog); Phase 10 complete |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin flags wired to gates; legacy moderator code removed |
+| **Last session focus** | Phase 10 functional conditioning (10B + 10C) |
 
 ---
 
@@ -29,12 +29,53 @@
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
 | 9 | Youth & Sport Performance | ⏳ In progress (9A–9I shipped) |
-| 10 | Functional Conditioning | ⏳ In progress (10A shipped) |
+| 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-07-06 — Phase 10 functional conditioning (10B + 10C)
+
+**What was done**
+
+- **10B** — AMRAP time-cap on second weekly conditioning day; metabolic finisher on eligible strength goals; finisher step after main lifts; evidence rules + tests
+- **10C** — `/functional-conditioning` landing page, SEO metadata, sitemap, guide article, footer link
+
+**What's next**
+
+- Phase 9H — expand sport catalog to ≥20 entries
+- Phase 7 — Withings production QA, Strava launch
+
+**Files touched**
+
+- `packages/program-engine/src/conditioning.ts`, `generate.ts`, `types.ts`, tests
+- `packages/evidence-kb/src/rules-extra.ts`
+- `apps/web/src/components/workout/conditioning-block-card.tsx`, `workout-phase-cards.tsx`, `workout-steps.ts`
+- `apps/web/src/app/functional-conditioning/page.tsx`, `components/marketing/functional-conditioning-landing.tsx`
+- `apps/web/src/lib/seo/functional-conditioning-metadata.ts`, `articles/guide-articles.ts`, `app/sitemap.ts`
+- `docs/phases/10-functional-conditioning.md`, `docs/BIBLE.md`, `docs/PROGRESS.md`
+
+---
+
+### 2026-07-06 — ForgeRep grant playbook (business funding research)
+
+**What was done**
+
+- **`docs/business/forgeRep-grant-playbook.md`** — personalized for male founder, Florida-based, non-veteran: revised priority matrix, Florida programs (pitchGNV, FL SBDC, FL R&D credit), removed ineligible woman/NC/veteran programs
+
+**What's next**
+
+- Founder: confirm FL city + traction numbers; **pitchGNV due Jul 10**; submit Hello Alice, Skip, Breva Thrive
+- CPA consult on Section 41 R&D payroll tax credit
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-06 — Admin feature flags + legacy moderator cleanup
 

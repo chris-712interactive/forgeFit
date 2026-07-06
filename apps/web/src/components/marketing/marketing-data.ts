@@ -236,6 +236,7 @@ export const seoContentSections = [
 export const footerNav = {
   product: [
     { label: "Features", href: "/#features" },
+    { label: "Functional conditioning", href: "/functional-conditioning" },
     { label: "How it works", href: "/#how-it-works" },
     { label: "Pricing", href: "/#pricing" },
     { label: "Guides", href: "/guides" },

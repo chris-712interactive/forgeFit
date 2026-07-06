@@ -2,6 +2,57 @@ import type { SeoArticle } from "./types";
 
 export const guideArticles: readonly SeoArticle[] = [
   {
+    slug: "functional-conditioning-app",
+    category: "guide",
+    title: "Functional Conditioning App: Strength + Circuits in One Plan",
+    description:
+      "What to look for in a functional conditioning app — hybrid strength and metabolic circuits, AMRAP time caps, offline logging, and evidence-based programming (not random WOD generators).",
+    keywords: [
+      "functional conditioning app",
+      "functional fitness app",
+      "metabolic conditioning program",
+      "circuit training app",
+      "strength and conditioning app",
+      "mixed modal training app",
+    ],
+    publishedAt: "2026-07-06",
+    updatedAt: "2026-07-06",
+    readTimeMinutes: 5,
+    relatedSlugs: ["evidence-based-workout-program", "offline-workout-tracker"],
+    sections: [
+      {
+        id: "what-is-functional-conditioning",
+        heading: "What functional conditioning means in ForgeRep",
+        paragraphs: [
+          "Functional conditioning combines resistance training with metabolic circuits — compound strength on most days, plus dedicated mixed-modal sessions that raise work capacity without replacing progressive overload.",
+          "ForgeRep uses generic training language (functional conditioning, metabolic conditioning, circuit training). We do not use branded mixed-modal gym trademarks or imply official affiliation.",
+        ],
+      },
+      {
+        id: "what-to-look-for",
+        heading: "What a good functional conditioning app should include",
+        paragraphs: [
+          "The best apps combine periodized strength work with planned conditioning — not a new random circuit every day.",
+        ],
+        bullets: [
+          "Hybrid weekly split — strength patterns plus scheduled conditioning days, not random daily workouts",
+          "Structured circuits — fixed rounds for consistency and AMRAP time caps for pace work",
+          "Optional finishers — short metabolic blocks after main lifts on strength-focused goals",
+          "Offline logging — circuits and sets saved locally in the gym",
+          "Evidence-backed volume — rules for rounds, rest, and recovery tied to experience level",
+        ],
+      },
+      {
+        id: "forgerep",
+        heading: "How ForgeRep approaches functional conditioning",
+        paragraphs: [
+          "Select Functional conditioning as your primary goal in onboarding. The program engine builds strength days with a high functional movement bias, plus conditioning circuits scaled to your equipment and session length.",
+          "Explore the dedicated overview at /functional-conditioning or start free and generate your first hybrid week in minutes.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "offline-workout-tracker",
     category: "guide",
     title: "Offline Workout Tracker for the Gym (No Signal Required)",

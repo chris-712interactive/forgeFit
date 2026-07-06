@@ -27,6 +27,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/functional-conditioning`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.92,
+    },
+    {
       url: `${siteUrl}/signup`,
       lastModified,
       changeFrequency: "monthly",
