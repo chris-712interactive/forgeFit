@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-06 · **Current phase:** Phase 9 in progress (9H catalog); Phase 10 complete
+**Last updated:** 2026-07-06 · **Current phase:** Phase 9 complete; Phase 10 complete
 
 ---
 
@@ -204,7 +204,7 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 6 | Exercise library UI | Complete |
 | 7 | Pro integrations (Stripe, OAuth) | Partial — billing + DB on prod; Withings QA + Strava launch |
 | 8 | Motivation + gamification + community (Phases 1–2) | Complete |
-| 9 | Youth & sport performance (onboarding, age policy, US catalog, engine, teen community) | In progress — 9A–9G shipped | Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
+| 9 | Youth & sport performance (onboarding, age policy, US catalog ≥22 sports, engine, teen community) | Complete | Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
 | 10 | Functional conditioning (hybrid strength + circuits, AMRAP, finishers, landing) | Complete | [docs/phases/10-functional-conditioning.md](./phases/10-functional-conditioning.md)
 | — | **Admin console** (operator tools) | Complete (Phases A–D) | [docs/phases/admin-console.md](./phases/admin-console.md) · [ADR 002](./ADRs/002-forgerep-admin-console.md)
 

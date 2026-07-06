@@ -262,6 +262,60 @@ export const SPORT_CATALOG_RULES: EvidenceRule[] = [
     confidence: "moderate",
   },
   {
+    id: "flag_football_speed_agility",
+    domain: "training",
+    applies_to: ["sport:flag_football"],
+    recommendation: {
+      priority_patterns: ["lunge", "squat", "horizontal_pull"],
+      volume_multiplier: 0.85,
+      neuromuscular_warmup_minutes: { min: 5, optimal: 8, max: 10 },
+    },
+    citations: [
+      {
+        doi: "10.1519/JSC.0000000000003299",
+        summary:
+          "Non-contact field sports emphasize sprint mechanics, change of direction, and single-leg resilience",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "water_polo_aquatic_strength",
+    domain: "training",
+    applies_to: ["sport:water_polo"],
+    recommendation: {
+      priority_patterns: ["vertical_pull", "lunge", "core"],
+      scapular_stability_sets_per_week: { min: 4, optimal: 6, max: 8 },
+      volume_multiplier: 0.85,
+    },
+    citations: [
+      {
+        doi: "10.1123/ijspp.2015-0349",
+        summary:
+          "Aquatic athletes need dry-land pull strength, treading leg power, and shoulder prehab",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
+    id: "rowing_posterior_chain",
+    domain: "training",
+    applies_to: ["sport:rowing"],
+    recommendation: {
+      priority_patterns: ["hinge", "horizontal_pull", "core"],
+      reps_range: "6-10",
+      volume_multiplier: 0.85,
+    },
+    citations: [
+      {
+        url: "https://www.nsca.com/education/articles/nsca-coach/strength-training-for-rowing/",
+        summary:
+          "Rowing S&C targets posterior chain power, grip endurance, and trunk stiffness for stroke efficiency",
+      },
+    ],
+    confidence: "moderate",
+  },
+  {
     id: "soccer_single_leg_strength",
     domain: "training",
     applies_to: ["sport:soccer"],

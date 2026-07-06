@@ -37,4 +37,11 @@ describe("sport splits", () => {
     assert.ok(base.some((session) => session.patterns.includes("horizontal_push")));
     assert.ok(tumbler.some((session) => session.patterns.includes("squat")));
   });
+
+  it("lacrosse attack applies speed_agility modifier from catalog", () => {
+    assert.equal(modifierForPosition("lacrosse_boys", "attack"), "speed_agility");
+    const attack = getSportWeeklySplit("lacrosse_boys", "attack", 3);
+    const goalie = getSportWeeklySplit("lacrosse_boys", "goalie", 3);
+    assert.notDeepEqual(attack, goalie);
+  });
 });

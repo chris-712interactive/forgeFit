@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "categories": [
     { "id": "court_field", "label": "Court & field team" },
     { "id": "racquet_rotational", "label": "Racquet & rotational" },
@@ -106,7 +106,7 @@
       "description": "Sprint speed, contact readiness, and rotational throwing power",
       "positionAffectsProgram": true,
       "positions": [
-        { "id": "attack", "label": "Attack", "modifier": "sprint_agility" },
+        { "id": "attack", "label": "Attack", "modifier": "speed_agility" },
         { "id": "midfield", "label": "Midfield", "modifier": "endurance_power" },
         { "id": "defense", "label": "Defense", "modifier": "strength_agility" },
         { "id": "goalie", "label": "Goalie", "modifier": "reactive_power" }
@@ -119,10 +119,21 @@
       "description": "Speed, agility, and upper-body endurance for stick work",
       "positionAffectsProgram": true,
       "positions": [
-        { "id": "attack", "label": "Attack", "modifier": "sprint_agility" },
+        { "id": "attack", "label": "Attack", "modifier": "speed_agility" },
         { "id": "midfield", "label": "Midfield", "modifier": "endurance_power" },
         { "id": "defense", "label": "Defense", "modifier": "strength_agility" },
         { "id": "goalie", "label": "Goalie", "modifier": "reactive_power" }
+      ]
+    },
+    {
+      "id": "flag_football",
+      "label": "Flag football",
+      "categoryId": "court_field",
+      "description": "Sprint speed, agility, and change of direction without contact load",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "skill", "label": "Skill (WR, RB, QB)", "modifier": "speed_agility" },
+        { "id": "hybrid", "label": "Hybrid / rusher", "modifier": "strength_agility" }
       ]
     },
     {
@@ -169,6 +180,28 @@
       "description": "Pull strength, shoulder health, and core stability",
       "positionAffectsProgram": false,
       "positions": []
+    },
+    {
+      "id": "water_polo",
+      "label": "Water polo",
+      "categoryId": "aquatic",
+      "description": "Treading leg strength, upper-body endurance, and shoulder stability",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "field_player", "label": "Field player", "modifier": "endurance_power" },
+        { "id": "goalie", "label": "Goalie", "modifier": "reactive_power" }
+      ]
+    },
+    {
+      "id": "rowing",
+      "label": "Rowing / crew",
+      "categoryId": "aquatic",
+      "description": "Posterior chain power, grip endurance, and core anti-flexion",
+      "positionAffectsProgram": true,
+      "positions": [
+        { "id": "rower", "label": "Rower", "modifier": "endurance_strength" },
+        { "id": "coxswain", "label": "Coxswain", "modifier": "balanced_athletic" }
+      ]
     },
     {
       "id": "wrestling",

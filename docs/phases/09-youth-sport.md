@@ -1,6 +1,6 @@
 # Phase 9 — Youth & Sport Performance
 
-**Status:** In progress (9A–9G shipped; 9H catalog expansion remaining)  
+**Status:** Complete (9A–9I shipped)  
 **Depends on:** Phases 1–2 (onboarding, evidence engine, program engine)
 
 ## Goal
@@ -34,7 +34,7 @@ Program logic remains in `program-engine` + `evidence-kb` only — never LLM-gen
 | **9E** | Season phase volume + hybrid secondary nutrition | ✅ |
 | **9F** | Profile settings: edit sport / season / secondary | ✅ |
 | **9G** | Teen community cohort + parent-consent gate for community | ✅ |
-| **9H** | Expand catalog (+ wrestling, swim, cheer, lacrosse, track sub-events) | ⏳ |
+| **9H** | Expand catalog (+ wrestling, swim, cheer, lacrosse, track sub-events) | ✅ |
 | **9I** | Practice days + gym-on-practice policy → schedule blocking | ✅ |
 
 ---
@@ -130,7 +130,7 @@ Runtime loader: `packages/evidence-kb/src/sports-catalog.ts`.
 - [x] 9E: In-season volume reduction + secondary goal nutrition
 - [x] 9F: Profile settings regenerate with sport fields
 - [x] 9G: Teen-only leaderboards; parent gate on community
-- [ ] 9H: Catalog ≥20 US sports
+- [x] 9H: Catalog ≥20 US sports (22 in v1.2.0 — flag football, water polo, rowing added)
 
 ---
 

@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 9 in progress (9H catalog); Phase 10 complete |
+| **Active phase** | Phase 9 complete; Phase 10 complete |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Phase 10 functional conditioning (10B + 10C) |
+| **Last session focus** | Phase 9H sport catalog expansion |
 
 ---
 
@@ -28,13 +28,35 @@
 | 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
 | 7 | Pro Integrations | ⏳ Partial | — |
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| 9 | Youth & Sport Performance | ⏳ In progress (9A–9I shipped) |
+| 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-07-06 — Phase 9H sport catalog expansion
+
+**What was done**
+
+- Expanded `sports-catalog.json` to **v1.2.0** with **22 sports** (added flag football, water polo, rowing/crew)
+- Fixed lacrosse position modifier (`sprint_agility` → `speed_agility`) so engine splits apply correctly
+- Added evidence rules for flag football, water polo, and rowing
+- Added catalog loader tests (`sports-catalog.test.ts`) and lacrosse split test
+
+**What's next**
+
+- Phase 7 — Withings production QA, Strava launch
+- Optional: migrate remaining hardcoded sport templates into evidence-backed catalog rules
+
+**Files touched**
+
+- `packages/evidence-kb/data/sports-catalog.json`, `src/sports-catalog.test.ts`, `src/rules-sport-catalog.ts`, `package.json`
+- `packages/program-engine/src/sport/splits.test.ts`
+- `docs/phases/09-youth-sport.md`, `docs/BIBLE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-06 — Phase 10 functional conditioning (10B + 10C)
 
@@ -63,7 +85,7 @@
 
 **What was done**
 
-- **`docs/business/forgeRep-grant-playbook.md`** — personalized for male founder, Florida-based, non-veteran: revised priority matrix, Florida programs (pitchGNV, FL SBDC, FL R&D credit), removed ineligible woman/NC/veteran programs
+- **`docs/business/forgeRep-grant-playbook.md`** — full pitchGNV application pack: all form fields, CRL/TRL framing, 10-slide deck outline, 2:45 video script, WY LLC / FL operations note
 
 **What's next**
 

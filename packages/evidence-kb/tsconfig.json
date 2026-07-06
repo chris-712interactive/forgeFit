@@ -8,5 +8,6 @@
     "resolveJsonModule": true,
     "noEmit": true
   },
-  "include": ["src/**/*", "data/**/*"]
+  "include": ["src/**/*", "data/**/*"],
+  "exclude": ["src/**/*.test.ts"]
 }
