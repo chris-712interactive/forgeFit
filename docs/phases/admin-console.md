@@ -1,6 +1,6 @@
 # Admin Console — Operator Tools
 
-**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phases C–D planned  
+**Status:** Phase A shipped (2026-07-05) · Phase B shipped (2026-07-06) · Phase C shipped (2026-07-06) · Phase D planned  
 **ADR:** [002-forgerep-admin-console.md](../ADRs/002-forgerep-admin-console.md)  
 **Mockup:** `apps/web/content/admin/console-mockup.html`  
 **Depends on:** Phase 7 billing (Stripe), Supabase Auth, community metrics (Phase 6+)
@@ -58,7 +58,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | Impersonation | `apps/web/src/lib/admin/impersonation.ts`, `apps/web/src/lib/auth/member-context.ts` |
 | Users | `apps/web/src/lib/admin/users.ts` |
 | Comp | `apps/web/src/lib/admin/comp.ts` |
-| Metrics | `apps/web/src/lib/admin/metrics.ts`, `stripe-metrics.ts`, `revenue-metrics.ts` |
+| Metrics | `apps/web/src/lib/admin/metrics.ts`, `stripe-metrics.ts`, `revenue-metrics.ts`, `growth-metrics.ts` |
 | Audit | `apps/web/src/lib/admin/audit.ts` |
 | Pages | `apps/web/src/app/admin/(authenticated)/**`, `apps/web/src/app/admin/login/**` |
 | API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts`, `.../impersonate/route.ts`, `/api/admin/impersonate` |
@@ -87,18 +87,18 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 
 ---
 
-## Phase C — Growth ops
+## Phase C — Growth ops ✅ Shipped 2026-07-06
 
 ### Done when
 
-- [ ] `/admin/growth` page
-- [ ] Signups (total, 7d, 30d)
-- [ ] Activation funnel: onboarding → first workout → first nutrition log → paid
-- [ ] Signup source breakdown (`profiles.signup_source`)
-- [ ] Free → Pro conversion rate
-- [ ] D7 / D30 workout retention cohort table
-- [ ] `/admin/community` — community opt-in, WACP (`getCommunityMetrics()`)
-- [ ] Link to `/community/moderation` for dual-role admins
+- [x] `/admin/growth` page
+- [x] Signups (total, 7d, 30d)
+- [x] Activation funnel: onboarding → first workout → first nutrition log → paid
+- [x] Signup source breakdown (`profiles.signup_source`)
+- [x] Free → Pro conversion rate
+- [x] D7 / D30 workout retention cohort table
+- [x] `/admin/community` — community opt-in, WACP (`getCommunityMetrics()`)
+- [x] Link to `/community/moderation` for dual-role admins
 
 ---
 
@@ -138,5 +138,5 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | `/admin/users/[id]` | A ✅ | Detail + comp + view-as-user |
 | `/admin/audit` | A ✅ | Admin action log |
 | `/admin/revenue` | B ✅ | MRR, ARR, churn, tier mix, net revenue chart |
-| `/admin/growth` | C | Funnels, activation, sources |
-| `/admin/community` | C | Community ops metrics |
+| `/admin/growth` | C ✅ | Funnels, activation, sources |
+| `/admin/community` | C ✅ | Community ops metrics |

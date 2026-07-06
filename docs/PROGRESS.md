@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
 | **Last updated** | 2026-07-06 |
-| **Last session focus** | Admin console Phase B complete (discounts, exports, MRR trend) |
+| **Last session focus** | Admin console Phase C — growth + community ops |
 
 ---
 
@@ -35,6 +35,27 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Admin console Phase C (growth + community)
+
+**What was done**
+
+- **`/admin/growth`** — signups (7d/30d), activation funnel, signup sources, free→paid %, D7/D30 workout retention cohorts
+- **`/admin/community`** — WACP, opt-in, action mix via `getCommunityMetrics()` + link to `/community/moderation`
+- **Nav** — Growth and Community in admin sidebar
+
+**What's next**
+
+- Phase D: broadcasts, feature flags, ingredient review, refund/cancel, admin invite UI
+
+**Files touched**
+
+- `apps/web/src/lib/admin/growth-metrics.ts`
+- `apps/web/src/app/admin/(authenticated)/growth/page.tsx`, `community/page.tsx`
+- `apps/web/src/components/admin/admin-growth-dashboard.tsx`, `admin-shell.tsx`
+- `docs/PROGRESS.md`, `docs/phases/admin-console.md`, `docs/ADRs/002-forgerep-admin-console.md`, `docs/ARCHITECTURE.md`
+
+---
 
 ### 2026-07-06 — Admin console Phase B complete
 

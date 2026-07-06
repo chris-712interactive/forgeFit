@@ -66,6 +66,8 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
 | Overview KPIs | `lib/admin/metrics.ts`, `stripe-metrics.ts` — MRR/ARR from Stripe (15 min cache) |
 | Revenue dashboard | `app/admin/(authenticated)/revenue`, `lib/admin/revenue-metrics.ts`, `revenue-snapshots.ts` |
+| Growth dashboard | `app/admin/(authenticated)/growth`, `lib/admin/growth-metrics.ts` |
+| Community ops | `app/admin/(authenticated)/community` — reuses `getCommunityMetrics()` |
 | Discounts | `lib/admin/discount.ts`, `POST/DELETE /api/admin/users/[id]/discount` |
 | CSV export | `GET /api/admin/export/subscriptions`, `GET /api/admin/export/users` |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
@@ -74,7 +76,7 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 
 Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSONATION_SECRET` or `CRON_SECRET`. Non-admins receive **404** (not 403).
 
-**Planned (Phases B–D remainder):** discount attach, trial extend, `/admin/growth` (funnels, cohorts), `/admin/community` (ops metrics), broadcasts, refunds.
+**Planned (Phase D):** discount attach done · broadcasts, feature flags, ingredient review, refunds, admin invite UI.
 
 ## Program Generation (Phase 2)
 

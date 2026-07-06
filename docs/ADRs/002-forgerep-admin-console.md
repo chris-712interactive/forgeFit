@@ -1,6 +1,6 @@
 # ADR 002 — ForgeRep Admin Console
 
-**Status:** Phase A shipped · Phase B shipped · Phases C–D planned  
+**Status:** Phase A shipped · Phase B shipped · Phase C shipped · Phase D planned  
 **Last updated:** 2026-07-06  
 **Depends on:** Phase 7 billing (Stripe), community moderation (Phase 6), Supabase Auth  
 **Phase doc:** [admin-console.md](../phases/admin-console.md) (acceptance criteria + file map)
@@ -142,14 +142,14 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 - [x] Rate-limit admin API routes
 - [ ] ~~Extend trial~~ — N/A (freemium)
 
-### Phase C — Growth ops
+### Phase C — Growth ops ✅ Shipped 2026-07-06
 
-- [ ] `/admin/growth` page
-- [ ] Funnel visualization (signup → onboard → first workout → paid)
-- [ ] Cohort retention table
-- [ ] Signup source + experiment breakdown
-- [ ] `/admin/community` — embed `CommunityOpsMetricsPanel`
-- [ ] Link to `/community/moderation` for dual-role admins
+- [x] `/admin/growth` page
+- [x] Funnel visualization (signup → onboard → first workout → nutrition → paid)
+- [x] Cohort retention table (D7/D30 workout logged)
+- [x] Signup source + paid % breakdown
+- [x] `/admin/community` — embed `CommunityOpsMetricsPanel`
+- [x] Link to `/community/moderation` for dual-role admins
 
 ### Phase D — Advanced
 
@@ -182,8 +182,8 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 | `/admin/users/[id]` | ✅ | Detail + comp actions |
 | `/admin/audit` | ✅ | Admin action log |
 | `/admin/revenue` | ✅ | MRR, ARR, churn, tier mix, net revenue |
-| `/admin/growth` | Planned C | Funnels, activation, sources |
-| `/admin/community` | Planned C | Community ops metrics |
+| `/admin/growth` | ✅ | Funnels, activation, sources |
+| `/admin/community` | ✅ | Community ops metrics |
 
 ---
 
