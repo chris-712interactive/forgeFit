@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 10 in progress (10A shipped) |
-| **Last updated** | 2026-07-05 |
-| **Last session focus** | Fix Vercel build — split auth redirect cookie server module |
+| **Last updated** | 2026-07-06 |
+| **Last session focus** | Admin overview Stripe-backed revenue metrics |
 
 ---
 
@@ -35,6 +35,26 @@
 ---
 
 ## Session Log
+
+### 2026-07-06 — Admin overview Stripe revenue metrics
+
+**What was done**
+
+- **`lib/admin/stripe-metrics.ts`** — paginates Stripe active/trialing/past_due subscriptions; normalizes MRR (monthly + annual + coupons); 15 min cache
+- **Overview KPIs** — paid subscriber counts, tier/interval mix, MRR/ARR from Stripe (profile-based fallback when Stripe unavailable)
+- **UI** — revenue source banner, trialing count, monthly vs annual breakdown in hints
+
+**What's next**
+
+- Phase B: `/admin/revenue` page, charts, CSV export, discount attach UI
+
+**Files touched**
+
+- `apps/web/src/lib/admin/stripe-metrics.ts`, `apps/web/src/lib/admin/metrics.ts`
+- `apps/web/src/components/admin/admin-overview-cards.tsx`, `apps/web/src/app/admin/(authenticated)/page.tsx`
+- `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-05 — Fix Vercel build (auth redirect cookie)
 

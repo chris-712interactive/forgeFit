@@ -58,7 +58,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 | Impersonation | `apps/web/src/lib/admin/impersonation.ts`, `apps/web/src/lib/auth/member-context.ts` |
 | Users | `apps/web/src/lib/admin/users.ts` |
 | Comp | `apps/web/src/lib/admin/comp.ts` |
-| Metrics | `apps/web/src/lib/admin/metrics.ts` |
+| Metrics | `apps/web/src/lib/admin/metrics.ts`, `apps/web/src/lib/admin/stripe-metrics.ts` |
 | Audit | `apps/web/src/lib/admin/audit.ts` |
 | Pages | `apps/web/src/app/admin/(authenticated)/**`, `apps/web/src/app/admin/login/**` |
 | API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts`, `.../impersonate/route.ts`, `/api/admin/impersonate` |
@@ -73,7 +73,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 ### Done when
 
 - [ ] `/admin/revenue` page with MRR, ARR (MRR × 12), paid subs by tier/interval
-- [ ] Accurate MRR from Stripe (monthly vs annual interval, not list-price estimate)
+- [x] Accurate MRR from Stripe (monthly vs annual interval, not list-price estimate) — overview KPIs
 - [ ] New paid subs (7d / 30d), churned/canceled counts, past-due alerts
 - [ ] Net revenue from Stripe balance transactions (15 min cache)
 - [ ] Comp accounts count + ARR equivalent

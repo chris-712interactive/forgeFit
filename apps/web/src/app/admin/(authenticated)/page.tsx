@@ -11,7 +11,7 @@ export default async function AdminOverviewPage() {
           Overview
         </h1>
         <p className="mt-1 text-sm text-forge-muted">
-          Revenue estimates and account health at a glance.
+          Revenue and subscription health from Stripe (cached 15 min).
         </p>
       </header>
 

@@ -109,7 +109,7 @@ All mutating admin actions write to `admin_audit_log` before returning success.
 - Community opt-in / WACP (`getCommunityMetrics()`)
 - D7 / D30 workout retention cohorts
 
-**Phase A shipped (estimate only):** Overview cards count paid tiers at monthly list price; annual subs and coupons not reflected yet.
+**Phase A + overview Stripe metrics:** Overview KPIs use live Stripe subscriptions for paid counts and MRR (monthly/annual normalized, coupons when present). Profile fallback when Stripe env is incomplete. Comp seats still from Supabase.
 
 Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metrics.
 
@@ -205,7 +205,7 @@ Data sources: Supabase SQL + Stripe API (15 min cache) + existing community metr
 | Impersonation | `apps/web/src/lib/admin/impersonation.ts`, `apps/web/src/lib/auth/member-context.ts` |
 | Users | `apps/web/src/lib/admin/users.ts` |
 | Comp | `apps/web/src/lib/admin/comp.ts` |
-| Metrics | `apps/web/src/lib/admin/metrics.ts` |
+| Metrics | `apps/web/src/lib/admin/metrics.ts`, `apps/web/src/lib/admin/stripe-metrics.ts` |
 | Audit | `apps/web/src/lib/admin/audit.ts` |
 | Pages | `apps/web/src/app/admin/**` |
 | API | `apps/web/src/app/api/admin/users/[id]/comp/route.ts`, `.../impersonate/route.ts`, `/api/admin/impersonate` |

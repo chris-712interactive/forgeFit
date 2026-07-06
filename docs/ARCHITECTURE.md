@@ -64,6 +64,7 @@ Internal operator UI at `/admin` (desktop-first, separate from member PWA shell)
 | Operator login | `app/admin/login` — separate from `app/login` |
 | Impersonation | `lib/admin/impersonation.ts`, `lib/auth/member-context.ts` |
 | Comp billing | `lib/admin/comp.ts` — grant/revoke without Stripe charge |
+| Revenue KPIs | `lib/admin/stripe-metrics.ts` — MRR/ARR + paid counts from Stripe (15 min cache) |
 | Audit trail | `admin_audit_log` + `lib/admin/audit.ts` |
 | API | `POST /api/admin/users/[id]/comp`, `POST .../impersonate`, `DELETE /api/admin/impersonate` |
 | Stripe guard | `sync-subscription.ts` skips tier overwrite for active comps |
