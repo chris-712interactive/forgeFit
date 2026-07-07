@@ -6,6 +6,7 @@ import { getDailyNutritionSummary } from "@/lib/nutrition/service";
 import { scheduleFitbitBackgroundSync } from "@/lib/integrations/fitbit-sync-scheduler";
 import { ensureActiveProgram } from "@/lib/programs/service";
 import type { FitnessGoal } from "@/lib/types/profile";
+import { listWorkoutScheduleOverrides } from "@/lib/workouts/schedule-overrides-server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import {
   birthdayGreeting,
@@ -86,7 +87,7 @@ export async function getHomeDashboardData(
   const subscription = await getSubscriptionForUser(userId);
   await scheduleFitbitBackgroundSync(userId, subscription);
 
-  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recentMeasurements] =
+  const [profileResult, plan, nutrition, sessionResult, activity, sleep, recentMeasurements, scheduleOverridesResult] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -101,6 +102,7 @@ export async function getHomeDashboardData(
       getActivityContext(userId, subscription),
       getSleepContext(userId, subscription),
       getRecentBodyMeasurements(userId),
+      listWorkoutScheduleOverrides(userId),
     ]);
 
   const gamification = await getGamificationContext(
@@ -133,7 +135,9 @@ export async function getHomeDashboardData(
     plan,
     sessionResult.records,
     weeklyStats,
-    nutrition
+    nutrition,
+    new Date(),
+    scheduleOverridesResult.overrides
   );
   const weightChart = buildWeightByDay(recentMeasurements);
   const charts = {

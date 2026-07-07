@@ -3,4 +3,6 @@ export * from "./db";
 export * from "./workout-store";
 export * from "./sync-client";
 export * from "./program-cache";
+export * from "./schedule-override-store";
+export * from "./schedule-override-types";
 export * from "./clear-user-data";

@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getWorkoutDeviceMetricsByClientIds } from "@/lib/workouts/device-metrics-service";
 import { getWorkoutReadinessContext } from "@/lib/workouts/readiness";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
+import { listWorkoutScheduleOverrides } from "@/lib/workouts/schedule-overrides-server";
 
 export default async function WorkoutPage() {
   const member = await getMemberContext();
@@ -33,6 +34,9 @@ export default async function WorkoutPage() {
   const serverSessionsResult = userId
     ? await getServerSessionRecords(userId, 120)
     : { records: [], tableReady: true };
+  const scheduleOverridesResult = userId
+    ? await listWorkoutScheduleOverrides(userId)
+    : { overrides: [], tableReady: true };
   const subscription = userId
     ? await getSubscriptionForUser(userId)
     : {
@@ -74,6 +78,8 @@ export default async function WorkoutPage() {
       plan={plan}
       userEquipment={userEquipment}
       serverSessions={serverSessionsResult.records}
+      serverScheduleOverrides={scheduleOverridesResult.overrides}
+      scheduleOverridesTableReady={scheduleOverridesResult.tableReady}
       workoutsTableReady={serverSessionsResult.tableReady}
       experienceLevel={profile?.experience_level ?? "beginner"}
       goal={profile?.primary_goal ?? "general_strength"}

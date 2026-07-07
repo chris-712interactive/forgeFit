@@ -1,15 +1,18 @@
 import {
-  isoWeekdayFromDate,
   parseScheduleStartIso,
   sessionKind,
   toScheduleStartIso,
+  type ProgramPlan,
 } from "@forgefit/program-engine";
-import type { ProgramPlan } from "@forgefit/program-engine";
-import { planScheduleStartIso } from "@/lib/programs/start-date";
 import {
   sessionDateIso,
   sessionMatchesScheduledPlanDay,
 } from "@/lib/workouts/schedule-dates";
+import { planScheduleStartIso } from "@/lib/programs/start-date";
+import {
+  buildEffectiveScheduleMap,
+  type WorkoutScheduleOverride,
+} from "@/lib/workouts/schedule-overrides";
 import type { WorkoutSessionRecord } from "./sessions";
 
 function startOfDay(date: Date): Date {
@@ -40,11 +43,12 @@ function yesterdayCompletedSessionKind(
   return best?.kind;
 }
 
-/** Next incomplete session for this calendar week (today first, then later days). */
+/** Next incomplete session using effective (adjusted) calendar dates. */
 export function findNextPlannedSession(
   sessions: WorkoutSessionRecord[],
   plan: ProgramPlan | null,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  overrides: WorkoutScheduleOverride[] = []
 ): { dayIndex: number; name: string } | null {
   if (!plan) return null;
 
@@ -89,42 +93,69 @@ export function findNextPlannedSession(
   );
   if (incomplete.length === 0) return null;
 
-  const today = isoWeekdayFromDate(referenceDate);
-  const todaySession = incomplete.find((session) => session.dayIndex === today);
+  const todayIso = toScheduleStartIso(referenceDate);
+  const effectiveMap = buildEffectiveScheduleMap(plan, overrides, referenceDate);
+  const sortedIncomplete = [...incomplete].sort((a, b) => {
+    const aIso = effectiveMap.get(a.dayIndex) ?? "";
+    const bIso = effectiveMap.get(b.dayIndex) ?? "";
+    if (aIso !== bIso) return aIso.localeCompare(bIso);
+    return a.dayIndex - b.dayIndex;
+  });
+
+  const todaySessions = sortedIncomplete.filter(
+    (session) => effectiveMap.get(session.dayIndex) === todayIso
+  );
   const yesterdayKind = yesterdayCompletedSessionKind(sessions, referenceDate);
 
-  if (todaySession) {
-    if (
-      yesterdayKind &&
-      sessionKind(todaySession.name) === yesterdayKind
-    ) {
-      const alternate = [...incomplete]
-        .filter(
-          (session) =>
-            session.dayIndex !== today &&
-            sessionKind(session.name) !== yesterdayKind
-        )
-        .sort((a, b) => a.dayIndex - b.dayIndex)[0];
+  if (todaySessions.length > 0) {
+    const primary = todaySessions[0]!;
+    if (yesterdayKind && sessionKind(primary.name) === yesterdayKind) {
+      const alternate = sortedIncomplete.find(
+        (session) =>
+          effectiveMap.get(session.dayIndex) !== todayIso &&
+          sessionKind(session.name) !== yesterdayKind
+      );
       if (alternate) {
         return { dayIndex: alternate.dayIndex, name: alternate.name };
       }
     }
 
-    return { dayIndex: todaySession.dayIndex, name: todaySession.name };
+    return { dayIndex: primary.dayIndex, name: primary.name };
   }
 
-  const laterThisWeek = incomplete
-    .filter((session) => session.dayIndex > today)
-    .sort((a, b) => a.dayIndex - b.dayIndex);
-  if (laterThisWeek[0]) {
+  const dueOrUpcoming = sortedIncomplete.filter((session) => {
+    const effectiveIso = effectiveMap.get(session.dayIndex);
+    return effectiveIso != null && effectiveIso <= todayIso;
+  });
+  if (dueOrUpcoming[0]) {
     return {
-      dayIndex: laterThisWeek[0].dayIndex,
-      name: laterThisWeek[0].name,
+      dayIndex: dueOrUpcoming[0].dayIndex,
+      name: dueOrUpcoming[0].name,
     };
   }
 
-  const earliest = [...incomplete].sort((a, b) => a.dayIndex - b.dayIndex)[0];
+  const nextUp = sortedIncomplete.find((session) => {
+    const effectiveIso = effectiveMap.get(session.dayIndex);
+    return effectiveIso != null && effectiveIso > todayIso;
+  });
+  if (nextUp) {
+    return { dayIndex: nextUp.dayIndex, name: nextUp.name };
+  }
+
+  const earliest = sortedIncomplete[0];
   return earliest
     ? { dayIndex: earliest.dayIndex, name: earliest.name }
     : null;
+}
+
+export function isEffectiveTrainingDay(
+  plan: ProgramPlan,
+  referenceDate = new Date(),
+  overrides: WorkoutScheduleOverride[] = []
+): boolean {
+  const todayIso = toScheduleStartIso(referenceDate);
+  const effectiveMap = buildEffectiveScheduleMap(plan, overrides, referenceDate);
+  return plan.week.some(
+    (session) => effectiveMap.get(session.dayIndex) === todayIso
+  );
 }

@@ -96,7 +96,8 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 3. Rest timer auto-starts after each completed set (program `restSeconds`)
 4. `SyncManager` in app layout calls `syncWorkoutData()` on load and `online` event
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
-6. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
+6. **Schedule adjuster** — per-week overrides in Dexie + `workout_schedule_overrides`; `Move` on each day card opens a week picker; occupied days auto-swap; `GET/POST /api/workout-schedule` syncs overrides
+7. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
 
 ## Nutrition Diary (Phase 4)
 
@@ -130,6 +131,7 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 | `/auth/callback` | OAuth code exchange | 1 |
 | Server action `completeOnboarding` | Save onboarding | 1 |
 | `/api/sync` | Offline batch upload | 3 |
+| `/api/workout-schedule` | Per-week workout date overrides | 3+ |
 | `/api/programs/generate` | Create program from profile | 2 |
 | `/api/nutrition/search` | Food lookup | 4 |
 | `/api/measurements` | Log body measurements | 5 |

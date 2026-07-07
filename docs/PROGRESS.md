@@ -10,8 +10,40 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 9 complete; Phase 10 complete |
-| **Last updated** | 2026-07-06 |
-| **Last session focus** | Phase 9H sport catalog expansion |
+| **Last updated** | 2026-07-07 |
+| **Last session focus** | Workout schedule adjuster (per-session move/swap) |
+
+---
+
+## Session Log
+
+### 2026-07-07 — Workout schedule adjuster
+
+**What was done**
+
+- Added `workout_schedule_overrides` table (per user, week, plan day slot → adjusted calendar date)
+- Core logic in `schedule-overrides.ts`: effective dates, swap-on-conflict, reset day/week, start-lock rules
+- Offline-first Dexie store (`scheduleOverrides` v4) + `GET/POST /api/workout-schedule` sync
+- Workout UI: **Move** button on each week card → `ScheduleAdjustSheet` with Mon–Sun picker; cards sorted by effective date
+- Home hero + next-workout logic respect adjusted dates
+
+**What's next**
+
+- Apply migration `20260707120000_workout_schedule_overrides.sql` in Supabase
+- Phase 7 — Withings production QA, Strava launch
+
+**Blockers**
+
+- Migration must be applied for server persistence (offline adjustments still work locally)
+
+**Files touched**
+
+- `supabase/migrations/20260707120000_workout_schedule_overrides.sql`
+- `packages/offline-sync/src/schedule-override-store.ts`, `db.ts`, `types.ts`
+- `apps/web/src/lib/workouts/schedule-overrides.ts`, `schedule-overrides-server.ts`, `schedule-overrides-local.ts`, `next-session.ts`
+- `apps/web/src/components/workout/schedule-adjust-sheet.tsx`, `week-plan-card.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/actions/workout-schedule.ts`, `app/api/workout-schedule/route.ts`
+- `docs/ARCHITECTURE.md`, `docs/BIBLE.md`, `docs/PROGRESS.md`, `README.md`
 
 ---
 

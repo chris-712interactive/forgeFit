@@ -1,8 +1,9 @@
 "use client";
 
 import { cancelWorkoutSessionOnServer } from "@/app/actions/workouts";
+import { saveWorkoutScheduleOverrides } from "@/app/actions/workout-schedule";
 import { readActionError } from "@/lib/auth/action-result";
-import type { ProgramPlan } from "@forgefit/program-engine";
+import type { ProgramPlan, WorkoutSession } from "@forgefit/program-engine";
 import {
   cacheProgramPlan,
   cancelInProgressSessionsForDay,
@@ -16,7 +17,17 @@ import {
   mergeSessionRecords,
   type WorkoutSessionRecord,
 } from "@/lib/workouts/sessions";
-import { canStartPlanSession } from "@/lib/workouts/schedule-dates";
+import {
+  compareSessionsByEffectiveDate,
+  canStartPlanSessionWithOverrides,
+  type WorkoutScheduleOverride,
+} from "@/lib/workouts/schedule-overrides";
+import {
+  loadLocalScheduleOverrides,
+  mergeScheduleOverrideLists,
+  persistLocalScheduleOverrides,
+  syncScheduleOverridesWithServer,
+} from "@/lib/workouts/schedule-overrides-local";
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
@@ -46,6 +57,7 @@ import { SyncStatusBanner } from "./sync-status-banner";
 import { useWorkoutSyncContext } from "./sync-manager";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
 import { WeekPlanCard } from "./week-plan-card";
+import { ScheduleAdjustSheet } from "./schedule-adjust-sheet";
 import { WorkoutHistoryList } from "./workout-history-list";
 import { WorkoutRecap } from "./workout-recap";
 import { WorkoutSyncNotice } from "./workout-sync-notice";
@@ -56,6 +68,8 @@ interface WorkoutHubProps {
   plan: ProgramPlan | null;
   userEquipment?: string[];
   serverSessions?: WorkoutSessionRecord[];
+  serverScheduleOverrides?: WorkoutScheduleOverride[];
+  scheduleOverridesTableReady?: boolean;
   workoutsTableReady?: boolean;
   experienceLevel?: ExperienceLevel;
   goal?: FitnessGoal;
@@ -111,6 +125,8 @@ export function WorkoutHub({
   plan: serverPlan,
   userEquipment = ["bodyweight_only"],
   serverSessions = [],
+  serverScheduleOverrides = [],
+  scheduleOverridesTableReady = true,
   workoutsTableReady = true,
   experienceLevel = "beginner",
   goal = "general_strength",
@@ -125,6 +141,7 @@ export function WorkoutHub({
   const router = useRouter();
   const sync = useWorkoutSyncContext();
   const autoStarted = useRef(false);
+  const scheduleSyncedRef = useRef(false);
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [reviewClientId, setReviewClientId] = useState<string | null>(null);
   const [plan, setPlan] = useState<ProgramPlan | null>(serverPlan);
@@ -135,6 +152,13 @@ export function WorkoutHub({
   const [discardingClientId, setDiscardingClientId] = useState<string | null>(
     null
   );
+  const [scheduleOverrides, setScheduleOverrides] = useState<
+    WorkoutScheduleOverride[]
+  >(serverScheduleOverrides);
+  const [overridesReady, setOverridesReady] = useState(false);
+  const [adjustingSession, setAdjustingSession] =
+    useState<WorkoutSession | null>(null);
+  const [savingSchedule, setSavingSchedule] = useState(false);
   const [finishRankDelta, setFinishRankDelta] =
     useState<LeaderboardRankDelta | null>(null);
   const offline = useOfflineStatus();
@@ -144,6 +168,39 @@ export function WorkoutHub({
     () => mergeSessionRecords(localSessions, serverSessions),
     [localSessions, serverSessions]
   );
+
+  const sortedPlanSessions = useMemo(() => {
+    if (!plan) return [];
+    return [...plan.week].sort((a, b) =>
+      compareSessionsByEffectiveDate(a, b, plan, scheduleOverrides)
+    );
+  }, [plan, scheduleOverrides]);
+
+  const refreshScheduleOverrides = useCallback(async () => {
+    const local = await loadLocalScheduleOverrides(userId);
+    setScheduleOverrides(mergeScheduleOverrideLists(local, serverScheduleOverrides));
+    setOverridesReady(true);
+  }, [serverScheduleOverrides, userId]);
+
+  useEffect(() => {
+    void refreshScheduleOverrides();
+  }, [refreshScheduleOverrides]);
+
+  useEffect(() => {
+    if (!overridesReady || !plan || scheduleSyncedRef.current) return;
+    scheduleSyncedRef.current = true;
+
+    void syncScheduleOverridesWithServer({
+      userId,
+      programId: cachedProgramId,
+    }).then(async (result) => {
+      if (!result.ok) return;
+      await refreshScheduleOverrides();
+      if (navigator.onLine) {
+        router.refresh();
+      }
+    });
+  }, [cachedProgramId, overridesReady, plan, refreshScheduleOverrides, router, userId]);
 
   const dayStatusMap = useMemo(
     () => buildDayStatusMap(allSessions, plan),
@@ -290,7 +347,7 @@ export function WorkoutHub({
       if (!plan) return;
       const session = plan.week.find((s) => s.dayIndex === dayIndex);
       if (!session) return;
-      if (!canStartPlanSession(dayIndex, plan)) return;
+      if (!canStartPlanSessionWithOverrides(dayIndex, plan, scheduleOverrides)) return;
 
       const dayStatus = dayStatusMap.get(dayIndex);
       if (dayStatus?.inProgress) {
@@ -390,7 +447,45 @@ export function WorkoutHub({
       declaredE1rmKg,
       unit,
       spotifyConnected,
+      scheduleOverrides,
     ]
+  );
+
+  const handleSaveSchedule = useCallback(
+    async (nextOverrides: WorkoutScheduleOverride[]) => {
+      if (!plan) return;
+      setSavingSchedule(true);
+      try {
+        await persistLocalScheduleOverrides({
+          userId,
+          programId: cachedProgramId,
+          overrides: nextOverrides,
+        });
+        setScheduleOverrides(nextOverrides);
+
+        if (navigator.onLine) {
+          const result = await saveWorkoutScheduleOverrides({
+            programId: cachedProgramId,
+            overrides: nextOverrides,
+          });
+          const actionError = readActionError(result);
+          if (actionError) {
+            window.alert(actionError);
+            return;
+          }
+          await syncScheduleOverridesWithServer({
+            userId,
+            programId: cachedProgramId,
+          });
+          router.refresh();
+        }
+
+        setAdjustingSession(null);
+      } finally {
+        setSavingSchedule(false);
+      }
+    },
+    [cachedProgramId, plan, router, userId]
   );
 
   const handleDiscard = useCallback(
@@ -549,17 +644,23 @@ export function WorkoutHub({
               </div>
             </CollapsibleSection>
 
+            {!scheduleOverridesTableReady && (
+              <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm text-forge-steel">
+                Schedule adjustments need a database migration — workouts still
+                follow your default plan days until it is applied.
+              </p>
+            )}
+
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               This week
             </h2>
-            { [...plan.week]
-              .sort((a, b) => a.dayIndex - b.dayIndex)
-              .map((session) => (
+            {sortedPlanSessions.map((session) => (
               <WeekPlanCard
                 key={`${session.dayIndex}-${session.name}`}
                 plan={plan}
                 session={session}
                 dayStatus={dayStatusMap.get(session.dayIndex)}
+                scheduleOverrides={scheduleOverrides}
                 starting={startingDay === session.dayIndex}
                 discarding={
                   discardingClientId ===
@@ -569,8 +670,26 @@ export function WorkoutHub({
                 onContinue={openWorkout}
                 onDiscard={(clientId) => void handleDiscard(clientId)}
                 onViewResults={openReview}
+                onAdjustSchedule={
+                  scheduleOverridesTableReady
+                    ? () => setAdjustingSession(session)
+                    : undefined
+                }
               />
             ))}
+
+            {adjustingSession && (
+              <ScheduleAdjustSheet
+                open
+                plan={plan}
+                session={adjustingSession}
+                dayStatus={dayStatusMap.get(adjustingSession.dayIndex)}
+                overrides={scheduleOverrides}
+                saving={savingSchedule}
+                onClose={() => setAdjustingSession(null)}
+                onSave={(nextOverrides) => void handleSaveSchedule(nextOverrides)}
+              />
+            )}
 
             <CollapsibleSection
               title="Workout history"
