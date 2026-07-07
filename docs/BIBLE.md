@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-06 · **Current phase:** Phase 9 complete; Phase 10 complete
+**Last updated:** 2026-07-07 · **Current phase:** Phase 9 complete; Phase 10 complete
 
 ---
 
@@ -141,7 +141,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 
 - `profiles`, `body_measurements`, `caliper_measurements`
 - `equipment_inventory`, `recovery_equipment`
-- `programs`, `workout_sessions`, `exercise_sets`
+- `programs`, `workout_sessions`, `exercise_sets`, `workout_schedule_overrides`
 - `nutrition_logs`, `integrations`, `projections`
 - `achievements`, `leaderboard_entries`, `coaching_messages`
 

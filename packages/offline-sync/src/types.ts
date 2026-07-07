@@ -126,3 +126,5 @@ export interface SyncResponseBody {
   syncedSessions: number;
   syncedSets: number;
 }
+
+export type { LocalScheduleOverride } from "./schedule-override-types";

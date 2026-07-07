@@ -1,9 +1,13 @@
-import { isoWeekdayFromDate } from "@forgefit/program-engine";
 import type { ProgramPlan } from "@forgefit/program-engine";
+import { toScheduleStartIso } from "@forgefit/program-engine";
 import type { DailyNutritionSummary } from "@/lib/nutrition/types";
 import { sessionMatchesScheduledPlanDay } from "@/lib/workouts/schedule-dates";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
-import { findNextPlannedSession } from "./weekly-stats";
+import { findNextPlannedSession, isEffectiveTrainingDay } from "@/lib/workouts/next-session";
+import {
+  effectiveScheduledDateIso,
+  type WorkoutScheduleOverride,
+} from "@/lib/workouts/schedule-overrides";
 import type { WeeklyWorkStats } from "./types";
 
 export type HomeHeroStatus =
@@ -27,7 +31,9 @@ export interface HomeHeroContext {
 function buildFuelHint(
   plan: ProgramPlan,
   stats: WeeklyWorkStats,
-  nutrition: DailyNutritionSummary
+  nutrition: DailyNutritionSummary,
+  overrides: WorkoutScheduleOverride[] = [],
+  referenceDate = new Date()
 ): string | null {
   const proteinTarget = nutrition.targets?.proteinG ?? 0;
   const proteinLogged = Math.round(nutrition.totals.proteinG);
@@ -41,10 +47,7 @@ function buildFuelHint(
     return "Protein target hit for today — nice work.";
   }
 
-  const todayIndex = isoWeekdayFromDate(new Date());
-  const isTrainingDay = plan.week.some(
-    (session) => session.dayIndex === todayIndex
-  );
+  const isTrainingDay = isEffectiveTrainingDay(plan, referenceDate, overrides);
 
   if (isTrainingDay) {
     return `Training day — about ${proteinLeft}g protein left to fuel recovery.`;
@@ -60,7 +63,8 @@ export function buildHomeHeroContext(
   sessions: WorkoutSessionRecord[],
   stats: WeeklyWorkStats,
   nutrition: DailyNutritionSummary,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  overrides: WorkoutScheduleOverride[] = []
 ): HomeHeroContext {
   if (!plan) {
     return {
@@ -75,7 +79,7 @@ export function buildHomeHeroContext(
     };
   }
 
-  const fuelHint = buildFuelHint(plan, stats, nutrition);
+  const fuelHint = buildFuelHint(plan, stats, nutrition, overrides, referenceDate);
 
   const inProgress = sessions.find(
     (session) =>
@@ -107,7 +111,12 @@ export function buildHomeHeroContext(
     };
   }
 
-  const next = findNextPlannedSession(sessions, plan, referenceDate);
+  const next = findNextPlannedSession(
+    sessions,
+    plan,
+    referenceDate,
+    overrides
+  );
   if (!next) {
     return {
       status: "week_complete",
@@ -124,8 +133,14 @@ export function buildHomeHeroContext(
   const planSession = plan.week.find(
     (session) => session.dayIndex === next.dayIndex
   );
-  const todayIndex = isoWeekdayFromDate(referenceDate);
-  const isToday = next.dayIndex === todayIndex;
+  const todayIso = toScheduleStartIso(referenceDate);
+  const nextEffectiveIso = effectiveScheduledDateIso(
+    next.dayIndex,
+    plan,
+    overrides,
+    referenceDate
+  );
+  const isToday = nextEffectiveIso === todayIso;
 
   return {
     status: isToday ? "planned" : "rest",

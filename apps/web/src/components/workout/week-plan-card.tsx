@@ -5,9 +5,11 @@ import { useState } from "react";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { formatShortDate } from "@/lib/workouts/comparison";
 import {
-  canStartPlanSession,
-  formatPlanSessionDate,
-} from "@/lib/workouts/schedule-dates";
+  canStartPlanSessionWithOverrides,
+  formatPlanSessionDateWithOverrides,
+  isScheduleAdjusted,
+  type WorkoutScheduleOverride,
+} from "@/lib/workouts/schedule-overrides";
 import type { DayPlanStatus } from "@/lib/workouts/sessions";
 import { WorkoutMusicPicker } from "./workout-music-picker";
 import {
@@ -34,12 +36,14 @@ interface WeekPlanCardProps {
   plan: ProgramPlan;
   session: WorkoutSession;
   dayStatus?: DayPlanStatus;
+  scheduleOverrides?: WorkoutScheduleOverride[];
   starting: boolean;
   discarding: boolean;
   onStart: () => void;
   onContinue: (clientId: string) => void;
   onDiscard: (clientId: string) => void;
   onViewResults: (clientId: string) => void;
+  onAdjustSchedule?: () => void;
 }
 
 function cardSurfaceClass(inProgress: boolean, isDone: boolean): string {
@@ -52,20 +56,31 @@ export function WeekPlanCard({
   plan,
   session,
   dayStatus,
+  scheduleOverrides = [],
   starting,
   discarding,
   onStart,
   onContinue,
   onDiscard,
   onViewResults,
+  onAdjustSchedule,
 }: WeekPlanCardProps) {
   const offline = useOfflineStatus();
   const [previewPhase, setPreviewPhase] = useState<PhaseTone | null>(null);
   const inProgress = dayStatus?.inProgress ?? null;
   const completed = dayStatus?.latestCompleted ?? null;
   const isDone = Boolean(completed) && !inProgress;
-  const canStart = canStartPlanSession(session.dayIndex, plan);
+  const canStart = canStartPlanSessionWithOverrides(
+    session.dayIndex,
+    plan,
+    scheduleOverrides
+  );
   const isFlipped = previewPhase !== null;
+  const adjusted = isScheduleAdjusted(
+    session.dayIndex,
+    plan,
+    scheduleOverrides
+  );
 
   const completedSets = completed?.sets.filter((s) => s.completed).length ?? 0;
   const totalSets = completed?.sets.length ?? 0;
@@ -89,14 +104,32 @@ export function WeekPlanCard({
                 {session.dayLabel}
               </p>
               <p className="text-xs text-forge-muted">
-                {formatPlanSessionDate(session.dayIndex, plan)}
+                {formatPlanSessionDateWithOverrides(
+                  session.dayIndex,
+                  plan,
+                  scheduleOverrides
+                )}
               </p>
+              {adjusted && (
+                <p className="text-xs font-medium text-forge-steel">
+                  Rescheduled this week
+                </p>
+              )}
               <h3 className="font-display font-semibold text-forge-text">
                 {session.name}
               </h3>
             </div>
 
             <div className="flex shrink-0 flex-col gap-2">
+              {onAdjustSchedule && !isDone && (
+                <button
+                  type="button"
+                  onClick={onAdjustSchedule}
+                  className="rounded-lg border border-forge-steel/40 px-4 py-2 text-sm font-medium text-forge-steel transition-colors hover:border-forge-steel/60"
+                >
+                  Move
+                </button>
+              )}
               {inProgress ? (
                 <>
                   <button

@@ -2,6 +2,7 @@ import Dexie, { type Table } from "dexie";
 import type {
   CachedProgram,
   LocalExerciseSet,
+  LocalScheduleOverride,
   LocalWorkoutSession,
 } from "./types";
 
@@ -9,6 +10,7 @@ class ForgeFitDB extends Dexie {
   workoutSessions!: Table<LocalWorkoutSession, string>;
   exerciseSets!: Table<LocalExerciseSet, string>;
   cachedPrograms!: Table<CachedProgram, string>;
+  scheduleOverrides!: Table<LocalScheduleOverride, string>;
 
   constructor() {
     super("forgefit-offline");
@@ -27,6 +29,14 @@ class ForgeFitDB extends Dexie {
       exerciseSets:
         "clientId, sessionClientId, userId, [sessionClientId+exerciseId+setNumber]",
       cachedPrograms: "userId",
+    });
+    this.version(4).stores({
+      workoutSessions: "clientId, userId, status, updatedAt",
+      exerciseSets:
+        "clientId, sessionClientId, userId, [sessionClientId+exerciseId+setNumber]",
+      cachedPrograms: "userId",
+      scheduleOverrides:
+        "id, userId, [weekStartIso+dayIndex], weekStartIso, dayIndex, synced",
     });
   }
 }
