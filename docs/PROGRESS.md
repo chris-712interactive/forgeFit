@@ -11,7 +11,26 @@
 |-------|-------|
 | **Active phase** | Phase 9 complete; Phase 10 complete |
 | **Last updated** | 2026-07-07 |
-| **Last session focus** | Workout schedule adjuster (per-session move/swap) |
+| **Last session focus** | pitchGNV grant playbook and deck build guide |
+
+---
+
+## Phase Completion
+
+| Phase | Name | Status | Completed |
+|-------|------|--------|-----------|
+| 0 | Scaffold | ✅ Complete | 2026-06-08 |
+| 1 | Auth + Onboarding | ✅ Complete | 2026-06-08 |
+| 2 | Evidence Engine | ✅ Complete | 2026-06-08 |
+| 3 | Workout + Offline PWA | ✅ Complete | 2026-06-08 |
+| 4 | Nutrition | ✅ Complete | 2026-06-08 |
+| 5 | Measurements + Projections | ✅ Complete | 2026-06-08 |
+| 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
+| 7 | Pro Integrations | ⏳ Partial | — |
+| 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
+| 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
+| 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
+| — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
@@ -47,26 +66,25 @@
 
 ---
 
-## Phase Completion
+### 2026-07-07 — pitchGNV grant playbook and deck guide
 
-| Phase | Name | Status | Completed |
-|-------|------|--------|-----------|
-| 0 | Scaffold | ✅ Complete | 2026-06-08 |
-| 1 | Auth + Onboarding | ✅ Complete | 2026-06-08 |
-| 2 | Evidence Engine | ✅ Complete | 2026-06-08 |
-| 3 | Workout + Offline PWA | ✅ Complete | 2026-06-08 |
-| 4 | Nutrition | ✅ Complete | 2026-06-08 |
-| 5 | Measurements + Projections | ✅ Complete | 2026-06-08 |
-| 6 | Exercise Library UI | ✅ Complete | 2026-06-08 |
-| 7 | Pro Integrations | ⏳ Partial | — |
-| 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
-| 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
-| 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
-| — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
+**What was done**
+
+- Added `docs/business/forgeRep-grant-playbook.md` — grant research, pitchGNV application copy, video script
+- Added `docs/business/pitchGNV-deck-mockups.md` — 10-slide Canva build guide with wireframes, tier/competition/ask copy, full presenter notes
+
+**What's next**
+
+- Build deck in Canva; capture 3 app screenshots for Slide 4
+- Submit pitchGNV by **July 10, 2026**
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md` (new)
+- `docs/business/pitchGNV-deck-mockups.md` (new)
+- `docs/PROGRESS.md`
 
 ---
-
-## Session Log
 
 ### 2026-07-06 — Phase 9H sport catalog expansion
 
