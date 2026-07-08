@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 9 complete; Phase 10 complete |
-| **Last updated** | 2026-07-07 |
-| **Last session focus** | pitchGNV grant playbook and deck build guide |
+| **Last updated** | 2026-07-08 |
+| **Last session focus** | Gym retention SEO guide + TechArticle schema |
 
 ---
 
@@ -35,6 +35,31 @@
 ---
 
 ## Session Log
+
+### 2026-07-08 — Gym retention SEO guide (TechArticle schema)
+
+**What was done**
+
+- Added `/guides/gym-member-retention-tracking` — AI-oriented blog post for gym owner retention + ForgeRep positioning
+- Extended SEO article types: `intro`, `dataTable`, `flowDiagram`, optional `TechArticle` schema config
+- `ArticleJsonLd` emits `@graph` with TechArticle, WebPage, Organization (Carline Dad Enterprises), and SoftwareApplication (ForgeRep)
+- Updated `docs/marketing/seo-guides.md`
+
+**What's next**
+
+- Link guide from Skip public listing / thecarlinedad.com ForgeRep product page
+- Validate JSON-LD in Google Rich Results Test after deploy
+
+**Files touched**
+
+- `apps/web/src/lib/seo/articles/types.ts`
+- `apps/web/src/lib/seo/articles/guide-articles.ts`
+- `apps/web/src/components/marketing/article-json-ld.tsx`
+- `apps/web/src/components/marketing/article-page.tsx`
+- `docs/marketing/seo-guides.md`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-07 — Workout schedule adjuster
 

@@ -13,18 +13,20 @@ Public, indexable articles at `/guides` for search discovery and comparison-inte
 
 1. Add content to `apps/web/src/lib/seo/articles/guide-articles.ts` or `comparison-articles.ts`
 2. Set `slug`, `title`, `description`, `keywords`, dates, and `relatedSlugs` for internal linking
-3. Rebuild — `generateStaticParams` and `sitemap.ts` pull from the shared article index automatically
+3. Optional: `intro` paragraphs, `flowDiagram` / `dataTable` section fields, and `schema` for AI-oriented `TechArticle` JSON-LD (see gym member retention guide)
+4. Rebuild — `generateStaticParams` and `sitemap.ts` pull from the shared article index automatically
 
 ## SEO surface
 
 - Per-article metadata via `buildArticleMetadata()` (`article-metadata.ts`)
-- JSON-LD `Article` + `BreadcrumbList` on each page
+- JSON-LD `Article` + `BreadcrumbList` on each page (default)
+- Optional `TechArticle` + `Organization` + `SoftwareApplication` graph when `schema.type` is set on an article
 - All guide URLs included in `/sitemap.xml`
 - `robots.ts` allows crawling (app routes remain disallowed)
 
 ## Launch set (2026-06-28)
 
-**Training guides:** offline workout tracker, evidence-based programs, macro tracking for lifters, progressive overload
+**Training guides:** offline workout tracker, evidence-based programs, macro tracking for lifters, progressive overload, gym member retention tracking (TechArticle schema)
 
 **Comparisons:** vs Strong, Hevy, MyFitnessPal, MacroFactor, Fitbod
 

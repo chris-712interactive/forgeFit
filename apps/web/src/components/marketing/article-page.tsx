@@ -64,6 +64,48 @@ function ComparisonTable({
   );
 }
 
+function DataTable({ headers, rows }: NonNullable<SeoArticle["sections"][number]["dataTable"]>) {
+  return (
+    <div className="mt-6 overflow-x-auto rounded-xl border border-[var(--border)]">
+      <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+        <thead>
+          <tr className="border-b border-[var(--border)] bg-forge-surface-raised">
+            {headers.map((header) => (
+              <th
+                key={header}
+                className="px-4 py-3 font-display font-semibold text-forge-text"
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIndex) => (
+            <tr
+              key={rowIndex}
+              className="border-b border-[var(--border)] last:border-b-0"
+            >
+              {row.map((cell, cellIndex) => (
+                <td
+                  key={cellIndex}
+                  className={`px-4 py-3 ${
+                    cellIndex === 0
+                      ? "font-medium text-forge-text"
+                      : "text-forge-muted"
+                  }`}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 interface ArticlePageProps {
   article: SeoArticle;
   relatedArticles: SeoArticle[];
@@ -116,6 +158,19 @@ export function ArticlePage({ article, relatedArticles }: ArticlePageProps) {
               </p>
             </header>
 
+            {article.intro && article.intro.length > 0 && (
+              <div className="mt-10 space-y-4">
+                {article.intro.map((paragraph, index) => (
+                  <p
+                    key={index}
+                    className="text-base leading-relaxed text-forge-muted"
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            )}
+
             <div className="mt-10 space-y-12 sm:mt-12">
               {article.sections.map((section) => (
                 <section key={section.heading} id={section.id}>
@@ -144,10 +199,23 @@ export function ArticlePage({ article, relatedArticles }: ArticlePageProps) {
                     </ul>
                   )}
 
+                  {section.flowDiagram && (
+                    <pre className="mt-6 overflow-x-auto rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-sm leading-relaxed text-forge-muted">
+                      {section.flowDiagram}
+                    </pre>
+                  )}
+
                   {section.comparisonTable && (
                     <ComparisonTable
                       competitorName={section.comparisonTable.competitorName}
                       rows={section.comparisonTable.rows}
+                    />
+                  )}
+
+                  {section.dataTable && (
+                    <DataTable
+                      headers={section.dataTable.headers}
+                      rows={section.dataTable.rows}
                     />
                   )}
                 </section>
