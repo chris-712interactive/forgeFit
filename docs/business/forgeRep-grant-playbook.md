@@ -112,6 +112,7 @@ _None — pitchGNV Q3 submitted Jul 9._
 | **Breva Thrive** | $5K | **2026-07-09** | Q3 (Jul 31 deadline) | Carline Dad Enterprises, LLC · community-impact use of funds |
 | **NSF SBIR Project Pitch** | Phase I $50K–$275K (if invited) | **2026-07-09** | Digital Health (DH) · **#00118988** | Carline Dad Enterprises, LLC · ForgeRep EPAPE · await NSF response (~1–2 mo) |
 | **Future of Health (EPFL / CSS)** | Up to CHF 90K (Level 2: CHF 30K) | **2026-07-09** | Jul 31 deadline · Sep 2026 cohort | Carline Dad Enterprises, LLC · ForgeRep · Level 2 POC · Swiss validation |
+| **Verizon Small Business Digital Ready (LISC)** | $10K | **2026-07-14** | Apply once · eligible for monthly awards through 2026 · final decisions by ~Jan 12, 2027 | Carline Dad Enterprises, LLC · ForgeRep · courses: Starting a Business + Buying a Pre-Owned Small Business · use of funds = customer acquisition |
 
 ### Engaged (advisory — not cash grants)
 
@@ -140,6 +141,7 @@ _None — pitchGNV Q3 submitted Jul 9._
 | **Jul 13–26** | Apply to open **Skip** grants; Hello Alice rolling applications |
 | **Jul 9** | ✅ **NSF SBIR Project Pitch submitted** — #00118988 · Digital Health (DH) · Carline Dad Enterprises, LLC |
 | **Jul 9** | ✅ **Future of Health Grant (EPFL/CSS) application submitted** — Level 2 POC · ForgeRep · await decision |
+| **Jul 14** | ✅ **Verizon Digital Ready / LISC $10K grant submitted** — remain eligible for monthly selections through 2026 |
 | **Jul 27** | NSF Digital Health **full proposal** deadline (only if Project Pitch invitation received) |
 | **Sep 2026** | Future of Health program start (if selected) |
 | **Aug–Sep** | Begin NIH SBIR Phase I draft; register SAM.gov if not done (6–8 wk lead time) |
@@ -437,6 +439,16 @@ Build in Canva, Google Slides, or Keynote. One idea per slide. Large type. Scree
 > [If <$25K, note Allstate-style programs may disqualify you — focus on programs without revenue minimums. If pre-revenue, state "Pre-revenue; product launched [date]. Freemium billing live."]
 
 ---
+
+### Verizon Small Business Digital Ready (LISC) — $10K
+
+- **URL:** [digitalready.verizonwireless.com/funding](https://digitalready.verizonwireless.com/funding/details) · LISC partner: [lisc.org](https://www.lisc.org/our-initiatives/small-business/our-work/verizon-small-business-digital-ready/grant-program/)
+- **Amount:** $10,000 (no repayment; Form 1099)
+- **Status:** ✅ **Application submitted July 14, 2026** (Carline Dad Enterprises, LLC · ForgeRep)
+- **Eligibility:** For-profit U.S. small business · 18+ · complete any two eligible Digital Ready courses/events · apply once to remain eligible for monthly awards through 2026
+- **Courses completed (unlock):** Starting a Business · Buying a Pre-Owned Small Business (Jul 14, 2026)
+- **Review notes:** Monthly selections (~10/month Jun–Dec 2026); priority to LMI / under-resourced communities; subset reviewed for accuracy, community impact, use of funds; final decisions by ~Jan 12, 2027
+- **Watch for:** Email from `smallbusinessservices@lisc.org`
 
 ### Skip grants
 
@@ -844,6 +856,7 @@ Required before federal proposals (allow **6–8 weeks**):
 
 ### Week 2 (Jul 13–19)
 - [x] Submit Breva Thrive Q3 — **done Jul 9, 2026**
+- [x] **Verizon Digital Ready / LISC $10K grant** — **submitted Jul 14, 2026**
 - [ ] Apply to all open **Skip** grants on dashboard
 - [ ] Consult CPA on **Section 41 R&D** payroll tax credit
 
@@ -871,6 +884,7 @@ All programs verified against official sources as of July 6, 2026:
 - [Amber Grant](https://ambergrantsforwomen.com/)
 - [IFundWomen Grants](https://www.ifundwomen.com/grants)
 - [Hello Alice Funding](https://helloalice.com/funding/grants/)
+- [Verizon Small Business Digital Ready grants](https://digitalready.verizonwireless.com/funding/details)
 - [Hiring Our Heroes](https://www.hiringourheroes.org/small-business-grant/)
 - [Grants.gov](https://www.grants.gov)
 

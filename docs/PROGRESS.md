@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + Phase 12 in progress |
 | **Last updated** | 2026-07-14 |
-| **Last session focus** | PRs #12/#13 on main; business docs reorganized |
+| **Last session focus** | Verizon Digital Ready / LISC $10K grant submitted |
 
 ---
 
@@ -37,6 +37,49 @@
 ---
 
 ## Session Log
+
+### 2026-07-14 — Verizon Digital Ready / LISC $10K grant submitted
+
+**What was done**
+
+- Completed Digital Ready courses: Starting a Business · Buying a Pre-Owned Small Business
+- Submitted LISC small business grant sponsored by Verizon ($10K) as Carline Dad Enterprises, LLC / ForgeRep
+- Recorded submission + program notes in grant playbook (apply once · remain eligible for monthly awards through 2026)
+
+**What's next**
+
+- Watch email from `smallbusinessservices@lisc.org` for monthly selection updates through 2026
+- Continue Tier 1: open Skip grants + Hello Alice rolling applications
+- Await NSF pitch #00118988 / other pending grant decisions
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-14 — Founder Instagram channel launch playbook
+
+**What was done**
+
+- Added founder fitness-journey Instagram/TikTok launch playbook (separate from brand `@forgerep`)
+- Locked handle `@repwithchris` across playbook, UTMs, and brand calendar cross-link
+- Documented dual-account strategy, profile setup, content pillars, launch week, metrics, disclosure rules
+
+**What's next**
+
+- Confirm `@repwithchris` live on IG + TikTok
+- Film clip bank + run Day −7→0 checklist in the playbook
+- Continue brand `@forgerep` 31-day calendar in parallel
+
+**Files touched**
+
+- `docs/marketing/founder-instagram-channel-launch.md`
+- `docs/marketing/instagram-31-day-calendar.md`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — Business docs reorganized
 

@@ -5,9 +5,10 @@
 > **Account:** [@forgerep](https://instagram.com/forgerep)  
 > **Goal:** Grow followers quickly → convert to app signups at `https://forge-rep.com/signup`  
 > **Cadence:** 1 Reel + 1 Carousel/static daily + 5–8 Stories (~2 feed touchpoints/day)  
-> **Time budget:** ~45–60 min/day after batch setup; ~4 hours on batch days (Days 0, 7, 14, 21)
+> **Time budget:** ~45–60 min/day after batch setup; ~4 hours on batch days (Days 0, 7, 14, 21)  
+> **Founder journey account (separate):** [@repwithchris](https://instagram.com/repwithchris) — see [founder-instagram-channel-launch.md](./founder-instagram-channel-launch.md)
 
-**Last updated:** 2026-07-03
+**Last updated:** 2026-07-14
 
 ---
 
