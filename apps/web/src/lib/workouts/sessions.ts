@@ -1,6 +1,8 @@
 import type { RecoveryBlock, WarmupBlock } from "@forgefit/program-engine";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import { sessionMatchesScheduledPlanDay } from "@/lib/workouts/schedule-dates";
+import { isCustomWorkoutSession } from "@/lib/workouts/session-source";
+import type { WorkoutSessionSource } from "@/lib/workouts/session-source";
 import type { RecoveryStatus } from "./recovery";
 import type { WarmupStatus } from "./warmup";
 
@@ -25,6 +27,7 @@ export interface WorkoutSessionRecord {
   id: string;
   clientId: string;
   dayIndex: number;
+  sessionSource?: WorkoutSessionSource;
   sessionName: string;
   status: string;
   startedAt: string;
@@ -149,6 +152,8 @@ export function buildDayStatusMap(
   const map = new Map<number, DayPlanStatus>();
 
   for (const session of sessions) {
+    if (isCustomWorkoutSession(session)) continue;
+
     const entry = map.get(session.dayIndex) ?? {
       dayIndex: session.dayIndex,
       inProgress: null,

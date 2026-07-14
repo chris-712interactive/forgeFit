@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { WorkoutSessionSource } from "@/lib/workouts/session-source";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "./sessions";
 
 export interface ServerSessionsResult {
@@ -18,7 +19,12 @@ function isWorkoutTableMissing(error: { message?: string; code?: string }): bool
 
 function isOptionalColumnMissing(error: { message?: string }): boolean {
   const message = error.message?.toLowerCase() ?? "";
-  return message.includes("recovery_") || message.includes("warmup_");
+  return (
+    message.includes("recovery_") ||
+    message.includes("warmup_") ||
+    message.includes("session_source") ||
+    message.includes("template_id")
+  );
 }
 
 export async function getServerSessionRecords(
@@ -28,7 +34,7 @@ export async function getServerSessionRecords(
   const supabase = await createClient();
 
   const baseSelect =
-    "id, client_id, day_index, session_name, status, started_at, completed_at";
+    "id, client_id, day_index, session_name, status, started_at, completed_at, session_source, template_id";
   const optionalSelect =
     ", warmup_name, warmup_planned_minutes, warmup_status, warmup_duration_ms, warmup_completed_at, recovery_name, recovery_equipment, recovery_planned_minutes, recovery_status, recovery_duration_ms, recovery_completed_at";
 
@@ -96,6 +102,8 @@ export async function getServerSessionRecords(
       id: String(session.id),
       clientId: String(session.client_id),
       dayIndex: Number(session.day_index),
+      sessionSource:
+        (session.session_source as WorkoutSessionSource | null) ?? "program",
       sessionName: String(session.session_name),
       status: String(session.status),
       startedAt: String(session.started_at),

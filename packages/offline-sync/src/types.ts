@@ -5,6 +5,7 @@ export type RecoveryStatus = "pending" | "completed" | "skipped";
 export type WarmupStatus = "pending" | "completed" | "skipped";
 export type ConditioningStatus = "pending" | "completed" | "skipped";
 export type SubstitutionReason = "equipment_busy" | "user_choice";
+export type WorkoutSessionSource = "program" | "custom" | "imported";
 
 export interface CachedProgram {
   userId: string;
@@ -33,12 +34,33 @@ export interface ExerciseSnapshot {
   notes?: string;
 }
 
+export interface WorkoutTemplateExercise {
+  exerciseId: string;
+  name: string;
+  sets: number;
+  reps: string;
+  restSeconds: number;
+}
+
+export interface LocalWorkoutTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  exercises: WorkoutTemplateExercise[];
+  warmup?: WarmupBlock;
+  createdAt: string;
+  updatedAt: string;
+  synced: boolean;
+}
+
 export interface LocalWorkoutSession {
   clientId: string;
   userId: string;
   programId?: string;
   sessionName: string;
   dayIndex: number;
+  sessionSource?: WorkoutSessionSource;
+  templateId?: string;
   status: WorkoutStatus;
   startedAt: string;
   completedAt?: string;
@@ -83,6 +105,8 @@ export interface SyncSessionPayload {
   programId?: string;
   sessionName: string;
   dayIndex: number;
+  sessionSource?: WorkoutSessionSource;
+  templateId?: string;
   status: WorkoutStatus;
   startedAt: string;
   completedAt?: string;

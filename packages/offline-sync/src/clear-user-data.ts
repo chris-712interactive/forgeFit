@@ -28,4 +28,6 @@ export async function clearOfflineUserData(userId: string): Promise<void> {
       await db.scheduleOverrides.where("userId").equals(userId).delete();
     }
   );
+
+  await db.workoutTemplates.where("userId").equals(userId).delete();
 }

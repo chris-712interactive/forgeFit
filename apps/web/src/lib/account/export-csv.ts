@@ -49,6 +49,7 @@ export function buildAccountExportCsv(bundle: AccountExportBundle): string {
       session_name: session.session_name,
       started_at: session.started_at,
       exercise_name: set.exercise_name,
+      session_source: session.session_source ?? "program",
       set_number: set.set_number,
       reps: set.reps,
       weight_kg: set.weight_kg,
@@ -61,6 +62,7 @@ export function buildAccountExportCsv(bundle: AccountExportBundle): string {
       [
         "session_id",
         "session_name",
+        "session_source",
         "started_at",
         "exercise_name",
         "set_number",

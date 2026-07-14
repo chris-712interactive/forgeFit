@@ -1,6 +1,7 @@
 import { WorkoutHub } from "@/components/workout/workout-hub";
 import { getWorkoutCoachingFeatures } from "@/lib/coaching/workout-features";
 import { getSubscriptionForUser } from "@/lib/billing/subscription";
+import { hasFeature } from "@/lib/billing/gates";
 import { listIntegrationStatuses } from "@/lib/integrations/service";
 import { getSpotifyPublicStatus } from "@/lib/integrations/spotify-service";
 import {
@@ -15,6 +16,7 @@ import { getWorkoutDeviceMetricsByClientIds } from "@/lib/workouts/device-metric
 import { getWorkoutReadinessContext } from "@/lib/workouts/readiness";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import { listWorkoutScheduleOverrides } from "@/lib/workouts/schedule-overrides-server";
+import { listWorkoutTemplatesForUser } from "@/lib/workouts/templates-server";
 
 export default async function WorkoutPage() {
   const member = await getMemberContext();
@@ -70,6 +72,11 @@ export default async function WorkoutPage() {
 
   const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
   const userEquipment = userId ? await getUserEquipment(userId) : [];
+  const templatesResult = userId
+    ? await listWorkoutTemplatesForUser(userId)
+    : { templates: [], tableReady: true };
+  const canCustomWorkouts = hasFeature(subscription, "custom_workouts");
+  const canImportWorkouts = hasFeature(subscription, "workout_import");
 
   return (
     <WorkoutHub
@@ -92,6 +99,9 @@ export default async function WorkoutPage() {
       fitbitConnected={fitbitConnected}
       spotifyConnected={spotifyConnected}
       readiness={readiness}
+      canCustomWorkouts={canCustomWorkouts}
+      canImportWorkouts={canImportWorkouts}
+      workoutTemplates={templatesResult.templates}
     />
   );
 }

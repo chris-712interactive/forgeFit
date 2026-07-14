@@ -97,7 +97,8 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 4. `SyncManager` in app layout calls `syncWorkoutData()` on load and `online` event
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
 6. **Schedule adjuster** — per-week overrides in Dexie + `workout_schedule_overrides`; `Move` on each day card opens a week picker; occupied days auto-swap; `GET/POST /api/workout-schedule` syncs overrides
-7. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
+7. **Custom workouts (Phase 11, Pro)** — builder on Workout hub; `session_source` + `day_index = -1`; equipment-filtered exercise picker; optional warmup; templates in `user_workout_templates`; native CSV import (`workout_import`) and export (`data_export`)
+8. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
 
 ## Nutrition Diary (Phase 4)
 
@@ -132,6 +133,9 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 | Server action `completeOnboarding` | Save onboarding | 1 |
 | `/api/sync` | Offline batch upload | 3 |
 | `/api/workout-schedule` | Per-week workout date overrides | 3+ |
+| `/api/workouts/import` | Native ForgeRep workout template CSV (Pro) | 11 |
+| `/api/workouts/export` | Completed workout CSV export (Pro) | 11 |
+| `/api/workout-templates` | Saved custom workout templates (Pro) | 11 |
 | `/api/programs/generate` | Create program from profile | 2 |
 | `/api/nutrition/search` | Food lookup | 4 |
 | `/api/measurements` | Log body measurements | 5 |

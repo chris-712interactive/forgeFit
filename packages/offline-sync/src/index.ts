@@ -6,3 +6,4 @@ export * from "./program-cache";
 export * from "./schedule-override-store";
 export * from "./schedule-override-types";
 export * from "./clear-user-data";
+export * from "./template-store";

@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 9 complete; Phase 10 complete |
-| **Last updated** | 2026-07-08 |
-| **Last session focus** | Gym retention SEO guide + TechArticle schema |
+| **Active phase** | Phase 11 in progress (custom workouts) |
+| **Last updated** | 2026-07-14 |
+| **Last session focus** | Custom workouts — Pro-gated builder, CSV import/export |
 
 ---
 
@@ -30,11 +30,44 @@
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
 | 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
+| 11 | Custom Workouts | ⏳ In progress | — |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-07-14 — Custom workouts (Phase 11)
+
+**What was done**
+
+- Added `session_source` + `user_workout_templates` migration; Dexie v5 with `sessionSource` and local template store
+- Pro gates: `custom_workouts` (builder, logging, templates), `workout_import` (native CSV import); export uses existing `data_export`
+- Custom workout builder on Workout hub — equipment-aware exercise search, optional warmup presets, save template, export/import native CSV
+- APIs: `POST /api/workouts/import`, `GET /api/workouts/export`, `GET/POST/DELETE /api/workout-templates`
+- Custom sessions use `day_index = -1`; excluded from week plan status map; history shows Custom badge + per-session CSV export
+- Tests: CSV parser, session source, `buildDayStatusMap` custom exclusion
+
+**What's next**
+
+- Apply migration `20260714120000_custom_workouts.sql` in Supabase
+- QA offline custom workout → sync → export round-trip on staging
+
+**Blockers**
+
+- Migration must be applied for server persistence of `session_source` and templates
+
+**Files touched**
+
+- `supabase/migrations/20260714120000_custom_workouts.sql`
+- `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`, `sync-client.ts`, `clear-user-data.ts`, `index.ts`
+- `apps/web/src/lib/billing/gates.ts`, `apps/web/src/lib/workouts/*`, `apps/web/src/lib/account/export-csv.ts`
+- `apps/web/src/components/workout/custom-workout-*.tsx`, `workout-hub.tsx`, `workout-history-list.tsx`
+- `apps/web/src/app/(app)/workout/page.tsx`, `apps/web/src/app/api/sync/route.ts`
+- `apps/web/src/app/api/workouts/import/route.ts`, `export/route.ts`, `workout-templates/route.ts`
+- `docs/phases/11-custom-workouts.md`, `docs/BIBLE.md`, `docs/TIER-GATES.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-08 — Gym retention SEO guide (TechArticle schema)
 
