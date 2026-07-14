@@ -60,6 +60,8 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 | Adaptive TDEE from intake + weight logs | — | ✓ | ✓ |
 | Rule-based trend insights | — | ✓ | ✓ |
 | CSV data export | — | ✓ | ✓ |
+| Custom workouts (build, log, templates) | — | ✓ | ✓ |
+| Workout CSV import (native ForgeRep format) | — | ✓ | ✓ |
 | Progress photo timeline | — | ✓ | ✓ |
 
 ### Community & competition (Pro)
@@ -118,6 +120,8 @@ Set per user in `/admin/users/[id]` → Feature flags. Loaded with `getSubscript
 | `tdee_adaptive` | Pro | Nutrition tab — personalized TDEE from logs |
 | `unlimited_history` | Pro | All charts — drop 90-day truncation |
 | `data_export` | Pro | Profile — export button |
+| `custom_workouts` | Pro | Workout hub — custom builder, templates |
+| `workout_import` | Pro | Custom builder — CSV import |
 | `progress_photos` | Pro | Progress tab — photo timeline |
 | `rule_based_insights` | Pro | Home / Progress — insight cards |
 | `device_integrations` | Pro+ | Profile — Integrations hub; workout device intensity + readiness |

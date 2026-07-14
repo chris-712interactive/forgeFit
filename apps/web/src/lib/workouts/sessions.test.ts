@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import { buildDayStatusMap, type WorkoutSessionRecord } from "./sessions";
+import { CUSTOM_DAY_INDEX } from "./session-source";
 import {
   scheduledDateIsoForPlanDay,
   sessionDateIso,
@@ -173,4 +174,36 @@ test("buildDayStatusMap only marks current plan week sessions as completed", () 
   assert.equal(map.get(4)?.latestCompleted, null);
   assert.equal(map.get(3)?.priorCompleted.length, 1);
   assert.equal(map.get(4)?.priorCompleted.length, 1);
+});
+
+test("buildDayStatusMap ignores custom workout sessions", () => {
+  const program = {
+    scheduleStartDate: "2026-06-30",
+    generatedAt: "2026-06-29T12:00:00.000Z",
+    week: [{ dayIndex: 1, name: "Upper" }],
+  } as ProgramPlan;
+
+  const map = buildDayStatusMap(
+    [
+      session({
+        clientId: "program",
+        dayIndex: 1,
+        status: "completed",
+        startedAt: "2026-07-14T10:00:00.000Z",
+        completedAt: "2026-07-14T11:00:00.000Z",
+      }),
+      session({
+        clientId: "custom",
+        dayIndex: CUSTOM_DAY_INDEX,
+        status: "completed",
+        startedAt: "2026-07-14T12:00:00.000Z",
+        completedAt: "2026-07-14T13:00:00.000Z",
+      }),
+    ],
+    program,
+    referenceDate
+  );
+
+  assert.equal(map.size, 1);
+  assert.equal(map.get(1)?.latestCompleted?.clientId, "program");
 });

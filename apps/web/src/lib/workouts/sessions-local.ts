@@ -1,6 +1,7 @@
 import type { LocalExerciseSet, LocalWorkoutSession } from "@forgefit/offline-sync";
 import { getSetsForSession, listSessionsForUser } from "@forgefit/offline-sync";
 import type { WorkoutSessionRecord, WorkoutSetRecord, WorkoutExerciseSwap } from "./sessions";
+import type { WorkoutSessionSource } from "./session-source";
 
 function mapLocalSets(sets: LocalExerciseSet[]): WorkoutSetRecord[] {
   return sets.map((set) => ({
@@ -40,6 +41,7 @@ function mapLocalSession(
     id: session.clientId,
     clientId: session.clientId,
     dayIndex: session.dayIndex,
+    sessionSource: session.sessionSource ?? "program",
     sessionName: session.sessionName,
     status: session.status,
     startedAt: session.startedAt,

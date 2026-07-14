@@ -20,7 +20,9 @@ export type TierFeature =
   | "restaurant_search"
   | "ai_motivation"
   | "gamification"
-  | "pr_celebration";
+  | "pr_celebration"
+  | "custom_workouts"
+  | "workout_import";
 
 export const FREE_PROJECTION_HORIZON_DAYS = 30;
 export const FREE_ANALYTICS_HISTORY_DAYS = 90;
@@ -40,6 +42,8 @@ const PRO_FEATURES: ReadonlySet<TierFeature> = new Set([
   "progress_photos",
   "rule_based_insights",
   "gamification",
+  "custom_workouts",
+  "workout_import",
 ]);
 
 const PRO_PLUS_ONLY_FEATURES: ReadonlySet<TierFeature> = new Set([

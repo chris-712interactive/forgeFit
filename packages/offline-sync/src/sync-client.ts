@@ -38,6 +38,8 @@ export async function syncWorkoutData(userId: string): Promise<SyncOutcome> {
       programId: s.programId,
       sessionName: s.sessionName,
       dayIndex: s.dayIndex,
+      sessionSource: s.sessionSource,
+      templateId: s.templateId,
       status: s.status,
       startedAt: s.startedAt,
       completedAt: s.completedAt,

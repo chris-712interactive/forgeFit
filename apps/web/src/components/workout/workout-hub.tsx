@@ -7,6 +7,7 @@ import type { ProgramPlan, WorkoutSession } from "@forgefit/program-engine";
 import {
   cacheProgramPlan,
   cancelInProgressSessionsForDay,
+  cancelWorkoutSession,
   getCachedProgramPlan,
   getSession,
   startWorkoutSession,
@@ -61,6 +62,11 @@ import { ScheduleAdjustSheet } from "./schedule-adjust-sheet";
 import { WorkoutHistoryList } from "./workout-history-list";
 import { WorkoutRecap } from "./workout-recap";
 import { WorkoutSyncNotice } from "./workout-sync-notice";
+import { CustomWorkoutCard } from "./custom-workout-card";
+import {
+  CustomWorkoutBuilder,
+  type CustomWorkoutDraft,
+} from "./custom-workout-builder";
 
 interface WorkoutHubProps {
   userId: string;
@@ -80,6 +86,20 @@ interface WorkoutHubProps {
   fitbitConnected?: boolean;
   spotifyConnected?: boolean;
   readiness?: WorkoutReadinessContext | null;
+  canCustomWorkouts?: boolean;
+  canImportWorkouts?: boolean;
+  workoutTemplates?: Array<{
+    id: string;
+    name: string;
+    exercises: Array<{
+      exerciseId: string;
+      name: string;
+      sets: number;
+      reps: string;
+      restSeconds: number;
+    }>;
+    warmup?: import("@forgefit/program-engine").WarmupBlock | null;
+  }>;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -137,6 +157,9 @@ export function WorkoutHub({
   fitbitConnected = false,
   spotifyConnected = false,
   readiness = null,
+  canCustomWorkouts = false,
+  canImportWorkouts = false,
+  workoutTemplates = [],
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -161,6 +184,9 @@ export function WorkoutHub({
   const [savingSchedule, setSavingSchedule] = useState(false);
   const [finishRankDelta, setFinishRankDelta] =
     useState<LeaderboardRankDelta | null>(null);
+  const [customBuilderOpen, setCustomBuilderOpen] = useState(false);
+  const [customBuilderDraft, setCustomBuilderDraft] =
+    useState<CustomWorkoutDraft | null>(null);
   const offline = useOfflineStatus();
   const unit = useUnitPreference();
 
@@ -211,6 +237,10 @@ export function WorkoutHub({
     const session =
       allSessions.find((s) => s.clientId === reviewClientId) ?? null;
     if (!session || !plan) return session;
+
+    if (session.dayIndex < 0 || session.sessionSource === "custom" || session.sessionSource === "imported") {
+      return session;
+    }
 
     const planSession = plan.week.find((s) => s.dayIndex === session.dayIndex);
     if (!planSession) return session;
@@ -503,8 +533,10 @@ export function WorkoutHub({
         const localSession = await getSession(clientId);
         const dayIndex = localSession?.dayIndex ?? mergedSession?.dayIndex;
 
-        if (dayIndex != null) {
+        if (dayIndex != null && dayIndex >= 0) {
           await cancelInProgressSessionsForDay(userId, dayIndex);
+        } else if (localSession) {
+          await cancelWorkoutSession(clientId);
         }
 
         const serverResult = await cancelWorkoutSessionOnServer(clientId);
@@ -620,6 +652,15 @@ export function WorkoutHub({
 
         <PwaInstallPrompt />
 
+        <CustomWorkoutCard
+          canUseCustomWorkouts={canCustomWorkouts}
+          templateCount={workoutTemplates.length}
+          onOpenBuilder={() => {
+            setCustomBuilderDraft(null);
+            setCustomBuilderOpen(true);
+          }}
+        />
+
         {plan ? (
           <section className={appSectionStackTight}>
             {plan.isDeloadWeek && (
@@ -697,20 +738,50 @@ export function WorkoutHub({
             >
               <WorkoutHistoryList
                 sessions={allSessions}
+                canExportWorkouts={canCustomWorkouts}
                 onViewResults={openReview}
               />
             </CollapsibleSection>
           </section>
         ) : (
-          <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
-            <p className="text-forge-muted">
-              {offline
-                ? "No cached program yet. Visit Workout once while online to save your plan for offline use."
-                : "Generate your program first — complete onboarding and apply the programs migration."}
-            </p>
-          </div>
+          <section className={appSectionStackTight}>
+            <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center">
+              <p className="text-forge-muted">
+                {offline
+                  ? "No cached program yet. Visit Workout once while online to save your plan for offline use."
+                  : "Generate your program first — complete onboarding and apply the programs migration."}
+              </p>
+            </div>
+
+            <CollapsibleSection
+              title="Workout history"
+              hint={`${allSessions.filter((s) => s.status === "completed").length} completed`}
+            >
+              <WorkoutHistoryList
+                sessions={allSessions}
+                canExportWorkouts={canCustomWorkouts}
+                onViewResults={openReview}
+              />
+            </CollapsibleSection>
+          </section>
         )}
       </div>
+
+      {customBuilderOpen && (
+        <CustomWorkoutBuilder
+          open
+          userId={userId}
+          userEquipment={userEquipment}
+          canImport={canImportWorkouts}
+          templates={workoutTemplates}
+          initialDraft={customBuilderDraft}
+          onClose={() => setCustomBuilderOpen(false)}
+          onStarted={(clientId) => {
+            setCustomBuilderOpen(false);
+            openWorkout(clientId);
+          }}
+        />
+      )}
     </div>
   );
 }

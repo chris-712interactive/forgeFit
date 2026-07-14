@@ -9,6 +9,7 @@ import type {
   ConditioningStatus,
   WorkoutStatus,
   SubstitutionReason,
+  WorkoutSessionSource,
 } from "./types";
 
 function nowIso(): string {
@@ -62,6 +63,8 @@ export async function startWorkoutSession(input: {
   programId?: string;
   sessionName: string;
   dayIndex: number;
+  sessionSource?: WorkoutSessionSource;
+  templateId?: string;
   exercises: ExerciseSnapshot[];
   warmupBlock?: WarmupBlock;
   recoveryBlock?: RecoveryBlock;
@@ -79,6 +82,8 @@ export async function startWorkoutSession(input: {
     programId: input.programId,
     sessionName: input.sessionName,
     dayIndex: input.dayIndex,
+    sessionSource: input.sessionSource ?? "program",
+    templateId: input.templateId,
     status: "in_progress",
     startedAt: timestamp,
     updatedAt: timestamp,

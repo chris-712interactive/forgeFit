@@ -9,6 +9,7 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 - 7-step onboarding (goal, experience, measurements, equipment, recovery, schedule, motivation)
 - **Personalized programs** — evidence-based plans for fat loss, bodybuilding, powerlifting, strength, recomposition
 - **Offline workouts** — log sets, reps, and RIR in the gym; syncs when back online
+- **Custom workouts** (Pro) — build your own sessions from the equipment-aware exercise library; save templates; import/export native ForgeRep CSV
 - **Workout schedule adjuster** — move individual sessions to another day this week (auto-swaps if that day is taken); offline-first
 - **Workout music** — curated Spotify vibe playlists + optional OAuth playback controls (all tiers; Spotify Premium for in-app controls)
 - **Nutrition diary** — USDA + Open Food Facts, restaurant quick-log (Pro+), macro tracking vs program targets
