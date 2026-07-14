@@ -61,6 +61,16 @@ import {
 import { EasySetSuggestionBanner } from "./easy-set-suggestion";
 import { WorkoutEquipmentOverviewCard } from "./workout-equipment-overview-card";
 import { useOfflineStatus } from "@/hooks/use-online-status";
+import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
+import {
+  clearPersistedActiveTimer,
+  loadPersistedActiveTimer,
+  savePersistedActiveTimer,
+  toCountdownRestore,
+  type PersistedActiveTimer,
+} from "@/lib/workouts/active-timer-persistence";
+import type { CountdownCompleteMeta, CountdownPersistState, CountdownRestoreState } from "@/lib/workouts/deadline-timer";
+import { feedbackTimerComplete } from "@/lib/workouts/timer-feedback";
 import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
 import {
@@ -121,6 +131,13 @@ export function ActiveWorkout({
     seconds: number;
     label: string;
   } | null>(null);
+  const [restTimerKey, setRestTimerKey] = useState("rest");
+  const [restTimerRestore, setRestTimerRestore] =
+    useState<CountdownRestoreState | null>(null);
+  const [holdTimerKey, setHoldTimerKey] = useState("hold");
+  const [holdTimerRestore, setHoldTimerRestore] =
+    useState<CountdownRestoreState | null>(null);
+  const [restAwayNotice, setRestAwayNotice] = useState(false);
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -141,6 +158,15 @@ export function ActiveWorkout({
   const [swapConfirmation, setSwapConfirmation] = useState<string | null>(
     null
   );
+  const restoredTimerRef = useRef(false);
+
+  const workoutTimerActive =
+    (restSeconds != null && restSeconds > 0) ||
+    warmupTimer != null ||
+    recoveryTimer != null ||
+    timedTimer != null;
+
+  useScreenWakeLock(workoutTimerActive);
 
   const goBack = useCallback(() => {
     onBack?.();
@@ -163,6 +189,94 @@ export function ActiveWorkout({
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (loading || !session || restoredTimerRef.current) return;
+    restoredTimerRef.current = true;
+
+    const persisted = loadPersistedActiveTimer(clientId);
+    if (!persisted) return;
+
+    const now = Date.now();
+    if (!persisted.paused && persisted.endsAtMs <= now) {
+      clearPersistedActiveTimer(clientId);
+      if (persisted.kind === "rest") {
+        feedbackTimerComplete({ vibrate: true });
+        setRestAwayNotice(true);
+        window.setTimeout(() => setRestAwayNotice(false), 4000);
+        return;
+      }
+      if (persisted.kind === "warmup" && session.warmupBlock) {
+        void updateWorkoutWarmup(clientId, {
+          status: "completed",
+          durationMs: session.warmupBlock.durationMinutes * 60_000,
+        }).then((updated) => {
+          if (updated) setSession(updated);
+        });
+        return;
+      }
+      if (persisted.kind === "recovery" && session.recoveryBlock) {
+        void updateWorkoutRecovery(clientId, {
+          status: "completed",
+          durationMs: session.recoveryBlock.durationMinutes * 60_000,
+        }).then((updated) => {
+          if (updated) setSession(updated);
+        });
+        return;
+      }
+      if (
+        persisted.kind === "hold" &&
+        persisted.setClientId &&
+        persisted.exerciseId
+      ) {
+        void handleSetUpdate(persisted.setClientId, {
+          ...timedSetFieldsFromElapsed(
+            persisted.exerciseId,
+            persisted.totalSeconds
+          ),
+          completed: true,
+        });
+      }
+      return;
+    }
+
+    const restore = toCountdownRestore(persisted);
+    switch (persisted.kind) {
+      case "rest":
+        setRestTimerKey(`rest-${persisted.endsAtMs}`);
+        setRestTimerRestore(restore);
+        setRestSeconds(persisted.totalSeconds);
+        break;
+      case "hold":
+        if (persisted.setClientId && persisted.exerciseId && persisted.label) {
+          setHoldTimerKey(`hold-${persisted.endsAtMs}`);
+          setHoldTimerRestore(restore);
+          setTimedTimer({
+            setClientId: persisted.setClientId,
+            exerciseId: persisted.exerciseId,
+            seconds: persisted.totalSeconds,
+            label: persisted.label,
+          });
+        }
+        break;
+      case "warmup":
+        setHoldTimerKey(`warmup-${persisted.endsAtMs}`);
+        setHoldTimerRestore(restore);
+        setWarmupTimer({
+          seconds: persisted.totalSeconds,
+          label: persisted.label ?? "Warm-up",
+        });
+        break;
+      case "recovery":
+        setHoldTimerKey(`recovery-${persisted.endsAtMs}`);
+        setHoldTimerRestore(restore);
+        setRecoveryTimer({
+          seconds: persisted.totalSeconds,
+          label: persisted.label ?? "Recovery",
+        });
+        break;
+    }
+  }, [clientId, loading, session]);
 
   useEffect(() => {
     if (!swapConfirmation) return;
@@ -220,6 +334,42 @@ export function ActiveWorkout({
     setTimedTimer(null);
     setWarmupTimer(null);
     setRecoveryTimer(null);
+    setRestTimerRestore(null);
+    setHoldTimerRestore(null);
+    clearPersistedActiveTimer(clientId);
+  }
+
+  function persistActiveTimer(
+    kind: PersistedActiveTimer["kind"],
+    state: CountdownPersistState | null,
+    extras: Partial<PersistedActiveTimer> = {}
+  ) {
+    if (!state) {
+      clearPersistedActiveTimer(clientId);
+      return;
+    }
+    savePersistedActiveTimer({
+      sessionClientId: clientId,
+      kind,
+      ...state,
+      ...extras,
+    });
+  }
+
+  function handleRestComplete(meta?: CountdownCompleteMeta) {
+    if (meta?.resumedFromBackground) {
+      feedbackTimerComplete({ vibrate: true });
+      setRestAwayNotice(true);
+      window.setTimeout(() => setRestAwayNotice(false), 4000);
+    }
+    clearPersistedActiveTimer(clientId);
+    setRestSeconds(null);
+  }
+
+  function startRestTimer(seconds: number) {
+    setRestTimerKey(`rest-${Date.now()}`);
+    setRestTimerRestore(null);
+    setRestSeconds(seconds);
   }
 
   function refreshEasySuggestion(
@@ -375,7 +525,7 @@ export function ActiveWorkout({
         (e) => e.exerciseId === setRow?.exerciseId
       );
       if (exercise?.restSeconds) {
-        setRestSeconds(exercise.restSeconds);
+        startRestTimer(exercise.restSeconds);
       }
 
       if (
@@ -445,6 +595,8 @@ export function ActiveWorkout({
     label: string
   ) {
     setRestSeconds(null);
+    setHoldTimerKey(`hold-${Date.now()}`);
+    setHoldTimerRestore(null);
     setTimedTimer({ setClientId, exerciseId, seconds, label });
   }
 
@@ -830,6 +982,8 @@ export function ActiveWorkout({
             isTimerActive={warmupTimer !== null}
             onStartTimer={() => {
               clearTimers();
+              setHoldTimerKey(`warmup-${Date.now()}`);
+              setHoldTimerRestore(null);
               setWarmupTimer({
                 seconds: session.warmupBlock!.durationMinutes * 60,
                 label: "Warm-up",
@@ -867,6 +1021,8 @@ export function ActiveWorkout({
             isTimerActive={recoveryTimer !== null}
             onStartTimer={() => {
               clearTimers();
+              setHoldTimerKey(`recovery-${Date.now()}`);
+              setHoldTimerRestore(null);
               setRecoveryTimer({
                 seconds: session.recoveryBlock!.durationMinutes * 60,
                 label: "Recovery",
@@ -1089,10 +1245,24 @@ export function ActiveWorkout({
         )}
       </div>
 
+      {restAwayNotice && (
+        <div className="fixed inset-x-0 top-[calc(env(safe-area-inset-top)+4.5rem)] z-50 px-4">
+          <p
+            className="mx-auto max-w-lg rounded-xl border border-forge-success/30 bg-forge-success/10 px-4 py-3 text-center text-sm text-forge-success"
+            role="status"
+          >
+            Rest finished while you were away — ready for your next set.
+          </p>
+        </div>
+      )}
+
       {warmupTimer && warmupTimer.seconds > 0 && (
         <HoldTimer
+          key={holdTimerKey}
           seconds={warmupTimer.seconds}
           label={warmupTimer.label}
+          restore={holdTimerRestore}
+          onPersist={(state) => persistActiveTimer("warmup", state, { label: warmupTimer.label })}
           onComplete={handleWarmupTimerComplete}
           onStop={handleWarmupTimerStop}
         />
@@ -1100,8 +1270,13 @@ export function ActiveWorkout({
 
       {!warmupTimer && recoveryTimer && recoveryTimer.seconds > 0 && (
         <HoldTimer
+          key={holdTimerKey}
           seconds={recoveryTimer.seconds}
           label={recoveryTimer.label}
+          restore={holdTimerRestore}
+          onPersist={(state) =>
+            persistActiveTimer("recovery", state, { label: recoveryTimer.label })
+          }
           onComplete={handleRecoveryTimerComplete}
           onStop={handleRecoveryTimerStop}
         />
@@ -1109,8 +1284,17 @@ export function ActiveWorkout({
 
       {!warmupTimer && !recoveryTimer && timedTimer && timedTimer.seconds > 0 && (
         <HoldTimer
+          key={holdTimerKey}
           seconds={timedTimer.seconds}
           label={timedTimer.label}
+          restore={holdTimerRestore}
+          onPersist={(state) =>
+            persistActiveTimer("hold", state, {
+              setClientId: timedTimer.setClientId,
+              exerciseId: timedTimer.exerciseId,
+              label: timedTimer.label,
+            })
+          }
           onComplete={handleTimedComplete}
           onStop={handleTimedStop}
         />
@@ -1122,9 +1306,12 @@ export function ActiveWorkout({
         restSeconds !== null &&
         restSeconds > 0 && (
           <RestTimer
+            key={restTimerKey}
             seconds={restSeconds}
-            onComplete={() => setRestSeconds(null)}
-            onSkip={() => setRestSeconds(null)}
+            restore={restTimerRestore}
+            onPersist={(state) => persistActiveTimer("rest", state)}
+            onComplete={handleRestComplete}
+            onSkip={() => handleRestComplete()}
           />
         )}
 

@@ -1,15 +1,23 @@
 "use client";
 
 import { playTimerCompleteSound, playTimerStartSound } from "@/lib/audio/timer-sounds";
+import { feedbackTimerComplete } from "@/lib/workouts/timer-feedback";
 import { useEffect, useRef } from "react";
 import { formatTimerSeconds } from "./timer-utils";
-import { useCountdown } from "./use-countdown";
+import {
+  useCountdown,
+  type CountdownCompleteMeta,
+  type CountdownPersistState,
+  type CountdownRestoreState,
+} from "./use-countdown";
 
 interface HoldTimerProps {
   seconds: number;
   label?: string;
-  onComplete: () => void;
+  onComplete: (meta?: CountdownCompleteMeta) => void;
   onStop: (elapsedSeconds: number) => void;
+  restore?: CountdownRestoreState | null;
+  onPersist?: (state: CountdownPersistState | null) => void;
 }
 
 export function HoldTimer({
@@ -17,21 +25,28 @@ export function HoldTimer({
   label = "Hold",
   onComplete,
   onStop,
+  restore,
+  onPersist,
 }: HoldTimerProps) {
   const startedSound = useRef(false);
   const completedSound = useRef(false);
 
-  const handleComplete = () => {
+  const handleComplete = (meta?: CountdownCompleteMeta) => {
     if (!completedSound.current) {
       completedSound.current = true;
       playTimerCompleteSound();
+      if (meta?.resumedFromBackground) {
+        feedbackTimerComplete({ playSound: false, vibrate: true });
+      }
     }
-    onComplete();
+    onComplete(meta);
   };
 
   const { remaining, paused, elapsed, progress, togglePause } = useCountdown({
     seconds,
     onComplete: handleComplete,
+    restore,
+    onPersist,
   });
 
   useEffect(() => {

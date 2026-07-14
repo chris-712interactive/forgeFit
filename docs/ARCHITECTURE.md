@@ -93,7 +93,7 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 
 1. User starts a session from `/workout` → `startWorkoutSession()` writes to Dexie (IndexedDB)
 2. Active workout at `/workout/[clientId]` logs sets/reps/RIR per exercise
-3. Rest timer auto-starts after each completed set (program `restSeconds`)
+3. Rest timer auto-starts after each completed set (program `restSeconds`); deadline-based countdown reconciles on app resume (Phase 12)
 4. `SyncManager` in app layout calls `syncWorkoutData()` on load and `online` event
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
 6. **Schedule adjuster** — per-week overrides in Dexie + `workout_schedule_overrides`; `Move` on each day card opens a week picker; occupied days auto-swap; `GET/POST /api/workout-schedule` syncs overrides

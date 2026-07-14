@@ -1,6 +1,6 @@
 # Phase 12 — PWA Timer Accuracy (Background / Minimized)
 
-**Status:** Planned  
+**Status:** In progress (12A + 12B implemented)  
 **Depends on:** Phase 3 (workout timers)  
 **Branch:** `cursor/pwa-timer-background-8ab8`
 
@@ -8,17 +8,9 @@
 
 Workout timers (rest, timed sets, warmup, recovery) **stop or drift** when the PWA is minimized, the screen locks, or the user switches apps. Users return to find the timer frozen or far behind wall-clock time.
 
-### Root cause (code)
+### Root cause (fixed in 12A)
 
-All timers flow through `use-countdown.ts`, which decrements `remaining` via `setInterval(..., 1000)`:
-
-```32:34:apps/web/src/components/workout/use-countdown.ts
-    const timer = window.setInterval(() => {
-      setRemaining((prev) => prev - 1);
-    }, 1000);
-```
-
-This assumes one interval tick ≈ one real second. **Mobile browsers do not guarantee that** when the page is backgrounded.
+Timers previously decremented via `setInterval` in `use-countdown.ts`. **Now** they use wall-clock `endsAtMs` deadlines reconciled on `visibilitychange`, `focus`, and `pageshow`.
 
 ### Affected surfaces
 
