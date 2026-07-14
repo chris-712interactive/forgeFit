@@ -2,6 +2,7 @@ import { getOfflineDb } from "./db";
 import type { RecoveryBlock, WarmupBlock, ConditioningBlock } from "@forgefit/program-engine";
 import type {
   ExerciseSnapshot,
+  IntervalProtocol,
   LocalExerciseSet,
   LocalWorkoutSession,
   RecoveryStatus,
@@ -69,6 +70,7 @@ export async function startWorkoutSession(input: {
   warmupBlock?: WarmupBlock;
   recoveryBlock?: RecoveryBlock;
   conditioningBlock?: ConditioningBlock;
+  intervalProtocol?: IntervalProtocol;
   /** Prefill logged targets for the first working set per exercise */
   setPrefills?: Record<string, SetPrefill>;
 }): Promise<string> {
@@ -96,6 +98,7 @@ export async function startWorkoutSession(input: {
     conditioningBlock: input.conditioningBlock,
     conditioningStatus: input.conditioningBlock ? "pending" : undefined,
     conditioningRoundsCompleted: 0,
+    intervalProtocol: input.intervalProtocol,
   };
 
   const sets: LocalExerciseSet[] = [];

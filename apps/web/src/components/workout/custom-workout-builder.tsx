@@ -8,6 +8,8 @@ import {
 } from "@forgefit/exercise-db";
 import {
   startWorkoutSession,
+  type IntervalMode,
+  type IntervalProtocol,
   type WorkoutTemplateExercise,
 } from "@forgefit/offline-sync";
 import { formatEquipment } from "@/lib/exercises/labels";
@@ -31,6 +33,7 @@ export interface CustomWorkoutDraft {
   name: string;
   exercises: WorkoutTemplateExercise[];
   warmup?: WarmupBlock;
+  intervalProtocol?: IntervalProtocol;
   imported?: boolean;
 }
 
@@ -44,11 +47,28 @@ interface CustomWorkoutBuilderProps {
     name: string;
     exercises: WorkoutTemplateExercise[];
     warmup?: WarmupBlock | null;
+    intervalProtocol?: IntervalProtocol | null;
   }>;
   initialDraft?: CustomWorkoutDraft | null;
   onClose: () => void;
   onStarted: (clientId: string) => void;
 }
+
+type ProtocolModeChoice = "none" | IntervalMode;
+
+const PROTOCOL_DEFAULTS: Record<
+  IntervalMode,
+  Omit<IntervalProtocol, "mode">
+> = {
+  density: { workSeconds: 30, restSeconds: 45, rounds: 4 },
+  tabata: {
+    workSeconds: 10,
+    restSeconds: 10,
+    rounds: 10,
+    betweenExerciseRestSeconds: 45,
+  },
+  superset_block: { workSeconds: 300, restSeconds: 120, rounds: 1 },
+};
 
 const inputClass =
   "min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-forge-surface px-3 text-forge-text outline-none focus:border-forge-ember";
@@ -79,6 +99,12 @@ export function CustomWorkoutBuilder({
   const [availableOnly, setAvailableOnly] = useState(true);
   const [query, setQuery] = useState("");
   const [warmupFocus, setWarmupFocus] = useState<CustomWarmupFocus | "none">("none");
+  const [protocolMode, setProtocolMode] = useState<ProtocolModeChoice>("none");
+  const [workSeconds, setWorkSeconds] = useState(30);
+  const [restSeconds, setRestSeconds] = useState(45);
+  const [rounds, setRounds] = useState(4);
+  const [betweenExerciseRestSeconds, setBetweenExerciseRestSeconds] =
+    useState(45);
   const [starting, setStarting] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -90,6 +116,20 @@ export function CustomWorkoutBuilder({
     setName(initialDraft?.name ?? "Custom workout");
     setExercises(initialDraft?.exercises ?? []);
     setWarmupFocus(initialDraft?.warmup?.focus ?? "none");
+    const protocol = initialDraft?.intervalProtocol;
+    if (protocol) {
+      setProtocolMode(protocol.mode);
+      setWorkSeconds(protocol.workSeconds);
+      setRestSeconds(protocol.restSeconds);
+      setRounds(protocol.rounds);
+      setBetweenExerciseRestSeconds(protocol.betweenExerciseRestSeconds ?? 45);
+    } else {
+      setProtocolMode("none");
+      setWorkSeconds(30);
+      setRestSeconds(45);
+      setRounds(4);
+      setBetweenExerciseRestSeconds(45);
+    }
     setQuery("");
     setMessage(null);
     setError(null);
@@ -116,6 +156,18 @@ export function CustomWorkoutBuilder({
 
   const warmupBlock =
     warmupFocus === "none" ? undefined : buildCustomWarmupBlock(warmupFocus);
+
+  const intervalProtocol: IntervalProtocol | undefined =
+    protocolMode === "none"
+      ? undefined
+      : {
+          mode: protocolMode,
+          workSeconds,
+          restSeconds,
+          rounds,
+          betweenExerciseRestSeconds:
+            protocolMode === "tabata" ? betweenExerciseRestSeconds : undefined,
+        };
 
   if (!open) return null;
 
@@ -160,8 +212,28 @@ export function CustomWorkoutBuilder({
     setName(template.name);
     setExercises(template.exercises);
     setWarmupFocus(template.warmup?.focus ?? "none");
+    const protocol = template.intervalProtocol ?? undefined;
+    if (protocol) {
+      setProtocolMode(protocol.mode);
+      setWorkSeconds(protocol.workSeconds);
+      setRestSeconds(protocol.restSeconds);
+      setRounds(protocol.rounds);
+      setBetweenExerciseRestSeconds(protocol.betweenExerciseRestSeconds ?? 45);
+    } else {
+      setProtocolMode("none");
+    }
     setMessage(`Loaded template “${template.name}”.`);
     setError(null);
+  }
+
+  function applyProtocolMode(mode: ProtocolModeChoice) {
+    setProtocolMode(mode);
+    if (mode === "none") return;
+    const defaults = PROTOCOL_DEFAULTS[mode];
+    setWorkSeconds(defaults.workSeconds);
+    setRestSeconds(defaults.restSeconds);
+    setRounds(defaults.rounds);
+    setBetweenExerciseRestSeconds(defaults.betweenExerciseRestSeconds ?? 45);
   }
 
   async function handleStart() {
@@ -180,6 +252,7 @@ export function CustomWorkoutBuilder({
         sessionSource: initialDraft?.imported ? "imported" : "custom",
         exercises,
         warmupBlock,
+        intervalProtocol,
       });
       onStarted(clientId);
     } catch (err) {
@@ -205,6 +278,7 @@ export function CustomWorkoutBuilder({
           name: name.trim() || "Custom workout",
           exercises,
           warmup: warmupBlock,
+          intervalProtocol,
         }),
       });
       const body = (await response.json()) as { error?: string };
@@ -223,6 +297,7 @@ export function CustomWorkoutBuilder({
     const csv = buildForgeRepWorkoutTemplateCsv({
       name: name.trim() || "Custom workout",
       exercises,
+      intervalProtocol,
     });
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -258,6 +333,18 @@ export function CustomWorkoutBuilder({
       }
       setName(body.workout.name);
       setExercises(body.workout.exercises);
+      const protocol = body.workout.intervalProtocol;
+      if (protocol) {
+        setProtocolMode(protocol.mode);
+        setWorkSeconds(protocol.workSeconds);
+        setRestSeconds(protocol.restSeconds);
+        setRounds(protocol.rounds);
+        setBetweenExerciseRestSeconds(
+          protocol.betweenExerciseRestSeconds ?? 45
+        );
+      } else {
+        setProtocolMode("none");
+      }
       setMessage(
         `Imported ${body.workout.exercises.length} exercise${
           body.workout.exercises.length === 1 ? "" : "s"
@@ -299,6 +386,85 @@ export function CustomWorkoutBuilder({
               onChange={(event) => setName(event.target.value)}
             />
           </label>
+
+          <section className="space-y-3 rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
+              Interval protocol
+            </p>
+            <select
+              className={inputClass}
+              value={protocolMode}
+              onChange={(event) =>
+                applyProtocolMode(event.target.value as ProtocolModeChoice)
+              }
+            >
+              <option value="none">None (standard sets + rest)</option>
+              <option value="density">Density — timed work / rest per set</option>
+              <option value="tabata">Tabata — short intervals × rounds</option>
+              <option value="superset_block">
+                Superset blocks — timed pairs
+              </option>
+            </select>
+            {protocolMode !== "none" && (
+              <div className="grid grid-cols-2 gap-2">
+                <label className="space-y-1 text-xs text-forge-muted">
+                  Work (sec)
+                  <input
+                    type="number"
+                    min={1}
+                    max={3600}
+                    className={inputClass}
+                    value={workSeconds}
+                    onChange={(event) => setWorkSeconds(Number(event.target.value))}
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-forge-muted">
+                  Rest (sec)
+                  <input
+                    type="number"
+                    min={0}
+                    max={3600}
+                    className={inputClass}
+                    value={restSeconds}
+                    onChange={(event) => setRestSeconds(Number(event.target.value))}
+                  />
+                </label>
+                {protocolMode !== "superset_block" && (
+                  <label className="space-y-1 text-xs text-forge-muted">
+                    Rounds
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      className={inputClass}
+                      value={rounds}
+                      onChange={(event) => setRounds(Number(event.target.value))}
+                    />
+                  </label>
+                )}
+                {protocolMode === "tabata" && (
+                  <label className="space-y-1 text-xs text-forge-muted">
+                    Between exercises (sec)
+                    <input
+                      type="number"
+                      min={0}
+                      max={600}
+                      className={inputClass}
+                      value={betweenExerciseRestSeconds}
+                      onChange={(event) =>
+                        setBetweenExerciseRestSeconds(Number(event.target.value))
+                      }
+                    />
+                  </label>
+                )}
+              </div>
+            )}
+            {protocolMode === "superset_block" && (
+              <p className="text-xs text-forge-muted">
+                Set a group letter (A, B, …) on each exercise to form pairs.
+              </p>
+            )}
+          </section>
 
           {templates.length > 0 && (
             <section className="space-y-2">
@@ -413,7 +579,7 @@ export function CustomWorkoutBuilder({
                         <input
                           type="number"
                           min={1}
-                          max={10}
+                          max={12}
                           className={inputClass}
                           value={exercise.sets}
                           onChange={(event) =>
@@ -447,6 +613,24 @@ export function CustomWorkoutBuilder({
                         />
                       </label>
                     </div>
+                    {protocolMode === "superset_block" && (
+                      <label className="mt-2 block space-y-1 text-xs text-forge-muted">
+                        Group (pair)
+                        <input
+                          className={inputClass}
+                          maxLength={2}
+                          placeholder="A"
+                          value={exercise.groupId ?? ""}
+                          onChange={(event) =>
+                            updateExercise(index, {
+                              groupId:
+                                event.target.value.trim().toUpperCase() ||
+                                undefined,
+                            })
+                          }
+                        />
+                      </label>
+                    )}
                   </div>
                 ))}
               </div>

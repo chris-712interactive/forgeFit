@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-14 · **Current phase:** Phase 11 in progress; Phase 12 in progress (PWA timer)
+**Last updated:** 2026-07-14 · **Current phase:** Phase 11–13 in progress (custom workouts, PWA timer, interval protocols)
 
 ---
 
@@ -209,6 +209,7 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 10 | Functional conditioning (hybrid strength + circuits, AMRAP, finishers, landing) | Complete | [docs/phases/10-functional-conditioning.md](./phases/10-functional-conditioning.md)
 | 11 | Custom workouts (Pro builder, templates, CSV import/export) | In progress | [docs/phases/11-custom-workouts.md](./phases/11-custom-workouts.md)
 | 12 | PWA timer accuracy when minimized / backgrounded | In progress | [docs/phases/12-pwa-timer-background.md](./phases/12-pwa-timer-background.md)
+| 13 | Interval protocols + Gravity Week 1 pack | In progress | [docs/phases/13-interval-protocols.md](./phases/13-interval-protocols.md)
 | — | **Admin console** (operator tools) | Complete (Phases A–D) | [docs/phases/admin-console.md](./phases/admin-console.md) · [ADR 002](./ADRs/002-forgerep-admin-console.md)
 
 ---

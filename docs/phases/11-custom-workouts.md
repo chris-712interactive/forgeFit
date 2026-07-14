@@ -45,6 +45,8 @@ reps,8-10
 rest_seconds,120
 ```
 
+Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
+
 **Completed export** (`# forgerep-workout-log v1`): per-session blocks with set rows.
 
 ## Files

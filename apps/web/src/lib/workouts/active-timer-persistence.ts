@@ -1,6 +1,11 @@
 import type { CountdownPersistState, CountdownRestoreState } from "./deadline-timer";
 
-export type ActiveTimerKind = "rest" | "hold" | "warmup" | "recovery";
+export type ActiveTimerKind =
+  | "rest"
+  | "hold"
+  | "warmup"
+  | "recovery"
+  | "interval";
 
 export interface PersistedActiveTimer extends CountdownPersistState {
   sessionClientId: string;
@@ -8,6 +13,11 @@ export interface PersistedActiveTimer extends CountdownPersistState {
   setClientId?: string;
   exerciseId?: string;
   label?: string;
+  /** Interval protocol run pointer (JSON-serializable). */
+  intervalPhase?: string;
+  intervalRoundIndex?: number;
+  intervalBlockIndex?: number;
+  intervalSeconds?: number;
 }
 
 const STORAGE_KEY = "forgerep:active-timer";

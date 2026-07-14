@@ -70,7 +70,14 @@ import {
   type PersistedActiveTimer,
 } from "@/lib/workouts/active-timer-persistence";
 import type { CountdownCompleteMeta, CountdownPersistState, CountdownRestoreState } from "@/lib/workouts/deadline-timer";
-import { feedbackTimerComplete } from "@/lib/workouts/timer-feedback";
+import { feedbackIntervalPhase, feedbackTimerComplete } from "@/lib/workouts/timer-feedback";
+import {
+  advanceIntervalState,
+  initialIntervalState,
+  resolveIntervalBlocks,
+  type IntervalRunState,
+} from "@/lib/workouts/interval-protocol";
+import { unlockTimerAudio } from "@/lib/audio/timer-sounds";
 import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
 import {
@@ -80,6 +87,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HoldTimer } from "./hold-timer";
+import { IntervalTimer } from "./interval-timer";
 import { RecoveryBlockCard } from "./recovery-block-card";
 import { ConditioningBlockCard } from "./conditioning-block-card";
 import { WarmupBlockCard } from "./warmup-block-card";
@@ -137,6 +145,10 @@ export function ActiveWorkout({
   const [holdTimerKey, setHoldTimerKey] = useState("hold");
   const [holdTimerRestore, setHoldTimerRestore] =
     useState<CountdownRestoreState | null>(null);
+  const [intervalRun, setIntervalRun] = useState<IntervalRunState | null>(null);
+  const [intervalTimerKey, setIntervalTimerKey] = useState("interval");
+  const [intervalTimerRestore, setIntervalTimerRestore] =
+    useState<CountdownRestoreState | null>(null);
   const [restAwayNotice, setRestAwayNotice] = useState(false);
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
@@ -164,7 +176,8 @@ export function ActiveWorkout({
     (restSeconds != null && restSeconds > 0) ||
     warmupTimer != null ||
     recoveryTimer != null ||
-    timedTimer != null;
+    timedTimer != null ||
+    intervalRun != null;
 
   useScreenWakeLock(workoutTimerActive);
 
@@ -237,6 +250,9 @@ export function ActiveWorkout({
           completed: true,
         });
       }
+      if (persisted.kind === "interval") {
+        feedbackIntervalPhase("complete", { playSound: false, vibrate: true });
+      }
       return;
     }
 
@@ -275,6 +291,24 @@ export function ActiveWorkout({
           label: persisted.label ?? "Recovery",
         });
         break;
+      case "interval":
+        if (
+          session.intervalProtocol &&
+          persisted.intervalPhase &&
+          persisted.intervalRoundIndex != null &&
+          persisted.intervalBlockIndex != null &&
+          persisted.intervalSeconds != null
+        ) {
+          setIntervalTimerKey(`interval-${persisted.endsAtMs}`);
+          setIntervalTimerRestore(restore);
+          setIntervalRun({
+            phase: persisted.intervalPhase as IntervalRunState["phase"],
+            roundIndex: persisted.intervalRoundIndex,
+            blockIndex: persisted.intervalBlockIndex,
+            seconds: persisted.intervalSeconds,
+          });
+        }
+        break;
     }
   }, [clientId, loading, session]);
 
@@ -288,6 +322,11 @@ export function ActiveWorkout({
     () => (session ? buildWorkoutSteps(session) : []),
     [session]
   );
+
+  const intervalBlocks = useMemo(() => {
+    if (!session?.intervalProtocol) return [];
+    return resolveIntervalBlocks(session.intervalProtocol, session.exercises);
+  }, [session]);
 
   const currentStep = steps[currentStepIndex];
 
@@ -334,9 +373,60 @@ export function ActiveWorkout({
     setTimedTimer(null);
     setWarmupTimer(null);
     setRecoveryTimer(null);
+    setIntervalRun(null);
     setRestTimerRestore(null);
     setHoldTimerRestore(null);
+    setIntervalTimerRestore(null);
     clearPersistedActiveTimer(clientId);
+  }
+
+  function jumpToIntervalBlock(blockIndex: number) {
+    if (!session?.intervalProtocol) return;
+    const blocks = resolveIntervalBlocks(
+      session.intervalProtocol,
+      session.exercises
+    );
+    const exerciseIndex = blocks[blockIndex]?.exerciseIndexes[0];
+    if (exerciseIndex == null) return;
+    const stepIndex = steps.findIndex(
+      (step) => step.kind === "exercise" && step.exerciseIndex === exerciseIndex
+    );
+    if (stepIndex >= 0) {
+      setCurrentStepIndex(stepIndex);
+    }
+  }
+
+  function startIntervalProtocol() {
+    if (!session?.intervalProtocol) return;
+    unlockTimerAudio();
+    clearTimers();
+    const next = initialIntervalState(session.intervalProtocol);
+    setIntervalTimerKey(`interval-${Date.now()}`);
+    setIntervalTimerRestore(null);
+    setIntervalRun(next);
+    jumpToIntervalBlock(next.blockIndex);
+  }
+
+  function advanceIntervalPhase() {
+    if (!session?.intervalProtocol || !intervalRun) return;
+    const next = advanceIntervalState(
+      session.intervalProtocol,
+      intervalRun,
+      intervalBlocks.length
+    );
+    if (next.phase === "done") {
+      feedbackIntervalPhase("complete");
+      clearPersistedActiveTimer(clientId);
+      setIntervalRun(null);
+      setIntervalTimerRestore(null);
+      return;
+    }
+    setIntervalTimerKey(`interval-${Date.now()}`);
+    setIntervalTimerRestore(null);
+    setIntervalRun(next);
+    if (next.blockIndex !== intervalRun.blockIndex || next.phase === "work") {
+      jumpToIntervalBlock(next.blockIndex);
+    }
   }
 
   function persistActiveTimer(
@@ -524,7 +614,7 @@ export function ActiveWorkout({
       const exercise = session.exercises.find(
         (e) => e.exerciseId === setRow?.exerciseId
       );
-      if (exercise?.restSeconds) {
+      if (exercise?.restSeconds && !intervalRun) {
         startRestTimer(exercise.restSeconds);
       }
 
@@ -1154,6 +1244,35 @@ export function ActiveWorkout({
         totalSets={totalCount}
       />
 
+      {session.intervalProtocol && (
+        <div className="mb-4 rounded-2xl border border-forge-ember/30 bg-forge-ember/5 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-ember">
+            Interval protocol
+          </p>
+          <p className="mt-1 text-sm text-forge-muted">
+            {session.intervalProtocol.mode === "density" &&
+              `${session.intervalProtocol.workSeconds}s work / ${session.intervalProtocol.restSeconds}s rest × ${session.intervalProtocol.rounds} rounds per exercise`}
+            {session.intervalProtocol.mode === "tabata" &&
+              `${session.intervalProtocol.workSeconds}s on / ${session.intervalProtocol.restSeconds}s off × ${session.intervalProtocol.rounds} rounds · ${session.intervalProtocol.betweenExerciseRestSeconds ?? 45}s between exercises`}
+            {session.intervalProtocol.mode === "superset_block" &&
+              `${Math.round(session.intervalProtocol.workSeconds / 60)} min on / ${Math.round(session.intervalProtocol.restSeconds / 60)} min off per pair`}
+          </p>
+          {!intervalRun ? (
+            <button
+              type="button"
+              onClick={startIntervalProtocol}
+              className="mt-3 min-h-[44px] w-full rounded-xl bg-forge-ember px-4 py-2 text-sm font-semibold text-white"
+            >
+              Start intervals
+            </button>
+          ) : (
+            <p className="mt-2 text-xs text-forge-success">
+              Intervals running — listen for loud GO / STOP cues.
+            </p>
+          )}
+        </div>
+      )}
+
       {!musicStripDismissed && !spotifyConnected && (
         <div className="mb-4">
           <WorkoutMusicPicker
@@ -1303,6 +1422,7 @@ export function ActiveWorkout({
       {!warmupTimer &&
         !recoveryTimer &&
         !timedTimer &&
+        !intervalRun &&
         restSeconds !== null &&
         restSeconds > 0 && (
           <RestTimer
@@ -1312,6 +1432,36 @@ export function ActiveWorkout({
             onPersist={(state) => persistActiveTimer("rest", state)}
             onComplete={handleRestComplete}
             onSkip={() => handleRestComplete()}
+          />
+        )}
+
+      {!warmupTimer &&
+        !recoveryTimer &&
+        !timedTimer &&
+        intervalRun &&
+        intervalRun.phase !== "done" &&
+        session.intervalProtocol && (
+          <IntervalTimer
+            key={intervalTimerKey}
+            protocol={session.intervalProtocol}
+            state={intervalRun}
+            blocks={intervalBlocks}
+            restore={intervalTimerRestore}
+            onPersist={(state) =>
+              persistActiveTimer("interval", state, {
+                intervalPhase: intervalRun.phase,
+                intervalRoundIndex: intervalRun.roundIndex,
+                intervalBlockIndex: intervalRun.blockIndex,
+                intervalSeconds: intervalRun.seconds,
+              })
+            }
+            onPhaseComplete={() => advanceIntervalPhase()}
+            onSkipPhase={() => advanceIntervalPhase()}
+            onStop={() => {
+              clearPersistedActiveTimer(clientId);
+              setIntervalRun(null);
+              setIntervalTimerRestore(null);
+            }}
           />
         )}
 

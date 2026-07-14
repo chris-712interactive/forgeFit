@@ -1,5 +1,9 @@
 import { getOfflineDb } from "./db";
-import type { LocalWorkoutTemplate, WorkoutTemplateExercise } from "./types";
+import type {
+  IntervalProtocol,
+  LocalWorkoutTemplate,
+  WorkoutTemplateExercise,
+} from "./types";
 import type { WarmupBlock } from "@forgefit/program-engine";
 
 function nowIso(): string {
@@ -27,6 +31,7 @@ export async function saveLocalTemplate(input: {
   name: string;
   exercises: WorkoutTemplateExercise[];
   warmup?: WarmupBlock;
+  intervalProtocol?: IntervalProtocol;
 }): Promise<LocalWorkoutTemplate> {
   const db = getOfflineDb();
   const timestamp = nowIso();
@@ -39,6 +44,7 @@ export async function saveLocalTemplate(input: {
     name: input.name.trim(),
     exercises: input.exercises,
     warmup: input.warmup,
+    intervalProtocol: input.intervalProtocol,
     createdAt: existing?.createdAt ?? timestamp,
     updatedAt: timestamp,
     synced: false,

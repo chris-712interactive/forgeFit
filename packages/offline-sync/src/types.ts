@@ -7,6 +7,21 @@ export type ConditioningStatus = "pending" | "completed" | "skipped";
 export type SubstitutionReason = "equipment_busy" | "user_choice";
 export type WorkoutSessionSource = "program" | "custom" | "imported";
 
+/** Custom-workout interval protocol (Phase 13). */
+export type IntervalMode = "density" | "tabata" | "superset_block";
+
+export interface IntervalProtocol {
+  mode: IntervalMode;
+  /** Work phase length in seconds. */
+  workSeconds: number;
+  /** Rest phase length in seconds (between rounds or between pairs). */
+  restSeconds: number;
+  /** Rounds per exercise for density/tabata. Unused for superset_block. */
+  rounds: number;
+  /** Extra rest after finishing an exercise's rounds (tabata). */
+  betweenExerciseRestSeconds?: number;
+}
+
 export interface CachedProgram {
   userId: string;
   programId?: string;
@@ -21,6 +36,8 @@ export interface ExerciseSnapshot {
   sets: number;
   reps: string;
   restSeconds: number;
+  /** Superset / pair letter (e.g. "A") for interval protocols. */
+  groupId?: string;
   /** Original program exercise before an in-session swap */
   plannedExerciseId?: string;
   plannedExerciseName?: string;
@@ -40,6 +57,8 @@ export interface WorkoutTemplateExercise {
   sets: number;
   reps: string;
   restSeconds: number;
+  /** Superset / pair letter (e.g. "A") for interval protocols. */
+  groupId?: string;
 }
 
 export interface LocalWorkoutTemplate {
@@ -48,6 +67,7 @@ export interface LocalWorkoutTemplate {
   name: string;
   exercises: WorkoutTemplateExercise[];
   warmup?: WarmupBlock;
+  intervalProtocol?: IntervalProtocol;
   createdAt: string;
   updatedAt: string;
   synced: boolean;
@@ -78,6 +98,7 @@ export interface LocalWorkoutSession {
   conditioningBlock?: ConditioningBlock;
   conditioningStatus?: ConditioningStatus;
   conditioningRoundsCompleted?: number;
+  intervalProtocol?: IntervalProtocol;
 }
 
 export interface LocalExerciseSet {

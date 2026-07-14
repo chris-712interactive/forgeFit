@@ -98,7 +98,8 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
 6. **Schedule adjuster** — per-week overrides in Dexie + `workout_schedule_overrides`; `Move` on each day card opens a week picker; occupied days auto-swap; `GET/POST /api/workout-schedule` syncs overrides
 7. **Custom workouts (Phase 11, Pro)** — builder on Workout hub; `session_source` + `day_index = -1`; equipment-filtered exercise picker; optional warmup; templates in `user_workout_templates`; native CSV import (`workout_import`) and export (`data_export`)
-8. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
+8. **Interval protocols (Phase 13, Pro)** — optional `intervalProtocol` on templates/sessions (`density` / `tabata` / `superset_block`); `IntervalTimer` with gym-loud GO/STOP cues + 3s countdown; CSV v2; Gravity Week 1 install pack on Workout hub
+9. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
 
 ## Nutrition Diary (Phase 4)
 

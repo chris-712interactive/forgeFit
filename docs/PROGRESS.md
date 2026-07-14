@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 11 + Phase 12 in progress |
+| **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-14 |
-| **Last session focus** | Verizon Digital Ready / LISC $10K grant submitted |
+| **Last session focus** | Phase 13 interval protocols + Gravity Week 1 pack |
 
 ---
 
@@ -32,11 +32,43 @@
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
 | 11 | Custom Workouts | ⏳ In progress | — |
 | 12 | PWA timer background accuracy | ⏳ In progress | — |
+| 13 | Interval Protocols + Gravity pack | ⏳ In progress | — |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-07-14 — Phase 13: Interval protocols + Gravity Week 1
+
+**What was done**
+
+- Added `IntervalProtocol` (`density` / `tabata` / `superset_block`) + exercise `groupId` on custom templates/sessions
+- Built `IntervalTimer` with Phase 12 deadline persistence and gym-loud GO/STOP/complete cues + 3s countdown ticks
+- Extended custom builder + CSV v2 + workout-templates API for protocols
+- Seeded Gravity Transformations Week 1 pack (Full Body, Cardio, Metcon) with Install CTA on Workout hub
+- Docs: `docs/phases/13-interval-protocols.md`, BIBLE, ARCHITECTURE
+
+**What's next**
+
+- Apply Supabase migrations (`custom_workouts` + `interval_protocol`) if not already applied
+- Train Week 1 sessions; tune cue volume if needed
+- Add Gravity Weeks 2–6 when PDFs are available
+- Optional: lock-screen notifications (Phase 12C) for true eyes-off with phone locked
+
+**Files touched**
+
+- `packages/offline-sync/src/types.ts`, `template-store.ts`, `workout-store.ts`
+- `supabase/migrations/20260714200000_interval_protocol.sql`
+- `apps/web/src/lib/workouts/interval-protocol.ts`, `interval-protocol.test.ts`
+- `apps/web/src/lib/workouts/workout-csv-parser.ts`, `workout-csv-parser.test.ts`
+- `apps/web/src/lib/workouts/packs/gravity-week1.ts`
+- `apps/web/src/lib/audio/timer-sounds.ts`, `timer-feedback.ts`, `active-timer-persistence.ts`
+- `apps/web/src/components/workout/interval-timer.tsx`, `active-workout.tsx`, `custom-workout-builder.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/api/workout-templates/route.ts`, `templates-server.ts`
+- `docs/phases/13-interval-protocols.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — Verizon Digital Ready / LISC $10K grant submitted
 
