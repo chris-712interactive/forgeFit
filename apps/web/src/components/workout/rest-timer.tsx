@@ -1,18 +1,28 @@
 "use client";
 
 import { formatTimerSeconds } from "./timer-utils";
-import { useCountdown } from "./use-countdown";
+import { useCountdown, type CountdownCompleteMeta, type CountdownPersistState, type CountdownRestoreState } from "./use-countdown";
 
 interface RestTimerProps {
   seconds: number;
-  onComplete: () => void;
+  onComplete: (meta?: CountdownCompleteMeta) => void;
   onSkip: () => void;
+  restore?: CountdownRestoreState | null;
+  onPersist?: (state: CountdownPersistState | null) => void;
 }
 
-export function RestTimer({ seconds, onComplete, onSkip }: RestTimerProps) {
+export function RestTimer({
+  seconds,
+  onComplete,
+  onSkip,
+  restore,
+  onPersist,
+}: RestTimerProps) {
   const { remaining, paused, progress, togglePause } = useCountdown({
     seconds,
     onComplete,
+    restore,
+    onPersist,
   });
 
   return (

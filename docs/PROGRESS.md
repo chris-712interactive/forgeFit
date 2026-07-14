@@ -9,9 +9,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 11 in progress (custom workouts) |
+| **Active phase** | Phase 11 + Phase 12 in progress |
 | **Last updated** | 2026-07-14 |
-| **Last session focus** | Custom workouts — Pro-gated builder, CSV import/export |
+| **Last session focus** | PWA deadline timers (12A/12B); custom workouts still open |
 
 ---
 
@@ -31,11 +31,37 @@
 | 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
 | 11 | Custom Workouts | ⏳ In progress | — |
+| 12 | PWA timer background accuracy | ⏳ In progress | — |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
 
 ## Session Log
+
+### 2026-07-14 — PWA timer background fix (Phase 12A + 12B)
+
+**What was done**
+
+- Replaced tick-based `use-countdown.ts` with wall-clock deadline timers + `visibilitychange` / `focus` / `pageshow` reconcile
+- Added `deadline-timer.ts` pure math, `timer-feedback.ts` (vibrate), `active-timer-persistence.ts` (sessionStorage)
+- `use-screen-wake-lock.ts` — screen stays on during active workout timers
+- `active-workout.tsx` — persist/restore timers across minimize and PWA reload; rest "finished while away" banner
+- Unit tests: `deadline-timer.test.ts`
+
+**What's next**
+
+- Device QA: iOS installed PWA + Android Chrome PWA (lock screen, app switch, reload mid-rest)
+- Optional Phase 12C: notification on resume if permission granted
+
+**Files touched**
+
+- `apps/web/src/components/workout/use-countdown.ts`, `rest-timer.tsx`, `hold-timer.tsx`, `active-workout.tsx`
+- `apps/web/src/lib/workouts/deadline-timer.ts`, `active-timer-persistence.ts`, `timer-feedback.ts`
+- `apps/web/src/hooks/use-screen-wake-lock.ts`
+- `apps/web/src/lib/workouts/deadline-timer.test.ts`
+- `docs/phases/12-pwa-timer-background.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — Custom workouts (Phase 11)
 
@@ -66,6 +92,26 @@
 - `apps/web/src/app/(app)/workout/page.tsx`, `apps/web/src/app/api/sync/route.ts`
 - `apps/web/src/app/api/workouts/import/route.ts`, `export/route.ts`, `workout-templates/route.ts`
 - `docs/phases/11-custom-workouts.md`, `docs/BIBLE.md`, `docs/TIER-GATES.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
+
+### 2026-07-14 — PWA timer background plan (Phase 12)
+
+**What was done**
+
+- Documented root cause: `use-countdown.ts` tick-based `setInterval` drifts when mobile OS throttles background tabs/PWAs
+- Phase 12 plan: deadline-based timers, visibility reconcile, Wake Lock, sessionStorage persistence, optional notifications
+- Release branch: `cursor/pwa-timer-background-8ab8` (plan only — implementation next)
+
+**What's next**
+
+- Implement Phase 12A: rewrite `use-countdown.ts` to deadline + `visibilitychange` catch-up
+- QA on iOS installed PWA + Android Chrome installed PWA
+
+**Files touched**
+
+- `docs/phases/12-pwa-timer-background.md`
+- `docs/PROGRESS.md`
 
 ---
 
