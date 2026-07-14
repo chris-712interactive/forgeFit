@@ -31,6 +31,7 @@
 | 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
 | 11 | Custom Workouts | ⏳ In progress | — |
+| 12 | PWA timer background accuracy | 📋 Planned | — |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---
@@ -66,6 +67,26 @@
 - `apps/web/src/app/(app)/workout/page.tsx`, `apps/web/src/app/api/sync/route.ts`
 - `apps/web/src/app/api/workouts/import/route.ts`, `export/route.ts`, `workout-templates/route.ts`
 - `docs/phases/11-custom-workouts.md`, `docs/BIBLE.md`, `docs/TIER-GATES.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
+
+### 2026-07-14 — PWA timer background plan (Phase 12)
+
+**What was done**
+
+- Documented root cause: `use-countdown.ts` tick-based `setInterval` drifts when mobile OS throttles background tabs/PWAs
+- Phase 12 plan: deadline-based timers, visibility reconcile, Wake Lock, sessionStorage persistence, optional notifications
+- Release branch: `cursor/pwa-timer-background-8ab8` (plan only — implementation next)
+
+**What's next**
+
+- Implement Phase 12A: rewrite `use-countdown.ts` to deadline + `visibilitychange` catch-up
+- QA on iOS installed PWA + Android Chrome installed PWA
+
+**Files touched**
+
+- `docs/phases/12-pwa-timer-background.md`
+- `docs/PROGRESS.md`
 
 ---
 
