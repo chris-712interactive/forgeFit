@@ -2,7 +2,23 @@
 
 > **Prepared:** July 6, 2026  
 > **Purpose:** Legitimate non-dilutive funding options to accelerate customer acquisition and reach first revenue milestones (500 paying · $6K MRR by mid-2027).  
-> **Product:** [ForgeRep](https://forge-rep.com) — evidence-based fitness & nutrition PWA
+> **Product:** [ForgeRep](https://forge-rep.com) — evidence-based fitness & nutrition PWA  
+> **Legal entity:** **Carline Dad Enterprises, LLC** (ForgeRep is a product line, not a separate company)
+
+---
+
+## Legal entity (use on all applications)
+
+| Field | Value |
+|-------|-------|
+| **Company name** | Carline Dad Enterprises, LLC |
+| **DBA / product brands** | ForgeRep, Clean Scheduler, KiddoTales, My UPC Finder, Carline Dad Codes |
+| **Principal place of business** | Fort Myers, FL — use operating address, not any registered-agent address |
+| **Owner / PI** | Christopher Kendig |
+| **Website (umbrella)** | [thecarlinedad.com](https://thecarlinedad.com) |
+| **ForgeRep product URL** | [forge-rep.com](https://forge-rep.com) |
+
+**Rule:** Apply as **Carline Dad Enterprises, LLC**. Name the product (ForgeRep) in the technology/market sections. IP, SAM.gov, and bank accounts must match the LLC.
 
 ---
 
@@ -14,7 +30,7 @@
 | **State** | Florida | NC IDEA, One NC SBIR — **skip**. Focus federal + FL programs + national open grants |
 | **Veteran** | No | Hiring Our Heroes, Warrior Rising, StreetShares — **skip** |
 
-**Best strategy for you:** Federal-first (SBIR + Section 41 R&D payroll credit) for larger non-dilutive cash, plus **gender-neutral corporate grants** (Hello Alice, Skip, FedEx, NASE) for customer-acquisition funding. Florida has thin direct state grants — don't waste weeks chasing "Florida small business grant" lists full of dead COVID-era programs.
+**Best strategy for you:** Federal-first (SBIR + Section 41 R&D payroll credit) for larger non-dilutive cash, plus **gender-neutral corporate grants** (Hello Alice, Skip, NASE) for customer-acquisition funding. Florida has thin direct state grants — don't waste weeks chasing "Florida small business grant" lists full of dead COVID-era programs.
 
 ---
 
@@ -40,8 +56,7 @@
 | **Veteran/military spouse (≥51%)** | ❌ No | Skip: Hiring Our Heroes, Warrior Rising, StreetShares/Second Service |
 | **NC-headquartered** | ❌ No (FL) | Skip: NC IDEA MICRO/SEED, One NC SBIR Incentive/Matching |
 | **Florida-based** | ✅ Yes | pitchGNV, FL SBDC advising, FL R&D tax credit (C-corp only) |
-| **Pre-revenue / early revenue** | Likely | Breva Thrive prefers 1yr + revenue; FedEx needs 6mo ops + FedEx account |
-| **FedEx shipping customer (6+ mo)** | Prep now | FedEx Small Business Grant (~March 2027) |
+| **Pre-revenue / early revenue** | Likely | Breva Thrive prefers 1yr + revenue |
 | **R&D / tech innovation angle** | ✅ Strong | NSF SBIR Digital Health, NIH SBIR (NIDDK/NCCIH) |
 | **Under 25** | Only if yes | GBDC Young Entrepreneurs Grant (FL, $500–$2K, due Aug 31) |
 
@@ -51,9 +66,7 @@
 
 ### 🔴 Urgent — deadline within 7 days
 
-| Program | Amount | Deadline | Fit | Effort |
-|---------|--------|----------|-----|--------|
-| **[pitchGNV](https://startgnv.com/pitchgnv/)** | $20K+ prizes | **Jul 10, 2026** | High (AI/SaaS category) | Medium (pitch deck) |
+_None — pitchGNV Q3 submitted Jul 9._
 
 ### Tier 1 — apply now (open, you qualify)
 
@@ -61,14 +74,14 @@
 |---------|--------|----------|-----|--------|
 | **[Hello Alice Funding Center](#hello-alice)** | Varies ($2.5K–$20K) | Rolling | High | Low |
 | **[Skip grants](https://helloskip.com/explore)** | $1K–$10K | Rolling / check dashboard | High | Low |
-| **[Breva Thrive Grant](#breva-thrive-grant)** | $5K | **Jul 31, 2026** (Q3) | Medium (needs revenue + community impact story) | Low |
-| **[Florida SBDC](https://floridasbdc.org/)** | Free advising | Ongoing | High (grant discovery, not cash) | Low |
+| **[Breva Thrive Grant](#breva-thrive-grant)** | $5K | Q4 **Oct 31, 2026** | Medium | Low — **Q3 submitted Jul 9** |
+| **[Florida SBDC](https://floridasbdc.org/)** | Free advising | Ongoing | High | Low — **applied Jul 9** |
 
 ### Tier 2 — high value, higher effort
 
 | Program | Amount | Deadline | Fit | Effort |
 |---------|--------|----------|-----|--------|
-| **[NSF SBIR — Digital Health (DH5)](#nsf-sbir-digital-health)** | $50K–$275K Phase I | **Jul 27, 2026** | High (R&D framing) | Very high (4–8 wks) |
+| **[NSF SBIR — Digital Health (DH5)](#nsf-sbir-digital-health)** | $50K–$275K Phase I | **Jul 27, 2026** (full proposal, if invited) | High | **Pitch submitted #00118988 Jul 9** — await invitation |
 | **[NIH SBIR Parent (PA-27-100)](#nih-sbir-parent)** | Up to $323K Phase I | **Sep 5, 2026** | Medium–High | Very high (6–8 wks) |
 | **[Section 41 R&D Tax Credit](#section-41-rd-tax-credit)** | Up to $500K/yr payroll offset | With tax return | High | Medium (CPA) |
 
@@ -76,7 +89,6 @@
 
 | Program | Amount | When | Fit | Effort |
 |---------|--------|------|-----|--------|
-| **[FedEx Small Business Grant](#fedex-small-business-grant)** | $15K–$50K | ~Mar 2027 | Medium | Medium |
 | **[NASE Growth Grant](#nase-growth-grant)** | Up to $4K | Quarterly (Oct review next) | Medium | Low |
 | **[Florida R&D Tax Credit](#florida-rd-tax-credit)** | 10% of incremental QREs | Mar 20–26, **2027** | Medium (C-corp only) | Medium (CPA) |
 | **Intuit QuickBooks Hero** | $20K | Quarterly — check intuit.com | Medium | Medium |
@@ -92,6 +104,21 @@
 | Comcast RISE | Program wound down |
 | GBDC Young Entrepreneurs | Only if under 25 |
 
+### Submitted (awaiting decision)
+
+| Program | Amount | Submitted | Cycle / deadline | Notes |
+|---------|--------|-----------|------------------|-------|
+| **pitchGNV** | $20K+ prizes | **2026-07-09** | Jul 10 deadline · AI/SaaS track | ForgeRep product · verify legal entity on file = Carline Dad Enterprises, LLC |
+| **Breva Thrive** | $5K | **2026-07-09** | Q3 (Jul 31 deadline) | Carline Dad Enterprises, LLC · community-impact use of funds |
+| **NSF SBIR Project Pitch** | Phase I $50K–$275K (if invited) | **2026-07-09** | Digital Health (DH) · **#00118988** | Carline Dad Enterprises, LLC · ForgeRep EPAPE · await NSF response (~1–2 mo) |
+| **Future of Health (EPFL / CSS)** | Up to CHF 90K (Level 2: CHF 30K) | **2026-07-09** | Jul 31 deadline · Sep 2026 cohort | Carline Dad Enterprises, LLC · ForgeRep · Level 2 POC · Swiss validation |
+
+### Engaged (advisory — not cash grants)
+
+| Program | Submitted | Notes |
+|---------|-----------|-------|
+| **Florida SBDC Network** | **2026-07-09** | Free 1:1 advising · grant discovery · SBIR guidance |
+
 ### Closed / missed (July 2026)
 
 | Program | Status |
@@ -100,6 +127,7 @@
 | Skip $10K Kickoff Grant | Closed Feb 2026 |
 | Skip $10K Summer Grant | Check helloskip.com — may be closing |
 | Changing the Game Grant | Women-focused food/bev — skip |
+| **FedEx Small Business Grants** | **Retired after 2024** (12th/final cycle) — [FedEx confirms](https://www.fedex.com/en-us/small-business/articles-insights/agrothrive.html) |
 
 ---
 
@@ -107,16 +135,17 @@
 
 | Date | Action |
 |------|--------|
-| **Jul 6–10** | 🔴 **pitchGNV application** (AI/SaaS category) — deadline Jul 10 |
-| **Jul 6–12** | Create Hello Alice + Skip accounts; book free FL SBDC consultation |
-| **Jul 13–26** | Submit Breva Thrive Q3 (deadline Jul 31); apply to open Skip grants |
-| **Jul 27** | NSF SBIR Digital Health deadline (if pursuing R&D track) |
-| **Jul 31** | Breva Thrive Q3 deadline |
+| **Jul 6–10** | ✅ **pitchGNV application submitted** (Jul 9 · AI/SaaS category · deadline Jul 10) |
+| **Jul 6–12** | ✅ **Florida SBDC application submitted** (Jul 9) · Hello Alice + Skip accounts |
+| **Jul 13–26** | Apply to open **Skip** grants; Hello Alice rolling applications |
+| **Jul 9** | ✅ **NSF SBIR Project Pitch submitted** — #00118988 · Digital Health (DH) · Carline Dad Enterprises, LLC |
+| **Jul 9** | ✅ **Future of Health Grant (EPFL/CSS) application submitted** — Level 2 POC · ForgeRep · await decision |
+| **Jul 27** | NSF Digital Health **full proposal** deadline (only if Project Pitch invitation received) |
+| **Sep 2026** | Future of Health program start (if selected) |
 | **Aug–Sep** | Begin NIH SBIR Phase I draft; register SAM.gov if not done (6–8 wk lead time) |
 | **Sep 5** | NIH SBIR parent announcement deadline |
 | **Sep–Oct** | Consult CPA on Section 41 R&D payroll tax credit |
-| **Oct 31** | Breva Thrive Q4 deadline |
-| **~Mar 2027** | FedEx Small Business Grant (open FedEx account now) |
+| **Oct 31** | Breva Thrive Q4 deadline (next cycle if Q3 not awarded) |
 | **Mar 20–26, 2027** | Florida R&D tax credit allocation window (C-corp only) |
 
 ---
@@ -125,15 +154,16 @@
 
 Florida's direct small-business **grant** ecosystem is thin compared to NC, NY, or CA. Most "Florida grant" listicles recycle dead COVID-era programs. What actually works for a FL tech founder:
 
-### pitchGNV — **apply by July 10**
+### pitchGNV — **submitted July 9, 2026**
 
 - **URL:** [startgnv.com/pitchgnv](https://startgnv.com/pitchgnv/)
 - **Category:** AI/SaaS (or closest fit: digital health / consumer SaaS)
 - **Amount:** $20K+ across categories
 - **Deadline:** **July 10, 2026** (applications opened June 1)
+- **Status:** ✅ **Application submitted July 9, 2026**
 - **Event:** Gainesville, FL · Sep 2–3, 2026
 - **Eligibility:** U.S. early-stage startup · <$500K revenue · <50 employees
-- **Entity note:** ForgeRep LLC (Wyoming) · **Principal place of business:** Fort Myers, FL — use your Fort Myers operating address on the application, not the WY registered agent address.
+- **Entity note:** **Carline Dad Enterprises, LLC** · **Principal place of business:** Fort Myers, FL — ForgeRep is a product line. Use Fort Myers operating address, not any registered-agent address.
 
 #### CRL / TRL quick reference (ForgeRep positioning)
 
@@ -148,7 +178,7 @@ Florida's direct small-business **grant** ecosystem is thin compared to NC, NY, 
 
 #### pitchGNV application — FINAL (ready to paste)
 
-> **Filled for:** Christopher Kendig · Fort Myers, FL · ForgeRep LLC (WY) · July 6, 2026  
+> **Filled for:** Christopher Kendig · Fort Myers, FL · Carline Dad Enterprises, LLC · July 6, 2026  
 > Each field is **≤1000 characters**. Copy the text block under each heading into the matching pitchGNV form field.
 
 ---
@@ -233,7 +263,7 @@ Next steps to TRL 9: (1) 500+ registered users with D7/D30/D90 retention cohorts
 
 Technologies (non-confidential): Next.js 15 PWA with offline sync (Serwist/Dexie); Supabase backend; Stripe billing; core packages—evidence-kb (citation-backed rules), program-engine (deterministic periodization), projection-engine.
 
-IP possessed: copyright on source code, UI, and evidence content (ForgeRep LLC, Wyoming); trade secrets on rule graph, progression logic, and sync architecture (not publicly disclosed); "ForgeRep" in common-law trademark use—no USPTO filing submitted. No patents filed; evaluating provisional on evidence-linked programming engine—no application numbers to disclose.
+IP possessed: copyright on source code, UI, and evidence content (Carline Dad Enterprises, LLC); trade secrets on rule graph, progression logic, and sync architecture (not publicly disclosed); "ForgeRep" in common-law trademark use—no USPTO filing submitted. No patents filed; evaluating provisional on evidence-linked programming engine—no application numbers to disclose.
 
 All application content is non-confidential. User-facing citations link to published peer-reviewed sources.
 
@@ -319,8 +349,9 @@ Build in Canva, Google Slides, or Keynote. One idea per slide. Large type. Scree
 ### Florida SBDC Network (free — not a grant, but essential)
 
 - **URL:** [floridasbdc.org](https://floridasbdc.org/)
+- **Status:** ✅ **Application submitted July 9, 2026**
 - **What you get:** Free 1:1 advising at 40+ locations statewide; help finding local incentives, SBA resources, and grant opportunities you may have missed
-- **Action:** Book a consultation this week — mention you're a FL-based SaaS founder pursuing SBIR + corporate grants
+- **Next:** Await advisor assignment · prep one-pager on Carline Dad / ForgeRep · bring grant pipeline (Skip, Hello Alice, SBIR) to first session
 
 ---
 
@@ -355,6 +386,7 @@ Build in Canva, Google Slides, or Keynote. One idea per slide. Large type. Scree
 - **URL:** [breva.ai/thrive-grant](https://www.breva.ai/thrive-grant)
 - **Amount:** $5,000 quarterly
 - **Deadline:** Q3 closes **July 31, 2026** · Q4 closes Oct 31
+- **Status:** ✅ **Q3 application submitted July 9, 2026** (Carline Dad Enterprises, LLC)
 - **Eligibility:** U.S. for-profit · generating revenue · community impact demonstrated · 1+ year preferred (younger OK with strong traction)
 - **Fit:** Frame ForgeRep as making evidence-based fitness **accessible** (vs. expensive coaching) — community impact angle
 
@@ -471,10 +503,13 @@ See ncidea.org for $10K MICRO / $50K SEED cycles.
 
 - **URL:** [seedfund.nsf.gov/topics/digital-health](https://seedfund.nsf.gov/topics/digital-health/)
 - **Amount:** Phase I $50K–$275K · Phase II up to $1.8M
-- **Deadline:** **July 27, 2026** (annual topic deadline — verify on seedfund.nsf.gov)
+- **Deadline:** **July 27, 2026** full proposal (annual topic — verify on seedfund.nsf.gov)
+- **Status:** ✅ **Project Pitch submitted July 9, 2026** · submission **#00118988** · topic **Digital Health (DH)**
+- **Entity:** Carline Dad Enterprises, LLC · product **ForgeRep** · PI Christopher Kendig
+- **Fast-Track:** ❌ **Not eligible** — requires prior NSF research lineage + I-Corps within 2 years ([Fast-Track pilot](https://seedfund.nsf.gov/how-to-submit/fast-track/)). Use **standard Phase I** path after pitch invitation.
 - **Eligibility:** U.S. small business (<500 employees), ≥50% U.S.-owned, PI employed ≥20 hr/wk
 - **Best sub-topic:** **DH5 — Physical, Mental and Behavioral Health**
-- **Effort:** 4–8 weeks; requires Project Pitch first, then full proposal
+- **Next:** Await NSF email (~1–2 months). If invited, full proposal due by Jul 27 or next eligible deadline (invitation valid 2 submission cycles).
 
 #### Strategic framing for ForgeRep
 
@@ -482,15 +517,88 @@ NSF SBIR is **not a marketing grant**. You must propose **R&D with technical ris
 
 > **Research question:** Can a deterministic, evidence-knowledge-base-driven programming engine — combined with offline adherence capture and integrated nutritional feedback — improve resistance training adherence and goal attainment vs. generic digital logging tools?
 
-#### Project Pitch (NSF first step) — curated text
+#### Project Pitch (NSF first step) — submit at [seedfund.nsf.gov/apply/project-pitch](https://seedfund.nsf.gov/apply/project-pitch/)
 
-**Technology innovation (≤500 words summary)**
+**Submission metadata**
 
-> ForgeRep proposes to develop and validate an Evidence-Based Physical Activity Prescription Engine (EPAPE) that generates periodized resistance training programs from a structured peer-reviewed knowledge base (YAML rules + citations), adapts loads/volume based on logged performance, and integrates macronutrient adherence signals — all operating offline-first via PWA/IndexedDB sync.
+| Field | Value |
+|-------|-------|
+| **Submission #** | **00118988** |
+| **Submitted** | **2026-07-09** |
+| **Topic** | Digital Health (DH) SBIR/STTR · **DH5 — Physical, Mental and Behavioral Health** |
+| **Company** | Carline Dad Enterprises, LLC · principal place of business: Fort Myers, FL |
+| **Product** | ForgeRep · [forge-rep.com](https://forge-rep.com) |
+| **PI** | Christopher Kendig · ≥20 hr/wk |
+| **Status** | Awaiting NSF program director response |
+
+Character limits per NSF: sections 1–2 ≤3,500 · sections 3–4 ≤1,750 each.
+
+---
+
+**1. The Technology Innovation** (2,368 / 3,500 characters)
+
+> Carline Dad Enterprises, LLC proposes Phase I R&D on ForgeRep's Evidence-Based Physical Activity Prescription Engine (EPAPE): a deterministic software system that generates periodized resistance-training prescriptions from a structured, peer-reviewed knowledge base (machine-readable rules with explicit literature citations), adapts volume and load from logged performance (sets, reps, RIR), and fuses macronutrient adherence signals into unified adherence and body-composition projections—while capturing sessions offline in connectivity-poor gym environments.
 >
-> **Technical risks:** (1) Validating that deterministic rule engines outperform LLM-generated programs on adherence and injury-safe progression; (2) Offline sync integrity under intermittent connectivity in gym environments; (3) Novel integration of performance + nutrition signals into unified projection models for body composition goals.
+> The core technical innovation is not another workout app interface. It is an auditable prescription engine that makes every progression decision traceable to citable evidence rules, in contrast to opaque LLM-generated workouts and logging-only tools that leave users without an explainable, injury-aware progression policy.
 >
-> **Differentiation:** Unlike Fitbod/AI generators (opaque) or Strong/Hevy (logging-only), EPAPE traces every progression decision to citable evidence rules — enabling both user trust and clinical/research auditability.
+> Phase I will research whether this architecture improves training adherence and goal attainment versus fragmented self-directed tools. Three technical risks remain unresolved and require R&D:
+>
+> (1) Adherence and safety validation: No published consumer-scale study demonstrates that citation-linked deterministic engines outperform opaque AI generators or unstructured logging on session completion, load progression safety, or 12-week retention.
+>
+> (2) Offline-first adherence capture: Gym environments routinely lack reliable connectivity. We must prove that local-first session capture with deferred sync preserves data integrity (conflict-free merges, no session loss) under adversarial network conditions—a requirement for unbiased adherence measurement in real facilities.
+>
+> (3) Cross-domain feedback model: Integrating resistance-training performance and daily macro compliance into a single projection model for fat-loss and recomposition goals involves unresolved modeling risk: how to weight noisy nutrition logs against progressive overload signals without destabilizing prescriptions.
+>
+> Existing products address subsets: Strong/Hevy (logging), MyFitnessPal/MacroFactor (nutrition), Fitbod (opaque generation). None combine explainable evidence-based programming, offline gym reliability, and unified performance–nutrition feedback in one auditable system. Success creates a new category: evidence-transparent digital physical-activity prescription software suitable for consumer and research use.
+
+**2. The Technical Objectives and Challenges** (2,433 / 3,500 characters)
+
+> **Specific Aim 1 — Extend and formalize EPAPE rule engine v2 (Months 1–4)**
+> R&D: Encode explicit citation links for volume landmarks, deload timing, and load-progression policies across four goal types (hypertrophy, strength, fat loss, recomposition). Implement auditable decision traces (rule ID + citation + inputs → prescription output) for every session modification.
+> Challenge: Rule interactions create combinatorial edge cases (equipment constraints × experience × recovery signals). We will use property-based simulation over 10,000 synthetic athlete profiles to detect unsafe or inconsistent prescriptions before human subjects exposure.
+> Success metric: ≥99% of simulated profiles receive internally consistent, citation-backed prescriptions; zero uncited progression decisions.
+>
+> **Specific Aim 2 — Validate offline adherence capture integrity (Months 2–5)**
+> R&D: Stress-test local-first workout storage and background sync under intermittent connectivity, concurrent edits, and forced app termination—conditions common in commercial gyms.
+> Challenge: Standard CRUD sync fails mid-set; naive last-write-wins corrupts training history. We will develop and validate a merge policy preserving set-level granularity and temporal ordering.
+> Success metric: ≥99.9% session fidelity across 1,000 automated edge-case scenarios; ≤0.1% data loss in field pilot (n=30) across basement/commercial gym sites.
+>
+> **Specific Aim 3 — 12-week randomized controlled adherence trial (Months 4–12)**
+> R&D: Preregistered RCT (n=120, recreational lifters 25–45, 3–5 sessions/week) comparing EPAPE + integrated macros (intervention) vs. self-directed Strong + MyFitnessPal (control)—the real-world fragmented stack.
+> Primary endpoint: mean sessions completed per week (Weeks 1–12). Secondary: macro adherence (% days within prescription band), load progression consistency, self-reported readiness, Net Promoter Score.
+> Challenge: Attrition and crossover. We will use intention-to-treat analysis, blinded biostatistics consultant, IRB approval, and digital consent flows.
+> Success metric: ≥15% relative improvement in primary endpoint vs. control (powered at 80%, α=0.05)—or null result published with open methods, advancing evidence on digital PA prescription architectures.
+>
+> Risk mitigation: PI (Christopher Kendig) built production EPAPE v1; Phase I funds validation R&D, not incremental UI. Gaps filled via contracted biostatistician and exercise-science advisor.
+
+**3. The Market Opportunity** (1,337 / 1,750 characters)
+
+> Customer: ~25M English-speaking serious recreational lifters who train 3–5×/week and currently juggle 2–3 apps (workout log + macro tracker + spreadsheets). Secondary: digital health researchers and clinicians needing auditable PA prescription tools.
+>
+> Problem: 80% of U.S. adults fail to meet activity guidelines; even motivated lifters quit when tools fragment context, fail offline in gyms, or hide programming behind opaque AI. Employers, insurers, and public-health programs cannot deploy consumer fitness apps that lack evidence traceability.
+>
+> Value: EPAPE delivers explainable, citation-backed resistance-training prescriptions with integrated nutrition feedback and offline reliability—improving adherence at consumer price points ($0–$15/mo) vs. $200+/mo coaching.
+>
+> Competition: Logging apps (Strong, Hevy) lack programming; MFP/MacroFactor lack integrated evidence-based training; Fitbod/AI trainers lack audit trails. EPAPE's durable advantage is the evidence knowledge base + deterministic engine + offline architecture—hard to replicate without curated sports-science curation and monorepo R&D.
+>
+> Commercial model: Freemium SaaS (ForgeRep). Phase I de-risks adherence claims for Phase II scale (wearable integrations, clinical partnerships). SAM supports a scalable U.S. software business; global fitness app TAM exceeds $10B.
+
+**4. The Company and Team** (1,260 / 1,750 characters)
+
+> Company: Carline Dad Enterprises, LLC, principal place of business Fort Myers, Florida. U.S.-owned small business (<10 employees). ForgeRep product live at forge-rep.com with freemium billing, offline PWA, and 30+ curated evidence citations in production.
+>
+> Principal Investigator: Christopher Kendig, Founder — senior software engineer, ≥20 hr/wk on project. Kendig architected and shipped EPAPE v1, offline sync (IndexedDB/service worker), evidence knowledge base, and integrated macro engine in a production monorepo (Next.js, Supabase, deterministic program-engine package). PI will lead engine formalization, sync R&D, and trial software.
+>
+> Team gaps and plans:
+> • Biostatistics: Contract biostatistician (RCT design, power analysis, ITT analysis) — identified via university consulting network; budgeted in Phase I.
+> • Exercise science: Part-time scientific advisor (prescription safety review, endpoint selection) — recruiting from Florida university kinesiology programs.
+> • Regulatory: IRB submission via commercial IRB vendor; PI manages with consultant support.
+>
+> ForgeRep is bootstrapped with production infrastructure already deployed, enabling Phase I to focus budget on validation R&D rather than greenfield prototyping—a credible path to Phase II commercialization.
+
+---
+
+**Legacy summary blocks** (for NIH / internal use — not NSF form fields)
 
 **Broader impacts**
 
@@ -512,7 +620,7 @@ Use NSF FastLane/Research.gov templates. Key sections and ForgeRep-aligned conte
 
 **2. Company & Team**
 
-> ForgeRep LLC, [city, state]. PI: [Name], [title] — [X]% FTE. Built production PWA serving [N] users. Evidence KB: 30+ curated citations. Stack: Next.js, Supabase, deterministic program-engine package (monorepo).
+> Carline Dad Enterprises, LLC, Fort Myers, FL. PI: Christopher Kendig, Founder — ≥20% FTE. Built ForgeRep production PWA serving [N] users. Evidence KB: 30+ curated citations. Stack: Next.js, Supabase, deterministic program-engine package (monorepo).
 
 **3. Budget (Phase I example — $275K / 12 months)**
 
@@ -555,7 +663,7 @@ Use NSF FastLane/Research.gov templates. Key sections and ForgeRep-aligned conte
 >
 > Dear [Program Official],
 >
-> ForgeRep is a U.S. small business (<10 employees) developing an evidence-based digital physical activity and nutrition platform (offline PWA). We propose a Phase I RCT (n=120) testing whether our deterministic, citation-linked programming engine improves resistance training adherence vs. generic logging apps.
+> Carline Dad Enterprises, LLC is a U.S. small business (<10 employees) developing ForgeRep, an evidence-based digital physical activity and nutrition platform (offline PWA). We propose a Phase I RCT (n=120) testing whether our deterministic, citation-linked programming engine improves resistance training adherence vs. generic logging apps.
 >
 > Before drafting specific aims, I'd appreciate 15 minutes to confirm fit with NIDDK priorities and whether digital health / lifestyle intervention applications are competitive in the current cycle.
 >
@@ -574,35 +682,23 @@ Use NSF FastLane/Research.gov templates. Key sections and ForgeRep-aligned conte
 
 ---
 
-### FedEx Small Business Grant
+### ❌ FedEx Small Business Grants — RETIRED (2024)
 
-- **URL:** [fedex.com/smallbusinessgrants](https://www.fedex.com/en-us/small-business/grant-contest.html) (verify annual URL)
-- **Amount:** $50K grand · $30K 2nd · 10 × $15K · FedEx Office credits
-- **Typical window:** ~March 1 – April 1 (2027 expected)
-- **Eligibility:** U.S. for-profit · 1–99 employees · 6+ months operating · FedEx account open 6+ months · active shipper
-- **Requires:** Short profile + **1–2 min video pitch** + photos
+- **Status:** Program **ended after the 12th annual cycle** (winners announced May 16, 2024). FedEx states the grants program is **retiring** — do not prep a FedEx shipping account for grant eligibility.
+- **Source:** [FedEx legacy grant page](https://www.fedex.com/en-us/small-business/articles-insights/agrothrive.html) · [2024 winners announcement](https://newsroom.fedex.com/newsroom/global-english/fedex-awards-more-than-230-000-to-10-small-businesses)
+- **Alternatives (not the old grant):** Check [FedEx Cares small business resources](https://fedexcares.com/small-business-resources) for programs like E-Commerce Learning Lab ($5K for graduates) or disaster-prep grants — separate eligibility, rolling/seasonal deadlines.
 
-#### Curated responses
+<!--
+Archived — FedEx Small Business Grant (2012–2024) curated responses kept for reference only.
 
 **How would you use the grant to enhance your business?**
 
 > ForgeRep helps serious lifters train with evidence, not hype. I'd use the $50,000 grand prize to:
-> 1. **Ship physical welcome kits** to our first 500 Pro annual subscribers ( resistance bands + ForgeRep-branded gym card with QR to install the PWA) — shipped via FedEx to create unboxing content for organic social
-> 2. **Fund 20 micro-influencer partnerships** showing offline logging in real gyms
-> 3. **Launch referral program** with Pro credits to drive word-of-mouth
->
-> FedEx shipping is core to the welcome-kit strategy — partners see us investing in tangible community, not just pixels.
+> 1. Ship physical welcome kits to our first 500 Pro annual subscribers
+> 2. Fund 20 micro-influencer partnerships showing offline logging in real gyms
+> 3. Launch referral program with Pro credits
 
-**Video script outline (60–90 sec)**
-
-> [HOOK] "What if your workout app could prove every set progression with a citation?"
-> [PROBLEM] Quick cuts: phone losing signal in gym · switching between 3 apps
-> [SOLUTION] Demo offline logging → evidence panel showing citation → projection chart
-> [TRACTION] "[X] workouts logged · billing live · built solo/bootstrapped"
-> [ASK] "This grant fuels our first 500 paying customers — lifters who deserve science, not bro-science."
-> [FEDEX TIE-IN] "We'll ship welcome kits to early believers — because transformation starts when the package arrives."
-
-**Prep now:** Open FedEx business account · ship quarterly (even small volumes) to meet 6-month requirement before March 2027.
+-->
 
 ---
 
@@ -633,17 +729,31 @@ Kept for reference if eligibility changes.
 
 ---
 
-### Future of Health Grant (Switzerland)
+### Future of Health Grant (Switzerland) — **submitted July 9, 2026**
 
 - **URL:** [future-of-health.org](https://future-of-health.org/)
-- **Amount:** CHF 10K (Idea) · 30K (MVP) · 50K (Market validation) — up to CHF 90K cumulative
-- **Deadline:** **July 31, 2026**
+- **Amount:** CHF 10K (Idea) · 30K (POC) · 50K (Market validation) — up to CHF 90K cumulative
+- **Deadline:** **July 31, 2026** (applications closed for this cycle once submitted)
+- **Status:** ✅ **Application submitted July 9, 2026** (EPFL Innovation Park / CSS)
+- **Level requested:** Level 2 (POC) · CHF 30,000 · 6-month program
+- **Program start (if selected):** September 2026
 - **Eligibility:** Digital health startups; non-Swiss need Swiss market entry plan
-- **Fit:** Low unless pursuing EU/Swiss expansion
+- **Entity:** Carline Dad Enterprises, LLC · product ForgeRep
+- **Pitch deck:** [pitchMocks/future-of-health-deck-mockups.md](./pitchMocks/future-of-health-deck-mockups.md)
+- **Next:** Await selection decision · if awarded, execute DE/FR localization + Swiss pilot plan
 
-#### Only apply if pursuing Swiss market
+#### Framing used on application
 
-> ForgeRep seeks Level 2 (MVP, CHF 30K) to pilot evidence-based programming with Swiss fitness users via partnership with [Swiss gym chain / sports physician network]. Switzerland's high wearable penetration aligns with Pro+ integration roadmap. Grant funds German/French localization + 6-month Swiss user validation (n=200).
+| Field | Answer summary |
+|-------|----------------|
+| Patient journey | Prevention / health maintenance |
+| Pathology | Obesity / overweight |
+| Population | Adults 25–45, recreational training 3–5×/week |
+| Fundraising | Bootstrapped / pre-seed — no outside equity |
+| Swiss relation | Planned market entry + validation (no Swiss entity yet) |
+| Use of funds | 35% localize · 40% pilot · 15% partners · 10% evaluate/GTM |
+
+> Level 2 ask: pilot evidence-based programming with Swiss fitness users via gyms / preventive-health collaborators. Grant funds German/French localization + 6-month Swiss user validation (n≈200).
 
 ---
 
@@ -702,7 +812,7 @@ Required before federal proposals (allow **6–8 weeks**):
 
 | Step | URL | Notes |
 |------|-----|-------|
-| 1. SAM.gov registration | [sam.gov](https://sam.gov) | UEI, legal business name |
+| 1. SAM.gov registration | [sam.gov](https://sam.gov) | UEI · legal name **Carline Dad Enterprises, LLC** |
 | 2. SBA Company Registry | [sbir.gov/registration](https://www.sbir.gov/registration) | Size/eligibility certification |
 | 3. NSF Project Pitch | [seedfund.nsf.gov/apply](https://seedfund.nsf.gov/apply) | Required before full NSF proposal |
 | 4. eRA Commons (NIH) | [era.nih.gov](https://era.nih.gov) | For NIH submissions via ASSIST |
@@ -727,25 +837,24 @@ Required before federal proposals (allow **6–8 weeks**):
 ## Recommended 30-day action plan (Florida founder)
 
 ### Week 1 (Jul 6–12) — URGENT
-- [ ] **pitchGNV application** — deadline **July 10** ([startgnv.com/pitchgnv](https://startgnv.com/pitchgnv/))
+- [x] **pitchGNV application** — **submitted Jul 9, 2026** ([startgnv.com/pitchgnv](https://startgnv.com/pitchgnv/))
 - [ ] Create **Hello Alice** + **Skip** profiles; enable grant alerts
-- [ ] Book free **Florida SBDC** consultation ([floridasbdc.org](https://floridasbdc.org/))
-- [ ] Draft **Breva Thrive Q3** application (deadline Jul 31)
+- [x] Book free **Florida SBDC** consultation — **application submitted Jul 9, 2026** ([floridasbdc.org](https://floridasbdc.org/))
+- [ ] Draft **Breva Thrive Q3** application (deadline Jul 31) — **submitted Jul 9**
 
 ### Week 2 (Jul 13–19)
-- [ ] Submit Breva Thrive Q3
+- [x] Submit Breva Thrive Q3 — **done Jul 9, 2026**
 - [ ] Apply to all open **Skip** grants on dashboard
-- [ ] Open **FedEx business account** (ship quarterly for Mar 2027 grant eligibility)
 - [ ] Consult CPA on **Section 41 R&D** payroll tax credit
 
 ### Week 3 (Jul 20–26)
-- [ ] Submit **NSF Project Pitch** if pursuing SBIR R&D track
+- [x] Submit **NSF Project Pitch** — **#00118988 submitted Jul 9, 2026** (Digital Health)
 - [ ] Email **NIDDK/NCCIH** SBIR program officer for fit call (before Sep 5 NIH deadline)
 - [ ] Register **SAM.gov** if not done (6–8 week lead time for federal grants)
 
 ### Week 4 (Jul 27–31)
 - [ ] NSF SBIR full proposal if Project Pitch accepted (Jul 27 deadline)
-- [ ] Final Breva Thrive check before Jul 31
+- [ ] Final Breva Thrive check before Jul 31 — **Q3 submitted Jul 9**
 - [ ] Join **NASE** if pursuing $4K Growth Grant (Oct quarterly review)
 
 ---

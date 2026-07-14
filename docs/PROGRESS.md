@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + Phase 12 in progress |
 | **Last updated** | 2026-07-14 |
-| **Last session focus** | PWA deadline timers (12A/12B); custom workouts still open |
+| **Last session focus** | PRs #12/#13 on main; business docs reorganized |
 
 ---
 
@@ -37,6 +37,20 @@
 ---
 
 ## Session Log
+
+### 2026-07-14 — Business docs reorganized
+
+**What was done**
+
+- Moved 5-year business plan into `docs/business/businessPlan/`
+- Moved pitch deck mockups into `docs/business/pitchMocks/` (including Future of Health deck)
+- Updated grant playbook paths / FoH submission tracking
+
+**Files touched**
+
+- `docs/business/businessPlan/*`, `docs/business/pitchMocks/*`, `docs/business/forgeRep-grant-playbook.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — PWA timer background fix (Phase 12A + 12B)
 
@@ -111,6 +125,130 @@
 **Files touched**
 
 - `docs/phases/12-pwa-timer-background.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-09 — Future of Health Grant (EPFL/CSS) submitted
+
+**What was done**
+
+- ✅ Submitted **Future of Health Grant** application (EPFL Innovation Park / CSS) — Level 2 POC · Carline Dad Enterprises, LLC · ForgeRep
+- Logged in grant playbook submitted table + timeline; deck path updated to `docs/business/pitchMocks/future-of-health-deck-mockups.md`
+
+**What's next**
+
+- Await FoH selection (program start Sep 2026 if awarded)
+- Continue rolling: **Skip** + **Hello Alice**
+- Await NSF pitch #00118988 response; confirm SAM.gov under Carline Dad Enterprises, LLC
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-09 — Future of Health Grant pitch deck mockup
+
+**What was done**
+
+- Created full 10-slide Canva build guide for Future of Health Grant (CSS/EPFL), with wireframes, copy, and presenter notes
+- Framed Level 2 (CHF 30K): Swiss localization + ~200-user pilot; reuse pitchGNV assets but replace ask/Swiss slides
+- Linked deck from grant playbook Future of Health section + application framing table
+
+**What's next**
+
+- ~~Build Canva + submit FoH~~ → **submitted Jul 9**
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `docs/business/pitchMocks/future-of-health-deck-mockups.md`
+- `docs/business/forgeRep-grant-playbook.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-09 — NSF SBIR Project Pitch submitted (#00118988)
+
+**What was done**
+
+- Submitted NSF SBIR **Project Pitch #00118988** — Digital Health (DH) topic · Carline Dad Enterprises, LLC · ForgeRep EPAPE
+- Grant playbook updated: submission tracking, Fast-Track not eligible, entity = Carline Dad
+- **FedEx Small Business Grants** removed from playbook — program retired after 2024 (12th/final cycle)
+
+**What's next**
+
+- Await NSF response (~1–2 months). **Do not submit another pitch** until NSF replies (one pending pitch at a time)
+- If **invited**: prepare full Phase I proposal before **Jul 27** or next eligible deadline
+- If **declined**: consider NIH SBIR (Sep 5) or next NSF Digital Health cycle
+- Confirm SAM.gov registered under **Carline Dad Enterprises, LLC**
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-09 — NSF SBIR Project Pitch drafted
+
+**What was done**
+
+- Drafted full NSF Project Pitch (4 sections, within character limits) for EPAPE / Digital Health DH5 — saved to `docs/business/forgeRep-grant-playbook.md`
+
+**What's next**
+
+- Confirm SAM.gov legal name = **Carline Dad Enterprises, LLC** before NSF pitch submit
+- Submit Project Pitch; expect 1–2 month NSF response before full proposal invitation
+- Jul 27 Digital Health deadline applies only **after** invitation to full proposal
+
+**Entity correction (Jul 9)**
+
+- ForgeRep is a **product line** under Carline Dad Enterprises, LLC — not a separate company. Grant playbook + NSF pitch updated.
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md`
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-09 — pitchGNV, Breva Thrive, FL SBDC submitted
+
+**What was done**
+
+- Founder submitted **pitchGNV** application (Jul 10 deadline · AI/SaaS track · ForgeRep)
+- Founder submitted **Breva Thrive Grant** Q3 application (Jul 31 deadline · Carline Dad Enterprises, LLC)
+- Founder submitted **Florida SBDC Network** application (free advising)
+- Updated `docs/business/forgeRep-grant-playbook.md` — grants + SBDC tracked
+
+**What's next**
+
+- Open **Skip** + **Hello Alice** grant applications on dashboard
+- Await **FL SBDC** advisor contact · prep for first consultation
+- pitchGNV event: Gainesville **Sep 2–3, 2026** (if selected)
+- Breva Q4 fallback cycle closes **Oct 31** if Q3 not awarded
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `docs/business/forgeRep-grant-playbook.md`
 - `docs/PROGRESS.md`
 
 ---
