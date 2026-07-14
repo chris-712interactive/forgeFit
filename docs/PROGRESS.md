@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-14 |
-| **Last session focus** | Phase 13 interval protocols + Gravity Week 1 pack |
+| **Last session focus** | Fix interval timer PWA audio (iOS AudioContext unlock) |
 
 ---
 
@@ -38,6 +38,29 @@
 ---
 
 ## Session Log
+
+### 2026-07-14 — Fix interval timer audio in PWA
+
+**What was done**
+
+- Fixed iOS/PWA silent AudioContext: unlock with silent buffer + await resume on Start tap
+- Play first GO cue inside the user-gesture stack; resume context on visibility/focus
+- Phase cues await running context before scheduling tones
+
+**What's next**
+
+- Verify loud cues on installed PWA (iPhone volume up, Silent switch off)
+- Apply `interval_protocol` migration if not already
+
+**Files touched**
+
+- `apps/web/src/lib/audio/timer-sounds.ts`
+- `apps/web/src/lib/workouts/timer-feedback.ts`
+- `apps/web/src/components/workout/interval-timer.tsx`
+- `apps/web/src/components/workout/active-workout.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — Phase 13: Interval protocols + Gravity Week 1
 

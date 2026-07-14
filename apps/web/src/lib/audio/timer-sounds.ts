@@ -1,19 +1,70 @@
 let sharedContext: AudioContext | null = null;
+let unlockPromise: Promise<boolean> | null = null;
 
-/** Resume / create AudioContext — call from a user gesture (Start intervals). */
-export function unlockTimerAudio(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  void ctx.resume();
+function getOrCreateContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  const AudioCtx =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+  if (!AudioCtx) return null;
+  if (!sharedContext) {
+    sharedContext = new AudioCtx();
+  }
+  return sharedContext;
 }
 
-function getAudioContext(): AudioContext | null {
-  if (typeof window === "undefined") return null;
-  if (!sharedContext) {
-    sharedContext = new AudioContext();
+/**
+ * Unlock Web Audio during a user gesture (required on iOS Safari / installed PWA).
+ * Plays a silent buffer so the context stays allowed for later interval cues.
+ */
+export async function unlockTimerAudio(): Promise<boolean> {
+  if (unlockPromise) return unlockPromise;
+
+  unlockPromise = (async () => {
+    const ctx = getOrCreateContext();
+    if (!ctx) return false;
+    try {
+      if (ctx.state === "suspended") {
+        await ctx.resume();
+      }
+      // 1-sample silent buffer — marks this context as user-activated on iOS.
+      const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      if (ctx.state === "suspended") {
+        await ctx.resume();
+      }
+      return ctx.state === "running";
+    } catch {
+      return false;
+    } finally {
+      // Allow a fresh unlock attempt if the context suspends later.
+      window.setTimeout(() => {
+        unlockPromise = null;
+      }, 0);
+    }
+  })();
+
+  return unlockPromise;
+}
+
+async function ensureRunningContext(): Promise<AudioContext | null> {
+  const ctx = getOrCreateContext();
+  if (!ctx) return null;
+  try {
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+    if (ctx.state !== "running") {
+      await unlockTimerAudio();
+    }
+    return ctx.state === "running" ? ctx : ctx;
+  } catch {
+    return ctx;
   }
-  void sharedContext.resume();
-  return sharedContext;
 }
 
 type ToneOptions = {
@@ -24,7 +75,7 @@ type ToneOptions = {
   peakGain?: number;
 };
 
-function playTone(ctx: AudioContext, options: ToneOptions): void {
+function scheduleTone(ctx: AudioContext, options: ToneOptions): void {
   const {
     frequency,
     durationSec,
@@ -38,113 +89,123 @@ function playTone(ctx: AudioContext, options: ToneOptions): void {
 
   oscillator.type = type;
   oscillator.frequency.value = frequency;
+
+  // linearRamp is more reliable than exponentialRamp near near-zero values.
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(peakGain, start + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + durationSec);
+  gain.gain.linearRampToValueAtTime(peakGain, start + 0.02);
+  gain.gain.linearRampToValueAtTime(0.0001, start + Math.max(durationSec, 0.05));
 
   oscillator.connect(gain);
   gain.connect(ctx.destination);
   oscillator.start(start);
-  oscillator.stop(start + durationSec + 0.05);
+  oscillator.stop(start + durationSec + 0.08);
+}
+
+async function playTones(tones: ToneOptions[]): Promise<void> {
+  const ctx = await ensureRunningContext();
+  if (!ctx) return;
+  try {
+    for (const tone of tones) {
+      scheduleTone(ctx, tone);
+    }
+  } catch {
+    // Autoplay / AudioContext errors — ignore; vibrate still works.
+  }
 }
 
 /** Short rising cue when a timed hold begins. */
 export function playTimerStartSound(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  playTone(ctx, { frequency: 520, durationSec: 0.1 });
-  playTone(ctx, { frequency: 780, durationSec: 0.12, startOffsetSec: 0.11 });
+  void playTones([
+    { frequency: 520, durationSec: 0.1 },
+    { frequency: 780, durationSec: 0.12, startOffsetSec: 0.11 },
+  ]);
 }
 
 /** Two-tone cue when a timed hold finishes. */
 export function playTimerCompleteSound(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  playTone(ctx, { frequency: 660, durationSec: 0.18 });
-  playTone(ctx, { frequency: 880, durationSec: 0.22, startOffsetSec: 0.2 });
+  void playTones([
+    { frequency: 660, durationSec: 0.18 },
+    { frequency: 880, durationSec: 0.22, startOffsetSec: 0.2 },
+  ]);
 }
 
-const GYM_PEAK = 0.85;
+const GYM_PEAK = 0.75;
 
 /** Loud GO cue — work phase starts. */
 export function playIntervalWorkSound(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  playTone(ctx, {
-    frequency: 880,
-    durationSec: 0.22,
-    type: "square",
-    peakGain: GYM_PEAK,
-  });
-  playTone(ctx, {
-    frequency: 1175,
-    durationSec: 0.28,
-    startOffsetSec: 0.18,
-    type: "square",
-    peakGain: GYM_PEAK,
-  });
-  playTone(ctx, {
-    frequency: 1319,
-    durationSec: 0.35,
-    startOffsetSec: 0.4,
-    type: "sawtooth",
-    peakGain: 0.55,
-  });
+  void playIntervalPhaseCue("work");
 }
 
 /** Loud STOP / recover cue — rest or between-exercise starts. */
 export function playIntervalRestSound(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  playTone(ctx, {
-    frequency: 440,
-    durationSec: 0.35,
-    type: "square",
-    peakGain: GYM_PEAK,
-  });
-  playTone(ctx, {
-    frequency: 330,
-    durationSec: 0.45,
-    startOffsetSec: 0.28,
-    type: "square",
-    peakGain: GYM_PEAK,
-  });
+  void playIntervalPhaseCue("rest");
 }
 
 /** Final block / protocol complete. */
 export function playIntervalCompleteSound(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  playTone(ctx, {
-    frequency: 523,
-    durationSec: 0.2,
-    type: "square",
-    peakGain: GYM_PEAK,
-  });
-  playTone(ctx, {
-    frequency: 659,
-    durationSec: 0.2,
-    startOffsetSec: 0.18,
-    type: "square",
-    peakGain: GYM_PEAK,
-  });
-  playTone(ctx, {
-    frequency: 784,
-    durationSec: 0.45,
-    startOffsetSec: 0.36,
-    type: "sawtooth",
-    peakGain: GYM_PEAK,
-  });
+  void playIntervalPhaseCue("complete");
 }
 
 /** Single countdown tick (last 3 seconds). */
 export function playIntervalCountdownTick(): void {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  playTone(ctx, {
-    frequency: 990,
-    durationSec: 0.08,
-    type: "square",
-    peakGain: 0.7,
-  });
+  void playTones([
+    { frequency: 990, durationSec: 0.09, type: "square", peakGain: 0.65 },
+  ]);
+}
+
+/** Play the correct phase cue after ensuring the context is running. */
+export async function playIntervalPhaseCue(
+  kind: "work" | "rest" | "complete"
+): Promise<void> {
+  await unlockTimerAudio();
+  if (kind === "work") {
+    await playTones([
+      { frequency: 880, durationSec: 0.25, type: "square", peakGain: GYM_PEAK },
+      {
+        frequency: 1175,
+        durationSec: 0.3,
+        startOffsetSec: 0.2,
+        type: "square",
+        peakGain: GYM_PEAK,
+      },
+      {
+        frequency: 1319,
+        durationSec: 0.4,
+        startOffsetSec: 0.42,
+        type: "triangle",
+        peakGain: 0.55,
+      },
+    ]);
+    return;
+  }
+  if (kind === "rest") {
+    await playTones([
+      { frequency: 440, durationSec: 0.4, type: "square", peakGain: GYM_PEAK },
+      {
+        frequency: 330,
+        durationSec: 0.5,
+        startOffsetSec: 0.3,
+        type: "square",
+        peakGain: GYM_PEAK,
+      },
+    ]);
+    return;
+  }
+  await playTones([
+    { frequency: 523, durationSec: 0.22, type: "square", peakGain: GYM_PEAK },
+    {
+      frequency: 659,
+      durationSec: 0.22,
+      startOffsetSec: 0.2,
+      type: "square",
+      peakGain: GYM_PEAK,
+    },
+    {
+      frequency: 784,
+      durationSec: 0.5,
+      startOffsetSec: 0.4,
+      type: "triangle",
+      peakGain: GYM_PEAK,
+    },
+  ]);
 }

@@ -70,14 +70,13 @@ import {
   type PersistedActiveTimer,
 } from "@/lib/workouts/active-timer-persistence";
 import type { CountdownCompleteMeta, CountdownPersistState, CountdownRestoreState } from "@/lib/workouts/deadline-timer";
-import { feedbackIntervalPhase, feedbackTimerComplete } from "@/lib/workouts/timer-feedback";
+import { feedbackIntervalPhase, feedbackIntervalStartFromGesture, feedbackTimerComplete } from "@/lib/workouts/timer-feedback";
 import {
   advanceIntervalState,
   initialIntervalState,
   resolveIntervalBlocks,
   type IntervalRunState,
 } from "@/lib/workouts/interval-protocol";
-import { unlockTimerAudio } from "@/lib/audio/timer-sounds";
 import { markFirstWorkoutComplete } from "@/components/pwa/install-prompt";
 import { appPagePadding } from "@/components/layout/page-layout";
 import {
@@ -149,6 +148,7 @@ export function ActiveWorkout({
   const [intervalTimerKey, setIntervalTimerKey] = useState("interval");
   const [intervalTimerRestore, setIntervalTimerRestore] =
     useState<CountdownRestoreState | null>(null);
+  const [intervalCueFromGesture, setIntervalCueFromGesture] = useState(false);
   const [restAwayNotice, setRestAwayNotice] = useState(false);
   const [loading, setLoading] = useState(true);
   const [finishing, setFinishing] = useState(false);
@@ -377,6 +377,7 @@ export function ActiveWorkout({
     setRestTimerRestore(null);
     setHoldTimerRestore(null);
     setIntervalTimerRestore(null);
+    setIntervalCueFromGesture(false);
     clearPersistedActiveTimer(clientId);
   }
 
@@ -398,9 +399,11 @@ export function ActiveWorkout({
 
   function startIntervalProtocol() {
     if (!session?.intervalProtocol) return;
-    unlockTimerAudio();
+    // Unlock + GO cue inside the tap stack (required for iOS / PWA audio).
+    void feedbackIntervalStartFromGesture();
     clearTimers();
     const next = initialIntervalState(session.intervalProtocol);
+    setIntervalCueFromGesture(true);
     setIntervalTimerKey(`interval-${Date.now()}`);
     setIntervalTimerRestore(null);
     setIntervalRun(next);
@@ -409,6 +412,7 @@ export function ActiveWorkout({
 
   function advanceIntervalPhase() {
     if (!session?.intervalProtocol || !intervalRun) return;
+    setIntervalCueFromGesture(false);
     const next = advanceIntervalState(
       session.intervalProtocol,
       intervalRun,
@@ -1446,6 +1450,7 @@ export function ActiveWorkout({
             protocol={session.intervalProtocol}
             state={intervalRun}
             blocks={intervalBlocks}
+            suppressInitialWorkCue={intervalCueFromGesture}
             restore={intervalTimerRestore}
             onPersist={(state) =>
               persistActiveTimer("interval", state, {
@@ -1461,6 +1466,7 @@ export function ActiveWorkout({
               clearPersistedActiveTimer(clientId);
               setIntervalRun(null);
               setIntervalTimerRestore(null);
+              setIntervalCueFromGesture(false);
             }}
           />
         )}

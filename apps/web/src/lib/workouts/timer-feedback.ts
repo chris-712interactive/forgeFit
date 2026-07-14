@@ -1,7 +1,5 @@
 import {
-  playIntervalCompleteSound,
-  playIntervalRestSound,
-  playIntervalWorkSound,
+  playIntervalPhaseCue,
   playTimerCompleteSound,
 } from "@/lib/audio/timer-sounds";
 
@@ -58,14 +56,20 @@ export function feedbackIntervalPhase(
 
   if (kind === "work") {
     if (vibrate) vibrateIntervalWork();
-    if (playSound) playIntervalWorkSound();
+    if (playSound) void playIntervalPhaseCue("work");
     return;
   }
   if (kind === "rest") {
     if (vibrate) vibrateIntervalRest();
-    if (playSound) playIntervalRestSound();
+    if (playSound) void playIntervalPhaseCue("rest");
     return;
   }
   if (vibrate) vibrateIntervalComplete();
-  if (playSound) playIntervalCompleteSound();
+  if (playSound) void playIntervalPhaseCue("complete");
+}
+
+/** Sync path for user-gesture Start — unlock + GO cue in one tap stack. */
+export async function feedbackIntervalStartFromGesture(): Promise<void> {
+  vibrateIntervalWork();
+  await playIntervalPhaseCue("work");
 }

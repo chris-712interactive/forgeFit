@@ -1,6 +1,9 @@
 "use client";
 
-import { playIntervalCountdownTick, unlockTimerAudio } from "@/lib/audio/timer-sounds";
+import {
+  playIntervalCountdownTick,
+  unlockTimerAudio,
+} from "@/lib/audio/timer-sounds";
 import { feedbackIntervalPhase } from "@/lib/workouts/timer-feedback";
 import {
   formatIntervalProgress,
@@ -23,6 +26,8 @@ export interface IntervalTimerProps {
   protocol: IntervalProtocol;
   state: IntervalRunState;
   blocks: IntervalBlockInfo[];
+  /** Skip the first work cue when parent already played it from the Start tap. */
+  suppressInitialWorkCue?: boolean;
   restore?: CountdownRestoreState | null;
   onPersist?: (state: CountdownPersistState | null) => void;
   onPhaseComplete: (meta?: CountdownCompleteMeta) => void;
@@ -59,13 +64,15 @@ export function IntervalTimer({
   protocol,
   state,
   blocks,
+  suppressInitialWorkCue = false,
   restore,
   onPersist,
   onPhaseComplete,
   onSkipPhase,
   onStop,
 }: IntervalTimerProps) {
-  const startedCue = useRef(false);
+  const lastCueKey = useRef<string | null>(null);
+  const skippedInitialWork = useRef(false);
   const lastTickSecond = useRef<number | null>(null);
   const accent = phaseAccent(state.phase);
   const block = blocks[state.blockIndex];
@@ -82,15 +89,37 @@ export function IntervalTimer({
     onPersist,
   });
 
+  // Keep AudioContext alive across phase changes / app resume.
   useEffect(() => {
-    unlockTimerAudio();
-    startedCue.current = false;
-    lastTickSecond.current = null;
-  }, [state.phase, state.roundIndex, state.blockIndex, state.seconds]);
+    void unlockTimerAudio();
+    const onVisible = () => {
+      void unlockTimerAudio();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, []);
 
   useEffect(() => {
-    if (startedCue.current) return;
-    startedCue.current = true;
+    const cueKey = `${state.phase}-${state.roundIndex}-${state.blockIndex}`;
+    if (lastCueKey.current === cueKey) return;
+    lastCueKey.current = cueKey;
+    lastTickSecond.current = null;
+
+    if (
+      suppressInitialWorkCue &&
+      !skippedInitialWork.current &&
+      state.phase === "work" &&
+      state.roundIndex === 0 &&
+      state.blockIndex === 0
+    ) {
+      skippedInitialWork.current = true;
+      return;
+    }
+
     if (state.phase === "work") {
       feedbackIntervalPhase("work");
     } else if (
@@ -100,7 +129,12 @@ export function IntervalTimer({
     ) {
       feedbackIntervalPhase("rest");
     }
-  }, [state.phase, state.roundIndex, state.blockIndex]);
+  }, [
+    state.phase,
+    state.roundIndex,
+    state.blockIndex,
+    suppressInitialWorkCue,
+  ]);
 
   useEffect(() => {
     if (paused) return;
@@ -140,14 +174,20 @@ export function IntervalTimer({
           <div className="flex shrink-0 flex-col gap-2">
             <button
               type="button"
-              onClick={togglePause}
+              onClick={() => {
+                void unlockTimerAudio();
+                togglePause();
+              }}
               className={`rounded-xl border px-4 py-2 text-sm font-medium ${accent.border} ${accent.label}`}
             >
               {paused ? "Resume" : "Pause"}
             </button>
             <button
               type="button"
-              onClick={onSkipPhase}
+              onClick={() => {
+                void unlockTimerAudio();
+                onSkipPhase();
+              }}
               className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted"
             >
               Skip
