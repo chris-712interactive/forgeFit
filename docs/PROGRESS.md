@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-15 |
-| **Last session focus** | Fix assign-to-day modal positioning |
+| **Last session focus** | Fix custom assignment date display timezone bug |
 
 ---
 
@@ -38,6 +38,25 @@
 ---
 
 ## Session Log
+
+### 2026-07-15 — Fix custom assignment date display timezone bug
+
+**What was done**
+
+- `formatShortDate` now parses `YYYY-MM-DD` calendar dates in local time (avoids UTC midnight showing as yesterday in US timezones)
+- `getWeekBounds` uses `toScheduleStartIso` for `startIso`/`endIso` so week filters match local calendar dates
+
+**What's next**
+
+- Smoke-test: assign custom workout to today and confirm card shows today's date in workout hub
+
+**Files touched**
+
+- `apps/web/src/lib/workouts/comparison.ts`, `comparison.test.ts`
+- `apps/web/src/lib/home/weekly-stats.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-15 — Fix assign-to-day modal positioning
 

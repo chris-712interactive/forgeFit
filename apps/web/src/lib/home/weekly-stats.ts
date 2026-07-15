@@ -1,5 +1,6 @@
 import { timedSetTotalMs } from "@forgefit/exercise-db";
 import type { ProgramPlan } from "@forgefit/program-engine";
+import { toScheduleStartIso } from "@forgefit/program-engine";
 import { recoveryMinutesLogged } from "@/lib/workouts/recovery";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type { WeeklyWorkStats } from "./types";
@@ -21,8 +22,8 @@ export function getWeekBounds(date = new Date()) {
   return {
     start,
     end,
-    startIso: start.toISOString().slice(0, 10),
-    endIso: end.toISOString().slice(0, 10),
+    startIso: toScheduleStartIso(start),
+    endIso: toScheduleStartIso(end),
   };
 }
 
