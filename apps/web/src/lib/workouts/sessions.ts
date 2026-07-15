@@ -93,8 +93,11 @@ function mergeSessionPair(
       recordSortTime(localRecord).localeCompare(recordSortTime(serverRecord)) >=
       0;
     const base = preferLocal ? localRecord : serverRecord;
+    const other = preferLocal ? serverRecord : localRecord;
     return {
       ...base,
+      sessionSource: base.sessionSource ?? other.sessionSource,
+      templateId: base.templateId ?? other.templateId,
       sets: preferLocal ? localRecord.sets : serverRecord.sets,
       pendingSync: preferLocal ? Boolean(localRecord.pendingSync) : false,
     };
@@ -103,8 +106,11 @@ function mergeSessionPair(
   const preferLocalSets =
     completedSetCount(localRecord) > completedSetCount(serverRecord);
   const base = preferLocalSets ? localRecord : serverRecord;
+  const other = preferLocalSets ? serverRecord : localRecord;
   return {
     ...base,
+    sessionSource: base.sessionSource ?? other.sessionSource,
+    templateId: base.templateId ?? other.templateId,
     sets: preferLocalSets ? localRecord.sets : serverRecord.sets,
     pendingSync: preferLocalSets ? Boolean(localRecord.pendingSync) : false,
   };

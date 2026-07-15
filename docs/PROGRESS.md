@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-15 |
-| **Last session focus** | Fix interval timer position reset on navigation |
+| **Last session focus** | Fix completed custom workouts in week plan list |
 
 ---
 

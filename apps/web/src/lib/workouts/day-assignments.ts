@@ -11,6 +11,7 @@ import {
 export type { WorkoutDayAssignmentView } from "./day-assignments-core";
 export {
   canStartAssignedWorkout,
+  completedCustomSessionForAssignment,
   datesReplacingProgram,
 } from "./day-assignments-core";
 

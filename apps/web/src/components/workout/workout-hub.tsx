@@ -80,7 +80,8 @@ import {
   type WorkoutDayAssignmentView,
 } from "@/lib/workouts/day-assignments";
 import { CUSTOM_DAY_INDEX, isCustomWorkoutSession } from "@/lib/workouts/session-source";
-import { addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
+import { completedCustomSessionForAssignment } from "@/lib/workouts/day-assignments";
+import { browserTimeZone, addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
 import { getWeekBounds } from "@/lib/home/weekly-stats";
 import { planScheduleReferenceDate } from "@/lib/workouts/schedule-dates";
 
@@ -320,6 +321,34 @@ export function WorkoutHub({
     }
     return map;
   }, [allSessions]);
+
+  const completedCustomByAssignmentId = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        clientId: string;
+        completedSets: number;
+        totalSets: number;
+        completedAt: string | null;
+      }
+    >();
+    const timeZone = browserTimeZone() ?? "UTC";
+    for (const assignment of dayAssignments) {
+      const session = completedCustomSessionForAssignment(
+        assignment,
+        allSessions,
+        timeZone
+      );
+      if (!session) continue;
+      map.set(assignment.id, {
+        clientId: session.clientId,
+        completedSets: session.sets.filter((set) => set.completed).length,
+        totalSets: session.sets.length,
+        completedAt: session.completedAt,
+      });
+    }
+    return map;
+  }, [allSessions, dayAssignments]);
 
   const sortedPlanSessions = useMemo(() => {
     if (!plan) return [];
@@ -1161,8 +1190,25 @@ export function WorkoutHub({
                   inProgressClientId={inProgressByTemplateId.get(
                     item.assignment.templateId
                   )}
+                  completedClientId={
+                    completedCustomByAssignmentId.get(item.assignment.id)
+                      ?.clientId
+                  }
+                  completedSets={
+                    completedCustomByAssignmentId.get(item.assignment.id)
+                      ?.completedSets
+                  }
+                  completedTotalSets={
+                    completedCustomByAssignmentId.get(item.assignment.id)
+                      ?.totalSets
+                  }
+                  completedAtIso={
+                    completedCustomByAssignmentId.get(item.assignment.id)
+                      ?.completedAt
+                  }
                   onStart={() => void handleStartAssigned(item.assignment)}
                   onContinue={openWorkout}
+                  onViewResults={openReview}
                   onRemove={() => void handleRemoveAssignment(item.assignment.id)}
                 />
               )
@@ -1227,8 +1273,23 @@ export function WorkoutHub({
                     inProgressClientId={inProgressByTemplateId.get(
                       assignment.templateId
                     )}
+                    completedClientId={
+                      completedCustomByAssignmentId.get(assignment.id)?.clientId
+                    }
+                    completedSets={
+                      completedCustomByAssignmentId.get(assignment.id)
+                        ?.completedSets
+                    }
+                    completedTotalSets={
+                      completedCustomByAssignmentId.get(assignment.id)?.totalSets
+                    }
+                    completedAtIso={
+                      completedCustomByAssignmentId.get(assignment.id)
+                        ?.completedAt
+                    }
                     onStart={() => void handleStartAssigned(assignment)}
                     onContinue={openWorkout}
+                    onViewResults={openReview}
                     onRemove={() => void handleRemoveAssignment(assignment.id)}
                   />
                 ))}

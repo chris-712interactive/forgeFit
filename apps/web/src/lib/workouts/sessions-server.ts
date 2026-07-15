@@ -104,6 +104,8 @@ export async function getServerSessionRecords(
       dayIndex: Number(session.day_index),
       sessionSource:
         (session.session_source as WorkoutSessionSource | null) ?? "program",
+      templateId:
+        session.template_id != null ? String(session.template_id) : undefined,
       sessionName: String(session.session_name),
       status: String(session.status),
       startedAt: String(session.started_at),
