@@ -10,10 +10,13 @@ export async function clearOfflineUserData(userId: string): Promise<void> {
 
   await db.transaction(
     "rw",
-    db.workoutSessions,
-    db.exerciseSets,
-    db.cachedPrograms,
-    db.scheduleOverrides,
+    [
+      db.workoutSessions,
+      db.exerciseSets,
+      db.cachedPrograms,
+      db.scheduleOverrides,
+      db.workoutDayAssignments,
+    ],
     async () => {
       for (const session of sessions) {
         await db.exerciseSets
@@ -26,6 +29,7 @@ export async function clearOfflineUserData(userId: string): Promise<void> {
       await db.workoutSessions.where("userId").equals(userId).delete();
       await db.cachedPrograms.where("userId").equals(userId).delete();
       await db.scheduleOverrides.where("userId").equals(userId).delete();
+      await db.workoutDayAssignments.where("userId").equals(userId).delete();
     }
   );
 

@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-14 |
-| **Last session focus** | Fix interval timer PWA audio (iOS AudioContext unlock) |
+| **Last session focus** | Custom workout day assignments (Replace / Keep both) |
 
 ---
 
@@ -38,6 +38,33 @@
 ---
 
 ## Session Log
+
+### 2026-07-14 — Custom workout day assignments (Replace / Keep both)
+
+**What was done**
+
+- Added `user_workout_day_assignments` (template → calendar date, `replaces_program`)
+- Custom builder **Assign to a day** with Replace vs Keep both when the date is occupied
+- Workout hub merges assigned customs into “This week”; Replace hides the program card for that date
+- Dexie v6 local table + API `GET/POST/DELETE /api/workout-day-assignments`
+
+**What's next**
+
+- Apply `20260714210000_workout_day_assignments.sql` (and prior custom/interval migrations) in Supabase
+- Smoke-test: assign Gravity W1 Full Body to today with Replace, then Keep both on another day
+
+**Files touched**
+
+- `supabase/migrations/20260714210000_workout_day_assignments.sql`
+- `packages/offline-sync/src/day-assignment-*.ts`, `db.ts`, `clear-user-data.ts`, `index.ts`
+- `apps/web/src/app/api/workout-day-assignments/route.ts`
+- `apps/web/src/lib/workouts/day-assignments.ts`, `day-assignments-server.ts`
+- `apps/web/src/components/workout/assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`
+- `apps/web/src/components/workout/custom-workout-builder.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/(app)/workout/page.tsx`
+- `docs/phases/11-custom-workouts.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — Fix interval timer audio in PWA
 

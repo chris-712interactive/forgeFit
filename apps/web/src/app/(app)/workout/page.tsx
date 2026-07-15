@@ -16,6 +16,7 @@ import { getWorkoutDeviceMetricsByClientIds } from "@/lib/workouts/device-metric
 import { getWorkoutReadinessContext } from "@/lib/workouts/readiness";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import { listWorkoutScheduleOverrides } from "@/lib/workouts/schedule-overrides-server";
+import { listWorkoutDayAssignmentsForUser } from "@/lib/workouts/day-assignments-server";
 import { listWorkoutTemplatesForUser } from "@/lib/workouts/templates-server";
 
 export default async function WorkoutPage() {
@@ -75,6 +76,9 @@ export default async function WorkoutPage() {
   const templatesResult = userId
     ? await listWorkoutTemplatesForUser(userId)
     : { templates: [], tableReady: true };
+  const dayAssignmentsResult = userId
+    ? await listWorkoutDayAssignmentsForUser(userId)
+    : { assignments: [], tableReady: true };
   const canCustomWorkouts = hasFeature(subscription, "custom_workouts");
   const canImportWorkouts = hasFeature(subscription, "workout_import");
 
@@ -102,6 +106,8 @@ export default async function WorkoutPage() {
       canCustomWorkouts={canCustomWorkouts}
       canImportWorkouts={canImportWorkouts}
       workoutTemplates={templatesResult.templates}
+      dayAssignments={dayAssignmentsResult.assignments}
+      dayAssignmentsTableReady={dayAssignmentsResult.tableReady}
     />
   );
 }

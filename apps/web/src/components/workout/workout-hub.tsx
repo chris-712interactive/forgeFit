@@ -10,6 +10,7 @@ import {
   cancelWorkoutSession,
   getCachedProgramPlan,
   getSession,
+  saveLocalTemplate,
   startWorkoutSession,
 } from "@forgefit/offline-sync";
 import { reconcileLocalWorkoutsWithServer } from "@/lib/workouts/reconcile-local";
@@ -21,6 +22,7 @@ import {
 import {
   compareSessionsByEffectiveDate,
   canStartPlanSessionWithOverrides,
+  effectiveScheduledDateIso,
   type WorkoutScheduleOverride,
 } from "@/lib/workouts/schedule-overrides";
 import {
@@ -67,11 +69,20 @@ import {
   CustomWorkoutBuilder,
   type CustomWorkoutDraft,
 } from "./custom-workout-builder";
+import { AssignedCustomWorkoutCard } from "./assigned-custom-workout-card";
 import {
   GRAVITY_WEEK1_TEMPLATE_NAMES,
   GRAVITY_WEEK1_TEMPLATES,
 } from "@/lib/workouts/packs/gravity-week1";
-import { saveLocalTemplate } from "@forgefit/offline-sync";
+import {
+  dateHasProgramSession,
+  suppressedProgramDayIndexes,
+  type WorkoutDayAssignmentView,
+} from "@/lib/workouts/day-assignments";
+import { CUSTOM_DAY_INDEX } from "@/lib/workouts/session-source";
+import { addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
+import { getWeekBounds } from "@/lib/home/weekly-stats";
+import { planScheduleReferenceDate } from "@/lib/workouts/schedule-dates";
 
 interface WorkoutHubProps {
   userId: string;
@@ -107,6 +118,8 @@ interface WorkoutHubProps {
     warmup?: import("@forgefit/program-engine").WarmupBlock | null;
     intervalProtocol?: import("@forgefit/offline-sync").IntervalProtocol | null;
   }>;
+  dayAssignments?: WorkoutDayAssignmentView[];
+  dayAssignmentsTableReady?: boolean;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -167,6 +180,8 @@ export function WorkoutHub({
   canCustomWorkouts = false,
   canImportWorkouts = false,
   workoutTemplates = [],
+  dayAssignments: serverDayAssignments = [],
+  dayAssignmentsTableReady = true,
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -198,8 +213,22 @@ export function WorkoutHub({
   const [gravityInstallMessage, setGravityInstallMessage] = useState<
     string | null
   >(null);
+  const [dayAssignments, setDayAssignments] = useState<WorkoutDayAssignmentView[]>(
+    serverDayAssignments
+  );
+  const [startingAssignmentId, setStartingAssignmentId] = useState<string | null>(
+    null
+  );
   const offline = useOfflineStatus();
   const unit = useUnitPreference();
+
+  useEffect(() => {
+    setDayAssignments(serverDayAssignments);
+  }, [serverDayAssignments]);
+
+  const templateById = useMemo(() => {
+    return new Map(workoutTemplates.map((row) => [row.id, row]));
+  }, [workoutTemplates]);
 
   const gravityInstalledCount = useMemo(() => {
     const names = new Set(workoutTemplates.map((row) => row.name));
@@ -284,6 +313,84 @@ export function WorkoutHub({
       compareSessionsByEffectiveDate(a, b, plan, scheduleOverrides)
     );
   }, [plan, scheduleOverrides]);
+
+  const suppressedDayIndexes = useMemo(() => {
+    if (!plan) return new Set<number>();
+    return suppressedProgramDayIndexes(plan, scheduleOverrides, dayAssignments);
+  }, [plan, scheduleOverrides, dayAssignments]);
+
+  const visiblePlanSessions = useMemo(
+    () =>
+      sortedPlanSessions.filter(
+        (session) => !suppressedDayIndexes.has(session.dayIndex)
+      ),
+    [sortedPlanSessions, suppressedDayIndexes]
+  );
+
+  const weekAssignmentWindow = useMemo(() => {
+    if (plan) {
+      const ref = planScheduleReferenceDate(plan);
+      return getWeekBounds(ref);
+    }
+    const today = browserTodayIsoDate();
+    return { startIso: today, endIso: addDaysIso(today, 6) };
+  }, [plan]);
+
+  const weekDayAssignments = useMemo(() => {
+    return dayAssignments
+      .filter(
+        (row) =>
+          row.scheduledDateIso >= weekAssignmentWindow.startIso &&
+          row.scheduledDateIso <= weekAssignmentWindow.endIso
+      )
+      .sort((a, b) => a.scheduledDateIso.localeCompare(b.scheduledDateIso));
+  }, [dayAssignments, weekAssignmentWindow]);
+
+  type HubWeekItem =
+    | { kind: "program"; sortDate: string; session: WorkoutSession }
+    | {
+        kind: "custom";
+        sortDate: string;
+        assignment: WorkoutDayAssignmentView;
+      };
+
+  const hubWeekItems = useMemo(() => {
+    const items: HubWeekItem[] = [];
+
+    if (plan) {
+      for (const session of visiblePlanSessions) {
+        items.push({
+          kind: "program",
+          sortDate: effectiveScheduledDateIso(
+            session.dayIndex,
+            plan,
+            scheduleOverrides
+          ),
+          session,
+        });
+      }
+    }
+
+    for (const assignment of weekDayAssignments) {
+      items.push({
+        kind: "custom",
+        sortDate: assignment.scheduledDateIso,
+        assignment,
+      });
+    }
+
+    return items.sort((a, b) => {
+      const byDate = a.sortDate.localeCompare(b.sortDate);
+      if (byDate !== 0) return byDate;
+      if (a.kind === b.kind) return 0;
+      return a.kind === "program" ? -1 : 1;
+    });
+  }, [
+    plan,
+    visiblePlanSessions,
+    scheduleOverrides,
+    weekDayAssignments,
+  ]);
 
   const refreshScheduleOverrides = useCallback(async () => {
     const local = await loadLocalScheduleOverrides(userId);
@@ -420,6 +527,122 @@ export function WorkoutHub({
     setActiveClientId(clientId);
     replaceWorkoutUrl("active", clientId);
   }, []);
+
+  const resolveAssignConflict = useCallback(
+    (scheduledDateIso: string) => {
+      const existingCustoms = dayAssignments.filter(
+        (row) => row.scheduledDateIso === scheduledDateIso
+      );
+      const hasProgram =
+        plan != null &&
+        dateHasProgramSession(plan, scheduleOverrides, scheduledDateIso);
+
+      if (!hasProgram && existingCustoms.length === 0) {
+        return { hasConflict: false, label: "" };
+      }
+
+      const parts: string[] = [];
+      if (hasProgram) parts.push("a program workout");
+      if (existingCustoms.length === 1) {
+        parts.push(`“${existingCustoms[0]!.templateName}”`);
+      } else if (existingCustoms.length > 1) {
+        parts.push(`${existingCustoms.length} custom workouts`);
+      }
+
+      return {
+        hasConflict: true,
+        label: `This day already has ${parts.join(" and ")}.`,
+      };
+    },
+    [dayAssignments, plan, scheduleOverrides]
+  );
+
+  const refreshDayAssignments = useCallback(async () => {
+    try {
+      const response = await fetch("/api/workout-day-assignments");
+      const body = (await response.json()) as {
+        assignments?: Array<{
+          id: string;
+          templateId: string;
+          scheduledDateIso: string;
+          replacesProgram: boolean;
+          templateName?: string | null;
+        }>;
+      };
+      if (!response.ok) return;
+      setDayAssignments(
+        (body.assignments ?? []).map((row) => ({
+          id: row.id,
+          templateId: row.templateId,
+          scheduledDateIso: row.scheduledDateIso,
+          replacesProgram: row.replacesProgram,
+          templateName: row.templateName ?? "Custom workout",
+        }))
+      );
+    } catch {
+      // Keep current list.
+    }
+    router.refresh();
+  }, [router]);
+
+  const handleStartAssigned = useCallback(
+    async (assignment: WorkoutDayAssignmentView) => {
+      const template = templateById.get(assignment.templateId);
+      if (!template) {
+        window.alert("Template missing — open Custom workout and reload it.");
+        return;
+      }
+      setStartingAssignmentId(assignment.id);
+      try {
+        const clientId = await startWorkoutSession({
+          userId,
+          sessionName: template.name,
+          dayIndex: CUSTOM_DAY_INDEX,
+          sessionSource: "custom",
+          templateId: template.id,
+          exercises: template.exercises,
+          warmupBlock: template.warmup ?? undefined,
+          intervalProtocol: template.intervalProtocol ?? undefined,
+        });
+        openWorkout(clientId);
+      } catch (err) {
+        window.alert(
+          err instanceof Error ? err.message : "Could not start workout."
+        );
+      } finally {
+        setStartingAssignmentId(null);
+      }
+    },
+    [openWorkout, templateById, userId]
+  );
+
+  const handleRemoveAssignment = useCallback(
+    async (assignmentId: string) => {
+      const confirmed = window.confirm(
+        "Remove this custom workout from the calendar?"
+      );
+      if (!confirmed) return;
+      try {
+        const response = await fetch(
+          `/api/workout-day-assignments?id=${encodeURIComponent(assignmentId)}`,
+          { method: "DELETE" }
+        );
+        if (!response.ok) {
+          const body = (await response.json()) as { error?: string };
+          throw new Error(body.error ?? "Could not remove assignment.");
+        }
+        setDayAssignments((current) =>
+          current.filter((row) => row.id !== assignmentId)
+        );
+        router.refresh();
+      } catch (err) {
+        window.alert(
+          err instanceof Error ? err.message : "Could not remove assignment."
+        );
+      }
+    },
+    [router]
+  );
 
   const openReview = useCallback((clientId: string) => {
     setActiveClientId(null);
@@ -807,29 +1030,58 @@ export function WorkoutHub({
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
               This week
             </h2>
-            {sortedPlanSessions.map((session) => (
-              <WeekPlanCard
-                key={`${session.dayIndex}-${session.name}`}
-                plan={plan}
-                session={session}
-                dayStatus={dayStatusMap.get(session.dayIndex)}
-                scheduleOverrides={scheduleOverrides}
-                starting={startingDay === session.dayIndex}
-                discarding={
-                  discardingClientId ===
-                  dayStatusMap.get(session.dayIndex)?.inProgress?.clientId
-                }
-                onStart={() => void handleStart(session.dayIndex)}
-                onContinue={openWorkout}
-                onDiscard={(clientId) => void handleDiscard(clientId)}
-                onViewResults={openReview}
-                onAdjustSchedule={
-                  scheduleOverridesTableReady
-                    ? () => setAdjustingSession(session)
-                    : undefined
-                }
-              />
-            ))}
+            {!dayAssignmentsTableReady && canCustomWorkouts && (
+              <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm text-forge-steel">
+                Custom day assignments need a database migration before they
+                sync across devices.
+              </p>
+            )}
+            {hubWeekItems.map((item) =>
+              item.kind === "program" ? (
+                <WeekPlanCard
+                  key={`program-${item.session.dayIndex}-${item.session.name}`}
+                  plan={plan}
+                  session={item.session}
+                  dayStatus={dayStatusMap.get(item.session.dayIndex)}
+                  scheduleOverrides={scheduleOverrides}
+                  starting={startingDay === item.session.dayIndex}
+                  discarding={
+                    discardingClientId ===
+                    dayStatusMap.get(item.session.dayIndex)?.inProgress
+                      ?.clientId
+                  }
+                  onStart={() => void handleStart(item.session.dayIndex)}
+                  onContinue={openWorkout}
+                  onDiscard={(clientId) => void handleDiscard(clientId)}
+                  onViewResults={openReview}
+                  onAdjustSchedule={
+                    scheduleOverridesTableReady
+                      ? () => setAdjustingSession(item.session)
+                      : undefined
+                  }
+                />
+              ) : (
+                <AssignedCustomWorkoutCard
+                  key={`custom-${item.assignment.id}`}
+                  assignmentId={item.assignment.id}
+                  templateName={item.assignment.templateName}
+                  scheduledDateIso={item.assignment.scheduledDateIso}
+                  replacesProgram={item.assignment.replacesProgram}
+                  exerciseCount={
+                    templateById.get(item.assignment.templateId)?.exercises
+                      .length ?? 0
+                  }
+                  starting={startingAssignmentId === item.assignment.id}
+                  onStart={() => void handleStartAssigned(item.assignment)}
+                  onRemove={() => void handleRemoveAssignment(item.assignment.id)}
+                />
+              )
+            )}
+            {hubWeekItems.length === 0 && (
+              <p className="rounded-xl border border-dashed border-[var(--border)] p-4 text-sm text-forge-muted">
+                No workouts scheduled this week yet.
+              </p>
+            )}
 
             {adjustingSession && (
               <ScheduleAdjustSheet
@@ -865,6 +1117,30 @@ export function WorkoutHub({
               </p>
             </div>
 
+            {weekDayAssignments.length > 0 && (
+              <>
+                <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+                  Assigned custom workouts
+                </h2>
+                {weekDayAssignments.map((assignment) => (
+                  <AssignedCustomWorkoutCard
+                    key={assignment.id}
+                    assignmentId={assignment.id}
+                    templateName={assignment.templateName}
+                    scheduledDateIso={assignment.scheduledDateIso}
+                    replacesProgram={assignment.replacesProgram}
+                    exerciseCount={
+                      templateById.get(assignment.templateId)?.exercises
+                        .length ?? 0
+                    }
+                    starting={startingAssignmentId === assignment.id}
+                    onStart={() => void handleStartAssigned(assignment)}
+                    onRemove={() => void handleRemoveAssignment(assignment.id)}
+                  />
+                ))}
+              </>
+            )}
+
             <CollapsibleSection
               title="Workout history"
               hint={`${allSessions.filter((s) => s.status === "completed").length} completed`}
@@ -887,6 +1163,10 @@ export function WorkoutHub({
           canImport={canImportWorkouts}
           templates={workoutTemplates}
           initialDraft={customBuilderDraft}
+          resolveAssignConflict={resolveAssignConflict}
+          onAssigned={() => {
+            void refreshDayAssignments();
+          }}
           onClose={() => setCustomBuilderOpen(false)}
           onStarted={(clientId) => {
             setCustomBuilderOpen(false);

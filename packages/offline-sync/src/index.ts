@@ -5,5 +5,7 @@ export * from "./sync-client";
 export * from "./program-cache";
 export * from "./schedule-override-store";
 export * from "./schedule-override-types";
+export * from "./day-assignment-types";
+export * from "./day-assignment-store";
 export * from "./clear-user-data";
 export * from "./template-store";

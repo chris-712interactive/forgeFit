@@ -29,8 +29,21 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [x] `GET/POST/DELETE /api/workout-templates`
 - [x] Custom sessions excluded from week plan `buildDayStatusMap`
 - [ ] Migration `20260714120000_custom_workouts.sql` applied in Supabase
+- [x] Assign templates to calendar days (today/future) with Replace vs Keep both
+- [x] Assigned customs appear on Workout hub and are startable
 - [x] Unit tests for CSV parser + session source
 - [x] `pnpm turbo typecheck` passes
+
+## Day assignment
+
+Pro users can **Assign to a day** from the custom builder (saves template if needed). If that date already has a program or custom workout, choose:
+
+- **Replace** — hide the program card for that date; clear other customs on that date
+- **Keep both** — show program + custom side by side
+
+Schema: `user_workout_day_assignments` (`template_id`, `scheduled_date`, `replaces_program`). See migration `20260714210000_workout_day_assignments.sql`.
+
+Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
 
 ## CSV formats
 
@@ -45,14 +58,13 @@ reps,8-10
 rest_seconds,120
 ```
 
-Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
-
 **Completed export** (`# forgerep-workout-log v1`): per-session blocks with set rows.
 
 ## Files
 
 - `supabase/migrations/20260714120000_custom_workouts.sql`
-- `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`
-- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`
-- `apps/web/src/components/workout/custom-workout-*.tsx`
-- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`
+- `supabase/migrations/20260714210000_workout_day_assignments.sql`
+- `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`, `day-assignment-*`
+- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`
+- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`
+- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`

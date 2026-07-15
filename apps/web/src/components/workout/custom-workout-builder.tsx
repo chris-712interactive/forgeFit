@@ -28,6 +28,11 @@ import {
 } from "@/lib/workouts/session-source";
 import type { WarmupBlock } from "@forgefit/program-engine";
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  AssignCustomWorkoutSheet,
+  type AssignConflictChoice,
+  type AssignConflictInfo,
+} from "./assign-custom-workout-sheet";
 
 export interface CustomWorkoutDraft {
   name: string;
@@ -50,6 +55,8 @@ interface CustomWorkoutBuilderProps {
     intervalProtocol?: IntervalProtocol | null;
   }>;
   initialDraft?: CustomWorkoutDraft | null;
+  resolveAssignConflict: (scheduledDateIso: string) => AssignConflictInfo;
+  onAssigned?: () => void;
   onClose: () => void;
   onStarted: (clientId: string) => void;
 }
@@ -90,6 +97,8 @@ export function CustomWorkoutBuilder({
   canImport,
   templates,
   initialDraft,
+  resolveAssignConflict,
+  onAssigned,
   onClose,
   onStarted,
 }: CustomWorkoutBuilderProps) {
@@ -108,6 +117,10 @@ export function CustomWorkoutBuilder({
   const [starting, setStarting] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState<string | null>(null);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -131,6 +144,9 @@ export function CustomWorkoutBuilder({
       setBetweenExerciseRestSeconds(45);
     }
     setQuery("");
+    setAssignOpen(false);
+    setAssignError(null);
+    setActiveTemplateId(null);
     setMessage(null);
     setError(null);
   }, [open, initialDraft]);
@@ -212,6 +228,7 @@ export function CustomWorkoutBuilder({
     setName(template.name);
     setExercises(template.exercises);
     setWarmupFocus(template.warmup?.focus ?? "none");
+    setActiveTemplateId(template.id);
     const protocol = template.intervalProtocol ?? undefined;
     if (protocol) {
       setProtocolMode(protocol.mode);
@@ -250,6 +267,7 @@ export function CustomWorkoutBuilder({
         sessionName: name.trim() || "Custom workout",
         dayIndex: CUSTOM_DAY_INDEX,
         sessionSource: initialDraft?.imported ? "imported" : "custom",
+        templateId: activeTemplateId ?? undefined,
         exercises,
         warmupBlock,
         intervalProtocol,
@@ -262,6 +280,29 @@ export function CustomWorkoutBuilder({
     }
   }
 
+  async function ensureTemplateSaved(): Promise<string> {
+    const response = await fetch("/api/workout-templates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: activeTemplateId ?? undefined,
+        name: name.trim() || "Custom workout",
+        exercises,
+        warmup: warmupBlock,
+        intervalProtocol,
+      }),
+    });
+    const body = (await response.json()) as {
+      error?: string;
+      template?: { id: string };
+    };
+    if (!response.ok || !body.template?.id) {
+      throw new Error(body.error ?? "Could not save template.");
+    }
+    setActiveTemplateId(body.template.id);
+    return body.template.id;
+  }
+
   async function handleSaveTemplate() {
     if (exercises.length === 0) {
       setError("Add at least one exercise before saving.");
@@ -271,25 +312,52 @@ export function CustomWorkoutBuilder({
     setSavingTemplate(true);
     setError(null);
     try {
-      const response = await fetch("/api/workout-templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim() || "Custom workout",
-          exercises,
-          warmup: warmupBlock,
-          intervalProtocol,
-        }),
-      });
-      const body = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        throw new Error(body.error ?? "Could not save template.");
-      }
+      await ensureTemplateSaved();
       setMessage("Template saved.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save template.");
     } finally {
       setSavingTemplate(false);
+    }
+  }
+
+  async function handleAssignConfirm(input: {
+    scheduledDateIso: string;
+    choice: AssignConflictChoice;
+  }) {
+    if (exercises.length === 0) {
+      setAssignError("Add at least one exercise before assigning.");
+      return;
+    }
+
+    setAssigning(true);
+    setAssignError(null);
+    try {
+      const templateId = await ensureTemplateSaved();
+      const replace = input.choice === "replace";
+      const response = await fetch("/api/workout-day-assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateId,
+          scheduledDateIso: input.scheduledDateIso,
+          replacesProgram: replace,
+          clearOtherAssignmentsOnDate: replace,
+        }),
+      });
+      const body = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(body.error ?? "Could not assign workout.");
+      }
+      setAssignOpen(false);
+      setMessage(`Assigned to ${input.scheduledDateIso}.`);
+      onAssigned?.();
+    } catch (err) {
+      setAssignError(
+        err instanceof Error ? err.message : "Could not assign workout."
+      );
+    } finally {
+      setAssigning(false);
     }
   }
 
@@ -678,6 +746,18 @@ export function CustomWorkoutBuilder({
             </button>
           </div>
 
+          <button
+            type="button"
+            disabled={exercises.length === 0}
+            onClick={() => {
+              setAssignError(null);
+              setAssignOpen(true);
+            }}
+            className="min-h-[44px] w-full rounded-xl border border-forge-ember/40 text-sm font-semibold text-forge-ember disabled:opacity-50"
+          >
+            Assign to a day
+          </button>
+
           {canImport && (
             <>
               <input
@@ -710,6 +790,16 @@ export function CustomWorkoutBuilder({
           )}
         </div>
       </div>
+
+      <AssignCustomWorkoutSheet
+        open={assignOpen}
+        workoutName={name.trim() || "Custom workout"}
+        resolveConflict={resolveAssignConflict}
+        saving={assigning}
+        error={assignError}
+        onClose={() => setAssignOpen(false)}
+        onConfirm={(input) => void handleAssignConfirm(input)}
+      />
     </div>
   );
 }

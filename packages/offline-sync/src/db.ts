@@ -6,6 +6,7 @@ import type {
   LocalWorkoutSession,
   LocalWorkoutTemplate,
 } from "./types";
+import type { LocalWorkoutDayAssignment } from "./day-assignment-types";
 
 class ForgeFitDB extends Dexie {
   workoutSessions!: Table<LocalWorkoutSession, string>;
@@ -13,6 +14,7 @@ class ForgeFitDB extends Dexie {
   cachedPrograms!: Table<CachedProgram, string>;
   scheduleOverrides!: Table<LocalScheduleOverride, string>;
   workoutTemplates!: Table<LocalWorkoutTemplate, string>;
+  workoutDayAssignments!: Table<LocalWorkoutDayAssignment, string>;
 
   constructor() {
     super("forgefit-offline");
@@ -48,6 +50,17 @@ class ForgeFitDB extends Dexie {
       scheduleOverrides:
         "id, userId, [weekStartIso+dayIndex], weekStartIso, dayIndex, synced",
       workoutTemplates: "id, userId, updatedAt, synced",
+    });
+    this.version(6).stores({
+      workoutSessions: "clientId, userId, status, updatedAt, sessionSource",
+      exerciseSets:
+        "clientId, sessionClientId, userId, [sessionClientId+exerciseId+setNumber]",
+      cachedPrograms: "userId",
+      scheduleOverrides:
+        "id, userId, [weekStartIso+dayIndex], weekStartIso, dayIndex, synced",
+      workoutTemplates: "id, userId, updatedAt, synced",
+      workoutDayAssignments:
+        "id, userId, scheduledDateIso, templateId, [userId+scheduledDateIso], synced",
     });
   }
 }
