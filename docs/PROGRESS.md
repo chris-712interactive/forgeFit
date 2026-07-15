@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
-| **Last updated** | 2026-07-14 |
-| **Last session focus** | Custom workout day assignments (Replace / Keep both) |
+| **Last updated** | 2026-07-15 |
+| **Last session focus** | Fix assign-to-day modal positioning |
 
 ---
 
@@ -38,6 +38,26 @@
 ---
 
 ## Session Log
+
+### 2026-07-15 — Fix assign-to-day modal positioning
+
+**What was done**
+
+- Portal `AssignCustomWorkoutSheet` to `document.body` so it escapes the custom builder overlay
+- Center modal vertically on all breakpoints (`items-center`) instead of bottom-sheet `items-end`
+- Lock body scroll while open; raise z-index to `z-[100]`
+
+**What's next**
+
+- Smoke-test assign flow on mobile (375px) inside custom workout builder
+- Apply `20260714210000_workout_day_assignments.sql` if not already in Supabase
+
+**Files touched**
+
+- `apps/web/src/components/workout/assign-custom-workout-sheet.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-14 — Custom workout day assignments (Replace / Keep both)
 

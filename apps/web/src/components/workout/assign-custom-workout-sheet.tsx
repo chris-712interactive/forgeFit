@@ -2,6 +2,7 @@
 
 import { browserTodayIsoDate } from "@/lib/datetime/local-date";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type AssignConflictChoice = "replace" | "keep_both";
 
@@ -35,6 +36,11 @@ export function AssignCustomWorkoutSheet({
   const today = browserTodayIsoDate();
   const [dateIso, setDateIso] = useState(today);
   const [choice, setChoice] = useState<AssignConflictChoice>("keep_both");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -42,15 +48,24 @@ export function AssignCustomWorkoutSheet({
     setChoice("keep_both");
   }, [open, today]);
 
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
   const conflict = useMemo(
     () => resolveConflict(dateIso),
     [dateIso, resolveConflict]
   );
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center sm:p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
       <button
         type="button"
         aria-label="Close assign sheet"
@@ -62,7 +77,7 @@ export function AssignCustomWorkoutSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="assign-custom-title"
-        className="relative z-10 flex max-h-[min(92dvh,920px)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-[var(--border)] bg-forge-surface shadow-xl sm:rounded-2xl"
+        className="relative z-10 flex max-h-[min(92dvh,920px)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-forge-surface shadow-xl"
       >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--border)] px-5 pb-3 pt-5">
           <div className="min-w-0">
@@ -165,6 +180,7 @@ export function AssignCustomWorkoutSheet({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
