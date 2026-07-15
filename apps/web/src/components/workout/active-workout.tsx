@@ -148,6 +148,7 @@ export function ActiveWorkout({
   const [intervalTimerKey, setIntervalTimerKey] = useState("interval");
   const [intervalTimerRestore, setIntervalTimerRestore] =
     useState<CountdownRestoreState | null>(null);
+  const [intervalTimerHidden, setIntervalTimerHidden] = useState(false);
   const [intervalCueFromGesture, setIntervalCueFromGesture] = useState(false);
   const [restAwayNotice, setRestAwayNotice] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -292,22 +293,10 @@ export function ActiveWorkout({
         });
         break;
       case "interval":
-        if (
-          session.intervalProtocol &&
-          persisted.intervalPhase &&
-          persisted.intervalRoundIndex != null &&
-          persisted.intervalBlockIndex != null &&
-          persisted.intervalSeconds != null
-        ) {
-          setIntervalTimerKey(`interval-${persisted.endsAtMs}`);
-          setIntervalTimerRestore(restore);
-          setIntervalRun({
-            phase: persisted.intervalPhase as IntervalRunState["phase"],
-            roundIndex: persisted.intervalRoundIndex,
-            blockIndex: persisted.intervalBlockIndex,
-            seconds: persisted.intervalSeconds,
-          });
+        if (restoreIntervalFromPersisted(persisted)) {
+          break;
         }
+        clearPersistedActiveTimer(clientId);
         break;
     }
   }, [clientId, loading, session]);
@@ -368,17 +357,68 @@ export function ActiveWorkout({
   const completedCount = sets.filter((s) => s.completed).length;
   const totalCount = sets.length;
 
-  function clearTimers() {
+  const persistedIntervalResume = useMemo(() => {
+    if (intervalRun) return false;
+    const persisted = loadPersistedActiveTimer(clientId);
+    return (
+      persisted?.kind === "interval" &&
+      persisted.intervalPhase != null &&
+      persisted.intervalPhase !== "done"
+    );
+  }, [clientId, intervalRun]);
+
+  function clearCountdownTimers() {
     setRestSeconds(null);
     setTimedTimer(null);
     setWarmupTimer(null);
     setRecoveryTimer(null);
-    setIntervalRun(null);
     setRestTimerRestore(null);
     setHoldTimerRestore(null);
+    const persisted = loadPersistedActiveTimer(clientId);
+    if (persisted?.kind === "interval") return;
+    clearPersistedActiveTimer(clientId);
+  }
+
+  function clearTimers() {
+    clearCountdownTimers();
+    setIntervalRun(null);
     setIntervalTimerRestore(null);
+    setIntervalTimerHidden(false);
     setIntervalCueFromGesture(false);
     clearPersistedActiveTimer(clientId);
+  }
+
+  function restoreIntervalFromPersisted(persisted: PersistedActiveTimer) {
+    if (
+      !session?.intervalProtocol ||
+      !persisted.intervalPhase ||
+      persisted.intervalRoundIndex == null ||
+      persisted.intervalBlockIndex == null ||
+      persisted.intervalSeconds == null
+    ) {
+      return false;
+    }
+
+    const restore = toCountdownRestore(persisted);
+    setIntervalTimerKey(`interval-${persisted.endsAtMs}`);
+    setIntervalTimerRestore(restore);
+    setIntervalRun({
+      phase: persisted.intervalPhase as IntervalRunState["phase"],
+      roundIndex: persisted.intervalRoundIndex,
+      blockIndex: persisted.intervalBlockIndex,
+      seconds: persisted.intervalSeconds,
+    });
+    setIntervalTimerHidden(false);
+    setIntervalCueFromGesture(false);
+
+    if (persisted.workoutStepIndex != null) {
+      setCurrentStepIndex(
+        Math.max(0, Math.min(persisted.workoutStepIndex, steps.length - 1))
+      );
+    } else {
+      jumpToIntervalBlock(persisted.intervalBlockIndex);
+    }
+    return true;
   }
 
   function jumpToIntervalBlock(blockIndex: number) {
@@ -399,6 +439,18 @@ export function ActiveWorkout({
 
   function startIntervalProtocol() {
     if (!session?.intervalProtocol) return;
+
+    const persisted = loadPersistedActiveTimer(clientId);
+    if (
+      persisted?.kind === "interval" &&
+      persisted.intervalPhase &&
+      persisted.intervalPhase !== "done"
+    ) {
+      if (restoreIntervalFromPersisted(persisted)) {
+        return;
+      }
+    }
+
     // Unlock + GO cue inside the tap stack (required for iOS / PWA audio).
     void feedbackIntervalStartFromGesture();
     clearTimers();
@@ -407,6 +459,7 @@ export function ActiveWorkout({
     setIntervalTimerKey(`interval-${Date.now()}`);
     setIntervalTimerRestore(null);
     setIntervalRun(next);
+    setIntervalTimerHidden(false);
     jumpToIntervalBlock(next.blockIndex);
   }
 
@@ -423,11 +476,13 @@ export function ActiveWorkout({
       clearPersistedActiveTimer(clientId);
       setIntervalRun(null);
       setIntervalTimerRestore(null);
+      setIntervalTimerHidden(false);
       return;
     }
     setIntervalTimerKey(`interval-${Date.now()}`);
     setIntervalTimerRestore(null);
     setIntervalRun(next);
+    setIntervalTimerHidden(false);
     if (next.blockIndex !== intervalRun.blockIndex || next.phase === "work") {
       jumpToIntervalBlock(next.blockIndex);
     }
@@ -562,7 +617,7 @@ export function ActiveWorkout({
   }
 
   function goToStep(index: number) {
-    clearTimers();
+    clearCountdownTimers();
     setCurrentStepIndex(Math.max(0, Math.min(index, steps.length - 1)));
   }
 
@@ -1267,12 +1322,23 @@ export function ActiveWorkout({
               onClick={startIntervalProtocol}
               className="mt-3 min-h-[44px] w-full rounded-xl bg-forge-ember px-4 py-2 text-sm font-semibold text-white"
             >
-              Start intervals
+              {persistedIntervalResume ? "Resume intervals" : "Start intervals"}
             </button>
           ) : (
-            <p className="mt-2 text-xs text-forge-success">
-              Intervals running — listen for loud GO / STOP cues.
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <p className="text-xs text-forge-success">
+                Intervals running — listen for loud GO / STOP cues.
+              </p>
+              {intervalTimerHidden && (
+                <button
+                  type="button"
+                  onClick={() => setIntervalTimerHidden(false)}
+                  className="rounded-lg border border-forge-ember/40 px-3 py-1 text-xs font-semibold text-forge-ember"
+                >
+                  Show timer
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -1444,6 +1510,7 @@ export function ActiveWorkout({
         !timedTimer &&
         intervalRun &&
         intervalRun.phase !== "done" &&
+        !intervalTimerHidden &&
         session.intervalProtocol && (
           <IntervalTimer
             key={intervalTimerKey}
@@ -1458,15 +1525,13 @@ export function ActiveWorkout({
                 intervalRoundIndex: intervalRun.roundIndex,
                 intervalBlockIndex: intervalRun.blockIndex,
                 intervalSeconds: intervalRun.seconds,
+                workoutStepIndex: currentStepIndex,
               })
             }
             onPhaseComplete={() => advanceIntervalPhase()}
             onSkipPhase={() => advanceIntervalPhase()}
             onStop={() => {
-              clearPersistedActiveTimer(clientId);
-              setIntervalRun(null);
-              setIntervalTimerRestore(null);
-              setIntervalCueFromGesture(false);
+              setIntervalTimerHidden(true);
             }}
           />
         )}

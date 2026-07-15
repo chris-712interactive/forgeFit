@@ -28,6 +28,7 @@ export interface WorkoutSessionRecord {
   clientId: string;
   dayIndex: number;
   sessionSource?: WorkoutSessionSource;
+  templateId?: string;
   sessionName: string;
   status: string;
   startedAt: string;

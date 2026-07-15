@@ -11,7 +11,9 @@ interface AssignedCustomWorkoutCardProps {
   replacesProgram: boolean;
   exerciseCount: number;
   starting: boolean;
+  inProgressClientId?: string;
   onStart: () => void;
+  onContinue: (clientId: string) => void;
   onRemove: () => void;
 }
 
@@ -21,7 +23,9 @@ export function AssignedCustomWorkoutCard({
   replacesProgram,
   exerciseCount,
   starting,
+  inProgressClientId,
   onStart,
+  onContinue,
   onRemove,
 }: AssignedCustomWorkoutCardProps) {
   const today = browserTodayIsoDate();
@@ -50,7 +54,15 @@ export function AssignedCustomWorkoutCard({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {canStart ? (
+        {inProgressClientId ? (
+          <button
+            type="button"
+            onClick={() => onContinue(inProgressClientId)}
+            className="min-h-[44px] flex-1 rounded-xl bg-forge-ember px-4 py-2 text-sm font-semibold text-white"
+          >
+            Continue
+          </button>
+        ) : canStart ? (
           <button
             type="button"
             disabled={starting}

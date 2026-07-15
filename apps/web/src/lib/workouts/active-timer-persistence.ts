@@ -18,6 +18,8 @@ export interface PersistedActiveTimer extends CountdownPersistState {
   intervalRoundIndex?: number;
   intervalBlockIndex?: number;
   intervalSeconds?: number;
+  /** Workout step index when the timer was saved (for resume after navigation). */
+  workoutStepIndex?: number;
 }
 
 const STORAGE_KEY = "forgerep:active-timer";

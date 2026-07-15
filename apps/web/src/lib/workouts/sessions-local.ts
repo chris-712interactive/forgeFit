@@ -42,6 +42,7 @@ function mapLocalSession(
     clientId: session.clientId,
     dayIndex: session.dayIndex,
     sessionSource: session.sessionSource ?? "program",
+    templateId: session.templateId,
     sessionName: session.sessionName,
     status: session.status,
     startedAt: session.startedAt,

@@ -197,7 +197,7 @@ export function IntervalTimer({
               onClick={onStop}
               className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted"
             >
-              Stop
+              Hide
             </button>
           </div>
         </div>

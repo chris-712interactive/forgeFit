@@ -79,7 +79,7 @@ import {
   suppressedProgramDayIndexes,
   type WorkoutDayAssignmentView,
 } from "@/lib/workouts/day-assignments";
-import { CUSTOM_DAY_INDEX } from "@/lib/workouts/session-source";
+import { CUSTOM_DAY_INDEX, isCustomWorkoutSession } from "@/lib/workouts/session-source";
 import { addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
 import { getWeekBounds } from "@/lib/home/weekly-stats";
 import { planScheduleReferenceDate } from "@/lib/workouts/schedule-dates";
@@ -219,6 +219,10 @@ export function WorkoutHub({
   const [startingAssignmentId, setStartingAssignmentId] = useState<string | null>(
     null
   );
+  const [resumeSession, setResumeSession] = useState<{
+    clientId: string;
+    sessionName: string;
+  } | null>(null);
   const offline = useOfflineStatus();
   const unit = useUnitPreference();
 
@@ -306,6 +310,16 @@ export function WorkoutHub({
     () => mergeSessionRecords(localSessions, serverSessions),
     [localSessions, serverSessions]
   );
+
+  const inProgressByTemplateId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const session of allSessions) {
+      if (session.status !== "in_progress" || !session.templateId) continue;
+      if (!isCustomWorkoutSession(session)) continue;
+      map.set(session.templateId, session.clientId);
+    }
+    return map;
+  }, [allSessions]);
 
   const sortedPlanSessions = useMemo(() => {
     if (!plan) return [];
@@ -487,6 +501,31 @@ export function WorkoutHub({
     void import("@forgefit/offline-sync");
   }, []);
 
+  useEffect(() => {
+    if (activeClientId || reviewClientId) {
+      setResumeSession(null);
+      return;
+    }
+
+    const storedClientId = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
+    if (!storedClientId) {
+      setResumeSession(null);
+      return;
+    }
+
+    void getSession(storedClientId).then((session) => {
+      if (session?.status === "in_progress") {
+        setResumeSession({
+          clientId: storedClientId,
+          sessionName: session.sessionName,
+        });
+      } else {
+        persistActiveWorkout(null);
+        setResumeSession(null);
+      }
+    });
+  }, [activeClientId, reviewClientId, sessionsReady]);
+
   const refreshSessions = useCallback(async () => {
     await reconcileLocalWorkoutsWithServer(
       userId,
@@ -587,6 +626,12 @@ export function WorkoutHub({
 
   const handleStartAssigned = useCallback(
     async (assignment: WorkoutDayAssignmentView) => {
+      const existingClientId = inProgressByTemplateId.get(assignment.templateId);
+      if (existingClientId) {
+        openWorkout(existingClientId);
+        return;
+      }
+
       const template = templateById.get(assignment.templateId);
       if (!template) {
         window.alert("Template missing — open Custom workout and reload it.");
@@ -613,7 +658,7 @@ export function WorkoutHub({
         setStartingAssignmentId(null);
       }
     },
-    [openWorkout, templateById, userId]
+    [inProgressByTemplateId, openWorkout, templateById, userId]
   );
 
   const handleRemoveAssignment = useCallback(
@@ -651,12 +696,16 @@ export function WorkoutHub({
   }, []);
 
   const closeToHub = useCallback(() => {
+    const resumableClientId = activeClientId;
     setActiveClientId(null);
     setReviewClientId(null);
     setFinishRankDelta(null);
+    if (resumableClientId) {
+      persistActiveWorkout(resumableClientId);
+    }
     replaceWorkoutUrl("hub", null);
     void refreshSessions();
-  }, [refreshSessions]);
+  }, [activeClientId, refreshSessions]);
 
   const handleWorkoutFinished = useCallback(
     async (clientId: string) => {
@@ -671,6 +720,7 @@ export function WorkoutHub({
       }
 
       setFinishRankDelta(rankDelta);
+      persistActiveWorkout(null);
       setActiveClientId(null);
       setReviewClientId(clientId);
       replaceWorkoutUrl("review", clientId);
@@ -853,8 +903,11 @@ export function WorkoutHub({
         }
 
         if (activeClientId === clientId) {
+          persistActiveWorkout(null);
           setActiveClientId(null);
           replaceWorkoutUrl("hub", null);
+        } else if (sessionStorage.getItem(OFFLINE_ACTIVE_KEY) === clientId) {
+          persistActiveWorkout(null);
         }
 
         void sync?.refreshPending();
@@ -957,6 +1010,39 @@ export function WorkoutHub({
         </header>
 
         <PwaInstallPrompt />
+
+        {resumeSession && (
+          <section className="rounded-2xl border border-forge-ember/40 bg-forge-ember/10 px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-forge-ember">
+              Workout in progress
+            </p>
+            <p className="mt-1 font-display font-semibold text-forge-text">
+              {resumeSession.sessionName}
+            </p>
+            <p className="mt-1 text-sm text-forge-muted">
+              Your timer position is saved — pick up where you left off.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => openWorkout(resumeSession.clientId)}
+                className="min-h-[44px] flex-1 rounded-xl bg-forge-ember px-4 py-2 text-sm font-semibold text-white"
+              >
+                Continue workout
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  persistActiveWorkout(null);
+                  setResumeSession(null);
+                }}
+                className="min-h-[44px] rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-medium text-forge-muted"
+              >
+                Dismiss
+              </button>
+            </div>
+          </section>
+        )}
 
         <CustomWorkoutCard
           canUseCustomWorkouts={canCustomWorkouts}
@@ -1072,7 +1158,11 @@ export function WorkoutHub({
                       .length ?? 0
                   }
                   starting={startingAssignmentId === item.assignment.id}
+                  inProgressClientId={inProgressByTemplateId.get(
+                    item.assignment.templateId
+                  )}
                   onStart={() => void handleStartAssigned(item.assignment)}
+                  onContinue={openWorkout}
                   onRemove={() => void handleRemoveAssignment(item.assignment.id)}
                 />
               )
@@ -1134,7 +1224,11 @@ export function WorkoutHub({
                         .length ?? 0
                     }
                     starting={startingAssignmentId === assignment.id}
+                    inProgressClientId={inProgressByTemplateId.get(
+                      assignment.templateId
+                    )}
                     onStart={() => void handleStartAssigned(assignment)}
+                    onContinue={openWorkout}
                     onRemove={() => void handleRemoveAssignment(assignment.id)}
                   />
                 ))}

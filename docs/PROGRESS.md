@@ -11,7 +11,7 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-15 |
-| **Last session focus** | Fix custom assignment date display timezone bug |
+| **Last session focus** | Fix interval timer position reset on navigation |
 
 ---
 
@@ -38,6 +38,34 @@
 ---
 
 ## Session Log
+
+### 2026-07-15 — Fix interval timer position reset on navigation
+
+**What was done**
+
+- Interval timer no longer clears when navigating workout steps (Back/Continue) — only rest/hold/warmup/recovery timers clear
+- Interval "Stop" renamed to "Hide"; hides the timer bar without resetting round/block position
+- Persisted timer restore now includes workout step index and jumps to the correct exercise block
+- "Resume intervals" when saved progress exists; "Show timer" when hidden
+- Workout hub shows "Workout in progress" banner after backing out; custom assignment cards show Continue for in-progress sessions
+- `templateId` mapped on local session records for custom workout resume matching
+
+**What's next**
+
+- Smoke-test: start custom workout with intervals, hide timer, navigate steps, back out to hub, continue — confirm same round/block
+- QA on iOS PWA: hide timer, lock screen, return — confirm countdown catches up
+
+**Files touched**
+
+- `apps/web/src/components/workout/active-workout.tsx`
+- `apps/web/src/components/workout/interval-timer.tsx`
+- `apps/web/src/components/workout/workout-hub.tsx`
+- `apps/web/src/components/workout/assigned-custom-workout-card.tsx`
+- `apps/web/src/lib/workouts/active-timer-persistence.ts`
+- `apps/web/src/lib/workouts/sessions.ts`, `sessions-local.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-15 — Fix custom assignment date display timezone bug
 
