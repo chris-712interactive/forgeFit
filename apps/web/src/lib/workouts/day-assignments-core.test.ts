@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CUSTOM_DAY_INDEX } from "./session-source";
-import { completedCustomSessionForAssignment } from "./day-assignments-core";
+import { completedCustomSessionForAssignment, inProgressCustomSessionForAssignment } from "./day-assignments-core";
 import type { WorkoutSessionRecord } from "./sessions";
 
 function customSession(
@@ -56,4 +56,43 @@ test("completedCustomSessionForAssignment ignores in-progress sessions", () => {
   );
 
   assert.equal(result, null);
+});
+
+test("inProgressCustomSessionForAssignment ignores superseded stale sessions", () => {
+  const completed = customSession({
+    clientId: "done-today",
+    templateId: "template-1",
+    completedAt: "2026-07-15T18:00:00.000Z",
+  });
+  const stale = customSession({
+    clientId: "stale",
+    status: "in_progress",
+    completedAt: null,
+    startedAt: "2026-07-15T14:00:00.000Z",
+  });
+
+  const result = inProgressCustomSessionForAssignment(
+    { templateId: "template-1", scheduledDateIso: "2026-07-15" },
+    [stale, completed],
+    "UTC"
+  );
+
+  assert.equal(result, null);
+});
+
+test("inProgressCustomSessionForAssignment returns active session without completion", () => {
+  const active = customSession({
+    clientId: "active",
+    status: "in_progress",
+    completedAt: null,
+    startedAt: "2026-07-15T14:00:00.000Z",
+  });
+
+  const result = inProgressCustomSessionForAssignment(
+    { templateId: "template-1", scheduledDateIso: "2026-07-15" },
+    [active],
+    "UTC"
+  );
+
+  assert.equal(result?.clientId, "active");
 });

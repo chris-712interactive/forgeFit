@@ -414,6 +414,23 @@ export async function cancelInProgressSessionsForDay(
   );
 }
 
+export async function cancelStaleInProgressSessionsForTemplate(
+  userId: string,
+  templateId: string,
+  exceptClientId: string
+): Promise<void> {
+  const inProgress = await getInProgressSessions(userId);
+  await Promise.all(
+    inProgress
+      .filter(
+        (session) =>
+          session.clientId !== exceptClientId &&
+          session.templateId === templateId
+      )
+      .map((session) => cancelWorkoutSessionIfPresent(session.clientId))
+  );
+}
+
 export async function completeWorkoutSession(
   clientId: string,
   status: Extract<WorkoutStatus, "completed" | "cancelled"> = "completed"
@@ -451,6 +468,14 @@ export async function completeWorkoutSession(
   const saved = await db.workoutSessions.get(clientId);
   if (!saved || saved.status !== status) {
     throw new Error("Workout completion did not save locally.");
+  }
+
+  if (status === "completed" && saved.templateId) {
+    await cancelStaleInProgressSessionsForTemplate(
+      saved.userId,
+      saved.templateId,
+      clientId
+    );
   }
 }
 

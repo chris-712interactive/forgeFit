@@ -47,8 +47,9 @@ export function AssignedCustomWorkoutCard({
   const today = browserTodayIsoDate();
   const canStart = canStartAssignedWorkout(scheduledDateIso, today);
   const isFuture = scheduledDateIso > today;
-  const isDone = Boolean(completedClientId) && !inProgressClientId;
-  const surface = cardSurfaceClass(Boolean(inProgressClientId), isDone);
+  const isDone = Boolean(completedClientId);
+  const showContinue = Boolean(inProgressClientId) && !isDone;
+  const surface = cardSurfaceClass(showContinue, isDone);
 
   return (
     <article className={`rounded-2xl border p-4 ${surface}`}>
@@ -71,7 +72,7 @@ export function AssignedCustomWorkoutCard({
         </div>
 
         <div className="flex shrink-0 flex-col gap-2">
-          {inProgressClientId ? (
+          {showContinue && inProgressClientId ? (
             <button
               type="button"
               onClick={() => onContinue(inProgressClientId)}
@@ -104,7 +105,7 @@ export function AssignedCustomWorkoutCard({
         </div>
       </div>
 
-      {inProgressClientId && (
+      {showContinue && inProgressClientId && (
         <p className="mt-2.5 text-sm font-medium text-forge-ember">
           In progress — pick up where you left off
         </p>

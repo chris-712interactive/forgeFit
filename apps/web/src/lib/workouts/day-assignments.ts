@@ -13,6 +13,7 @@ export {
   canStartAssignedWorkout,
   completedCustomSessionForAssignment,
   datesReplacingProgram,
+  inProgressCustomSessionForAssignment,
 } from "./day-assignments-core";
 
 /** Program dayIndexes whose effective date is replaced by a custom assignment. */

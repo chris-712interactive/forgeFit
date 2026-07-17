@@ -40,6 +40,46 @@ function sessionCalendarDate(
   return todayLocalIsoDate(new Date(anchor), timeZone);
 }
 
+/** Latest in-progress custom session for an assignment, if not superseded by completion. */
+export function inProgressCustomSessionForAssignment(
+  assignment: Pick<WorkoutDayAssignmentView, "templateId" | "scheduledDateIso">,
+  sessions: WorkoutSessionRecord[],
+  timeZone = "UTC"
+): WorkoutSessionRecord | null {
+  const completed = completedCustomSessionForAssignment(
+    assignment,
+    sessions,
+    timeZone
+  );
+
+  const inProgress = sessions.filter(
+    (session) =>
+      session.status === "in_progress" &&
+      isCustomWorkoutSession(session) &&
+      session.templateId === assignment.templateId
+  );
+  if (inProgress.length === 0) return null;
+
+  const onScheduledDate = inProgress.filter(
+    (session) =>
+      sessionCalendarDate(session, timeZone) === assignment.scheduledDateIso
+  );
+  const pool = onScheduledDate.length > 0 ? onScheduledDate : inProgress;
+
+  const candidate =
+    pool.sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0] ?? null;
+  if (!candidate) return null;
+
+  if (completed) {
+    const completedTime = completed.completedAt ?? completed.startedAt;
+    if (completedTime.localeCompare(candidate.startedAt) >= 0) {
+      return null;
+    }
+  }
+
+  return candidate;
+}
+
 /** Latest completed custom session for an assigned template on its scheduled day. */
 export function completedCustomSessionForAssignment(
   assignment: Pick<WorkoutDayAssignmentView, "templateId" | "scheduledDateIso">,

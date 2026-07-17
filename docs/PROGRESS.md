@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
-| **Last updated** | 2026-07-15 |
-| **Last session focus** | Fix completed custom workouts in week plan list |
+| **Last updated** | 2026-07-17 |
+| **Last session focus** | Fix custom workouts stuck in progress after finish |
 
 ---
 
@@ -38,6 +38,28 @@
 ---
 
 ## Session Log
+
+### 2026-07-17 — Fix custom workouts stuck in progress after finish
+
+**What was done**
+
+- Assigned custom workout cards now resolve in-progress state **per assignment** (template + scheduled date), not globally by template id
+- Completed logs supersede stale in-progress sessions on the same assignment — cards show **Results** instead of **Continue**
+- Finishing a custom workout cancels other abandoned in-progress sessions for the same template in local IndexedDB
+
+**What's next**
+
+- Smoke-test: finish two assigned custom workouts in one week — both cards should show **Results**, not **Continue**
+- QA duplicate-start path: start from builder, back out, start from assignment card, finish — hub should not show in progress
+
+**Files touched**
+
+- `apps/web/src/lib/workouts/day-assignments-core.ts`, `day-assignments-core.test.ts`, `day-assignments.ts`
+- `apps/web/src/components/workout/workout-hub.tsx`, `assigned-custom-workout-card.tsx`
+- `packages/offline-sync/src/workout-store.ts`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-15 — Fix interval timer position reset on navigation
 

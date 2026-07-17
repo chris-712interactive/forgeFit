@@ -75,12 +75,13 @@ import {
   GRAVITY_WEEK1_TEMPLATES,
 } from "@/lib/workouts/packs/gravity-week1";
 import {
+  completedCustomSessionForAssignment,
   dateHasProgramSession,
+  inProgressCustomSessionForAssignment,
   suppressedProgramDayIndexes,
   type WorkoutDayAssignmentView,
 } from "@/lib/workouts/day-assignments";
-import { CUSTOM_DAY_INDEX, isCustomWorkoutSession } from "@/lib/workouts/session-source";
-import { completedCustomSessionForAssignment } from "@/lib/workouts/day-assignments";
+import { CUSTOM_DAY_INDEX } from "@/lib/workouts/session-source";
 import { browserTimeZone, addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
 import { getWeekBounds } from "@/lib/home/weekly-stats";
 import { planScheduleReferenceDate } from "@/lib/workouts/schedule-dates";
@@ -312,15 +313,21 @@ export function WorkoutHub({
     [localSessions, serverSessions]
   );
 
-  const inProgressByTemplateId = useMemo(() => {
+  const inProgressCustomByAssignmentId = useMemo(() => {
     const map = new Map<string, string>();
-    for (const session of allSessions) {
-      if (session.status !== "in_progress" || !session.templateId) continue;
-      if (!isCustomWorkoutSession(session)) continue;
-      map.set(session.templateId, session.clientId);
+    const timeZone = browserTimeZone() ?? "UTC";
+    for (const assignment of dayAssignments) {
+      const session = inProgressCustomSessionForAssignment(
+        assignment,
+        allSessions,
+        timeZone
+      );
+      if (session) {
+        map.set(assignment.id, session.clientId);
+      }
     }
     return map;
-  }, [allSessions]);
+  }, [allSessions, dayAssignments]);
 
   const completedCustomByAssignmentId = useMemo(() => {
     const map = new Map<
@@ -655,7 +662,7 @@ export function WorkoutHub({
 
   const handleStartAssigned = useCallback(
     async (assignment: WorkoutDayAssignmentView) => {
-      const existingClientId = inProgressByTemplateId.get(assignment.templateId);
+      const existingClientId = inProgressCustomByAssignmentId.get(assignment.id);
       if (existingClientId) {
         openWorkout(existingClientId);
         return;
@@ -687,7 +694,7 @@ export function WorkoutHub({
         setStartingAssignmentId(null);
       }
     },
-    [inProgressByTemplateId, openWorkout, templateById, userId]
+    [inProgressCustomByAssignmentId, openWorkout, templateById, userId]
   );
 
   const handleRemoveAssignment = useCallback(
@@ -1187,8 +1194,8 @@ export function WorkoutHub({
                       .length ?? 0
                   }
                   starting={startingAssignmentId === item.assignment.id}
-                  inProgressClientId={inProgressByTemplateId.get(
-                    item.assignment.templateId
+                  inProgressClientId={inProgressCustomByAssignmentId.get(
+                    item.assignment.id
                   )}
                   completedClientId={
                     completedCustomByAssignmentId.get(item.assignment.id)
@@ -1270,8 +1277,8 @@ export function WorkoutHub({
                         .length ?? 0
                     }
                     starting={startingAssignmentId === assignment.id}
-                    inProgressClientId={inProgressByTemplateId.get(
-                      assignment.templateId
+                    inProgressClientId={inProgressCustomByAssignmentId.get(
+                      assignment.id
                     )}
                     completedClientId={
                       completedCustomByAssignmentId.get(assignment.id)?.clientId
