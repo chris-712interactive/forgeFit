@@ -155,8 +155,8 @@
 | 8 | Motivation + Gamification | ✅ Complete | 2026-06-12 |
 | 9 | Youth & Sport Performance | ✅ Complete | 2026-07-06 |
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
-| 11 | Custom Workouts | ⏳ In progress | — |
-| 12 | PWA timer background accuracy | ⏳ In progress | — |
+| 11 | Custom Workouts | ⏳ Code complete — apply Supabase migrations | — |
+| 12 | PWA timer background accuracy | ⏳ 12A/12B code complete — device QA; 12C deferred | — |
 | 13 | Interval Protocols + Gravity pack | ⏳ In progress | — |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
