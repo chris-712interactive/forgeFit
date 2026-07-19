@@ -1,3 +1,8 @@
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
+
 interface SupabaseLikeError {
   message: string;
   code?: string;
@@ -14,11 +19,8 @@ export function formatIngredientSuggestionError(error: SupabaseLikeError): strin
     code === "42P01" ||
     /schema cache|does not exist/i.test(msg)
   ) {
-    return (
-      "The ingredient suggestions table isn't visible to the API yet. " +
-      "In Supabase: SQL Editor → run migration 20260610880000, then " +
-      "Project Settings → API → Reload schema (or run: NOTIFY pgrst, 'reload schema';)."
-    );
+    console.error("ingredient suggestion schema error:", msg);
+    return FEATURE_SAVE_TEMPORARILY_UNAVAILABLE;
   }
 
   if (code === "23503" || /foreign key constraint/i.test(msg)) {
@@ -29,12 +31,9 @@ export function formatIngredientSuggestionError(error: SupabaseLikeError): strin
   }
 
   if (code === "42501" || /row-level security|permission denied/i.test(msg)) {
-    return (
-      "Permission denied saving your suggestion. " +
-      "Apply migration 20260610890000_nutrition_ingredient_suggestions_fix.sql, " +
-      "then reload the Supabase API schema."
-    );
+    console.error("ingredient suggestion RLS error:", msg);
+    return FEATURE_SAVE_TEMPORARILY_UNAVAILABLE;
   }
 
-  return msg;
+  return memberFacingSchemaError(msg);
 }

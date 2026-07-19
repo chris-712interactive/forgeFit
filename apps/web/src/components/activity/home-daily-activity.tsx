@@ -1,4 +1,5 @@
 import type { ActivityContext } from "@/lib/activity/types";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Link from "next/link";
 
 interface HomeDailyActivityProps {
@@ -107,7 +108,7 @@ export function HomeDailyActivity({ activity }: HomeDailyActivityProps) {
 
       {!activity.tableReady && (
         <p className="mt-3 rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-xs text-forge-muted">
-          Apply the daily activity migration to persist imported Fitbit data.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

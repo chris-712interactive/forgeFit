@@ -1,20 +1,26 @@
 import type { SyncRequestBody } from "@forgefit/offline-sync";
 import { createClient } from "@/lib/supabase/server";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  FEATURE_SYNC_TEMPORARILY_LIMITED,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 import { NextResponse, after } from "next/server";
 import { z } from "zod";
 
 function friendlySyncError(message: string): string {
   const lower = message.toLowerCase();
-  if (lower.includes("workout_sessions") && lower.includes("does not exist")) {
-    return "workout_sessions table missing — run 20260608200000_phase3_workouts.sql in Supabase.";
-  }
-  if (lower.includes("exercise_sets") && lower.includes("does not exist")) {
-    return "exercise_sets table missing — run 20260608200000_phase3_workouts.sql in Supabase.";
-  }
   if (lower.includes("violates foreign key constraint") && lower.includes("program")) {
     return "Program link invalid — retrying sync without program_id.";
   }
-  return message;
+  if (
+    (lower.includes("workout_sessions") || lower.includes("exercise_sets")) &&
+    lower.includes("does not exist")
+  ) {
+    console.error("Sync schema error:", message);
+    return FEATURE_SYNC_TEMPORARILY_LIMITED;
+  }
+  return memberFacingSchemaError(message, FEATURE_SAVE_TEMPORARILY_UNAVAILABLE);
 }
 
 const syncSchema = z.object({
@@ -200,11 +206,11 @@ export async function POST(request: Request) {
     }
 
     if (error || !inserted) {
+      console.error("sync session insert:", error?.message);
       return NextResponse.json(
         {
           error: friendlySyncError(
-            error?.message ??
-              "Failed to sync session. Apply the Phase 3 migration (workout_sessions table)."
+            error?.message ?? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
           ),
         },
         { status: 500 }
@@ -238,7 +244,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Workout session missing on server. Sync sessions before sets, or apply the Phase 3 migration.",
+            "Workout session missing on server. Sync sessions before sets, then try again.",
         },
         { status: 409 }
       );

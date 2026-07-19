@@ -4,6 +4,7 @@ import { HomeDomainCarousel } from "@/components/home/home-domain-carousel";
 import { HomeHero } from "@/components/home/home-hero";
 import { WeighInReminderBanner } from "@/components/measurements/weigh-in-reminder-banner";
 import type { HomeDashboardData } from "@/lib/home/types";
+import { FEATURE_SYNC_TEMPORARILY_LIMITED } from "@/lib/ui/member-errors";
 
 interface HomeDashboardProps {
   data: HomeDashboardData;
@@ -28,8 +29,7 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
 
       {!data.workoutsTableReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-surface-raised px-4 py-3 text-sm text-forge-muted">
-          Apply the Phase 3 workout migration to sync completed sessions to your
-          dashboard.
+          {FEATURE_SYNC_TEMPORARILY_LIMITED}
         </p>
       )}
     </div>

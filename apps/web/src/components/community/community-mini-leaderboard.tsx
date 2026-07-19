@@ -1,4 +1,5 @@
 import type { GamificationContext, LeaderboardEntryRow } from "@/lib/coaching/types";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Link from "next/link";
 
 interface CommunityMiniLeaderboardProps {
@@ -18,7 +19,7 @@ export function CommunityMiniLeaderboard({
   if (!gamification.tableReady) {
     return (
       <p className="rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-xs text-forge-muted">
-        Apply the gamification migration to enable leaderboards.
+        {FEATURE_TEMPORARILY_UNAVAILABLE}
       </p>
     );
   }

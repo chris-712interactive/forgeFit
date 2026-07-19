@@ -6,6 +6,10 @@ import {
   ONE_REP_MAX_SOURCES,
 } from "@/lib/progression/one-rep-max-source";
 import { createClient } from "@/lib/supabase/server";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
@@ -65,10 +69,11 @@ export async function saveUserOneRepMax(
   );
 
   if (error) {
+    console.error("saveUserOneRepMax:", error.message);
     return {
       error: error.message.includes("user_one_rep_maxes")
-        ? "Apply the user_one_rep_maxes migration in Supabase."
-        : error.message,
+        ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+        : memberFacingSchemaError(error.message),
     };
   }
 
@@ -102,7 +107,13 @@ export async function clearUserOneRepMax(exerciseId: string) {
     .eq("exercise_id", exerciseId);
 
   if (error) {
-    return { error: error.message };
+    console.error("clearUserOneRepMax:", error.message);
+    return {
+      error: memberFacingSchemaError(
+        error.message,
+        FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+      ),
+    };
   }
 
   revalidatePath("/profile");

@@ -6,6 +6,10 @@ import {
 } from "@/lib/constants/onboarding";
 import { createClient } from "@/lib/supabase/server";
 import type { EquipmentLocation } from "@/lib/types/profile";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const TRAVEL_EQUIPMENT_DEFAULTS = [
@@ -127,13 +131,15 @@ export async function replaceUserEquipment(
       .eq("id", userId);
 
     if (profileError) {
+      console.error("replaceUserEquipment profile:", profileError.message);
       if (isTravelModeSchemaError(profileError.message)) {
         return {
-          error:
-            "Apply the equipment_travel_mode migration in Supabase to use travel mode.",
+          error: FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
         };
       }
-      return { error: profileError.message };
+      return {
+        error: memberFacingSchemaError(profileError.message),
+      };
     }
   }
 
@@ -214,8 +220,7 @@ export async function enterTravelMode(
 
   if (!current.travelModeReady) {
     return {
-      error:
-        "Apply the equipment_travel_mode migration in Supabase to use travel mode.",
+      error: FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
     };
   }
 
@@ -274,8 +279,7 @@ export async function exitTravelMode(
 
   if (!current.travelModeReady) {
     return {
-      error:
-        "Apply the equipment_travel_mode migration in Supabase to use travel mode.",
+      error: FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
     };
   }
 

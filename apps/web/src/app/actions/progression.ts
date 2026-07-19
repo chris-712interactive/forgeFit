@@ -11,6 +11,10 @@ import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import type { ExperienceLevel } from "@/lib/types/profile";
 import { revalidatePath } from "next/cache";
 import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 
 const SNOOZE_DAYS = 14;
 
@@ -76,10 +80,11 @@ export async function acceptExperiencePromotion(input?: {
     .eq("id", user.id);
 
   if (updateError) {
+    console.error("acceptExperiencePromotion:", updateError.message);
     return {
       error: updateError.message.includes("experience_promoted_at")
-        ? "Apply the experience promotion migration on profiles."
-        : updateError.message,
+        ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+        : memberFacingSchemaError(updateError.message),
     };
   }
 
@@ -129,10 +134,11 @@ export async function snoozeExperiencePromotion() {
     .eq("id", user.id);
 
   if (error) {
+    console.error("snoozeExperiencePromotion:", error.message);
     return {
       error: error.message.includes("promotion_snoozed_until")
-        ? "Apply the experience promotion migration on profiles."
-        : error.message,
+        ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+        : memberFacingSchemaError(error.message),
     };
   }
 

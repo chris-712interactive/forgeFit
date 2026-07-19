@@ -1,5 +1,6 @@
 import type { SleepContext } from "@/lib/sleep/types";
 import { formatSleepHours } from "@/lib/sleep/format";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Link from "next/link";
 import { SleepTrendChart } from "./sleep-trend-chart";
 
@@ -31,7 +32,7 @@ export function DailySleepPanel({ sleep }: DailySleepPanelProps) {
     <div className="space-y-5">
       {!sleep.tableReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-xs text-forge-muted">
-          Apply the daily sleep migration to store imported Fitbit data.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

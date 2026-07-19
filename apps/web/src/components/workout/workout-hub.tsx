@@ -55,6 +55,10 @@ import {
   appSectionStackTight,
 } from "@/components/layout/page-layout";
 import { buildEvidenceHref } from "@/lib/evidence/present";
+import {
+  FEATURE_SYNC_TEMPORARILY_LIMITED,
+  FEATURE_TEMPORARILY_UNAVAILABLE,
+} from "@/lib/ui/member-errors";
 import { ActiveWorkout } from "./active-workout";
 import { SyncStatusBanner } from "./sync-status-banner";
 import { useWorkoutSyncContext } from "./sync-manager";
@@ -1163,8 +1167,7 @@ export function WorkoutHub({
 
             {!scheduleOverridesTableReady && (
               <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm text-forge-steel">
-                Schedule adjustments need a database migration — workouts still
-                follow your default plan days until it is applied.
+                {FEATURE_TEMPORARILY_UNAVAILABLE}
               </p>
             )}
 
@@ -1173,8 +1176,7 @@ export function WorkoutHub({
             </h2>
             {!dayAssignmentsTableReady && canCustomWorkouts && (
               <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm text-forge-steel">
-                Custom day assignments need a database migration before they
-                sync across devices.
+                {FEATURE_SYNC_TEMPORARILY_LIMITED}
               </p>
             )}
             {hubWeekItems.map((item) =>
@@ -1275,7 +1277,7 @@ export function WorkoutHub({
               <p className="text-forge-muted">
                 {offline
                   ? "No cached program yet. Visit Workout once while online to save your plan for offline use."
-                  : "Generate your program first — complete onboarding and apply the programs migration."}
+                  : FEATURE_TEMPORARILY_UNAVAILABLE}
               </p>
             </div>
 

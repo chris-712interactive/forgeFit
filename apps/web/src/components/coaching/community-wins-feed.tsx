@@ -7,6 +7,7 @@ import {
   winTypeLabel,
 } from "@/lib/coaching/community-labels";
 import type { GamificationContext } from "@/lib/coaching/types";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Link from "next/link";
 
 interface CommunityWinsFeedProps {
@@ -72,7 +73,7 @@ export function CommunityWinsFeed({
 
       {!gamification.tableReady && (
         <p className="mt-4 rounded-xl border border-forge-gold/30 bg-forge-surface-raised px-3 py-2 text-xs text-forge-muted">
-          Apply the Phase 8 gamification migration to enable the win feed.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

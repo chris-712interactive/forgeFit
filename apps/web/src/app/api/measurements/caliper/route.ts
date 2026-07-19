@@ -1,5 +1,9 @@
 import { calculateJacksonPollock } from "@forgefit/projection-engine";
 import { createClient } from "@/lib/supabase/server";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -93,11 +97,12 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
+    console.error("caliper_measurements upsert:", error.message);
     return NextResponse.json(
       {
         error: error.message.includes("caliper_measurements")
-          ? "Apply the Phase 5 migration (caliper_measurements table)."
-          : error.message,
+          ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+          : memberFacingSchemaError(error.message),
       },
       { status: 500 }
     );

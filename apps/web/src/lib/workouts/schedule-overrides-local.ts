@@ -7,6 +7,7 @@ import {
   type LocalScheduleOverride,
 } from "@forgefit/offline-sync";
 import type { WorkoutScheduleOverride } from "@/lib/workouts/schedule-overrides";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 
 export function localToScheduleOverride(
   row: LocalScheduleOverride
@@ -76,8 +77,7 @@ export async function syncScheduleOverridesWithServer(input: {
   if (!tableReady) {
     return {
       ok: false,
-      error:
-        "Schedule adjustments unavailable — apply migration 20260707120000_workout_schedule_overrides.sql.",
+      error: FEATURE_TEMPORARILY_UNAVAILABLE,
     };
   }
 

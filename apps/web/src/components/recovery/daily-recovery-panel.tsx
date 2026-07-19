@@ -4,6 +4,7 @@ import {
   formatRestingHr,
   recoveryMidpoint,
 } from "@/lib/recovery/format";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Link from "next/link";
 import { RecoveryTrendChart } from "./recovery-trend-chart";
 
@@ -35,7 +36,7 @@ export function DailyRecoveryPanel({ recovery }: DailyRecoveryPanelProps) {
     <div className="space-y-5">
       {!recovery.tableReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-xs text-forge-muted">
-          Apply the daily recovery migration to store imported Fitbit data.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

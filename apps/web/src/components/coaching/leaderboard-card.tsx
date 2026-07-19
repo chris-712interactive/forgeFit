@@ -1,4 +1,5 @@
 import type { GamificationContext } from "@/lib/coaching/types";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 
 interface LeaderboardCardProps {
   gamification: GamificationContext;
@@ -54,7 +55,7 @@ export function LeaderboardCard({
 
       {!gamification.tableReady && (
         <p className="mt-3 rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-xs text-forge-muted">
-          Apply the Phase 8 gamification migration to enable leaderboards.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

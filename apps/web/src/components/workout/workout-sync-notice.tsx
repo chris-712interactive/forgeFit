@@ -1,5 +1,6 @@
 "use client";
 
+import { FEATURE_SYNC_TEMPORARILY_LIMITED } from "@/lib/ui/member-errors";
 import { useWorkoutSyncContext } from "./sync-manager";
 
 interface WorkoutSyncNoticeProps {
@@ -23,13 +24,7 @@ export function WorkoutSyncNotice({
         }`}
       >
         <p className="font-medium text-forge-coral">Workout sync not set up</p>
-        <p className="mt-1 text-forge-muted">
-          Apply{" "}
-          <code className="text-xs">20260608200000_phase3_workouts.sql</code> in
-          Supabase to create <code className="text-xs">workout_sessions</code>{" "}
-          and <code className="text-xs">exercise_sets</code>. Until then,
-          workouts stay on this device only.
-        </p>
+        <p className="mt-1 text-forge-muted">{FEATURE_SYNC_TEMPORARILY_LIMITED}</p>
       </div>
     );
   }
@@ -66,10 +61,8 @@ export function WorkoutSyncNotice({
     >
       <p className="font-medium text-forge-gold">Saved on this device only</p>
       <p className="mt-1 text-forge-muted">
-        This workout isn&apos;t in Supabase yet (
-        <code className="text-xs">workout_sessions</code> /{" "}
-        <code className="text-xs">exercise_sets</code>). Sync to save it to your
-        account.
+        This workout isn&apos;t in your account yet. Sync to save it across
+        devices.
       </p>
       {sync && (
         <button

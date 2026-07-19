@@ -5,6 +5,10 @@ import { normalizeUnitSystem, type UnitSystem } from "@/lib/units/measurements";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getImpersonationMutationBlock } from "@/lib/auth/member-context";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 
 const unitSchema = z.enum(["metric", "imperial"]);
 
@@ -32,10 +36,11 @@ export async function updateUnitSystem(unit: UnitSystem) {
     .eq("id", user.id);
 
   if (error) {
+    console.error("updateUnitSystem:", error.message);
     return {
       error: error.message.includes("unit_system")
-        ? "Apply the unit_system migration on profiles."
-        : error.message,
+        ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+        : memberFacingSchemaError(error.message),
     };
   }
 

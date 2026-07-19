@@ -10,6 +10,10 @@ import {
   listWorkoutScheduleOverrides,
   upsertWorkoutScheduleOverride,
 } from "@/lib/workouts/schedule-overrides-server";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 
 const overrideSchema = z.object({
   weekStartIso: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -77,12 +81,12 @@ export async function saveWorkoutScheduleOverrides(input: {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Could not save schedule.";
+    console.error("saveWorkoutScheduleOverrides:", message);
     if (message.toLowerCase().includes("workout_schedule_overrides")) {
       return {
-        error:
-          "Schedule adjustments are not available yet — apply migration 20260707120000_workout_schedule_overrides.sql in Supabase.",
+        error: FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
       };
     }
-    return { error: message };
+    return { error: memberFacingSchemaError(message) };
   }
 }

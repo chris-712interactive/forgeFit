@@ -1,5 +1,6 @@
 import type { ActivityContext } from "@/lib/activity/types";
 import { formatCalories, formatSedentaryHours } from "@/lib/activity/format";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Link from "next/link";
 import { ActivityTrendChart } from "./activity-trend-chart";
 
@@ -31,7 +32,7 @@ export function DailyActivityPanel({ activity }: DailyActivityPanelProps) {
     <div className="space-y-5">
       {!activity.tableReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-surface px-3 py-2 text-xs text-forge-muted">
-          Apply the daily activity migration to store imported Fitbit data.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

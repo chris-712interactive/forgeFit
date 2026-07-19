@@ -22,6 +22,7 @@ import {
   kgToDisplayValue,
   weightUnitLabel,
 } from "@/lib/units/measurements";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import { searchCatalog, type CatalogExercise } from "@forgefit/exercise-db";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -213,8 +214,7 @@ export function OneRepMaxSetting({
           Known one-rep maxes
         </h2>
         <p className="mt-2 text-sm text-forge-muted">
-          Apply the `user_one_rep_maxes` migration to save your lift maxes and
-          improve workout prescriptions.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       </section>
     );

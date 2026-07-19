@@ -16,6 +16,7 @@ import {
 import { todayScheduleStartIso } from "@/lib/programs/start-date";
 import type { UserEquipmentSettings } from "@/lib/equipment/service";
 import type { EquipmentLocation } from "@/lib/types/profile";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -133,8 +134,7 @@ export function EquipmentSetting({ initialSettings }: EquipmentSettingProps) {
     <div className="space-y-4 text-sm">
       {!initialSettings.travelModeReady && (
         <p className="rounded-xl border border-forge-gold/30 bg-forge-gold/10 px-3 py-2 text-xs text-forge-gold">
-          Apply the equipment_travel_mode migration in Supabase to enable travel
-          mode snapshots.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </p>
       )}
 

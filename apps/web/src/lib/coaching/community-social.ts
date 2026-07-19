@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { unstable_noStore as noStore } from "next/cache";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 import type { LeaderboardEntryRow } from "./types";
 import { buildRivalRow, pickWeeklyRivalUserId } from "./rival-matching";
 
@@ -388,10 +392,14 @@ export async function toggleCommunityFollow(
       return {
         following: false,
         isMutual: false,
-        error: "Apply the community social migration to enable follows.",
+        error: FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
       };
     }
-    return { following: false, isMutual: false, error: peerError.message };
+    return {
+      following: false,
+      isMutual: false,
+      error: memberFacingSchemaError(peerError.message),
+    };
   }
 
   if (!peerEntry) {
@@ -414,10 +422,14 @@ export async function toggleCommunityFollow(
       return {
         following: false,
         isMutual: false,
-        error: "Apply the community social migration to enable follows.",
+        error: FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
       };
     }
-    return { following: false, isMutual: false, error: readError.message };
+    return {
+      following: false,
+      isMutual: false,
+      error: memberFacingSchemaError(readError.message),
+    };
   }
 
   if (existing) {
@@ -439,9 +451,10 @@ export async function toggleCommunityFollow(
   });
 
   if (error) {
+    console.error("toggleCommunityFollow insert:", error.message);
     const message = error.message.toLowerCase().includes("row-level security")
-      ? "Follow is blocked by a database policy. Apply the latest community migration on Supabase (20260610730000)."
-      : error.message;
+      ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+      : memberFacingSchemaError(error.message);
     return { following: false, isMutual: false, error: message };
   }
 

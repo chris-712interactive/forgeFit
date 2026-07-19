@@ -13,6 +13,7 @@ import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { appHeaderGap, appSectionStack } from "@/components/layout/page-layout";
 import { buildEvidenceHref } from "@/lib/evidence/present";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import { useEffect, useState } from "react";
 import { CaliperCalculator } from "./caliper-calculator";
 import { LogMeasurementForm } from "./log-measurement-form";
@@ -84,8 +85,7 @@ export function ProgressDashboard({ data }: ProgressDashboardProps) {
 
       {!data.tableReady && (
         <div className="rounded-2xl border border-forge-gold/40 bg-forge-surface-raised p-4 text-sm text-forge-muted">
-          Apply the Phase 5 migration to save new entries. Charts still use
-          your onboarding baseline.
+          {FEATURE_TEMPORARILY_UNAVAILABLE}
         </div>
       )}
 

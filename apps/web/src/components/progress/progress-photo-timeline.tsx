@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProgressPhotoRow } from "@/lib/progress-photos/types";
+import { FEATURE_TEMPORARILY_UNAVAILABLE } from "@/lib/ui/member-errors";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -86,7 +87,7 @@ export function ProgressPhotoTimeline({
   if (!tableReady) {
     return (
       <p className="text-sm text-forge-muted">
-        Apply the `progress_photos` migration to enable photo uploads.
+        {FEATURE_TEMPORARILY_UNAVAILABLE}
       </p>
     );
   }

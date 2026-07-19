@@ -2,6 +2,10 @@ import { scaleMacrosFrom100g } from "@forgefit/nutrition-core";
 import { todayLocalIsoDate } from "@/lib/datetime/local-date";
 import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { createClient } from "@/lib/supabase/server";
+import {
+  FEATURE_SAVE_TEMPORARILY_UNAVAILABLE,
+  memberFacingSchemaError,
+} from "@/lib/ui/member-errors";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -137,12 +141,12 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
+    console.error("nutrition log upsert:", error.message);
     return NextResponse.json(
       {
-        error:
-          error.message.includes("nutrition_logs")
-            ? "Apply the Phase 4 migration (nutrition_logs table)."
-            : error.message,
+        error: error.message.includes("nutrition_logs")
+          ? FEATURE_SAVE_TEMPORARILY_UNAVAILABLE
+          : memberFacingSchemaError(error.message),
       },
       { status: 500 }
     );
