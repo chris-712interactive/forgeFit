@@ -3,7 +3,7 @@
 > **Authoritative feature matrix** for Free, Pro, and Pro+.
 > Code gates live in `apps/web/src/lib/billing/gates.ts` — keep in sync with this doc.
 
-**Last updated:** 2026-07-06
+**Last updated:** 2026-07-19
 
 ---
 
@@ -12,8 +12,8 @@
 | Tier | Price | Pitch |
 |------|-------|-------|
 | **Free** | $0 | Full training loop — programs, logging, nutrition, 30-day projections |
-| **Pro** | $8.99/mo · $69.99/yr | Long-horizon progress intelligence |
-| **Pro+** | $14.99/mo · $119.99/yr | Automation, integrations, AI coaching |
+| **Pro** | $8.99/mo · $69.99/yr | Long-horizon progress intelligence + custom workouts + community |
+| **Pro+** | $14.99/mo · $119.99/yr | Wearable sync, restaurant quick-log, personalized coaching copy |
 
 Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 
@@ -27,15 +27,16 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 |---------|:----:|:---:|:----:|
 | Evidence-based program generation | ✓ | ✓ | ✓ |
 | Offline workout logging & sync | ✓ | ✓ | ✓ |
-| RIR load progression & 1RM prescription | ✓ | ✓ | ✓ |
+| RIR load progression & 1RM prescription / test mode | ✓ | ✓ | ✓ |
 | Deload weeks & travel mode | ✓ | ✓ | ✓ |
-| Nutrition diary (USDA / Open Food Facts) | ✓ | ✓ | ✓ |
+| Nutrition diary (curated whole-foods + barcode OFF) | ✓ | ✓ | ✓ |
 | Body measurements & caliper BF% | ✓ | ✓ | ✓ |
-| Exercise library, GIFs, substitutions | ✓ | ✓ | ✓ |
+| Exercise library, demos, substitutions | ✓ | ✓ | ✓ |
 | Workout history (view & log) | ✓ | ✓ | ✓ |
 | Workout music — Spotify vibe deep links | ✓ | ✓ | ✓ |
 | Workout music — Spotify connect + in-session controls | ✓ | ✓ | ✓ |
 | Templated encouragement (home banner) | ✓ | ✓ | ✓ |
+| In-session PR toast (lightweight) | ✓ | ✓ | ✓ |
 | Experience promotion & consistency nudges | ✓ | ✓ | ✓ |
 
 ### Projections & forecasting
@@ -79,17 +80,18 @@ Pro+ includes **all Pro features**. Upgrade path: Free → Pro → Pro+.
 
 | Feature | Free | Pro | Pro+ |
 |---------|:----:|:---:|:----:|
-| Withings weight sync | — | — | ✓ |
-| Fitbit activity + workout intensity sync | — | — | ✓ |
-| Strava activity sync | — | — | ✓ |
-| Restaurant quick-log & saved meals (curated chains) | — | — | ✓ |
+| Withings weight sync | — | — | QA / coming soon |
+| Fitbit / Google Health sync | — | — | ✓ |
+| Strava activity sync | — | — | Coming soon |
+| Restaurant quick-log (curated chains) | — | — | ✓ |
+| Saved meals (My Meals) | — | — | ✓ |
 | Full restaurant menu API search | — | — | Planned |
 
 ### Coaching (Pro+)
 
 | Feature | Free | Pro | Pro+ |
 |---------|:----:|:---:|:----:|
-| AI-personalized motivation & coaching copy | — | — | ✓ |
+| Personalized coaching copy (pre-workout hype) | — | — | ✓ |
 | PR celebration modal (`gradient-forge-celebrate`) | — | — | ✓ |
 
 ---
@@ -105,7 +107,7 @@ Set per user in `/admin/users/[id]` → Feature flags. Loaded with `getSubscript
 | Flag key | Grants gate | Notes |
 |----------|-------------|-------|
 | `beta_integrations` | `device_integrations` | Early wearable access below Pro+ |
-| `early_ai_coach` | `ai_motivation` | AI coaching copy preview below Pro+ |
+| `early_ai_coach` | `ai_motivation` | Personalized coaching copy preview below Pro+ |
 | `internal_tester` | — | QA marker only (no gate override yet) |
 
 | Gate key | Minimum tier | UI surface (planned) |
@@ -126,8 +128,9 @@ Set per user in `/admin/users/[id]` → Feature flags. Loaded with `getSubscript
 | `rule_based_insights` | Pro | Home / Progress — insight cards |
 | `device_integrations` | Pro+ | Profile — Integrations hub; workout device intensity + readiness |
 | `restaurant_search` | Pro+ | Nutrition — eating out quick-log |
-| `gamification` | Pro | Profile opt-in, Home community, `/community`, rivals, notifications |
-| `ai_motivation` | Pro+ | Home / pre-workout — AI copy |
+| `saved_meals` | Pro+ | Nutrition — My Meals library |
+| `gamification` | Pro | Profile opt-in, Home community, `/community` tab (hidden for Free), rivals, notifications |
+| `ai_motivation` | Pro+ | Pre-workout personalized coaching copy |
 | `pr_celebration` | Pro+ | Workout — celebration modal |
 
 ### Free-tier limits (constants)

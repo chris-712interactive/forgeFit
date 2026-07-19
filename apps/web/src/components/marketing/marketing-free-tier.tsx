@@ -6,7 +6,7 @@ export function MarketingFreeTier() {
     <MarketingSection>
       <MarketingSectionIntro
         title="Start free. Train seriously."
-        description="Core training, nutrition, and progress tools are included at no cost. Upgrade to Pro for long-horizon analytics, or Pro+ for device sync, eating-out quick-log, and AI coaching."
+        description="Core training, nutrition, and progress tools are included at no cost. Upgrade to Pro for long-horizon analytics and custom workouts, or Pro+ for Fitbit sync, eating-out quick-log, and personalized coaching copy."
       />
 
       <ul className="mt-6 space-y-3 sm:mt-8 sm:space-y-4">

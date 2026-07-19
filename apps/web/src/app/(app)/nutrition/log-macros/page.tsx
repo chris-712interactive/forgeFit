@@ -30,6 +30,7 @@ export default async function LogMacrosPage({
       todayIso={pageData.todayIso}
       yesterdayIso={pageData.yesterdayIso}
       initialMealType={parseNutritionMealParam(params.meal)}
+      savedMealsUnlocked={pageData.savedMealsUnlocked}
     />
   );
 }

@@ -25,6 +25,7 @@ import { CommunityRankStrip } from "@/components/coaching/community-rank-strip";
 import { WorkoutReadinessStrip } from "@/components/workout/workout-readiness-strip";
 import type { WorkoutReadinessContext } from "@/lib/workouts/device-metrics-types";
 import { PrCelebrationModal } from "@/components/coaching/pr-celebration-modal";
+import { PrToast } from "@/components/coaching/pr-toast";
 import { MaxTestResultModal } from "@/components/workout/max-test-result-modal";
 import {
   detectSetPr,
@@ -164,6 +165,7 @@ export function ActiveWorkout({
   const [celebrationPr, setCelebrationPr] = useState<DetectedWorkoutPr | null>(
     null
   );
+  const [toastPr, setToastPr] = useState<DetectedWorkoutPr | null>(null);
   const [prSavePending, setPrSavePending] = useState(false);
   const [prSaveMessage, setPrSaveMessage] = useState<string | null>(null);
   const [maxTestResult, setMaxTestResult] = useState<{
@@ -752,13 +754,14 @@ export function ActiveWorkout({
       }
 
       if (
-        coaching?.prCelebrationEnabled &&
         setRow &&
         updated?.weightKg != null &&
         updated.reps != null &&
         updated.weightKg > 0 &&
         updated.reps > 0 &&
-        !maxTestMode
+        !maxTestMode &&
+        coaching &&
+        (coaching.prCelebrationEnabled || coaching.prToastEnabled)
       ) {
         const historicalBest =
           coaching.priorBestE1rmKg[setRow.exerciseId] ?? 0;
@@ -775,7 +778,11 @@ export function ActiveWorkout({
 
         if (detected) {
           sessionBestE1rmRef.current.set(setRow.exerciseId, detected.e1rmKg);
-          setCelebrationPr(detected);
+          if (coaching.prCelebrationEnabled) {
+            setCelebrationPr(detected);
+          } else if (coaching.prToastEnabled) {
+            setToastPr(detected);
+          }
 
           if (coaching.gamificationOptIn) {
             const headline = pickPrCelebrationHeadline({
@@ -1649,6 +1656,22 @@ export function ActiveWorkout({
             }}
           />
         )}
+
+      {toastPr && coaching && (
+        <PrToast
+          pr={toastPr}
+          headline={pickPrCelebrationHeadline({
+            exerciseLabel: toastPr.label,
+            weightKg: toastPr.weightKg,
+            reps: toastPr.reps,
+            e1rmKg: toastPr.e1rmKg,
+            goal: coaching.goal as CoachingGoal,
+            displayName: coaching.displayName,
+            unitSystem: unit,
+          })}
+          onClose={() => setToastPr(null)}
+        />
+      )}
 
       {celebrationPr && coaching && (
         <PrCelebrationModal

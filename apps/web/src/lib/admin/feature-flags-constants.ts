@@ -6,8 +6,8 @@ export const KNOWN_ADMIN_FEATURE_FLAGS = [
   },
   {
     key: "early_ai_coach",
-    label: "Early AI coach",
-    description: "Preview AI coaching copy experiments.",
+    label: "Early coaching copy",
+    description: "Preview personalized coaching copy experiments below Pro+.",
   },
   {
     key: "internal_tester",

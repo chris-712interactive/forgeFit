@@ -4,17 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
-const NAV_ITEMS = [
+const CORE_NAV_ITEMS = [
   { href: "/home", label: "Home", icon: HomeIcon },
   { href: "/workout", label: "Workout", icon: WorkoutIcon },
   { href: "/nutrition", label: "Nutrition", icon: NutritionIcon },
   { href: "/progress", label: "Progress", icon: ProgressIcon },
-  { href: "/community", label: "Community", icon: CommunityIcon },
   { href: "/profile", label: "Profile", icon: ProfileIcon },
 ] as const;
 
+const COMMUNITY_NAV_ITEM = {
+  href: "/community",
+  label: "Community",
+  icon: CommunityIcon,
+} as const;
+
 interface BottomNavProps {
   unreadCommunityCount?: number;
+  /** Pro community nav — Free users reach community via Home upgrade cards only. */
+  showCommunity?: boolean;
 }
 
 function subscribeOnline(callback: () => void) {
@@ -34,7 +41,10 @@ function getServerSnapshot() {
   return true;
 }
 
-export function BottomNav({ unreadCommunityCount = 0 }: BottomNavProps) {
+export function BottomNav({
+  unreadCommunityCount = 0,
+  showCommunity = false,
+}: BottomNavProps) {
   const pathname = usePathname();
   const online = useSyncExternalStore(
     subscribeOnline,
@@ -42,13 +52,21 @@ export function BottomNav({ unreadCommunityCount = 0 }: BottomNavProps) {
     getServerSnapshot
   );
 
+  const navItems = showCommunity
+    ? [
+        ...CORE_NAV_ITEMS.slice(0, 4),
+        COMMUNITY_NAV_ITEM,
+        CORE_NAV_ITEMS[4]!,
+      ]
+    : [...CORE_NAV_ITEMS];
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] bg-forge-surface/95 backdrop-blur-md"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-lg items-stretch justify-between px-1 py-1.5 sm:justify-around sm:px-2 sm:py-2">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href ||
             pathname.startsWith(`${href}/`) ||

@@ -47,6 +47,7 @@ export default async function NutritionPage({
     yesterdayEntryCount,
     yesterdayDate,
     restaurantSearchUnlocked,
+    savedMealsUnlocked,
     tdeeDashboard,
     nutritionLoggedDayCount,
   } = pageData;
@@ -85,6 +86,7 @@ export default async function NutritionPage({
               yesterdayEntryCount={yesterdayEntryCount}
               yesterdayDate={yesterdayDate}
               restaurantSearchUnlocked={restaurantSearchUnlocked}
+              savedMealsUnlocked={savedMealsUnlocked}
               tdeeDashboard={tdeeDashboard}
             />
           </Suspense>

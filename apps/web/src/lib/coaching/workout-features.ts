@@ -45,6 +45,7 @@ export async function getWorkoutCoachingFeatures(
   return {
     aiMotivationEnabled: hasFeature(subscription, "ai_motivation"),
     prCelebrationEnabled: hasFeature(subscription, "pr_celebration"),
+    prToastEnabled: !hasFeature(subscription, "pr_celebration"),
     gamificationOptIn: profile?.gamification_opt_in ?? false,
     priorBestE1rmKg: Object.fromEntries(
       [...priorMap.entries()].map(([exerciseId, entry]) => [

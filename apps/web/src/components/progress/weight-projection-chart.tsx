@@ -76,8 +76,18 @@ export function WeightProjectionChart({
 
   if (!projection) {
     return (
-      <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-forge-muted">
-        Add weight entries to generate a projection.
+      <div className="space-y-3 rounded-2xl border border-dashed border-[var(--border)] p-6 text-center">
+        <p className="text-sm text-forge-muted">
+          Log weight on at least two different days to unlock your projection
+          curve. Your onboarding weigh-in counts as day one — add tomorrow’s
+          weigh-in to see the trend.
+        </p>
+        <a
+          href="/progress#measurements"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-forge-ember px-4 text-sm font-semibold text-white"
+        >
+          Log today’s weight
+        </a>
       </div>
     );
   }

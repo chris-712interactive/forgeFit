@@ -1,5 +1,6 @@
 "use client";
 
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import type { TdeeDashboard } from "@/lib/nutrition/tdee-service";
 import { SectionTabs } from "@/components/layout/section-tabs";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
@@ -46,6 +47,7 @@ interface NutritionDiaryProps {
   yesterdayEntryCount: number;
   yesterdayDate: string;
   restaurantSearchUnlocked: boolean;
+  savedMealsUnlocked: boolean;
   tdeeDashboard: TdeeDashboard | null;
 }
 
@@ -61,6 +63,7 @@ export function NutritionDiary({
   yesterdayEntryCount,
   yesterdayDate,
   restaurantSearchUnlocked,
+  savedMealsUnlocked,
   tdeeDashboard,
 }: NutritionDiaryProps) {
   const router = useRouter();
@@ -236,7 +239,7 @@ export function NutritionDiary({
             <RestaurantSearchPanel
               loggedDate={initialSummary.date}
               unlocked={restaurantSearchUnlocked}
-              onSaveMeal={setSaveDraft}
+              onSaveMeal={savedMealsUnlocked ? setSaveDraft : undefined}
             />
 
             <PackagedFoodPanel loggedDate={initialSummary.date} />
@@ -251,11 +254,19 @@ export function NutritionDiary({
 
         {tab === "my-meals" && (
           <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
-            <SavedMealsLibrary
-              loggedDate={initialSummary.date}
-              refreshKey={mealsVersion}
-              onMealsChanged={() => setMealsVersion((version) => version + 1)}
-            />
+            {savedMealsUnlocked ? (
+              <SavedMealsLibrary
+                loggedDate={initialSummary.date}
+                refreshKey={mealsVersion}
+                onMealsChanged={() => setMealsVersion((version) => version + 1)}
+              />
+            ) : (
+              <UpgradePrompt
+                title="Saved meals are a Pro+ feature"
+                description="Build reusable meals on this device and log them in one tap — included with restaurant quick-log on Pro+."
+                suggestedTier="pro_plus"
+              />
+            )}
           </section>
         )}
       </div>

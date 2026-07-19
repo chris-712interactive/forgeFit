@@ -29,7 +29,7 @@
 | **Exercise GIFs** | Self-hosted open GIF dataset + optional WorkoutX API ($0–25/mo) at scale | Avoid $499 RapidAPI lock-in at launch |
 | **Nutrition DB** | Curated forgeFit whole-foods library (in-repo) + Pro+ restaurant quick-log | Replaced USDA/OFF search (2026-06-19); $0 operating cost |
 | **Wearable Integrations** | Direct OAuth for Withings, Fitbit, Strava → Terra API at ~1,000+ paying users | Keeps MVP infra under ~$50/mo |
-| **AI Coaching Copy** | Claude Haiku / GPT-4o-mini via structured prompts | ~$0.01–0.05/user/month for hype messages only; **never** for program logic |
+| **Coaching copy** | Templated personalized hype (Pro+); LLM path planned | Hype/PR copy only — **never** for program logic |
 | **Hosting** | Vercel (Hobby → Pro $20/mo) | Zero-config Next.js deploy |
 | **Monorepo** | Turborepo + pnpm workspaces | Clean package boundaries for AI agents |
 
@@ -181,10 +181,10 @@ Three tiers. Full gate matrix: [docs/TIER-GATES.md](./TIER-GATES.md).
 | Strength / volume / nutrition adherence analytics | — | ✓ | ✓ |
 | Export, progress photos, rule-based insights | — | ✓ | ✓ |
 | Custom workouts + native CSV import | — | ✓ | ✓ |
-| Device integrations (Withings, Fitbit, Strava) | — | — | ✓ |
+| Device integrations (Withings, Fitbit, Strava) | — | — | Fitbit live; Withings/Strava rolling out |
 | Restaurant quick-log & saved meals | — | — | ✓ |
 | Full restaurant menu search (paid API) | — | — | Planned |
-| Motivation | Templated | Templated + insights | AI-personalized |
+| Motivation | Templated + PR toast | Templated + insights + PR toast | Personalized coaching copy + PR celebration modal |
 | Community (leaderboards, rivals, win feed) | — | Full (opt-in) | ✓ |
 | PR celebrations | Templated badges | Templated badges | Celebration modal UX |
 

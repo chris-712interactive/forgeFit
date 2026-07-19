@@ -35,6 +35,7 @@ import { useUnitPreference } from "@/components/units/unit-preference-provider";
 import { useOfflineStatus } from "@/hooks/use-online-status";
 import { loadLocalSessionRecords } from "@/lib/workouts/sessions-local";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CollapsibleSection } from "@/components/layout/collapsible-section";
 import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
@@ -1043,6 +1044,11 @@ export function WorkoutHub({
           <p className="mt-1 text-sm text-forge-muted">
             This week&apos;s plan — tap a day to start or review.
           </p>
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold">
+            <Link href="/exercises" className="text-forge-steel hover:text-forge-ember">
+              Exercise library →
+            </Link>
+          </div>
           {offline && (
             <p className="mt-2 text-sm text-forge-steel">
               Offline mode — progress is saved on this device and syncs when

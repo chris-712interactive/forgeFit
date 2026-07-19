@@ -25,6 +25,7 @@ export interface NutritionPageData {
   yesterdayEntryCount: number;
   yesterdayDate: string;
   restaurantSearchUnlocked: boolean;
+  savedMealsUnlocked: boolean;
   tdeeDashboard: TdeeDashboard | null;
   nutritionLoggedDayCount: number;
 }
@@ -54,6 +55,7 @@ export async function getNutritionPageData(
       yesterdayEntryCount: 0,
       yesterdayDate: yesterdayIso,
       restaurantSearchUnlocked: false,
+      savedMealsUnlocked: false,
       tdeeDashboard: null,
       nutritionLoggedDayCount: 0,
     };
@@ -77,6 +79,8 @@ export async function getNutritionPageData(
 
   const restaurantSearchUnlocked =
     subscription != null && hasFeature(subscription, "restaurant_search");
+  const savedMealsUnlocked =
+    subscription != null && hasFeature(subscription, "saved_meals");
 
   const tdeeDashboard =
     summary && isViewingToday
@@ -95,6 +99,7 @@ export async function getNutritionPageData(
     yesterdayEntryCount,
     yesterdayDate: yesterdayIso,
     restaurantSearchUnlocked,
+    savedMealsUnlocked,
     tdeeDashboard,
     nutritionLoggedDayCount,
   };

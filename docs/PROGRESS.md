@@ -11,11 +11,42 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-19 |
-| **Last session focus** | 1RM test warmup set logging |
+| **Last session focus** | Value integrity: honesty, trust, day-1 aha, Community soft-hide |
 
 ---
 
 ## Session Log
+
+### 2026-07-19 — Value integrity Waves 1–3 (honesty, trust, journey)
+
+**What was done**
+
+- Relabeled Pro+ “AI coaching” → personalized coaching copy across marketing, pricing, Profile, TIER-GATES, Bible, README
+- Pro marketing now sells custom workouts + adaptive TDEE; Pro+ lists Fitbit live only (Withings/Strava as coming soon)
+- Gated **Saved meals / My Meals** behind new Pro+ `saved_meals` feature
+- Soft-hid **Community** bottom-nav tab for Free (Pro+ gamification unlocks it)
+- Member UI: no migration/SQL error copy — centralized `lib/ui/member-errors.ts`
+- Onboarding fails loudly if program generation fails; Home `no_plan` has working Generate CTA
+- Progress empty projection state guides second weigh-in
+- Free/Pro get lightweight PR toast; Pro+ keeps celebration modal
+- Workout hub links Exercise library
+
+**What's next**
+
+- Wave 4: Phase 11/12 harden on device; cloud sync for saved meals
+- Optional: provisional single-point projection from plan pace
+
+**Files touched**
+
+- `apps/web/src/lib/billing/gates.ts`, `pricing.ts`, `ui/member-errors.ts`
+- Marketing + profile subscription/gamification copy
+- Nutrition diary / log-macros / page-data (saved meals gate)
+- `(app)/layout.tsx`, `bottom-nav.tsx`
+- `onboarding.ts`, `home-hero.tsx`, `generate-program-button.tsx`
+- `active-workout.tsx`, `pr-toast.tsx`, `workout-features.ts`
+- `docs/TIER-GATES.md`, `BIBLE.md`, `README.md`, `PROGRESS.md`
+
+---
 
 ### 2026-07-19 — 1RM test warmup set logging
 

@@ -178,7 +178,7 @@ export function ProfileSettingsHub({
       >
         <p className="mb-4 text-xs text-forge-muted">
           Long-horizon analytics with Pro. Device sync, eating-out quick-log, and
-          AI coaching with Pro+.
+          Personalized coaching copy with Pro+.
         </p>
         <SubscriptionSetting
           subscription={subscription}

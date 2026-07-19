@@ -13,13 +13,13 @@ Evidence-based fitness and nutrition — mobile-first web app that works offline
 - **Custom workouts** (Pro) — build your own sessions from the equipment-aware exercise library; save templates; import/export native ForgeRep CSV
 - **Workout schedule adjuster** — move individual sessions to another day this week (auto-swaps if that day is taken); offline-first
 - **Workout music** — curated Spotify vibe playlists + optional OAuth playback controls (all tiers; Spotify Premium for in-app controls)
-- **Nutrition diary** — USDA + Open Food Facts, restaurant quick-log (Pro+), macro tracking vs program targets
+- **Nutrition diary** — curated whole-foods library + barcode lookup, restaurant quick-log & saved meals (Pro+), macro tracking vs program targets
 - **Progress tracking** — 30/90-day projections (Pro), strength/volume analytics, caliper BF%, progress photos
 - **Exercise library** — 800+ demos, muscle heatmaps, equipment swaps (library + in-session **Equipment busy?** during workouts)
 - **Stripe billing** — Free, Pro ($8.99/mo), Pro+ ($14.99/mo)
 - **Fitbit / Google Health sync** (Pro+) — activity, sleep, recovery, workout intensity correlation
 - **Community** (Pro) — opt-in bucket leaderboards, rivals, follows, win feed, in-app notifications
-- **Coaching** (Pro+) — pre-workout hype, PR celebration modal
+- **Coaching** (Pro+) — personalized pre-workout coaching copy, PR celebration modal
 
 **Coming soon:**
 - Withings weight sync, Strava cardio sync (Pro+)

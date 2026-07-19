@@ -59,7 +59,7 @@ export function LandingJsonLd() {
             price: String(PRO_PLUS_PRICING.monthly.amountUsd),
             priceCurrency: "USD",
             description:
-              "Device sync, restaurant quick-log, AI coaching, and all Pro features",
+              "Fitbit sync, restaurant quick-log, personalized coaching copy, and all Pro features",
           },
         ],
         featureList: [

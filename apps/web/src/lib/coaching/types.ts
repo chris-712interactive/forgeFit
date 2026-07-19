@@ -268,6 +268,8 @@ export interface WorkoutCoachingContext {
 export interface WorkoutCoachingFeatures {
   aiMotivationEnabled: boolean;
   prCelebrationEnabled: boolean;
+  /** Lighter in-session PR toast for Pro (full modal remains Pro+). */
+  prToastEnabled: boolean;
   gamificationOptIn: boolean;
   priorBestE1rmKg: Record<string, number>;
   goal: import("@/lib/types/profile").FitnessGoal;

@@ -371,8 +371,15 @@ export async function completeOnboarding(data: OnboardingData) {
     return { error: equipmentResult.error };
   }
 
-  await generateAndSaveProgram(user.id);
+  const programResult = await generateAndSaveProgram(user.id);
+  if (programResult && "error" in programResult && programResult.error) {
+    return {
+      error:
+        "Your profile was saved, but we couldn’t build your training plan. Tap finish again to retry — if it keeps failing, contact support.",
+    };
+  }
 
   revalidatePath("/home");
+  revalidatePath("/workout");
   redirect("/home");
 }

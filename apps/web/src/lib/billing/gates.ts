@@ -18,6 +18,7 @@ export type TierFeature =
   | "rule_based_insights"
   | "device_integrations"
   | "restaurant_search"
+  | "saved_meals"
   | "ai_motivation"
   | "gamification"
   | "pr_celebration"
@@ -49,6 +50,7 @@ const PRO_FEATURES: ReadonlySet<TierFeature> = new Set([
 const PRO_PLUS_ONLY_FEATURES: ReadonlySet<TierFeature> = new Set([
   "device_integrations",
   "restaurant_search",
+  "saved_meals",
   "ai_motivation",
   "pr_celebration",
 ]);

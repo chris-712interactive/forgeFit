@@ -43,20 +43,21 @@ export const TIER_MARKETING: Record<
     tagline: "See whether your plan is working over a full season.",
     highlights: [
       "90-day projections with confidence bands",
-      "Strength progression & PR history",
-      "Volume trends & nutrition adherence",
-      "Unlimited history, export & progress photos",
+      "Custom workouts & CSV import",
+      "Strength progression, PRs & volume trends",
+      "Adaptive TDEE & nutrition adherence",
       "Community leaderboards, rivals & win feed",
+      "Unlimited history, export & progress photos",
     ],
   },
   pro_plus: {
     name: "Pro+",
-    tagline: "Sync your data, search restaurants, get coached.",
+    tagline: "Sync wearables, log meals out, celebrate harder.",
     highlights: [
       "Everything in Pro",
-      "Withings, Fitbit & Strava sync",
+      "Fitbit / Google Health sync",
       "Restaurant quick-log & saved meals",
-      "AI coaching & PR celebration UX",
+      "Personalized coaching copy & PR celebration UX",
     ],
   },
 };

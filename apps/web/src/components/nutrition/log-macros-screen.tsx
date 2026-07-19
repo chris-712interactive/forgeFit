@@ -24,6 +24,7 @@ interface LogMacrosScreenProps {
   todayIso: string;
   yesterdayIso: string;
   initialMealType?: MealType;
+  savedMealsUnlocked?: boolean;
 }
 
 export function LogMacrosScreen({
@@ -33,6 +34,7 @@ export function LogMacrosScreen({
   todayIso,
   yesterdayIso,
   initialMealType,
+  savedMealsUnlocked = false,
 }: LogMacrosScreenProps) {
   const router = useRouter();
   const [mealsVersion, setMealsVersion] = useState(0);
@@ -82,22 +84,26 @@ export function LogMacrosScreen({
               targets={summary.targets}
               initialValues={formPrefill}
               initialMealType={initialMealType}
-              onSaveMeal={setSaveDraft}
+              onSaveMeal={savedMealsUnlocked ? setSaveDraft : undefined}
             />
           </div>
         </section>
 
-        <SavedMealsQuickLog
-          loggedDate={summary.date}
-          refreshKey={mealsVersion}
-        />
+        {savedMealsUnlocked && (
+          <SavedMealsQuickLog
+            loggedDate={summary.date}
+            refreshKey={mealsVersion}
+          />
+        )}
 
         <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-4 sm:p-5">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
             Quick add
           </h2>
           <p className="mt-1 text-xs text-forge-muted">
-            Common or recent items — bookmark recent meals to My Meals
+            {savedMealsUnlocked
+              ? "Common or recent items — bookmark recent meals to My Meals"
+              : "Common or recent items — upgrade to Pro+ to save reusable meals"}
           </p>
           <div className="mt-4">
             <MacroPresets
@@ -106,11 +112,17 @@ export function LogMacrosScreen({
               recentEntries={recentEntries}
               refreshKey={mealsVersion}
               onEditPreset={handleEditPreset}
-              onSaveMeal={setSaveDraft}
-              onOpenMyMeals={() =>
-                router.push(
-                  buildNutritionHref({ date: selectedDate, tab: "my-meals" })
-                )
+              onSaveMeal={savedMealsUnlocked ? setSaveDraft : undefined}
+              onOpenMyMeals={
+                savedMealsUnlocked
+                  ? () =>
+                      router.push(
+                        buildNutritionHref({
+                          date: selectedDate,
+                          tab: "my-meals",
+                        })
+                      )
+                  : undefined
               }
             />
           </div>

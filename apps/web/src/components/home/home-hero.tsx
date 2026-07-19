@@ -4,6 +4,7 @@ import { buildNutritionHref } from "@/lib/nutrition/date-param";
 import type { HomeHeroContext } from "@/lib/home/hero-context";
 import type { WeeklyWorkStats } from "@/lib/home/types";
 import Link from "next/link";
+import { GenerateProgramButton } from "./generate-program-button";
 
 interface HomeHeroProps {
   hero: HomeHeroContext;
@@ -23,15 +24,14 @@ export function HomeHero({
   if (hero.status === "no_plan") {
     return (
       <section className="rounded-2xl border border-[var(--border)] bg-forge-surface-raised p-5">
-        <p className="text-sm leading-relaxed text-forge-muted">
-          Generate your program to unlock weekly tracking and your training plan.
+        <p className="font-display text-lg font-semibold text-forge-text">
+          Your plan isn’t ready yet
         </p>
-        <Link
-          href="/workout"
-          className="mt-4 flex min-h-[48px] items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white"
-        >
-          Set up your program
-        </Link>
+        <p className="mt-2 text-sm leading-relaxed text-forge-muted">
+          Generate your program to unlock this week’s workouts, nutrition
+          targets, and tracking.
+        </p>
+        <GenerateProgramButton />
       </section>
     );
   }

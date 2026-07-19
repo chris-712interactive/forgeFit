@@ -504,7 +504,7 @@ export function SubscriptionSetting({
                   Upgrade to Pro+
                 </p>
                 <p className="mt-1 text-xs text-forge-muted">
-                  Device sync, eating-out quick-log, and AI coaching. You&apos;ll
+                  Fitbit sync, eating-out quick-log, and personalized coaching copy. You&apos;ll
                   see the prorated charge before confirming.
                 </p>
                 <button

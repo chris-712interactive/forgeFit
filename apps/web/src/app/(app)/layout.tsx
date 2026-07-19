@@ -7,6 +7,8 @@ import { UnitPreferenceProvider } from "@/components/units/unit-preference-provi
 import { SyncManager } from "@/components/workout/sync-manager";
 import { getUnreadCommunityNotificationCount } from "@/lib/coaching/community-social";
 import { getMemberContext } from "@/lib/auth/member-context";
+import { hasFeature } from "@/lib/billing/gates";
+import { getSubscriptionForUser } from "@/lib/billing/subscription";
 import { getPromotionEvaluationForUser } from "@/lib/progression/service";
 import { getUserUnitSystem } from "@/lib/units/preference";
 
@@ -24,9 +26,15 @@ export default async function AppLayout({
   const promotion = effectiveUserId
     ? await getPromotionEvaluationForUser(effectiveUserId)
     : null;
-  const unreadCommunityCount = effectiveUserId
-    ? await getUnreadCommunityNotificationCount(effectiveUserId)
-    : 0;
+  const subscription = effectiveUserId
+    ? await getSubscriptionForUser(effectiveUserId)
+    : null;
+  const showCommunity =
+    subscription != null && hasFeature(subscription, "gamification");
+  const unreadCommunityCount =
+    effectiveUserId && showCommunity
+      ? await getUnreadCommunityNotificationCount(effectiveUserId)
+      : 0;
 
   return (
     <div className="min-h-dvh bg-forge-surface pb-[calc(5rem+env(safe-area-inset-bottom))]">
@@ -50,7 +58,10 @@ export default async function AppLayout({
       ) : (
         children
       )}
-      <BottomNav unreadCommunityCount={unreadCommunityCount} />
+      <BottomNav
+        unreadCommunityCount={unreadCommunityCount}
+        showCommunity={showCommunity}
+      />
     </div>
   );
 }
