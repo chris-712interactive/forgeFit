@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-19 · **Current phase:** Phase 11–13 in progress (custom workouts, PWA timer, interval protocols)
+**Last updated:** 2026-07-19 · **Current phase:** Phase 11–13 in progress (custom workouts ops apply, PWA timer QA, interval protocols)
 
 ---
 
@@ -207,8 +207,8 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 8 | Motivation + gamification + community (Phases 1–2) | Complete |
 | 9 | Youth & sport performance (onboarding, age policy, US catalog ≥22 sports, engine, teen community) | Complete | Community roadmap: [docs/community-expansion-plan.md](./community-expansion-plan.md).
 | 10 | Functional conditioning (hybrid strength + circuits, AMRAP, finishers, landing) | Complete | [docs/phases/10-functional-conditioning.md](./phases/10-functional-conditioning.md)
-| 11 | Custom workouts (Pro builder, templates, CSV import/export) | In progress | [docs/phases/11-custom-workouts.md](./phases/11-custom-workouts.md)
-| 12 | PWA timer accuracy when minimized / backgrounded | In progress | [docs/phases/12-pwa-timer-background.md](./phases/12-pwa-timer-background.md)
+| 11 | Custom workouts (Pro builder, templates, CSV import/export) | Code complete — apply Supabase migrations | [docs/phases/11-custom-workouts.md](./phases/11-custom-workouts.md)
+| 12 | PWA timer accuracy when minimized / backgrounded | 12A/12B code complete — device QA; 12C deferred | [docs/phases/12-pwa-timer-background.md](./phases/12-pwa-timer-background.md)
 | 13 | Interval protocols + Gravity Week 1 pack | In progress | [docs/phases/13-interval-protocols.md](./phases/13-interval-protocols.md)
 | — | **Admin console** (operator tools) | Complete (Phases A–D) | [docs/phases/admin-console.md](./phases/admin-console.md) · [ADR 002](./ADRs/002-forgerep-admin-console.md)
 

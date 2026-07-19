@@ -11,11 +11,53 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-19 |
-| **Last session focus** | Value integrity: honesty, trust, day-1 aha, Community soft-hide |
+| **Last session focus** | Value integrity Wave 3 remainder + Wave 4 docs/ops handoff |
 
 ---
 
 ## Session Log
+
+### 2026-07-19 — Value integrity Wave 3 remainder + Wave 4 handoff
+
+**What was done**
+
+- **Day-1 aha:** onboarding finish redirects to `/workout?day={firstDayIndex}` after successful program gen
+- **Onboarding compression:** merged recovery chips into equipment; why + PWA install on finish (why ≥10 chars required); dropped separate recovery/why steps
+- **First-week checklist** on Home (workout / meal / second weigh-in); early-member gate only
+- Home hero CTA shows **Start Day 1** when weekly workouts completed is 0
+- **Why this session?** evidence strip on workout equipment overview (`citationRuleIds` on local session)
+- **Set prefill fix:** restore normal working-set prefills; keep warmup rows empty (1RM regression)
+- **Nutrition offline honesty:** diary + log-macros banners when offline (logging still needs network)
+
+**Wave 4 status (ops / device — not code-gated here)**
+
+- Phase 11: product checklist complete in code; **Supabase migrations still need apply** in the project (`20260714120000_custom_workouts.sql`, `20260714210000_workout_day_assignments.sql`)
+- Phase 12A/12B: implemented; remaining is **iOS/Android installed-PWA timer QA**
+- Phase 12C (rest-end notifications): **deferred** (optional)
+- Explicitly still deferred: real LLM coaching, Withings/Strava launch, saved-meals cloud sync, offline nutrition Dexie queue, Apple Sign-In, evidence DOI expansion
+
+**What's next**
+
+1. Apply Phase 11 migrations in Supabase (ops)
+2. Device QA matrix for Phase 12 timers (iOS PWA + Android PWA)
+3. Optional: Phase 12C notification spike; provisional single-point projection
+
+**Blockers**
+
+- Supabase migration apply requires project credentials / dashboard access
+
+**Files touched**
+
+- `apps/web/src/app/actions/onboarding.ts`
+- `apps/web/src/lib/onboarding/steps.ts`
+- `apps/web/src/components/onboarding/onboarding-wizard.tsx`
+- `apps/web/src/components/home/first-week-checklist.tsx`, `home-dashboard.tsx`, `home-hero.tsx`
+- `apps/web/src/components/workout/workout-equipment-overview-card.tsx`, `active-workout.tsx`, `workout-hub.tsx`
+- `apps/web/src/components/nutrition/nutrition-diary.tsx`, `log-macros-screen.tsx`
+- `packages/offline-sync/src/types.ts`, `workout-store.ts`
+- `docs/PROGRESS.md`, `docs/phases/11-custom-workouts.md`, `docs/phases/12-pwa-timer-background.md`
+
+---
 
 ### 2026-07-19 — Value integrity Waves 1–3 (honesty, trust, journey)
 

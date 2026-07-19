@@ -822,6 +822,7 @@ export function WorkoutHub({
           warmupBlock: session.warmupBlock,
           recoveryBlock: session.recoveryBlock,
           conditioningBlock: session.conditioningBlock,
+          citationRuleIds: session.citationRuleIds,
           exercises: session.exercises.map((ex) => {
             const progression = loadProgressions.get(ex.exerciseId);
             return {

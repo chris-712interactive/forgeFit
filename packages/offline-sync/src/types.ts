@@ -102,6 +102,8 @@ export interface LocalWorkoutSession {
   conditioningStatus?: ConditioningStatus;
   conditioningRoundsCompleted?: number;
   intervalProtocol?: IntervalProtocol;
+  /** Evidence rule IDs cited for this session (program sessions). */
+  citationRuleIds?: string[];
 }
 
 export interface LocalExerciseSet {

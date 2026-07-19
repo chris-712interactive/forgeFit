@@ -381,5 +381,14 @@ export async function completeOnboarding(data: OnboardingData) {
 
   revalidatePath("/home");
   revalidatePath("/workout");
+
+  const plan =
+    programResult && "plan" in programResult ? programResult.plan : null;
+  const firstDayIndex = plan?.week
+    .slice()
+    .sort((a, b) => a.dayIndex - b.dayIndex)[0]?.dayIndex;
+  if (firstDayIndex != null) {
+    redirect(`/workout?day=${firstDayIndex}`);
+  }
   redirect("/home");
 }

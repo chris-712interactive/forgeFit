@@ -1,6 +1,7 @@
 "use client";
 
 import { HomeDomainCarousel } from "@/components/home/home-domain-carousel";
+import { FirstWeekChecklist } from "@/components/home/first-week-checklist";
 import { HomeHero } from "@/components/home/home-hero";
 import { WeighInReminderBanner } from "@/components/measurements/weigh-in-reminder-banner";
 import type { HomeDashboardData } from "@/lib/home/types";
@@ -24,6 +25,8 @@ export function HomeDashboard({ data, encouragement }: HomeDashboardProps) {
         encouragement={encouragement}
         birthdayMessage={data.birthdayMessage}
       />
+
+      <FirstWeekChecklist data={data} />
 
       <HomeDomainCarousel data={data} />
 

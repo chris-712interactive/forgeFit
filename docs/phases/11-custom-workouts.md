@@ -1,6 +1,6 @@
 # Phase 11 — Custom Workouts
 
-**Status:** In progress  
+**Status:** Code complete — awaiting Supabase migration apply  
 **Depends on:** Phase 3 (workout logging), Phase 7 (Pro gates)
 
 ## Goal
@@ -28,7 +28,8 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [x] `GET /api/workouts/export` + history per-session CSV (Pro `data_export`)
 - [x] `GET/POST/DELETE /api/workout-templates`
 - [x] Custom sessions excluded from week plan `buildDayStatusMap`
-- [ ] Migration `20260714120000_custom_workouts.sql` applied in Supabase
+- [ ] Migration `20260714120000_custom_workouts.sql` applied in Supabase (ops — required before marking phase Complete)
+- [ ] Migration `20260714210000_workout_day_assignments.sql` applied in Supabase (ops)
 - [x] Assign templates to calendar days (today/future) with Replace vs Keep both
 - [x] Assigned customs appear on Workout hub and are startable
 - [x] Unit tests for CSV parser + session source

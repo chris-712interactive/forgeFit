@@ -69,9 +69,11 @@ export function HomeHero({
   const ctaLabel =
     hero.status === "in_progress"
       ? `Continue ${sessionName}`
-      : hero.status === "rest"
-        ? `Start ${sessionName}`
-        : `Start ${sessionName}`;
+      : weeklyStats.workoutsCompleted === 0
+        ? "Start Day 1"
+        : hero.status === "rest"
+          ? `Start ${sessionName}`
+          : `Start ${sessionName}`;
 
   const statusLabel =
     hero.status === "in_progress"

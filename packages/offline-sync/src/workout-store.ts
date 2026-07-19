@@ -73,6 +73,7 @@ export async function startWorkoutSession(input: {
   intervalProtocol?: IntervalProtocol;
   /** Prefill logged targets for the first working set per exercise */
   setPrefills?: Record<string, SetPrefill>;
+  citationRuleIds?: string[];
 }): Promise<string> {
   const db = getOfflineDb();
   const clientId = crypto.randomUUID();
@@ -99,6 +100,7 @@ export async function startWorkoutSession(input: {
     conditioningStatus: input.conditioningBlock ? "pending" : undefined,
     conditioningRoundsCompleted: 0,
     intervalProtocol: input.intervalProtocol,
+    citationRuleIds: input.citationRuleIds,
   };
 
   const sets: LocalExerciseSet[] = [];
@@ -109,6 +111,12 @@ export async function startWorkoutSession(input: {
     for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
       const setRole = exercise.setRoles?.[setNumber - 1];
       const isMaxAttempt = setRole === "max_attempt";
+      const isWarmup = setRole === "warmup";
+      // Prefill first working set (or max attempt in 1RM tests). Skip warmups.
+      const applyPrefill =
+        prefill != null &&
+        !isWarmup &&
+        (isMaxAttempt || setNumber === 1 || setRole == null);
       sets.push({
         clientId: crypto.randomUUID(),
         sessionClientId: clientId,
@@ -117,9 +125,13 @@ export async function startWorkoutSession(input: {
         exerciseName: exercise.name,
         setNumber,
         setRole,
-        weightKg: isMaxAttempt ? prefill?.weightKg : undefined,
-        reps: isMaxAttempt ? (prefill?.reps ?? 1) : undefined,
-        durationMs: prefill?.durationMs,
+        weightKg: applyPrefill ? prefill.weightKg : undefined,
+        reps: applyPrefill
+          ? isMaxAttempt
+            ? (prefill.reps ?? 1)
+            : prefill.reps
+          : undefined,
+        durationMs: applyPrefill ? prefill.durationMs : undefined,
         completed: false,
         updatedAt: timestamp,
         synced: false,

@@ -13,6 +13,7 @@ import { DiaryQuickLog } from "@/components/nutrition/diary-quick-log";
 import { EditEntrySheet } from "@/components/nutrition/edit-entry-sheet";
 import { formatNutritionDayShort } from "@/lib/nutrition/date-param";
 import type { DailyNutritionSummary, MacroQuickEntry, NutritionLogRow } from "@/lib/nutrition/types";
+import { useOfflineStatus } from "@/hooks/use-online-status";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoggedEntries } from "./logged-entries";
@@ -68,6 +69,7 @@ export function NutritionDiary({
 }: NutritionDiaryProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const offline = useOfflineStatus();
   const [tab, setTab] = useState<DiaryTab>(() =>
     parseTab(searchParams.get("tab"))
   );
@@ -150,6 +152,13 @@ export function NutritionDiary({
   return (
     <>
       <div className={appSectionStack}>
+        {offline && (
+          <p className="rounded-xl border border-forge-steel/30 bg-forge-steel/5 px-4 py-3 text-sm text-forge-steel">
+            You&apos;re offline — logging and food search need a connection.
+            Browse whole foods in Build Meal still works on-device.
+          </p>
+        )}
+
         <NutritionDatePicker
           selectedDate={selectedDate}
           todayIso={todayIso}

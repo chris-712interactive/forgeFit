@@ -1228,6 +1228,7 @@ export function ActiveWorkout({
           <WorkoutEquipmentOverviewCard
             sessionName={session.sessionName}
             equipment={sessionEquipment}
+            citationRuleIds={session.citationRuleIds}
           />
         );
       case "warmup":

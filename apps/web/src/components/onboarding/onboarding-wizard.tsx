@@ -361,22 +361,23 @@ export function OnboardingWizard() {
                   />
                 ))}
               </div>
+              <p className="mt-4 mb-2 text-sm text-forge-muted">
+                Recovery tools{" "}
+                <span className="font-normal text-forge-muted/80">(optional)</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {RECOVERY_EQUIPMENT.map((item) => (
+                  <Chip
+                    key={item.value}
+                    label={item.label}
+                    selected={
+                      data.recovery_equipment?.includes(item.value) ?? false
+                    }
+                    onClick={() => toggleItem("recovery_equipment", item.value)}
+                  />
+                ))}
+              </div>
             </>
-          )}
-
-          {currentStepId === "recovery" && (
-            <div className="grid grid-cols-2 gap-2">
-              {RECOVERY_EQUIPMENT.map((item) => (
-                <Chip
-                  key={item.value}
-                  label={item.label}
-                  selected={
-                    data.recovery_equipment?.includes(item.value) ?? false
-                  }
-                  onClick={() => toggleItem("recovery_equipment", item.value)}
-                />
-              ))}
-            </div>
           )}
 
           {currentStepId === "time" && (
@@ -412,25 +413,22 @@ export function OnboardingWizard() {
             </>
           )}
 
-          {currentStepId === "why" && (
+          {currentStepId === "finish" && (
             <>
               <textarea
                 value={data.why_started ?? ""}
                 onChange={(e) => update({ why_started: e.target.value })}
-                rows={5}
+                rows={4}
                 maxLength={500}
                 placeholder="I want to feel stronger, more confident, and show up for myself every day…"
                 className="w-full resize-none rounded-xl border border-[var(--border)] bg-forge-surface-raised p-4 text-forge-text outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember"
               />
               <p className="mt-2 text-right text-xs text-forge-muted">
-                {(data.why_started?.length ?? 0)}/500
+                {(data.why_started?.length ?? 0)}/500 · at least 10 characters
               </p>
-            </>
-          )}
-
-          {currentStepId === "finish" && (
-            <>
-              <PwaInstallPrompt showAfterOnboarding />
+              <div className="mt-6">
+                <PwaInstallPrompt showAfterOnboarding />
+              </div>
               <div className="mt-6">
                 <p className="text-sm font-medium text-forge-text">
                   What were you using before?{" "}
@@ -455,7 +453,7 @@ export function OnboardingWizard() {
                 </div>
               </div>
               <p className="mt-4 text-sm text-forge-muted">
-                Tap finish to generate your program.
+                Tap finish to generate your program and start Day 1.
               </p>
             </>
           )}

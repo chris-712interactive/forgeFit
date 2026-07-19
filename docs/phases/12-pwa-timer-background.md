@@ -1,6 +1,6 @@
 # Phase 12 — PWA Timer Accuracy (Background / Minimized)
 
-**Status:** In progress (12A + 12B implemented)  
+**Status:** 12A + 12B code complete — device QA remaining; 12C deferred  
 **Depends on:** Phase 3 (workout timers)  
 **Branch:** `cursor/pwa-timer-background-8ab8`
 
@@ -196,6 +196,8 @@ Service worker already handles `push` + `notificationclick` in `apps/web/src/app
 | Permission UX | One-time prompt in rest timer footer |
 | Resume notification | If deadline passed and permission granted |
 | Android `showTrigger` spike | Feature-detect; ship only if stable |
+
+**Deferred** until after installed-PWA QA for 12A/12B. Not required to mark Phase 12 core complete.
 
 ---
 

@@ -61,9 +61,7 @@ export function buildOnboardingSteps(
     "measurements",
     "body_comp",
     "equipment",
-    "recovery",
     "time",
-    "why",
     "finish"
   );
 
@@ -99,7 +97,7 @@ export function stepTitle(stepId: OnboardingStepId): string {
     case "body_comp":
       return "Body composition";
     case "equipment":
-      return "What equipment do you have?";
+      return "Gear & recovery";
     case "recovery":
       return "Recovery tools";
     case "time":
@@ -107,7 +105,7 @@ export function stepTitle(stepId: OnboardingStepId): string {
     case "why":
       return "Why did you start?";
     case "finish":
-      return "Almost done";
+      return "Your why & install";
     default:
       return "";
   }
@@ -142,7 +140,7 @@ export function stepSubtitle(stepId: OnboardingStepId): string {
     case "body_comp":
       return "We tailor calories from evidence — not generic cuts.";
     case "equipment":
-      return "Select everything available to you.";
+      return "Select everything available — recovery tools are optional.";
     case "recovery":
       return "Optional — we'll weave these into your plan.";
     case "time":
@@ -150,7 +148,7 @@ export function stepSubtitle(stepId: OnboardingStepId): string {
     case "why":
       return "We'll remind you of this when you need it most.";
     case "finish":
-      return "Add ForgeRep to your home screen for faster access and offline workouts — optional.";
+      return "Tell us why you started, then optionally add ForgeRep to your home screen.";
     default:
       return "";
   }
@@ -212,7 +210,7 @@ export function canProceedStep(
     case "why":
       return (data.why_started?.trim().length ?? 0) >= 10;
     case "finish":
-      return true;
+      return (data.why_started?.trim().length ?? 0) >= 10;
     default:
       return false;
   }

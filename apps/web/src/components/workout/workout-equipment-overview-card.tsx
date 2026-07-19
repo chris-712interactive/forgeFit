@@ -1,15 +1,19 @@
 "use client";
 
+import { EvidenceExplainerLink } from "@/components/evidence/evidence-explainer-link";
+import { buildEvidenceHref } from "@/lib/evidence/present";
 import type { SessionEquipmentEntry } from "@/lib/workouts/session-equipment";
 
 interface WorkoutEquipmentOverviewCardProps {
   sessionName: string;
   equipment: SessionEquipmentEntry[];
+  citationRuleIds?: string[];
 }
 
 export function WorkoutEquipmentOverviewCard({
   sessionName,
   equipment,
+  citationRuleIds = [],
 }: WorkoutEquipmentOverviewCardProps) {
   return (
     <section className="rounded-2xl border border-forge-steel/30 bg-forge-steel/5 p-4 sm:p-5">
@@ -42,6 +46,26 @@ export function WorkoutEquipmentOverviewCard({
             </li>
           ))}
         </ul>
+      )}
+
+      {citationRuleIds.length > 0 && (
+        <div className="mt-4 rounded-xl border border-forge-gold/20 bg-forge-gold/5 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
+            Why this session
+          </p>
+          <p className="mt-1 text-sm text-forge-muted">
+            Volume, rest, and recovery choices here are tied to evidence-backed
+            rules — not guesswork.
+          </p>
+          <div className="mt-2">
+            <EvidenceExplainerLink
+              href={buildEvidenceHref({ related: citationRuleIds })}
+              label={`See ${citationRuleIds.length} evidence rule${
+                citationRuleIds.length === 1 ? "" : "s"
+              }`}
+            />
+          </div>
+        </div>
       )}
     </section>
   );

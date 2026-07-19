@@ -9,6 +9,7 @@ import { NutritionDatePicker } from "@/components/nutrition/nutrition-date-picke
 import type { MealType } from "@/lib/nutrition/meal-types";
 import type { DailyNutritionSummary, MacroQuickEntry } from "@/lib/nutrition/types";
 import { buildNutritionHref } from "@/lib/nutrition/date-param";
+import { useOfflineStatus } from "@/hooks/use-online-status";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MacroPresets } from "./macro-presets";
@@ -37,6 +38,7 @@ export function LogMacrosScreen({
   savedMealsUnlocked = false,
 }: LogMacrosScreenProps) {
   const router = useRouter();
+  const offline = useOfflineStatus();
   const [mealsVersion, setMealsVersion] = useState(0);
   const [formPrefill, setFormPrefill] = useState<SaveMealDraft | undefined>();
   const [formKey, setFormKey] = useState(0);
@@ -88,6 +90,12 @@ export function LogMacrosScreen({
             />
           </div>
         </section>
+
+        {offline && (
+          <p className="rounded-xl border border-forge-steel/30 bg-forge-steel/5 px-4 py-3 text-sm text-forge-steel">
+            You&apos;re offline — saving meals and quick-log need a connection.
+          </p>
+        )}
 
         {savedMealsUnlocked && (
           <SavedMealsQuickLog
