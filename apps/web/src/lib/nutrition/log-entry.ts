@@ -107,6 +107,8 @@ export interface MacroLogPatchInput {
   proteinG?: number;
   carbsG?: number;
   fatG?: number;
+  lineItems?: MealLineItem[] | null;
+  servingsLogged?: number | null;
 }
 
 export async function patchMacroLogEntry(

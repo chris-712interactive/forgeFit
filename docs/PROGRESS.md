@@ -11,11 +11,44 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-19 |
-| **Last session focus** | Value integrity Wave 3 remainder + Wave 4 docs/ops handoff |
+| **Last session focus** | Meal log quantity adjust (servings + ingredient qty) |
 
 ---
 
 ## Session Log
+
+### 2026-07-19 — Meal log quantity adjust (servings + ingredients)
+
+**What was done**
+
+- **Servings stepper is whole numbers** (1→2→3) via `adjustServingCount` — no more fractional ladder for meal-level portions
+- **Log meal sheet:** prominent servings control for all meals (including macro-only); per-ingredient qty steppers unchanged
+- **Edit entry sheet:** servings + per-ingredient qty editing; macros recalculate; PATCH persists `line_items` / `servings_logged`
+- **Log again:** opens adjust sheet (not instant re-post) so qty can change before logging
+- **Meal builder:** “Servings to log today” on save step for Save & log
+- Quick-log chips include macro-only saved meals
+
+**What's next**
+
+- Continue Phase 11/12 ops handoff (migrations apply, PWA timer QA)
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `packages/nutrition-core/src/whole-foods.ts`
+- `apps/web/src/components/nutrition/log-meal-sheet.tsx`
+- `apps/web/src/components/nutrition/edit-entry-sheet.tsx`
+- `apps/web/src/components/nutrition/logged-entries.tsx`
+- `apps/web/src/components/nutrition/meal-builder.tsx`
+- `apps/web/src/components/nutrition/saved-meals-quick-log.tsx`
+- `apps/web/src/lib/nutrition/log-entry.ts`
+- `apps/web/src/app/api/nutrition/logs/[id]/route.ts`
+- `docs/PROGRESS.md`, `docs/phases/04-nutrition.md`
+
+---
 
 ### 2026-07-19 — Add Gruyère cheese to whole-foods KB
 

@@ -1,9 +1,12 @@
 "use client";
 
 import {
+  adjustServingCount,
   buildLineItem,
   formatLineItemPortion,
+  formatQuantity,
   rescaleLineItem,
+  scaleLineItems,
   sumLineItems,
   WHOLE_FOOD_GROUPS,
   WHOLE_FOOD_GROUP_LABELS,
@@ -81,6 +84,7 @@ export function MealBuilder({
   const [categories, setCategories] = useState<SavedMealCategory[]>([]);
   const [lineItems, setLineItems] = useState<MealLineItem[]>([]);
   const [servings, setServings] = useState(1);
+  const [servingsToLog, setServingsToLog] = useState(1);
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState<BuilderFoodFilter>("all");
   const [mealType, setMealType] = useState<MealType>(() => getPreferredMealType());
@@ -106,6 +110,7 @@ export function MealBuilder({
       setLineItems([]);
       setServings(1);
     }
+    setServingsToLog(1);
     setQuery("");
     setGroupFilter("all");
     setMealType(getPreferredMealType());
@@ -235,19 +240,30 @@ export function MealBuilder({
 
       if (andLog) {
         const perServing = getPerServingTotals(meal);
+        const loggedItems = scaleLineItems(
+          getPerServingLineItems(meal),
+          servingsToLog
+        );
+        const loggedTotals = sumLineItems(loggedItems);
         await postMacroLogEntry({
           foodName: trimmedName,
-          calories: perServing.calories,
-          proteinG: perServing.proteinG,
-          carbsG: perServing.carbsG,
-          fatG: perServing.fatG,
+          calories: loggedTotals.calories || Math.round(perServing.calories * servingsToLog),
+          proteinG:
+            loggedTotals.proteinG ||
+            Math.round(perServing.proteinG * servingsToLog * 10) / 10,
+          carbsG:
+            loggedTotals.carbsG ||
+            Math.round(perServing.carbsG * servingsToLog * 10) / 10,
+          fatG:
+            loggedTotals.fatG ||
+            Math.round(perServing.fatG * servingsToLog * 10) / 10,
           loggedDate,
           servingDescription:
             meal.servings > 1
-              ? `1 serving (${formatServingsLabel(meal.servings)} recipe)`
-              : "1 serving",
-          lineItems: getPerServingLineItems(meal),
-          servingsLogged: 1,
+              ? `${formatQuantity(servingsToLog)} serving${servingsToLog === 1 ? "" : "s"} (${formatServingsLabel(meal.servings)} recipe)`
+              : `${formatQuantity(servingsToLog)} serving${servingsToLog === 1 ? "" : "s"}`,
+          lineItems: loggedItems,
+          servingsLogged: servingsToLog,
           mealType,
         });
         router.refresh();
@@ -345,6 +361,8 @@ export function MealBuilder({
               totals={totals}
               servings={servings}
               onServingsChange={setServings}
+              servingsToLog={servingsToLog}
+              onServingsToLogChange={setServingsToLog}
               categories={categories}
               categoryId={categoryId}
               selectedCategory={selectedCategory}
@@ -383,7 +401,11 @@ export function MealBuilder({
                 onClick={() => void handleSave(true)}
                 className="flex min-h-[52px] items-center justify-center rounded-xl bg-forge-ember font-display text-sm font-bold text-white disabled:opacity-50"
               >
-                {submitting ? "Saving…" : "Save & log today"}
+                {submitting
+                  ? "Saving…"
+                  : servingsToLog === 1
+                    ? "Save & log today"
+                    : `Save & log ${formatQuantity(servingsToLog)} servings`}
               </button>
               <button
                 type="button"
@@ -635,6 +657,8 @@ function StepSave({
   totals,
   servings,
   onServingsChange,
+  servingsToLog,
+  onServingsToLogChange,
   categories,
   categoryId,
   selectedCategory,
@@ -652,6 +676,8 @@ function StepSave({
   totals: ReturnType<typeof sumLineItems>;
   servings: number;
   onServingsChange: (value: number) => void;
+  servingsToLog: number;
+  onServingsToLogChange: (value: number) => void;
   categories: SavedMealCategory[];
   categoryId: string;
   selectedCategory: SavedMealCategory | null;
@@ -674,6 +700,10 @@ function StepSave({
     createdAt: "",
   };
   const perServing = getPerServingTotals(previewMeal);
+  const logPreview = {
+    calories: Math.round(perServing.calories * servingsToLog),
+    proteinG: Math.round(perServing.proteinG * servingsToLog * 10) / 10,
+  };
 
   return (
     <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
@@ -728,6 +758,47 @@ function StepSave({
             className={`${inputClass} mt-2 text-sm`}
           />
         </label>
+      </section>
+
+      <section className="rounded-xl border border-forge-ember/40 bg-forge-ember/5 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-forge-muted">
+              Servings to log today
+            </p>
+            <p className="mt-1 text-xs text-forge-muted">
+              How many portions you&apos;re eating now
+            </p>
+            <p className="mt-2 text-sm font-medium text-forge-text">
+              {logPreview.calories} kcal · {logPreview.proteinG}g P
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-[var(--border)] bg-forge-surface-raised">
+            <button
+              type="button"
+              onClick={() =>
+                onServingsToLogChange(adjustServingCount(servingsToLog, -1))
+              }
+              className="flex h-11 w-11 items-center justify-center text-lg text-forge-muted hover:text-forge-text"
+              aria-label="Decrease servings to log"
+            >
+              −
+            </button>
+            <span className="min-w-[2.5rem] text-center text-base font-bold tabular-nums text-forge-text">
+              {formatQuantity(servingsToLog)}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                onServingsToLogChange(adjustServingCount(servingsToLog, 1))
+              }
+              className="flex h-11 w-11 items-center justify-center text-lg text-forge-muted hover:text-forge-text"
+              aria-label="Increase servings to log"
+            >
+              +
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-xl border border-[var(--border)] bg-forge-surface p-4">

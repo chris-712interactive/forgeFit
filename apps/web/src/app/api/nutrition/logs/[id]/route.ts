@@ -15,6 +15,23 @@ const patchLogSchema = z.object({
   proteinG: z.number().min(0).optional(),
   fatG: z.number().min(0).optional(),
   carbsG: z.number().min(0).optional(),
+  lineItems: z
+    .array(
+      z.object({
+        id: z.string(),
+        foodId: z.string(),
+        foodName: z.string(),
+        servingLabel: z.string(),
+        quantity: z.number().positive(),
+        calories: z.number().min(0),
+        proteinG: z.number().min(0),
+        carbsG: z.number().min(0),
+        fatG: z.number().min(0),
+      })
+    )
+    .nullable()
+    .optional(),
+  servingsLogged: z.number().positive().nullable().optional(),
 });
 
 export async function DELETE(_request: Request, context: RouteContext) {
@@ -83,6 +100,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (body.proteinG != null) updates.protein_g = body.proteinG;
   if (body.fatG != null) updates.fat_g = body.fatG;
   if (body.carbsG != null) updates.carbs_g = body.carbsG;
+  if (body.lineItems !== undefined) updates.line_items = body.lineItems;
+  if (body.servingsLogged !== undefined) {
+    updates.servings_logged = body.servingsLogged;
+  }
 
   const { data, error } = await supabase
     .from("nutrition_logs")

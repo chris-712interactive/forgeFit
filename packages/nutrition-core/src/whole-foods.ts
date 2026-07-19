@@ -525,12 +525,18 @@ export function perServingLineItems(
   return scaleLineItems(items, 1 / servings);
 }
 
-/** Fractional serving stepper for meal-level portion (uses same ladder as foods). */
+const MAX_SERVING_COUNT = 24;
+
+/**
+ * Whole-number serving stepper for "how many portions to log" (1 → 2 → 3).
+ * Ingredient quantity still uses the fractional ladder via `adjustQuantity`.
+ */
 export function adjustServingCount(
   current: number,
   direction: 1 | -1
 ): number {
-  return adjustQuantity(current, "eggs-large", direction);
+  const whole = Math.max(1, Math.round(current));
+  return Math.min(MAX_SERVING_COUNT, Math.max(1, whole + direction));
 }
 
 function round1(value: number): number {

@@ -4,7 +4,6 @@ import {
   formatMacroLine,
   getPerServingTotals,
   loadSavedMeals,
-  mealHasLineItems,
   type SavedMeal,
 } from "@/lib/nutrition/saved-meals";
 import { useEffect, useMemo, useState } from "react";
@@ -27,7 +26,7 @@ export function SavedMealsQuickLog({
   }, [refreshKey]);
 
   const quickMeals = useMemo(
-    () => meals.filter((meal) => mealHasLineItems(meal)).slice(0, 8),
+    () => meals.slice(0, 8),
     [meals]
   );
 

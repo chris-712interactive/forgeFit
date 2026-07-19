@@ -1,25 +1,22 @@
 "use client";
 
-import { formatLineItemPortion } from "@forgefit/nutrition-core";
-import { postMacroLogEntry } from "@/lib/nutrition/log-entry";
+import { formatLineItemPortion, scaleLineItems } from "@forgefit/nutrition-core";
 import {
   isNutritionFavorite,
   loadNutritionFavorites,
   toggleNutritionFavorite,
 } from "@/lib/nutrition/favorites";
-import {
-  groupEntriesByMeal,
-  isMealType,
-} from "@/lib/nutrition/meal-types";
+import { groupEntriesByMeal } from "@/lib/nutrition/meal-types";
 import {
   computeMealBudgets,
   getMealBudget,
 } from "@/lib/nutrition/meal-budgets";
 import { saveCustomFood } from "@/lib/nutrition/custom-foods";
 import type { MacroQuickEntry, NutritionLogRow } from "@/lib/nutrition/types";
+import type { SavedMeal } from "@/lib/nutrition/saved-meals";
 import type { NutritionTargets } from "@forgefit/program-engine";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LogMealSheet } from "./log-meal-sheet";
 
 interface LoggedEntriesProps {
   entries: NutritionLogRow[];
@@ -33,6 +30,33 @@ interface LoggedEntriesProps {
   emptyMessage?: string;
 }
 
+/** Convert a prior log into a temporary meal so LogMealSheet can adjust qty. */
+function entryToLoggableMeal(entry: NutritionLogRow): SavedMeal {
+  const lineItems = entry.lineItems ?? [];
+  const loggedServings = Math.max(
+    1,
+    Math.round(entry.servingsLogged ?? entry.quantity ?? 1)
+  );
+  const perUnitItems =
+    lineItems.length > 0 && loggedServings > 1
+      ? scaleLineItems(lineItems, 1 / loggedServings)
+      : lineItems;
+
+  return {
+    id: `relog-${entry.id}`,
+    name: entry.foodName,
+    categoryId: "favorites",
+    // Treat previously logged amount as recipe ×1 so adjust starts from that unit.
+    lineItems: perUnitItems,
+    servings: 1,
+    calories: Math.round(entry.calories / loggedServings),
+    proteinG: Math.round((entry.proteinG / loggedServings) * 10) / 10,
+    carbsG: Math.round((entry.carbsG / loggedServings) * 10) / 10,
+    fatG: Math.round((entry.fatG / loggedServings) * 10) / 10,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export function LoggedEntries({
   entries,
   loggedDate,
@@ -44,39 +68,15 @@ export function LoggedEntries({
   title = "Logged today",
   emptyMessage = "Nothing logged yet. Tap + to log macros or build a meal.",
 }: LoggedEntriesProps) {
-  const router = useRouter();
-  const [loggingAgainId, setLoggingAgainId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<MacroQuickEntry[]>([]);
   const [savedFoodMessage, setSavedFoodMessage] = useState<string | null>(null);
+  const [relogEntry, setRelogEntry] = useState<NutritionLogRow | null>(null);
   const groups = groupEntriesByMeal(entries);
   const mealBudgets = computeMealBudgets(targets);
 
   useEffect(() => {
     setFavorites(loadNutritionFavorites());
   }, [entries]);
-
-  async function handleLogAgain(entry: NutritionLogRow) {
-    setLoggingAgainId(entry.id);
-    try {
-      await postMacroLogEntry({
-        foodName: entry.foodName,
-        calories: entry.calories,
-        proteinG: entry.proteinG,
-        carbsG: entry.carbsG,
-        fatG: entry.fatG,
-        loggedDate,
-        mealType: isMealType(entry.mealType) ? entry.mealType : undefined,
-        servingDescription: entry.servingDescription,
-        lineItems: entry.lineItems ?? undefined,
-        servingsLogged: entry.servingsLogged ?? undefined,
-      });
-      router.refresh();
-    } catch {
-      window.alert("Could not log that entry again. Try again.");
-    } finally {
-      setLoggingAgainId(null);
-    }
-  }
 
   function handleToggleFavorite(entry: NutritionLogRow) {
     const quickEntry: MacroQuickEntry = {
@@ -106,6 +106,11 @@ export function LoggedEntries({
     }
   }
 
+  const relogMeal = relogEntry ? entryToLoggableMeal(relogEntry) : null;
+  const relogServings = relogEntry
+    ? Math.max(1, Math.round(relogEntry.servingsLogged ?? relogEntry.quantity ?? 1))
+    : 1;
+
   const content = (
     <>
       <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
@@ -132,7 +137,6 @@ export function LoggedEntries({
                   key={entry.id}
                   entry={entry}
                   deleting={deletingId === entry.id}
-                  loggingAgain={loggingAgainId === entry.id}
                   pinned={isNutritionFavorite(
                     {
                       foodName: entry.foodName,
@@ -145,7 +149,7 @@ export function LoggedEntries({
                   )}
                   onDelete={() => onDelete(entry.id)}
                   onEdit={() => onEdit(entry)}
-                  onLogAgain={() => void handleLogAgain(entry)}
+                  onLogAgain={() => setRelogEntry(entry)}
                   onToggleFavorite={() => handleToggleFavorite(entry)}
                   onSaveAsFood={() => handleSaveAsFood(entry)}
                 />
@@ -154,6 +158,14 @@ export function LoggedEntries({
           ))}
         </div>
       )}
+
+      <LogMealSheet
+        open={relogMeal != null}
+        meal={relogMeal}
+        loggedDate={loggedDate}
+        initialServings={relogServings}
+        onClose={() => setRelogEntry(null)}
+      />
     </>
   );
 
@@ -207,7 +219,6 @@ function MealGroupSection({
 function LoggedEntryCard({
   entry,
   deleting,
-  loggingAgain,
   pinned,
   onDelete,
   onEdit,
@@ -217,7 +228,6 @@ function LoggedEntryCard({
 }: {
   entry: NutritionLogRow;
   deleting: boolean;
-  loggingAgain: boolean;
   pinned: boolean;
   onDelete: () => void;
   onEdit: () => void;
@@ -283,8 +293,7 @@ function LoggedEntryCard({
 
       <div className="mt-3 flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
         <ActionButton
-          label={loggingAgain ? "…" : "Log again"}
-          disabled={loggingAgain}
+          label="Log again"
           onClick={onLogAgain}
           variant="primary"
         />
