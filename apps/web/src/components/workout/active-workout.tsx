@@ -18,15 +18,20 @@ import {
 } from "@forgefit/coaching";
 import type { ExperienceLevel } from "@/lib/types/profile";
 import { publishWorkoutPrWin } from "@/app/actions/gamification";
+import { saveUserOneRepMax } from "@/app/actions/one-rep-maxes";
+import { readActionError } from "@/lib/auth/action-result";
 import { PreWorkoutHypeBanner } from "@/components/coaching/pre-workout-hype-banner";
 import { CommunityRankStrip } from "@/components/coaching/community-rank-strip";
 import { WorkoutReadinessStrip } from "@/components/workout/workout-readiness-strip";
 import type { WorkoutReadinessContext } from "@/lib/workouts/device-metrics-types";
 import { PrCelebrationModal } from "@/components/coaching/pr-celebration-modal";
+import { MaxTestResultModal } from "@/components/workout/max-test-result-modal";
 import {
   detectSetPr,
   type DetectedWorkoutPr,
 } from "@/lib/coaching/detect-pr";
+import { isMaxTestSession } from "@/lib/progression/max-test";
+import { resolveOneRepMaxLabel } from "@/lib/progression/one-rep-max-lifts";
 import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
 import {
   buildWorkoutSteps,
@@ -158,7 +163,16 @@ export function ActiveWorkout({
   const [celebrationPr, setCelebrationPr] = useState<DetectedWorkoutPr | null>(
     null
   );
+  const [prSavePending, setPrSavePending] = useState(false);
+  const [prSaveMessage, setPrSaveMessage] = useState<string | null>(null);
+  const [maxTestResult, setMaxTestResult] = useState<{
+    exerciseId: string;
+    exerciseLabel: string;
+    weightKg: number;
+    saved: boolean;
+  } | null>(null);
   const sessionBestE1rmRef = useRef<Map<string, number>>(new Map());
+  const maxTestMode = session ? isMaxTestSession(session.sessionName) : false;
   const offline = useOfflineStatus();
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
@@ -673,8 +687,34 @@ export function ActiveWorkout({
       const exercise = session.exercises.find(
         (e) => e.exerciseId === setRow?.exerciseId
       );
-      if (exercise?.restSeconds && !intervalRun) {
+      if (exercise?.restSeconds && !intervalRun && !maxTestMode) {
         startRestTimer(exercise.restSeconds);
+      }
+
+      if (
+        maxTestMode &&
+        setRow &&
+        updated?.weightKg != null &&
+        updated.weightKg > 0
+      ) {
+        const recordedWeightKg = updated.weightKg;
+        void (async () => {
+          const result = await saveUserOneRepMax(
+            setRow.exerciseId,
+            recordedWeightKg,
+            "max_test"
+          );
+          const actionError = readActionError(result);
+          setMaxTestResult({
+            exerciseId: setRow.exerciseId,
+            exerciseLabel: resolveOneRepMaxLabel(
+              setRow.exerciseId,
+              setRow.exerciseName
+            ),
+            weightKg: recordedWeightKg,
+            saved: !actionError,
+          });
+        })();
       }
 
       if (
@@ -683,7 +723,8 @@ export function ActiveWorkout({
         updated?.weightKg != null &&
         updated.reps != null &&
         updated.weightKg > 0 &&
-        updated.reps > 0
+        updated.reps > 0 &&
+        !maxTestMode
       ) {
         const historicalBest =
           coaching.priorBestE1rmKg[setRow.exerciseId] ?? 0;
@@ -982,13 +1023,15 @@ export function ActiveWorkout({
               Exercise {step.exerciseIndex + 1} of {session.exercises.length}
             </p>
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setSwapSheetOpen(true)}
-                className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-gold/30 bg-forge-gold/10 px-3 text-xs font-semibold text-forge-gold transition-colors hover:border-forge-gold/50"
-              >
-                Equipment busy?
-              </button>
+              {!maxTestMode && (
+                <button
+                  type="button"
+                  onClick={() => setSwapSheetOpen(true)}
+                  className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-gold/30 bg-forge-gold/10 px-3 text-xs font-semibold text-forge-gold transition-colors hover:border-forge-gold/50"
+                >
+                  Equipment busy?
+                </button>
+              )}
               <Link
                 href={`/exercises/${exercise.exerciseId}?returnTo=${encodeURIComponent(`/workout?active=${clientId}&swapAt=${step.exerciseIndex}`)}`}
                 className="inline-flex min-h-[36px] items-center rounded-lg border border-forge-steel/30 bg-forge-steel/5 px-3 text-xs font-semibold text-forge-steel transition-colors hover:border-forge-ember/40 hover:text-forge-ember"
@@ -1060,6 +1103,7 @@ export function ActiveWorkout({
                   targetReps={timedPrescription}
                   targetTimerSeconds={targetTimerSeconds}
                   isTimerActive={timedTimer?.setClientId === set.clientId}
+                  maxTestMode={maxTestMode}
                   showProgressionHint={Boolean(
                     exercise.progressionNote &&
                       !set.completed &&
@@ -1302,6 +1346,18 @@ export function ActiveWorkout({
         completedSets={completedCount}
         totalSets={totalCount}
       />
+
+      {maxTestMode && (
+        <div className="mb-4 rounded-2xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
+            1RM test
+          </p>
+          <p className="mt-1 text-sm text-forge-muted">
+            Warm up, attempt your max single, then tap Record max. Your result
+            saves to training maxes when you finish online.
+          </p>
+        </div>
+      )}
 
       {session.intervalProtocol && (
         <div className="mb-4 rounded-2xl border border-forge-ember/30 bg-forge-ember/5 px-4 py-3">
@@ -1557,7 +1613,39 @@ export function ActiveWorkout({
             displayName: coaching.displayName,
             unitSystem: unit,
           })}
-          onClose={() => setCelebrationPr(null)}
+          onSaveAsMax={() => {
+            setPrSavePending(true);
+            setPrSaveMessage(null);
+            void (async () => {
+              const result = await saveUserOneRepMax(
+                celebrationPr.exerciseId,
+                celebrationPr.e1rmKg,
+                "log_derived"
+              );
+              const actionError = readActionError(result);
+              setPrSavePending(false);
+              if (actionError) {
+                setPrSaveMessage(actionError);
+                return;
+              }
+              setPrSaveMessage("Saved to your training maxes.");
+            })();
+          }}
+          savePending={prSavePending}
+          saveMessage={prSaveMessage}
+          onClose={() => {
+            setCelebrationPr(null);
+            setPrSaveMessage(null);
+          }}
+        />
+      )}
+
+      {maxTestResult && (
+        <MaxTestResultModal
+          exerciseLabel={maxTestResult.exerciseLabel}
+          weightKg={maxTestResult.weightKg}
+          saved={maxTestResult.saved}
+          onClose={() => setMaxTestResult(null)}
         />
       )}
 

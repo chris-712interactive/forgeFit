@@ -1,12 +1,11 @@
-import { ONE_REP_MAX_LIFTS } from "@/lib/progression/one-rep-max-lifts";
+import { exerciseTracksWeight } from "@forgefit/exercise-db";
+import {
+  ONE_REP_MAX_LIFTS,
+  resolveOneRepMaxLabel,
+} from "@/lib/progression/one-rep-max-lifts";
 import { estimateE1rmFromSet } from "@/lib/progression/one-rep-max";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type { LiftStrengthSeries, StrengthDataPoint } from "./types";
-
-const LIFT_IDS = new Set(ONE_REP_MAX_LIFTS.map((lift) => lift.exerciseId));
-const LIFT_LABELS = new Map(
-  ONE_REP_MAX_LIFTS.map((lift) => [lift.exerciseId, lift.label])
-);
 
 function sessionDate(session: WorkoutSessionRecord): string {
   return (session.completedAt ?? session.startedAt).slice(0, 10);
@@ -39,6 +38,38 @@ function bestE1rmInSession(
   return best;
 }
 
+function buildSeriesForExercise(
+  exerciseId: string,
+  label: string,
+  completed: WorkoutSessionRecord[]
+): LiftStrengthSeries | null {
+  const points: StrengthDataPoint[] = [];
+
+  for (const session of completed) {
+    const e1rm = bestE1rmInSession(session, exerciseId);
+    if (e1rm == null) continue;
+
+    const date = sessionDate(session);
+    const last = points[points.length - 1];
+    if (last?.date === date) {
+      last.e1rmKg = Math.max(last.e1rmKg, Math.round(e1rm * 10) / 10);
+    } else {
+      points.push({
+        date,
+        e1rmKg: Math.round(e1rm * 10) / 10,
+      });
+    }
+  }
+
+  if (points.length === 0) return null;
+
+  return {
+    exerciseId,
+    label,
+    points,
+  };
+}
+
 export function buildStrengthSeries(
   sessions: WorkoutSessionRecord[],
   cutoffIso: string | null
@@ -50,33 +81,43 @@ export function buildStrengthSeries(
     )
     .sort((a, b) => sessionDate(a).localeCompare(sessionDate(b)));
 
-  return ONE_REP_MAX_LIFTS.map((lift) => {
-    const points: StrengthDataPoint[] = [];
+  const exerciseIds = new Set<string>(
+    ONE_REP_MAX_LIFTS.map((lift) => lift.exerciseId)
+  );
 
-    for (const session of completed) {
-      const e1rm = bestE1rmInSession(session, lift.exerciseId);
-      if (e1rm == null) continue;
-
-      const date = sessionDate(session);
-      const last = points[points.length - 1];
-      if (last?.date === date) {
-        last.e1rmKg = Math.max(last.e1rmKg, Math.round(e1rm * 10) / 10);
-      } else {
-        points.push({
-          date,
-          e1rmKg: Math.round(e1rm * 10) / 10,
-        });
+  for (const session of completed) {
+    for (const set of session.sets) {
+      if (
+        set.completed &&
+        exerciseTracksWeight(set.exerciseId) &&
+        set.weightKg != null &&
+        set.weightKg > 0 &&
+        set.reps != null &&
+        set.reps > 0
+      ) {
+        exerciseIds.add(set.exerciseId);
       }
     }
+  }
 
-    return {
-      exerciseId: lift.exerciseId,
-      label: LIFT_LABELS.get(lift.exerciseId) ?? lift.label,
-      points,
-    };
-  }).filter((series) => series.points.length > 0);
+  const featuredIdList = ONE_REP_MAX_LIFTS.map((lift) => lift.exerciseId);
+  const featuredIdSet = new Set<string>(featuredIdList);
+  const orderedIds = [
+    ...featuredIdList.filter((id) => exerciseIds.has(id)),
+    ...[...exerciseIds].filter((id) => !featuredIdSet.has(id)).sort(),
+  ];
+
+  return orderedIds
+    .map((exerciseId) =>
+      buildSeriesForExercise(
+        exerciseId,
+        resolveOneRepMaxLabel(exerciseId),
+        completed
+      )
+    )
+    .filter((series): series is LiftStrengthSeries => series != null);
 }
 
 export function isTrackedLift(exerciseId: string): boolean {
-  return LIFT_IDS.has(exerciseId as never);
+  return exerciseTracksWeight(exerciseId);
 }

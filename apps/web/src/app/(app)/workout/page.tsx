@@ -48,13 +48,20 @@ export default async function WorkoutPage() {
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
       };
-  const [oneRepMaxes, coachingFeatures, deviceMetricsByClientId, readiness, integrationStatuses, spotifyStatus] = userId
+  const oneRepMaxes = userId
+    ? await getUserOneRepMaxes(userId)
+    : { rows: [], tableReady: true };
+  const declaredE1rmKg = Object.fromEntries(
+    userOneRepMaxMap(oneRepMaxes.rows)
+  );
+
+  const [coachingFeatures, deviceMetricsByClientId, readiness, integrationStatuses, spotifyStatus] = userId
     ? await Promise.all([
-        getUserOneRepMaxes(userId),
         getWorkoutCoachingFeatures(
           userId,
           subscription,
-          serverSessionsResult.records
+          serverSessionsResult.records,
+          declaredE1rmKg
         ),
         getWorkoutDeviceMetricsByClientIds(
           userId,
@@ -64,14 +71,13 @@ export default async function WorkoutPage() {
         listIntegrationStatuses(userId),
         getSpotifyPublicStatus(userId),
       ])
-    : [{ rows: [], tableReady: true }, null, new Map(), null, [], { connected: false }];
+    : [null, new Map(), null, [], { connected: false }];
 
   const fitbitConnected =
     integrationStatuses.find((row) => row.provider === "fitbit")?.connected ===
     true;
   const spotifyConnected = spotifyStatus.connected;
 
-  const declaredE1rmKg = userOneRepMaxMap(oneRepMaxes.rows);
   const userEquipment = userId ? await getUserEquipment(userId) : [];
   const templatesResult = userId
     ? await listWorkoutTemplatesForUser(userId)
@@ -97,7 +103,7 @@ export default async function WorkoutPage() {
       bodyweightKg={
         profile?.weight_kg ? Number(profile.weight_kg) : undefined
       }
-      declaredE1rmKg={Object.fromEntries(declaredE1rmKg)}
+      declaredE1rmKg={declaredE1rmKg}
       coachingFeatures={coachingFeatures}
       deviceMetricsByClientId={deviceMetricsByClientId}
       fitbitConnected={fitbitConnected}

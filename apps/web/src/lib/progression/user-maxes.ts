@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { ONE_REP_MAX_EXERCISE_IDS } from "./one-rep-max-lifts";
+import type { OneRepMaxSource } from "./one-rep-max-source";
 
 export interface UserOneRepMaxRow {
   exerciseId: string;
   weightKg: number;
   updatedAt: string;
+  source?: OneRepMaxSource;
 }
 
 export interface UserOneRepMaxesResult {
@@ -27,9 +28,9 @@ export async function getUserOneRepMaxes(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_one_rep_maxes")
-    .select("exercise_id, weight_kg, updated_at")
+    .select("exercise_id, weight_kg, updated_at, source")
     .eq("user_id", userId)
-    .in("exercise_id", ONE_REP_MAX_EXERCISE_IDS);
+    .order("updated_at", { ascending: false });
 
   if (error) {
     return { rows: [], tableReady: !isTableMissing(error) };
@@ -41,6 +42,7 @@ export async function getUserOneRepMaxes(
       exerciseId: row.exercise_id as string,
       weightKg: Number(row.weight_kg),
       updatedAt: row.updated_at as string,
+      source: (row.source as OneRepMaxSource | undefined) ?? "user_declared",
     })),
   };
 }

@@ -51,7 +51,7 @@ export function StrengthProgressionChart({
   if (series.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center text-sm text-forge-muted">
-        Log working sets on compound lifts to see estimated 1RM trends.
+        Log working sets or test a 1RM to see estimated max trends.
       </div>
     );
   }

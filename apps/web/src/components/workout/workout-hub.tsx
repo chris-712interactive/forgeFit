@@ -69,6 +69,7 @@ import {
   CustomWorkoutBuilder,
   type CustomWorkoutDraft,
 } from "./custom-workout-builder";
+import { MaxTestLauncher } from "./max-test-launcher";
 import { AssignedCustomWorkoutCard } from "./assigned-custom-workout-card";
 import {
   GRAVITY_WEEK1_TEMPLATE_NAMES,
@@ -209,6 +210,7 @@ export function WorkoutHub({
   const [finishRankDelta, setFinishRankDelta] =
     useState<LeaderboardRankDelta | null>(null);
   const [customBuilderOpen, setCustomBuilderOpen] = useState(false);
+  const [maxTestOpen, setMaxTestOpen] = useState(false);
   const [customBuilderDraft, setCustomBuilderDraft] =
     useState<CustomWorkoutDraft | null>(null);
   const [installingGravity, setInstallingGravity] = useState(false);
@@ -1080,6 +1082,23 @@ export function WorkoutHub({
           </section>
         )}
 
+        <section className="rounded-2xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
+            Training maxes
+          </p>
+          <p className="mt-1 text-sm text-forge-muted">
+            Attempt a true one-rep max for any weighted exercise and save it to
+            your profile for smarter load prescriptions.
+          </p>
+          <button
+            type="button"
+            onClick={() => setMaxTestOpen(true)}
+            className="mt-3 min-h-[44px] w-full rounded-xl border border-forge-gold/40 bg-forge-surface px-4 py-2 text-sm font-semibold text-forge-gold hover:border-forge-gold"
+          >
+            Test 1RM
+          </button>
+        </section>
+
         <CustomWorkoutCard
           canUseCustomWorkouts={canCustomWorkouts}
           templateCount={workoutTemplates.length}
@@ -1316,6 +1335,20 @@ export function WorkoutHub({
           </section>
         )}
       </div>
+
+      {maxTestOpen && (
+        <MaxTestLauncher
+          open
+          userId={userId}
+          userEquipment={userEquipment}
+          declaredE1rmKg={declaredE1rmKg}
+          onClose={() => setMaxTestOpen(false)}
+          onStarted={(clientId) => {
+            setMaxTestOpen(false);
+            openWorkout(clientId);
+          }}
+        />
+      )}
 
       {customBuilderOpen && (
         <CustomWorkoutBuilder

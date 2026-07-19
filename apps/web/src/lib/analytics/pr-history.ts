@@ -1,12 +1,11 @@
-import { ONE_REP_MAX_LIFTS } from "@/lib/progression/one-rep-max-lifts";
+import { exerciseTracksWeight } from "@forgefit/exercise-db";
+import {
+  ONE_REP_MAX_LIFTS,
+  resolveOneRepMaxLabel,
+} from "@/lib/progression/one-rep-max-lifts";
 import { estimateE1rmFromSet } from "@/lib/progression/one-rep-max";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type { PrRecord } from "./types";
-import { isTrackedLift } from "./strength";
-
-const LIFT_LABELS = new Map(
-  ONE_REP_MAX_LIFTS.map((lift) => [lift.exerciseId, lift.label])
-);
 
 export function buildPrHistory(
   sessions: WorkoutSessionRecord[],
@@ -32,7 +31,7 @@ export function buildPrHistory(
     for (const set of session.sets) {
       if (
         !set.completed ||
-        !isTrackedLift(set.exerciseId) ||
+        !exerciseTracksWeight(set.exerciseId) ||
         set.weightKg == null ||
         set.weightKg <= 0 ||
         set.reps == null ||
@@ -49,9 +48,7 @@ export function buildPrHistory(
         records.push({
           exerciseId: set.exerciseId,
           exerciseName: set.exerciseName,
-          label:
-            (LIFT_LABELS as Map<string, string>).get(set.exerciseId) ??
-            set.exerciseName,
+          label: resolveOneRepMaxLabel(set.exerciseId, set.exerciseName),
           date,
           weightKg: set.weightKg,
           reps: set.reps,

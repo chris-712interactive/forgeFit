@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-14 · **Current phase:** Phase 11–13 in progress (custom workouts, PWA timer, interval protocols)
+**Last updated:** 2026-07-19 · **Current phase:** Phase 11–13 in progress (custom workouts, PWA timer, interval protocols)
 
 ---
 
@@ -155,7 +155,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 4. **All goal types** — fat_loss, bodybuilding, powerlifting, general_strength, recomposition, **sport_performance**, **functional_conditioning**
 5. **Body measurements + calipers** — onboarding + Jackson-Pollock
 6. **Calorie tracking** — USDA/OFF free; Pro+ restaurant quick-log + saved meals
-7. **Sets/reps tracking** — active workout UI, offline-first, RIR autoregulated load progression
+7. **Sets/reps tracking** — active workout UI, offline-first, RIR autoregulated load progression, **1RM test mode** (any weight-tracked exercise), profile training maxes
 8. **Measurement trends + integrations** — charts; Withings/Fitbit/Strava Pro
 9. **Exercise animations + muscle maps** — GIFs + body-highlighter
 10. **Equipment-aware plans** — filter + substitution engine

@@ -23,6 +23,7 @@ interface SetRowProps {
   targetTimerSeconds?: number;
   isTimerActive?: boolean;
   showProgressionHint?: boolean;
+  maxTestMode?: boolean;
   onStartTimer?: (clientId: string) => void;
   onUpdate: (
     clientId: string,
@@ -86,6 +87,7 @@ export function SetRow({
   targetTimerSeconds,
   isTimerActive = false,
   showProgressionHint = false,
+  maxTestMode = false,
   onStartTimer,
   onUpdate,
 }: SetRowProps) {
@@ -128,7 +130,7 @@ export function SetRow({
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="font-display text-sm font-semibold text-forge-text">
-          {isCardio ? "Session" : `Set ${set.setNumber}`}
+          {maxTestMode ? "Max attempt" : isCardio ? "Session" : `Set ${set.setNumber}`}
           {isTimerActive && (
             <span className="ml-2 text-xs font-medium text-forge-ember">
               {isCardio ? "In progress…" : "Holding…"}
@@ -165,6 +167,9 @@ export function SetRow({
             onClick={() =>
               onUpdate(set.clientId, {
                 completed: !set.completed,
+                ...(maxTestMode && !set.completed
+                  ? { reps: 1, rir: 0 }
+                  : {}),
               })
             }
             className={`min-h-[44px] shrink-0 rounded-lg px-4 text-sm font-bold ${
@@ -173,7 +178,7 @@ export function SetRow({
                 : "bg-forge-ember text-white"
             }`}
           >
-            {set.completed ? "Done ✓" : "Log set"}
+            {set.completed ? "Done ✓" : maxTestMode ? "Record max" : "Log set"}
           </button>
         )}
       </div>
@@ -308,6 +313,11 @@ export function SetRow({
           <label className="min-w-0">
             <span className="mb-1 block text-xs font-medium text-forge-muted">
               Reps
+              {maxTestMode && (
+                <span className="ml-1 font-normal text-forge-steel">
+                  · single rep
+                </span>
+              )}
               {showProgressionHint && set.reps != null && (
                 <span className="ml-1 font-normal text-forge-steel">
                   · suggested
@@ -317,16 +327,18 @@ export function SetRow({
             <input
               type="number"
               inputMode="numeric"
-              min={0}
-              placeholder={targetReps}
-              value={set.reps ?? ""}
+              min={maxTestMode ? 1 : 0}
+              max={maxTestMode ? 1 : undefined}
+              placeholder={maxTestMode ? "1" : targetReps}
+              value={maxTestMode ? (set.reps ?? 1) : (set.reps ?? "")}
+              readOnly={maxTestMode}
               onChange={(e) =>
                 onUpdate(set.clientId, {
                   reps:
                     e.target.value === "" ? undefined : Number(e.target.value),
                 })
               }
-              className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember"
+              className="min-h-[48px] w-full min-w-0 rounded-lg border border-[var(--border)] bg-forge-surface-raised px-3 text-base text-forge-text outline-none focus:border-forge-ember read-only:opacity-80"
             />
           </label>
         </div>
@@ -357,38 +369,47 @@ export function SetRow({
         </label>
       )}
 
-      <div className="mt-3">
-        <p className="text-xs font-medium text-forge-muted">
-          How hard was it?{" "}
-          <span className="font-normal text-forge-muted/80">optional</span>
-        </p>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          {effortLevels.map((level) => {
-            const selected = selectedEffort === level.rir;
-            return (
-              <button
-                key={level.label}
-                type="button"
-                onClick={() =>
-                  onUpdate(set.clientId, {
-                    rir: selected ? undefined : level.rir,
-                  })
-                }
-                className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border px-1 text-center transition-colors ${
-                  selected
-                    ? "border-forge-ember bg-forge-ember/15 text-forge-ember"
-                    : "border-[var(--border)] text-forge-muted hover:border-forge-muted"
-                }`}
-              >
-                <span className="text-sm font-semibold">{level.label}</span>
-                <span className="mt-0.5 text-[10px] leading-tight opacity-80">
-                  {level.description}
-                </span>
-              </button>
-            );
-          })}
+      {!maxTestMode && (
+        <div className="mt-3">
+          <p className="text-xs font-medium text-forge-muted">
+            How hard was it?{" "}
+            <span className="font-normal text-forge-muted/80">optional</span>
+          </p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {effortLevels.map((level) => {
+              const selected = selectedEffort === level.rir;
+              return (
+                <button
+                  key={level.label}
+                  type="button"
+                  onClick={() =>
+                    onUpdate(set.clientId, {
+                      rir: selected ? undefined : level.rir,
+                    })
+                  }
+                  className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border px-1 text-center transition-colors ${
+                    selected
+                      ? "border-forge-ember bg-forge-ember/15 text-forge-ember"
+                      : "border-[var(--border)] text-forge-muted hover:border-forge-muted"
+                  }`}
+                >
+                  <span className="text-sm font-semibold">{level.label}</span>
+                  <span className="mt-0.5 text-[10px] leading-tight opacity-80">
+                    {level.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {maxTestMode && (
+        <p className="mt-3 text-xs text-forge-muted">
+          Enter the heaviest weight you successfully lifted for one rep, then tap
+          Record max.
+        </p>
+      )}
     </div>
   );
 }

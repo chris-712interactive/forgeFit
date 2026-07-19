@@ -1,9 +1,5 @@
 import { estimateE1rmFromSet } from "@/lib/progression/one-rep-max";
-import { ONE_REP_MAX_LIFTS } from "@/lib/progression/one-rep-max-lifts";
-
-const LIFT_LABELS = new Map(
-  ONE_REP_MAX_LIFTS.map((lift) => [lift.exerciseId, lift.label])
-);
+import { resolveOneRepMaxLabel } from "@/lib/progression/one-rep-max-lifts";
 
 export interface DetectedWorkoutPr {
   exerciseId: string;
@@ -37,9 +33,7 @@ export function detectSetPr(
   return {
     exerciseId,
     exerciseName,
-    label:
-      LIFT_LABELS.get(exerciseId as (typeof ONE_REP_MAX_LIFTS)[number]["exerciseId"]) ??
-      exerciseName,
+    label: resolveOneRepMaxLabel(exerciseId, exerciseName),
     weightKg,
     reps,
     e1rmKg: Math.round(e1rmKg * 10) / 10,

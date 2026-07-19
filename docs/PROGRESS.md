@@ -10,8 +10,38 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
-| **Last updated** | 2026-07-17 |
-| **Last session focus** | Fix custom workouts stuck in progress after finish |
+| **Last updated** | 2026-07-19 |
+| **Last session focus** | 1RM test mode + per-exercise training max recording |
+
+---
+
+## Session Log
+
+### 2026-07-19 — 1RM test mode and per-exercise training maxes
+
+**What was done**
+
+- Workout hub **Test 1RM** flow: pick any weight-tracked exercise, attempt a single-rep max, auto-save to `user_one_rep_maxes` with `source: max_test`
+- Profile **Training maxes** expanded beyond 8 primary lifts — search and add any exercise; existing primary lifts remain featured
+- PR celebration modal adds **Save as training max** (`source: log_derived`)
+- Declared maxes now merge into PR baseline for in-workout detection
+- Strength analytics and PR history track all weight-tracked exercises with logged data (featured lifts listed first)
+
+**What's next**
+
+- Smoke-test: Test 1RM offline → reconnect → confirm max saved to profile and used in next workout prefill
+- QA PR modal save on non-featured exercises (e.g. dumbbell incline press)
+
+**Files touched**
+
+- `apps/web/src/lib/progression/max-test.ts`, `one-rep-max-source.ts`, `one-rep-max-lifts.ts`, `user-maxes.ts`
+- `apps/web/src/app/actions/one-rep-maxes.ts`
+- `apps/web/src/components/workout/max-test-launcher.tsx`, `max-test-result-modal.tsx`, `workout-hub.tsx`, `active-workout.tsx`, `set-row.tsx`
+- `apps/web/src/components/profile/one-rep-max-setting.tsx`, `coaching/pr-celebration-modal.tsx`
+- `apps/web/src/lib/coaching/workout-features.ts`, `detect-pr.ts`
+- `apps/web/src/lib/analytics/strength.ts`, `pr-history.ts`
+- `apps/web/src/app/(app)/workout/page.tsx`, `components/progress/strength-progression-chart.tsx`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `README.md`
 
 ---
 

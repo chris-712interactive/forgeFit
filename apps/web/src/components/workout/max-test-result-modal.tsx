@@ -1,32 +1,25 @@
 "use client";
 
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
-import type { DetectedWorkoutPr } from "@/lib/coaching/detect-pr";
 import {
   kgToDisplayValue,
   weightUnitLabel,
 } from "@/lib/units/measurements";
 import { useEffect } from "react";
 
-interface PrCelebrationModalProps {
-  pr: DetectedWorkoutPr;
-  headline: string;
-  body: string;
+interface MaxTestResultModalProps {
+  exerciseLabel: string;
+  weightKg: number;
+  saved: boolean;
   onClose: () => void;
-  onSaveAsMax?: () => void;
-  savePending?: boolean;
-  saveMessage?: string | null;
 }
 
-export function PrCelebrationModal({
-  pr,
-  headline,
-  body,
+export function MaxTestResultModal({
+  exerciseLabel,
+  weightKg,
+  saved,
   onClose,
-  onSaveAsMax,
-  savePending = false,
-  saveMessage = null,
-}: PrCelebrationModalProps) {
+}: MaxTestResultModalProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
 
@@ -43,46 +36,35 @@ export function PrCelebrationModal({
       className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 p-4 sm:items-center"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="pr-celebration-title"
+      aria-labelledby="max-test-result-title"
     >
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-forge-gold/40 shadow-2xl">
         <div className="gradient-forge-celebrate px-6 py-8 text-center">
           <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-white/90">
-            Personal record
+            1RM recorded
           </p>
           <h2
-            id="pr-celebration-title"
+            id="max-test-result-title"
             className="font-display mt-3 text-2xl font-bold text-white"
           >
-            {headline}
+            {exerciseLabel}
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/95">{body}</p>
           <p className="mt-4 font-display text-3xl font-bold text-white">
-            ~{kgToDisplayValue(pr.e1rmKg, unit)} {weightLabel} e1RM
+            {kgToDisplayValue(weightKg, unit)} {weightLabel}
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-white/95">
+            {saved
+              ? "Saved to your training maxes and ready for future prescriptions."
+              : "Logged in this workout. Connect online to save it to your profile."}
           </p>
         </div>
-        <div className="space-y-2 bg-forge-surface-raised px-6 py-4">
-          {onSaveAsMax && (
-            <button
-              type="button"
-              disabled={savePending}
-              onClick={onSaveAsMax}
-              className="w-full rounded-xl border border-forge-gold/50 px-4 py-3 text-sm font-semibold text-forge-gold transition-colors hover:border-forge-gold disabled:opacity-60"
-            >
-              {savePending ? "Saving…" : "Save as training max"}
-            </button>
-          )}
-          {saveMessage && (
-            <p className="text-center text-xs text-forge-success" role="status">
-              {saveMessage}
-            </p>
-          )}
+        <div className="bg-forge-surface-raised px-6 py-4">
           <button
             type="button"
             onClick={onClose}
             className="w-full rounded-xl bg-forge-ember px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-forge-glow"
           >
-            Keep forging
+            Done
           </button>
         </div>
       </div>
