@@ -17,6 +17,27 @@
 
 ## Session Log
 
+### 2026-07-19 — Add Gruyère cheese to whole-foods KB
+
+**What was done**
+
+- Added **Gruyère cheese** to curated whole-foods library (`cheese-gruyere`, dairy group, 1 oz serving; USDA-aligned macros)
+
+**What's next**
+
+- Continue Phase 11/12 ops handoff from prior session (migrations apply, PWA timer QA)
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `packages/nutrition-core/src/whole-foods.ts`
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-19 — Value integrity Wave 3 remainder + Wave 4 handoff
 
 **What was done**

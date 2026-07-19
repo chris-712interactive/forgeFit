@@ -128,6 +128,7 @@ export const WHOLE_FOODS: WholeFood[] = [
   { id: "heavy-cream", name: "Heavy cream", group: "dairy", servingLabel: "1 tbsp", macros: { calories: 51, proteinG: 0.5, carbsG: 0.5, fatG: 5.5 }, searchTerms: ["whipping cream"] },
   { id: "half-and-half", name: "Half and half", group: "dairy", servingLabel: "1 tbsp", macros: { calories: 20, proteinG: 0.5, carbsG: 1, fatG: 1.5 } },
   { id: "cheese-swiss", name: "Swiss cheese", group: "dairy", servingLabel: "1 oz", macros: { calories: 108, proteinG: 8, carbsG: 1, fatG: 8 } },
+  { id: "cheese-gruyere", name: "Gruyère cheese", group: "dairy", servingLabel: "1 oz", macros: { calories: 117, proteinG: 8, carbsG: 0, fatG: 9 }, searchTerms: ["gruyere", "swiss alpine"] },
   { id: "cheese-provolone", name: "Provolone cheese", group: "dairy", servingLabel: "1 oz", macros: { calories: 100, proteinG: 7, carbsG: 1, fatG: 7 } },
   { id: "cheese-goat", name: "Goat cheese", group: "dairy", servingLabel: "1 oz", macros: { calories: 75, proteinG: 5, carbsG: 0, fatG: 6 } },
   { id: "cheese-blue", name: "Blue cheese", group: "dairy", servingLabel: "1 oz", macros: { calories: 100, proteinG: 6, carbsG: 1, fatG: 8 } },
