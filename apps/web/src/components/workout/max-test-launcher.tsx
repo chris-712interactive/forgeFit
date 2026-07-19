@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  expandUserEquipment,
   isExerciseAvailable,
   searchCatalog,
   type CatalogExercise,
@@ -10,6 +9,7 @@ import { startWorkoutSession } from "@forgefit/offline-sync";
 import { formatEquipment } from "@/lib/exercises/labels";
 import {
   buildMaxTestSessionName,
+  DEFAULT_MAX_TEST_SET_ROLES,
   isOneRepMaxEligibleExercise,
 } from "@/lib/progression/max-test";
 import { CUSTOM_DAY_INDEX } from "@/lib/workouts/session-source";
@@ -95,10 +95,12 @@ export function MaxTestLauncher({
           {
             exerciseId: exercise.id,
             name: exercise.name,
-            sets: 1,
+            sets: DEFAULT_MAX_TEST_SET_ROLES.length,
             reps: "1",
             restSeconds: 0,
-            notes: "Record your heaviest successful single rep.",
+            setRoles: DEFAULT_MAX_TEST_SET_ROLES,
+            notes:
+              "Log warmup sets, then record your heaviest successful single rep.",
           },
         ],
         setPrefills: priorMax
@@ -152,7 +154,7 @@ export function MaxTestLauncher({
             Test 1RM
           </h2>
           <p className="mt-0.5 text-sm text-forge-muted">
-            Pick a lift, attempt your max, and save it to your profile.
+            Pick a lift, log warmups, attempt your max, and save it to your profile.
           </p>
         </div>
         <button

@@ -30,7 +30,7 @@ import {
   detectSetPr,
   type DetectedWorkoutPr,
 } from "@/lib/coaching/detect-pr";
-import { isMaxTestSession } from "@/lib/progression/max-test";
+import { isMaxTestSession, isMaxTestAttemptSet } from "@/lib/progression/max-test";
 import { resolveOneRepMaxLabel } from "@/lib/progression/one-rep-max-lifts";
 import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
 import {
@@ -44,6 +44,7 @@ import {
 import {
   completeWorkoutSession,
   appendExerciseSet,
+  appendMaxTestWarmupSet,
   getSession,
   getSetsForSession,
   updateSet,
@@ -598,6 +599,38 @@ export function ActiveWorkout({
     setEasySuggestion(null);
   }
 
+  async function handleAddMaxTestWarmupSet(setRow: LocalExerciseSet) {
+    if (!session) return;
+
+    const exerciseSets = sets.filter(
+      (set) => set.exerciseId === setRow.exerciseId
+    );
+    const lastWarmup = [...exerciseSets]
+      .filter((set) => set.setRole === "warmup")
+      .sort((a, b) => b.setNumber - a.setNumber)[0];
+
+    const created = await appendMaxTestWarmupSet({
+      sessionClientId: clientId,
+      userId: session.userId,
+      exerciseId: setRow.exerciseId,
+      exerciseName: setRow.exerciseName,
+      prefill: {
+        weightKg: lastWarmup?.weightKg ?? setRow.weightKg,
+        reps: lastWarmup?.reps ?? setRow.reps,
+      },
+    });
+
+    if (created) {
+      const setRows = await getSetsForSession(clientId);
+      setSets(setRows);
+    }
+
+    void sync?.refreshPending();
+    if (navigator.onLine) {
+      void sync?.runSync();
+    }
+  }
+
   async function handleAddBonusSet(setRow: LocalExerciseSet) {
     if (!session) return;
 
@@ -694,6 +727,7 @@ export function ActiveWorkout({
       if (
         maxTestMode &&
         setRow &&
+        isMaxTestAttemptSet(setRow) &&
         updated?.weightKg != null &&
         updated.weightKg > 0
       ) {
@@ -1094,16 +1128,39 @@ export function ActiveWorkout({
             const canAddBonusSet =
               exerciseSets.length <
               exercise.sets + (exercise.extraSets ?? 0) + 1;
+            const warmupIndex =
+              set.setRole === "warmup"
+                ? exerciseSets
+                    .filter((row) => row.setRole === "warmup")
+                    .findIndex((row) => row.clientId === set.clientId) + 1
+                : undefined;
 
             return (
               <div key={set.clientId}>
+                {maxTestMode && set.setRole === "max_attempt" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const priorWarmup = exerciseSets
+                        .filter((row) => row.setRole === "warmup")
+                        .sort((a, b) => b.setNumber - a.setNumber)[0];
+                      void handleAddMaxTestWarmupSet(
+                        priorWarmup ?? set
+                      );
+                    }}
+                    className="mb-3 min-h-[44px] w-full rounded-xl border border-dashed border-forge-steel/40 px-4 py-2 text-sm font-semibold text-forge-steel hover:border-forge-ember hover:text-forge-ember"
+                  >
+                    Add warmup set
+                  </button>
+                )}
                 <SetRow
                   set={set}
                   exerciseId={exercise.exerciseId}
                   targetReps={timedPrescription}
                   targetTimerSeconds={targetTimerSeconds}
                   isTimerActive={timedTimer?.setClientId === set.clientId}
-                  maxTestMode={maxTestMode}
+                  setRole={set.setRole}
+                  warmupIndex={warmupIndex}
                   showProgressionHint={Boolean(
                     exercise.progressionNote &&
                       !set.completed &&
@@ -1353,8 +1410,9 @@ export function ActiveWorkout({
             1RM test
           </p>
           <p className="mt-1 text-sm text-forge-muted">
-            Warm up, attempt your max single, then tap Record max. Your result
-            saves to training maxes when you finish online.
+            Log warmup sets as you ramp up, then record your heaviest successful
+            single on the max attempt row. Warmups save in your workout history;
+            only the max attempt updates your training max.
           </p>
         </div>
       )}

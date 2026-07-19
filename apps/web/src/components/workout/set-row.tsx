@@ -23,7 +23,8 @@ interface SetRowProps {
   targetTimerSeconds?: number;
   isTimerActive?: boolean;
   showProgressionHint?: boolean;
-  maxTestMode?: boolean;
+  setRole?: LocalExerciseSet["setRole"];
+  warmupIndex?: number;
   onStartTimer?: (clientId: string) => void;
   onUpdate: (
     clientId: string,
@@ -87,10 +88,13 @@ export function SetRow({
   targetTimerSeconds,
   isTimerActive = false,
   showProgressionHint = false,
-  maxTestMode = false,
+  setRole,
+  warmupIndex,
   onStartTimer,
   onUpdate,
 }: SetRowProps) {
+  const isMaxAttempt = setRole === "max_attempt";
+  const isWarmup = setRole === "warmup";
   const isTimed = isTimedExercise(exerciseId);
   const isCardio = isTimedCardioExercise(exerciseId);
   const tracksWeight = exerciseTracksWeight(exerciseId);
@@ -130,7 +134,13 @@ export function SetRow({
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="font-display text-sm font-semibold text-forge-text">
-          {maxTestMode ? "Max attempt" : isCardio ? "Session" : `Set ${set.setNumber}`}
+          {isMaxAttempt
+            ? "Max attempt"
+            : isWarmup
+              ? `Warmup ${warmupIndex ?? set.setNumber}`
+              : isCardio
+                ? "Session"
+                : `Set ${set.setNumber}`}
           {isTimerActive && (
             <span className="ml-2 text-xs font-medium text-forge-ember">
               {isCardio ? "In progress…" : "Holding…"}
@@ -167,7 +177,7 @@ export function SetRow({
             onClick={() =>
               onUpdate(set.clientId, {
                 completed: !set.completed,
-                ...(maxTestMode && !set.completed
+                ...(isMaxAttempt && !set.completed
                   ? { reps: 1, rir: 0 }
                   : {}),
               })
@@ -178,7 +188,11 @@ export function SetRow({
                 : "bg-forge-ember text-white"
             }`}
           >
-            {set.completed ? "Done ✓" : maxTestMode ? "Record max" : "Log set"}
+            {set.completed
+              ? "Done ✓"
+              : isMaxAttempt
+                ? "Record max"
+                : "Log set"}
           </button>
         )}
       </div>
@@ -313,9 +327,14 @@ export function SetRow({
           <label className="min-w-0">
             <span className="mb-1 block text-xs font-medium text-forge-muted">
               Reps
-              {maxTestMode && (
+              {isMaxAttempt && (
                 <span className="ml-1 font-normal text-forge-steel">
                   · single rep
+                </span>
+              )}
+              {isWarmup && (
+                <span className="ml-1 font-normal text-forge-steel">
+                  · ramp-up
                 </span>
               )}
               {showProgressionHint && set.reps != null && (
@@ -327,11 +346,11 @@ export function SetRow({
             <input
               type="number"
               inputMode="numeric"
-              min={maxTestMode ? 1 : 0}
-              max={maxTestMode ? 1 : undefined}
-              placeholder={maxTestMode ? "1" : targetReps}
-              value={maxTestMode ? (set.reps ?? 1) : (set.reps ?? "")}
-              readOnly={maxTestMode}
+              min={isMaxAttempt ? 1 : 0}
+              max={isMaxAttempt ? 1 : undefined}
+              placeholder={isMaxAttempt ? "1" : isWarmup ? "3-5" : targetReps}
+              value={isMaxAttempt ? (set.reps ?? 1) : (set.reps ?? "")}
+              readOnly={isMaxAttempt}
               onChange={(e) =>
                 onUpdate(set.clientId, {
                   reps:
@@ -369,7 +388,7 @@ export function SetRow({
         </label>
       )}
 
-      {!maxTestMode && (
+      {!isMaxAttempt && (
         <div className="mt-3">
           <p className="text-xs font-medium text-forge-muted">
             How hard was it?{" "}
@@ -404,7 +423,7 @@ export function SetRow({
         </div>
       )}
 
-      {maxTestMode && (
+      {isMaxAttempt && (
         <p className="mt-3 text-xs text-forge-muted">
           Enter the heaviest weight you successfully lifted for one rep, then tap
           Record max.

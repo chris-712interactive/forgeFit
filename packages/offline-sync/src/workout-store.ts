@@ -107,6 +107,8 @@ export async function startWorkoutSession(input: {
     const prefill = input.setPrefills?.[exercise.exerciseId];
 
     for (let setNumber = 1; setNumber <= totalSets; setNumber++) {
+      const setRole = exercise.setRoles?.[setNumber - 1];
+      const isMaxAttempt = setRole === "max_attempt";
       sets.push({
         clientId: crypto.randomUUID(),
         sessionClientId: clientId,
@@ -114,8 +116,9 @@ export async function startWorkoutSession(input: {
         exerciseId: exercise.exerciseId,
         exerciseName: exercise.name,
         setNumber,
-        weightKg: prefill?.weightKg,
-        reps: prefill?.reps,
+        setRole,
+        weightKg: isMaxAttempt ? prefill?.weightKg : undefined,
+        reps: isMaxAttempt ? (prefill?.reps ?? 1) : undefined,
         durationMs: prefill?.durationMs,
         completed: false,
         updatedAt: timestamp,
@@ -171,6 +174,61 @@ export async function appendExerciseSet(input: {
   };
 
   await db.transaction("rw", db.workoutSessions, db.exerciseSets, async () => {
+    await db.exerciseSets.add(created);
+    await db.workoutSessions.update(input.sessionClientId, {
+      updatedAt: timestamp,
+      synced: false,
+    });
+  });
+
+  return created;
+}
+
+/** Insert a warmup set immediately before the max-attempt set in a 1RM test. */
+export async function appendMaxTestWarmupSet(input: {
+  sessionClientId: string;
+  userId: string;
+  exerciseId: string;
+  exerciseName: string;
+  prefill?: Pick<LocalExerciseSet, "weightKg" | "reps">;
+}): Promise<LocalExerciseSet | undefined> {
+  const db = getOfflineDb();
+  const session = await db.workoutSessions.get(input.sessionClientId);
+  if (!session || session.status !== "in_progress") return undefined;
+
+  const existingSets = await db.exerciseSets
+    .where("sessionClientId")
+    .equals(input.sessionClientId)
+    .filter((set) => set.exerciseId === input.exerciseId)
+    .toArray();
+
+  const maxAttempt = existingSets.find((set) => set.setRole === "max_attempt");
+  if (!maxAttempt) {
+    return appendExerciseSet(input);
+  }
+
+  const timestamp = nowIso();
+  const created: LocalExerciseSet = {
+    clientId: crypto.randomUUID(),
+    sessionClientId: input.sessionClientId,
+    userId: input.userId,
+    exerciseId: input.exerciseId,
+    exerciseName: input.exerciseName,
+    setNumber: maxAttempt.setNumber,
+    setRole: "warmup",
+    weightKg: input.prefill?.weightKg,
+    reps: input.prefill?.reps,
+    completed: false,
+    updatedAt: timestamp,
+    synced: false,
+  };
+
+  await db.transaction("rw", db.workoutSessions, db.exerciseSets, async () => {
+    await db.exerciseSets.update(maxAttempt.clientId, {
+      setNumber: maxAttempt.setNumber + 1,
+      updatedAt: timestamp,
+      synced: false,
+    });
     await db.exerciseSets.add(created);
     await db.workoutSessions.update(input.sessionClientId, {
       updatedAt: timestamp,

@@ -11,11 +11,33 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress |
 | **Last updated** | 2026-07-19 |
-| **Last session focus** | 1RM test mode + per-exercise training max recording |
+| **Last session focus** | 1RM test warmup set logging |
 
 ---
 
 ## Session Log
+
+### 2026-07-19 — 1RM test warmup set logging
+
+**What was done**
+
+- 1RM test sessions now start with a **Warmup** row plus a **Max attempt** row
+- **Add warmup set** inserts ramp-up sets before the max attempt (weight/reps logged normally)
+- Only the max attempt row saves to `user_one_rep_maxes`; warmups persist in workout history
+- Local set metadata `setRole: warmup | max_attempt` on IndexedDB sets (syncs as normal sets)
+
+**What's next**
+
+- Smoke-test: add 3 warmups + max attempt, finish session, confirm all sets in recap/history
+
+**Files touched**
+
+- `packages/offline-sync/src/types.ts`, `workout-store.ts`
+- `apps/web/src/lib/progression/max-test.ts`
+- `apps/web/src/components/workout/max-test-launcher.tsx`, `active-workout.tsx`, `set-row.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-19 — 1RM test mode and per-exercise training maxes
 

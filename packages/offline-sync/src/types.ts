@@ -6,6 +6,7 @@ export type WarmupStatus = "pending" | "completed" | "skipped";
 export type ConditioningStatus = "pending" | "completed" | "skipped";
 export type SubstitutionReason = "equipment_busy" | "user_choice";
 export type WorkoutSessionSource = "program" | "custom" | "imported";
+export type MaxTestSetRole = "warmup" | "max_attempt";
 
 /** Custom-workout interval protocol (Phase 13). */
 export type IntervalMode = "density" | "tabata" | "superset_block";
@@ -49,6 +50,8 @@ export interface ExerciseSnapshot {
   progressionNote?: string;
   /** Prescription notes from the program (e.g. ramp-up sets) */
   notes?: string;
+  /** Per-set roles for 1RM test sessions (parallel to set numbers). */
+  setRoles?: MaxTestSetRole[];
 }
 
 export interface WorkoutTemplateExercise {
@@ -110,6 +113,8 @@ export interface LocalExerciseSet {
   plannedExerciseId?: string;
   substitutionReason?: SubstitutionReason;
   setNumber: number;
+  /** Warmup vs max attempt when logging a 1RM test (local UI only). */
+  setRole?: MaxTestSetRole;
   reps?: number;
   /** Elapsed time for timed sets (holds, cardio) in milliseconds */
   durationMs?: number;
