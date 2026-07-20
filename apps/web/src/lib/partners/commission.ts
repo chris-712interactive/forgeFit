@@ -10,6 +10,7 @@ import {
   periodMonthFromDate,
   shouldSkipResidual,
 } from "./commission-math";
+import { isSelfReferralEmail } from "./commercial-policy";
 import type { CommissionBase, CommissionType } from "./types";
 
 export type AccrueResult =
@@ -226,7 +227,7 @@ export async function accrueCommissionFromInvoice(
 
   const { data: profile } = await admin
     .from("profiles")
-    .select("billing_source, subscription_tier")
+    .select("billing_source, subscription_tier, email")
     .eq("id", userId)
     .maybeSingle();
 
@@ -237,7 +238,7 @@ export async function accrueCommissionFromInvoice(
   const { data: attribution } = await admin
     .from("user_attributions")
     .select(
-      "id, partner_id, deal_id, attributed_at, partners!inner(id, status), partner_deals(id, commission_type, commission_base, percent_bps, cpa_cents, duration_months, eligible_tiers)"
+      "id, partner_id, deal_id, attributed_at, partners!inner(id, status, contact_email), partner_deals(id, commission_type, commission_base, percent_bps, cpa_cents, duration_months, eligible_tiers)"
     )
     .eq("user_id", userId)
     .maybeSingle();
@@ -249,9 +250,30 @@ export async function accrueCommissionFromInvoice(
   const partner = attribution.partners as unknown as {
     id: string;
     status: string;
+    contact_email: string | null;
   };
   if (partner.status !== "active") {
     return { ok: true, skipped: true, reason: "partner_inactive" };
+  }
+
+  if (
+    isSelfReferralEmail({
+      memberEmail: profile?.email as string | null,
+      partnerContactEmail: partner.contact_email,
+    })
+  ) {
+    return { ok: true, skipped: true, reason: "self_referral" };
+  }
+
+  const { data: portalLink } = await admin
+    .from("partner_portal_users")
+    .select("id")
+    .eq("partner_id", attribution.partner_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (portalLink) {
+    return { ok: true, skipped: true, reason: "portal_user_self_referral" };
   }
 
   const deal = await loadDealForAttribution(admin, {

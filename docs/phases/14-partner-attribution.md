@@ -1,13 +1,13 @@
 # Phase 14 — Partner Attribution & Revenue Share
 
-**Status:** Phase 0 locked · Phase 14A code complete · Phase 14B code complete (awaiting migration apply)  
+**Status:** Phase 0 locked · Phase 14A–14C code complete (awaiting migrations apply)  
 **ADR:** [003-partner-attribution-revshare.md](../ADRs/003-partner-attribution-revshare.md)  
 **Depends on:** Phase 7 billing (Stripe), Admin console (Phases A–D)  
 **Does not block:** Phases 11–13 product / device QA
 
 ## Goal
 
-Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affiliates via one Partner subsystem; accrue rev-share on Stripe cash events; operate deals from Admin (portal + Connect later).
+Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affiliates via one Partner subsystem; accrue rev-share on Stripe cash events; operate deals from Admin; partners view read-only stats in the portal.
 
 ## Phase 0 — Commercial rules
 
@@ -15,10 +15,10 @@ Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affi
 - [x] Default attribution: first durable touch
 - [x] Click windows: influencer/affiliate **30d**, gym **90d** (override per deal)
 - [x] Residual: default **12 months**; **`duration_months` null = life of subscription**
-- [ ] Self-referral / staff abuse policy (enforce in Phase B; block same user as partner contact in A where easy)
-- [ ] Payout cadence (e.g. monthly Net-30) and minimum threshold — Phase B
-- [ ] W-9 / tax collection before first cash payout — Phase B/D
-- [ ] EoS (or first gym) term sheet draft: %, duration, reporting, brand, discount funding — ops, not code gate for 14A
+- [x] Self-referral / staff abuse: block stamp + accrual when member email = partner contact, or user is a portal user for that partner
+- [x] Payout cadence: default **Net-30** after period month end; **$50** minimum (`payout_net_days`, `payout_minimum_cents`)
+- [x] W-9 / tax: `tax_form_status` must be `received` or `verified` before Mark paid
+- [x] Term sheet template: [partner-term-sheet-template.md](../business/partner-term-sheet-template.md)
 
 ---
 
@@ -89,15 +89,26 @@ Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affi
 
 ---
 
-## Phase C — Partner portal (optional until volume)
+## Phase C — Partner portal
 
 ### Done when
 
-- [ ] Partner login (magic link or flagged account) — decision recorded in ADR open questions
-- [ ] Read-only dashboard: clicks, signups, paid conversions, estimated commission
-- [ ] Display unique link + codes
-- [ ] Gym view: optional breakdown by `club` param when present
-- [ ] No partner write access to deals or ledger status
+- [x] Partner login via Supabase Auth + `partner_portal_users` (admin grants by email)
+- [x] Read-only dashboard: clicks, signups, paid conversions, estimated / pending / lifetime commission
+- [x] Display unique link + codes
+- [x] Gym/club breakdown from `?club=` metadata when present
+- [x] No partner write access to deals or ledger status
+- [ ] Migration `20260720170000_partner_portal_commercial.sql` applied in Supabase (ops)
+
+### Files
+
+| Area | Path |
+|------|------|
+| Migration | `supabase/migrations/20260720170000_partner_portal_commercial.sql` |
+| Auth / stats | `apps/web/src/lib/partners/portal.ts`, `commercial-policy.ts` |
+| UI | `apps/web/src/app/partner/login`, `apps/web/src/app/partner/(authenticated)/*` |
+| Admin | portal grant/revoke + tax form on `/admin/partners` |
+| Term sheet | `docs/business/partner-term-sheet-template.md` |
 
 ---
 
@@ -157,4 +168,4 @@ Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affi
 ## Marking complete
 
 - Mark **Phase A Complete** in PROGRESS only when Phase A checklist passes.
-- Mark **Phase 14 Complete** only when A + B are done (C–E optional follow-ons unless a live deal requires them).
+- Mark **Phase 14 Complete** when A + B + C checklists pass (ops migrations applied). D–E remain optional follow-ons.

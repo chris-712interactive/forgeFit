@@ -9,13 +9,45 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A/14B code complete (migrations apply) |
+| **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-07-20 |
-| **Last session focus** | Phase 14B partner commission ledger |
+| **Last session focus** | Phase 14C portal + commercial leftovers |
 
 ---
 
 ## Session Log
+
+### 2026-07-20 — Phase 14C portal + commercial leftovers
+
+**What was done**
+
+- Self-referral blocks (contact email match + portal user) on stamp and commission accrual
+- Payout gates: W-9 (`tax_form_status`), Net-30 maturity, $50 minimum
+- Partner portal: `/partner/login` + read-only `/partner` dashboard (clicks, signups, commissions, link/codes, club breakdown)
+- Admin: grant/revoke portal users, mark W-9 received/verified
+- Term sheet template `docs/business/partner-term-sheet-template.md`
+- Migration `20260720170000_partner_portal_commercial.sql`
+
+**What's next**
+
+1. Apply Phase 14 migrations (A–C) in Supabase
+2. Smoke-test portal grant + dashboard; Mark paid blocked until W-9 + Net-30 + min
+3. Phase 14D Connect / 14E member referrals only when needed
+
+**Blockers**
+
+- Portal/commercial columns require migration apply
+
+**Files touched**
+
+- `supabase/migrations/20260720170000_partner_portal_commercial.sql`
+- `apps/web/src/lib/partners/commercial-policy.ts`, `portal.ts`, `stamp.ts`, `commission.ts`
+- `apps/web/src/lib/admin/partner-ledger.ts`, `partners.ts`
+- `apps/web/src/app/partner/**`, `api/admin/partners/route.ts`
+- `apps/web/src/components/admin/admin-partners-panel.tsx`
+- `docs/business/partner-term-sheet-template.md`, phase/ADR/BIBLE/ARCHITECTURE/PROGRESS/supabase-setup
+
+---
 
 ### 2026-07-20 — Phase 14B partner commission ledger
 

@@ -133,22 +133,26 @@ First-party **Partner** subsystem for gyms (e.g. EoS), influencers, and affiliat
 
 **ADR:** [ADRs/003-partner-attribution-revshare.md](./ADRs/003-partner-attribution-revshare.md) · **Acceptance:** [phases/14-partner-attribution.md](./phases/14-partner-attribution.md)
 
-**Phase 14A (capture) + 14B (ledger) shipped in code** — apply `20260720150000_partner_attribution.sql` and `20260720160000_partner_commissions.sql`. Enable Stripe webhook events `invoice.paid` and `charge.refunded`.
+**Phase 14A–14C shipped in code** — apply `20260720150000_partner_attribution.sql`, `20260720160000_partner_commissions.sql`, and `20260720170000_partner_portal_commercial.sql`. Enable Stripe webhook events `invoice.paid` and `charge.refunded`.
 
 ```
 /r/[slug] → cookie + attribution_events → user_attributions on signup/claim
     → Stripe Checkout metadata (partner_id, attribution_id)
     → invoice.paid → partner_commissions ledger
-    → Admin /admin/partners (CRUD + ledger + CSV + mark paid)
+    → Admin /admin/partners (CRUD + ledger + CSV + mark paid + portal grant + W-9)
+    → Partner portal /partner (read-only)
 ```
 
 | Concept | Notes |
 |---------|--------|
 | `partners` + `partner_deals` | Typed partners; versioned % / CPA / windows; `duration_months` null = life of subscription |
+| Commercial defaults | Net-30, $50 min payout, W-9 required before Mark paid |
+| Self-referral | Blocked when member email = partner contact or portal user |
 | Commission base | Per deal: `gross`, `net_of_fees`, `net_of_fees_and_tax` |
 | Click windows | Influencer/affiliate 30d · gym 90d (templates; overridable) |
 | vs `profiles.signup_source` | Prior app from onboarding — **not** acquisition partner |
 | Default attribution | First durable touch |
+| Portal | `partner_portal_users` + `/partner/login` |
 
 Does not change program-engine / evidence-kb boundaries.
 
@@ -173,6 +177,8 @@ Does not change program-engine / evidence-kb boundaries.
 | `/api/admin/partners` | Admin partner CRUD | 14A |
 | `/api/admin/partners/ledger` | Commission ledger + mark payout paid | 14B |
 | `/api/admin/export/partner-commissions` | Partner summary/detail CSV | 14B |
+| `/partner/login` | Partner portal sign-in | 14C |
+| `/partner` | Partner read-only dashboard | 14C |
 
 ## Security
 

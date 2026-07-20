@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { PartnerRefCookie } from "./cookie";
+import { isSelfReferralEmail } from "./commercial-policy";
 import {
   getActiveDealForPartner,
   getActivePartnerBySlug,
@@ -117,6 +118,42 @@ export async function stampUserAttributionFromRef(input: {
 
   if (!partnerId) {
     return { stamped: false, reason: "no_partner" };
+  }
+
+  const { data: partnerRow } = await admin
+    .from("partners")
+    .select("id, contact_email, status")
+    .eq("id", partnerId)
+    .maybeSingle();
+
+  if (!partnerRow || partnerRow.status !== "active") {
+    return { stamped: false, reason: "partner_inactive" };
+  }
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("email")
+    .eq("id", input.userId)
+    .maybeSingle();
+
+  if (
+    isSelfReferralEmail({
+      memberEmail: profile?.email as string | null,
+      partnerContactEmail: partnerRow.contact_email as string | null,
+    })
+  ) {
+    return { stamped: false, reason: "self_referral" };
+  }
+
+  const { data: portalLink } = await admin
+    .from("partner_portal_users")
+    .select("id")
+    .eq("partner_id", partnerId)
+    .eq("user_id", input.userId)
+    .maybeSingle();
+
+  if (portalLink) {
+    return { stamped: false, reason: "portal_user_self_referral" };
   }
 
   const deal = await getActiveDealForPartner(partnerId);

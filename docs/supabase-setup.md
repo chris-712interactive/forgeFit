@@ -88,10 +88,13 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 48. `20260630140000_functional_conditioning_goal.sql` — **Functional conditioning** primary goal (`functional_conditioning`)
 49. `20260720150000_partner_attribution.sql` — **Phase 14A** partners, deals, codes, attribution events, `user_attributions`, `profiles.acquisition_partner_id`
 50. `20260720160000_partner_commissions.sql` — **Phase 14B** `partner_commissions` ledger + `partner_payouts`
+51. `20260720170000_partner_portal_commercial.sql` — **Phase 14C** payout policy columns, tax form status, `partner_portal_users`
 
 After running SQL in the dashboard, reload the API schema if errors persist: **Project Settings → API → Reload schema cache**.
 
 **Stripe webhook (Phase 14B):** ensure the endpoint receives `invoice.paid` and `charge.refunded` in addition to existing subscription events.
+
+**Partner portal:** grant access in Admin → Partners (user must already have a ForgeRep account), then they sign in at `/partner/login`.
 
 ## 4. Auth providers
 

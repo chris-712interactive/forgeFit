@@ -2,6 +2,11 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { writeAdminAuditLog } from "@/lib/admin/audit";
+import {
+  isPayoutPeriodMature,
+  meetsPayoutMinimum,
+  taxFormAllowsPayout,
+} from "@/lib/partners/commercial-policy";
 
 export interface CommissionLedgerRow {
   id: string;
@@ -240,6 +245,38 @@ export async function markPartnerPayoutPaid(input: {
 
   const admin = createAdminClient();
 
+  const { data: partner, error: partnerError } = await admin
+    .from("partners")
+    .select(
+      "id, payout_minimum_cents, payout_net_days, tax_form_status, display_name"
+    )
+    .eq("id", input.partnerId)
+    .maybeSingle();
+
+  if (partnerError || !partner) {
+    return { ok: false, error: partnerError?.message ?? "Partner not found." };
+  }
+
+  if (!taxFormAllowsPayout(partner.tax_form_status as string)) {
+    return {
+      ok: false,
+      error:
+        "Tax form (W-9) required before payout. Mark tax form received/verified on the partner.",
+    };
+  }
+
+  if (
+    !isPayoutPeriodMature({
+      periodMonth: input.periodMonth,
+      netDays: (partner.payout_net_days as number) ?? 30,
+    })
+  ) {
+    return {
+      ok: false,
+      error: `Period not mature yet (Net-${partner.payout_net_days} after month end).`,
+    };
+  }
+
   const { data: pending, error: fetchError } = await admin
     .from("partner_commissions")
     .select("id, commission_cents")
@@ -259,6 +296,15 @@ export async function markPartnerPayoutPaid(input: {
     (sum, row) => sum + (row.commission_cents as number),
     0
   );
+
+  const minimum =
+    (partner.payout_minimum_cents as number) ?? 5000;
+  if (!meetsPayoutMinimum({ amountCents, minimumCents: minimum })) {
+    return {
+      ok: false,
+      error: `Below payout minimum ($${(minimum / 100).toFixed(2)}). Current pending: $${(amountCents / 100).toFixed(2)}.`,
+    };
+  }
 
   const { data: payout, error: payoutError } = await admin
     .from("partner_payouts")

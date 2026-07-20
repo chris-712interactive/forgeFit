@@ -23,6 +23,10 @@ export interface AdminPartnerListItem {
   contactEmail: string | null;
   defaultLandingPath: string;
   createdAt: string;
+  payoutMinimumCents: number;
+  payoutNetDays: number;
+  taxFormStatus: string;
+  portalUsers: Array<{ userId: string; email: string | null }>;
   activeDeal: {
     id: string;
     commissionType: CommissionType;
@@ -40,16 +44,105 @@ export async function listPartnersForAdmin(): Promise<AdminPartnerListItem[]> {
   const { data, error } = await admin
     .from("partners")
     .select(
-      "id, slug, type, display_name, status, contact_email, default_landing_path, created_at, partner_deals(id, commission_type, commission_base, percent_bps, cpa_cents, duration_months, click_window_days, effective_from, effective_to), partner_codes(code, active)"
+      "id, slug, type, display_name, status, contact_email, default_landing_path, created_at, payout_minimum_cents, payout_net_days, tax_form_status, partner_deals(id, commission_type, commission_base, percent_bps, cpa_cents, duration_months, click_window_days, effective_from, effective_to), partner_codes(code, active), partner_portal_users(user_id)"
     )
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("[partners] list failed:", error.message);
+    // Pre-migration fallback (14C columns missing)
+    if (
+      error.message.includes("payout_minimum") ||
+      error.message.includes("partner_portal_users") ||
+      error.message.includes("tax_form")
+    ) {
+      const { data: legacy } = await admin
+        .from("partners")
+        .select(
+          "id, slug, type, display_name, status, contact_email, default_landing_path, created_at, partner_deals(id, commission_type, commission_base, percent_bps, cpa_cents, duration_months, click_window_days, effective_from, effective_to), partner_codes(code, active)"
+        )
+        .order("created_at", { ascending: false });
+      return (legacy ?? []).map((row) => {
+        const deals =
+          (row.partner_deals as unknown as Array<Record<string, unknown>>) ??
+          [];
+        const activeDeal =
+          deals
+            .filter((deal) => {
+              const from = new Date(deal.effective_from as string).getTime();
+              const to = deal.effective_to
+                ? new Date(deal.effective_to as string).getTime()
+                : null;
+              return from <= Date.now() && (to == null || to >= Date.now());
+            })
+            .sort(
+              (a, b) =>
+                new Date(b.effective_from as string).getTime() -
+                new Date(a.effective_from as string).getTime()
+            )[0] ?? null;
+        const codes = (
+          (row.partner_codes as unknown as Array<{
+            code: string;
+            active: boolean;
+          }>) ?? []
+        )
+          .filter((c) => c.active)
+          .map((c) => c.code);
+        return {
+          id: row.id as string,
+          slug: row.slug as string,
+          type: row.type as PartnerType,
+          displayName: row.display_name as string,
+          status: row.status as PartnerStatus,
+          contactEmail: (row.contact_email as string | null) ?? null,
+          defaultLandingPath: (row.default_landing_path as string) ?? "/signup",
+          createdAt: row.created_at as string,
+          payoutMinimumCents: 5000,
+          payoutNetDays: 30,
+          taxFormStatus: "none",
+          portalUsers: [],
+          activeDeal: activeDeal
+            ? {
+                id: activeDeal.id as string,
+                commissionType: activeDeal.commission_type as CommissionType,
+                commissionBase: activeDeal.commission_base as CommissionBase,
+                percentBps: (activeDeal.percent_bps as number | null) ?? null,
+                cpaCents: (activeDeal.cpa_cents as number | null) ?? null,
+                durationMonths:
+                  (activeDeal.duration_months as number | null) ?? null,
+                clickWindowDays: activeDeal.click_window_days as number,
+              }
+            : null,
+          codes,
+        };
+      });
+    }
     return [];
   }
 
   const now = Date.now();
+  const portalUserIds = new Set<string>();
+  for (const row of data ?? []) {
+    const links =
+      (row.partner_portal_users as unknown as Array<{ user_id: string }>) ?? [];
+    for (const link of links) {
+      portalUserIds.add(link.user_id);
+    }
+  }
+
+  const emailById = new Map<string, string | null>();
+  if (portalUserIds.size > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, email")
+      .in("id", [...portalUserIds]);
+    for (const profile of profiles ?? []) {
+      emailById.set(
+        profile.id as string,
+        (profile.email as string | null) ?? null
+      );
+    }
+  }
 
   return (data ?? []).map((row) => {
     const deals = (row.partner_deals as unknown as Array<Record<string, unknown>>) ?? [];
@@ -75,6 +168,9 @@ export async function listPartnersForAdmin(): Promise<AdminPartnerListItem[]> {
       .filter((c) => c.active)
       .map((c) => c.code);
 
+    const portalLinks =
+      (row.partner_portal_users as unknown as Array<{ user_id: string }>) ?? [];
+
     return {
       id: row.id as string,
       slug: row.slug as string,
@@ -84,6 +180,13 @@ export async function listPartnersForAdmin(): Promise<AdminPartnerListItem[]> {
       contactEmail: (row.contact_email as string | null) ?? null,
       defaultLandingPath: (row.default_landing_path as string) ?? "/signup",
       createdAt: row.created_at as string,
+      payoutMinimumCents: (row.payout_minimum_cents as number) ?? 5000,
+      payoutNetDays: (row.payout_net_days as number) ?? 30,
+      taxFormStatus: (row.tax_form_status as string) ?? "none",
+      portalUsers: portalLinks.map((link) => ({
+        userId: link.user_id,
+        email: emailById.get(link.user_id) ?? null,
+      })),
       activeDeal: activeDeal
         ? {
             id: activeDeal.id as string,

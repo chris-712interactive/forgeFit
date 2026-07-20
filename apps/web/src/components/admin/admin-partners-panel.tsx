@@ -39,6 +39,10 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  const [portalEmailByPartner, setPortalEmailByPartner] = useState<
+    Record<string, string>
+  >({});
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -91,6 +95,71 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
     const body = (await response.json()) as { error?: string };
     if (!response.ok) {
       setError(body.error ?? "Update failed.");
+      setLoading(false);
+      return;
+    }
+    router.refresh();
+    setLoading(false);
+  }
+
+  async function setTaxForm(
+    partnerId: string,
+    taxFormStatus: "none" | "received" | "verified"
+  ) {
+    setLoading(true);
+    setError(null);
+    const response = await fetch("/api/admin/partners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "set_tax_form", partnerId, taxFormStatus }),
+    });
+    const body = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setError(body.error ?? "Tax form update failed.");
+      setLoading(false);
+      return;
+    }
+    setMessage(`Tax form marked ${taxFormStatus}.`);
+    router.refresh();
+    setLoading(false);
+  }
+
+  async function grantPortal(partnerId: string) {
+    const email = portalEmailByPartner[partnerId]?.trim();
+    if (!email) {
+      setError("Enter a portal user email first.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    const response = await fetch("/api/admin/partners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "portal_grant", partnerId, email }),
+    });
+    const body = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setError(body.error ?? "Portal grant failed.");
+      setLoading(false);
+      return;
+    }
+    setMessage(`Portal access granted to ${email}. They sign in at /partner/login.`);
+    setPortalEmailByPartner((prev) => ({ ...prev, [partnerId]: "" }));
+    router.refresh();
+    setLoading(false);
+  }
+
+  async function revokePortal(partnerId: string, userId: string) {
+    setLoading(true);
+    setError(null);
+    const response = await fetch("/api/admin/partners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "portal_revoke", partnerId, userId }),
+    });
+    const body = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setError(body.error ?? "Portal revoke failed.");
       setLoading(false);
       return;
     }
@@ -220,54 +289,130 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
         ) : (
           <ul className="mt-4 divide-y divide-white/10">
             {partners.map((partner) => (
-              <li
-                key={partner.id}
-                className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:justify-between"
-              >
-                <div>
-                  <p className="font-medium text-forge-text">
-                    {partner.displayName}{" "}
-                    <span className="text-forge-muted">({partner.type})</span>
-                  </p>
-                  <p className="mt-1 text-sm text-forge-muted">
-                    Status: {partner.status} · Link:{" "}
-                    <a
-                      className="text-forge-steel hover:underline"
-                      href={`/r/${partner.slug}`}
-                    >
-                      /r/{partner.slug}
-                    </a>
-                    {partner.codes.length > 0
-                      ? ` · Codes: ${partner.codes.join(", ")}`
-                      : null}
-                  </p>
-                  <p className="mt-1 text-sm text-forge-muted">
-                    Deal:{" "}
-                    {partner.activeDeal
-                      ? `${(partner.activeDeal.percentBps ?? 0) / 100}% ${partner.activeDeal.commissionBase} · click ${partner.activeDeal.clickWindowDays}d · residual ${residualLabel(partner.activeDeal.durationMonths)}`
-                      : "No active deal"}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {partner.status === "active" ? (
+              <li key={partner.id} className="space-y-3 py-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-medium text-forge-text">
+                      {partner.displayName}{" "}
+                      <span className="text-forge-muted">({partner.type})</span>
+                    </p>
+                    <p className="mt-1 text-sm text-forge-muted">
+                      Status: {partner.status} · Link:{" "}
+                      <a
+                        className="text-forge-steel hover:underline"
+                        href={`/r/${partner.slug}`}
+                      >
+                        /r/{partner.slug}
+                      </a>
+                      {partner.codes.length > 0
+                        ? ` · Codes: ${partner.codes.join(", ")}`
+                        : null}
+                    </p>
+                    <p className="mt-1 text-sm text-forge-muted">
+                      Deal:{" "}
+                      {partner.activeDeal
+                        ? `${(partner.activeDeal.percentBps ?? 0) / 100}% ${partner.activeDeal.commissionBase} · click ${partner.activeDeal.clickWindowDays}d · residual ${residualLabel(partner.activeDeal.durationMonths)}`
+                        : "No active deal"}
+                    </p>
+                    <p className="mt-1 text-sm text-forge-muted">
+                      Payout: Net-{partner.payoutNetDays} · min $
+                      {(partner.payoutMinimumCents / 100).toFixed(0)} · tax form:{" "}
+                      {partner.taxFormStatus}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {partner.status === "active" ? (
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => setStatus(partner.id, "paused")}
+                        className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-forge-muted hover:text-forge-text"
+                      >
+                        Pause
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => setStatus(partner.id, "active")}
+                        className="rounded-lg border border-forge-ember/40 px-3 py-1.5 text-xs font-medium text-forge-ember"
+                      >
+                        Activate
+                      </button>
+                    )}
                     <button
                       type="button"
                       disabled={loading}
-                      onClick={() => setStatus(partner.id, "paused")}
+                      onClick={() => setTaxForm(partner.id, "received")}
                       className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-forge-muted hover:text-forge-text"
                     >
-                      Pause
+                      Mark W-9 received
                     </button>
-                  ) : (
                     <button
                       type="button"
                       disabled={loading}
-                      onClick={() => setStatus(partner.id, "active")}
+                      onClick={() => setTaxForm(partner.id, "verified")}
+                      className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-forge-muted hover:text-forge-text"
+                    >
+                      Mark W-9 verified
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-white/5 bg-forge-surface/50 p-3">
+                  <p className="text-xs font-medium text-forge-muted">
+                    Portal access (/partner/login)
+                  </p>
+                  {partner.portalUsers.length > 0 ? (
+                    <ul className="mt-2 space-y-1">
+                      {partner.portalUsers.map((user) => (
+                        <li
+                          key={user.userId}
+                          className="flex items-center justify-between gap-2 text-sm"
+                        >
+                          <span className="text-forge-text">
+                            {user.email ?? user.userId.slice(0, 8)}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={loading}
+                            onClick={() =>
+                              void revokePortal(partner.id, user.userId)
+                            }
+                            className="text-xs text-forge-coral hover:underline"
+                          >
+                            Revoke
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-1 text-xs text-forge-muted">
+                      No portal users yet.
+                    </p>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <input
+                      type="email"
+                      placeholder="member@email.com"
+                      value={portalEmailByPartner[partner.id] ?? ""}
+                      onChange={(e) =>
+                        setPortalEmailByPartner((prev) => ({
+                          ...prev,
+                          [partner.id]: e.target.value,
+                        }))
+                      }
+                      className="min-w-[14rem] flex-1 rounded-lg border border-white/10 bg-forge-surface px-2 py-1.5 text-sm text-forge-text"
+                    />
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={() => void grantPortal(partner.id)}
                       className="rounded-lg border border-forge-ember/40 px-3 py-1.5 text-xs font-medium text-forge-ember"
                     >
-                      Activate
+                      Grant portal
                     </button>
-                  )}
+                  </div>
                 </div>
               </li>
             ))}

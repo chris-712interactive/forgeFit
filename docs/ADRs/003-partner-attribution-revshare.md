@@ -1,6 +1,6 @@
 # ADR 003 — Partner Attribution & Revenue Share
 
-**Status:** Accepted · Phase 14A + 14B code complete (migrations apply ops)  
+**Status:** Accepted · Phase 14A–14C code complete (migrations apply ops)  
 **Date:** 2026-07-20  
 **Last updated:** 2026-07-20  
 **Depends on:** Phase 7 billing (Stripe checkout + webhooks), Admin console (Phases A–D)  
@@ -177,11 +177,11 @@ Do not block Phases 11–13 product gates on this work. Treat as **growth infra*
 
 ## Open questions
 
-1. **EoS contract:** % vs CPA vs hybrid; club-level reporting required?
-2. **Net definition:** subtract Stripe fees and/or sales tax before %?
-3. **Annual invoices:** commission on full invoice cash vs recognize monthly — default **cash on invoice**.
-4. **EU cookie consent:** defer until EU traffic material (business plan Y4); US-first first-party cookie OK for pilot.
-5. **Partner portal auth:** magic link vs flag on `profiles` vs separate partner users table.
+1. **EoS contract:** fill [partner-term-sheet-template.md](../business/partner-term-sheet-template.md) per deal.
+2. ~~**Net definition**~~ — per deal (`gross` / `net_of_fees` / `net_of_fees_and_tax`).
+3. **Annual invoices:** commission on full invoice cash (locked).
+4. **EU cookie consent:** defer until EU traffic material.
+5. ~~**Partner portal auth**~~ — Supabase Auth + `partner_portal_users` link (admin grants by email). Login at `/partner/login`.
 
 ---
 
