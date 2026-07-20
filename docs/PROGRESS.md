@@ -11,11 +11,38 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-07-20 |
-| **Last session focus** | Partner portal analytics upgrade (charts + demographics) |
+| **Last session focus** | Admin partner create: full deal/payout overrides + hard delete |
 
 ---
 
 ## Session Log
+
+### 2026-07-20 — Admin partner full terms + delete
+
+**What was done**
+
+- Create partner form: type still seeds template defaults; all deal + payout fields editable before submit (commission type/base, %, CPA, click window, residual/lifetime, attribution model, tiers, landing path, Net days, payout min, notes)
+- API `create` accepts the full override set; `createPartnerWithDeal` validates and persists payout policy on `partners` + deal row
+- Hard **Delete** partner (confirm): clears profile acquisition refs, commissions, payouts, attributions, then partner (deals/codes/portal cascade); audit `partner.delete`
+
+**What's next**
+
+1. Apply Phase 14 migrations if not done; smoke-test create with custom terms + delete
+2. Optional: edit active deal terms on existing partners (versioned deal rows)
+3. Phase 14D/E only when needed
+
+**Blockers**
+
+- None in code
+
+**Files touched**
+
+- `apps/web/src/lib/admin/partners.ts`
+- `apps/web/src/app/api/admin/partners/route.ts`
+- `apps/web/src/components/admin/admin-partners-panel.tsx`
+- `docs/PROGRESS.md`, `docs/phases/14-partner-attribution.md`
+
+---
 
 ### 2026-07-20 — Partner portal growth dashboard (charts + demographics)
 

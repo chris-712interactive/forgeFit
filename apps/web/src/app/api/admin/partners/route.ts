@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   createPartnerWithDeal,
+  deletePartner,
   listPartnersForAdmin,
   updatePartnerStatus,
 } from "@/lib/admin/partners";
@@ -16,7 +17,9 @@ import {
 } from "@/lib/partners/portal";
 import type { TaxFormStatus } from "@/lib/partners/commercial-policy";
 import type {
+  AttributionModel,
   CommissionBase,
+  CommissionType,
   PartnerStatus,
   PartnerType,
 } from "@/lib/partners/types";
@@ -34,6 +37,7 @@ export async function GET() {
 interface Body {
   action?:
     | "create"
+    | "delete"
     | "set_status"
     | "set_tax_form"
     | "portal_grant"
@@ -43,11 +47,19 @@ interface Body {
   displayName?: string;
   contactEmail?: string;
   code?: string;
+  defaultLandingPath?: string;
   durationMonths?: number | null;
   lifetimeResidual?: boolean;
-  percentBps?: number;
+  percentBps?: number | null;
+  cpaCents?: number | null;
   clickWindowDays?: number;
   commissionBase?: CommissionBase;
+  commissionType?: CommissionType;
+  attributionModel?: AttributionModel;
+  eligibleTiers?: string[];
+  payoutMinimumCents?: number;
+  payoutNetDays?: number;
+  dealNotes?: string;
   partnerId?: string;
   status?: PartnerStatus;
   taxFormStatus?: TaxFormStatus;
@@ -70,6 +82,23 @@ export async function POST(request: Request) {
     body = (await request.json()) as Body;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  if (body.action === "delete") {
+    if (!body.partnerId) {
+      return NextResponse.json(
+        { error: "partnerId is required." },
+        { status: 400 }
+      );
+    }
+    const result = await deletePartner({
+      adminUserId: actor.userId,
+      partnerId: body.partnerId,
+    });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+    return NextResponse.json({ ok: true });
   }
 
   if (body.action === "set_status") {
@@ -168,10 +197,18 @@ export async function POST(request: Request) {
     displayName: body.displayName,
     contactEmail: body.contactEmail,
     code: body.code,
+    defaultLandingPath: body.defaultLandingPath,
     durationMonths,
     percentBps: body.percentBps,
+    cpaCents: body.cpaCents,
     clickWindowDays: body.clickWindowDays,
     commissionBase: body.commissionBase,
+    commissionType: body.commissionType,
+    attributionModel: body.attributionModel,
+    eligibleTiers: body.eligibleTiers,
+    payoutMinimumCents: body.payoutMinimumCents,
+    payoutNetDays: body.payoutNetDays,
+    dealNotes: body.dealNotes,
   });
 
   if (!result.ok) {

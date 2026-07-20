@@ -33,7 +33,7 @@ Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affi
 - [x] Promo code path via `partner_codes` + `/signup?code=` / `/signup?ref=` bounce through `/r/`
 - [x] On signup / auth callback / claim API: stamp `user_attributions` (first durable touch)
 - [x] Stripe Checkout session + `subscription_data.metadata` include `partner_id` + `attribution_id` when present
-- [x] Admin: create/edit partner status + deal template defaults (`/admin/partners`)
+- [x] Admin: create partner with full deal/payout overrides (type templates seed only); pause/activate; hard delete (`/admin/partners`)
 - [ ] Seed at least one test partner in non-prod (ops — create via Admin after migration apply)
 - [ ] Migration `20260720150000_partner_attribution.sql` applied in Supabase (ops)
 - [x] Unit tests for templates, residual lifetime, cookie codec

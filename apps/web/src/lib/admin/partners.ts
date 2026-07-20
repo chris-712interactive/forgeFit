@@ -210,11 +210,19 @@ export interface CreatePartnerInput {
   displayName: string;
   contactEmail?: string;
   code?: string;
+  defaultLandingPath?: string;
   /** null = life of subscription; omit to use type template */
   durationMonths?: number | null;
-  percentBps?: number;
+  percentBps?: number | null;
+  cpaCents?: number | null;
   clickWindowDays?: number;
   commissionBase?: CommissionBase;
+  commissionType?: CommissionType;
+  attributionModel?: "first_touch" | "last_touch";
+  eligibleTiers?: string[];
+  payoutMinimumCents?: number;
+  payoutNetDays?: number;
+  dealNotes?: string;
 }
 
 export async function createPartnerWithDeal(
@@ -246,13 +254,51 @@ export async function createPartnerWithDeal(
   }
 
   const template = dealTemplateForPartnerType(input.type);
+  const commissionType = input.commissionType ?? template.commissionType;
+  const commissionBase = input.commissionBase ?? template.commissionBase;
+  const attributionModel =
+    input.attributionModel ?? template.attributionModel;
   const durationMonths =
     input.durationMonths === undefined
       ? template.durationMonths
       : input.durationMonths;
-  const percentBps = input.percentBps ?? template.percentBps ?? 2000;
+  const percentBps =
+    input.percentBps === undefined
+      ? template.percentBps
+      : input.percentBps;
+  const cpaCents =
+    input.cpaCents === undefined ? template.cpaCents : input.cpaCents;
   const clickWindowDays = input.clickWindowDays ?? template.clickWindowDays;
-  const commissionBase = input.commissionBase ?? template.commissionBase;
+  const eligibleTiers =
+    input.eligibleTiers?.length
+      ? input.eligibleTiers
+      : ["pro", "pro_plus"];
+  const payoutMinimumCents = input.payoutMinimumCents ?? 5000;
+  const payoutNetDays = input.payoutNetDays ?? 30;
+  const landing =
+    input.defaultLandingPath?.trim().startsWith("/")
+      ? input.defaultLandingPath.trim()
+      : "/signup";
+
+  if (commissionType === "percent" || commissionType === "hybrid") {
+    if (percentBps == null || percentBps < 0 || percentBps > 10000) {
+      return { ok: false, error: "Percent must be between 0% and 100%." };
+    }
+  }
+  if (commissionType === "cpa" || commissionType === "hybrid") {
+    if (cpaCents == null || cpaCents < 0) {
+      return { ok: false, error: "CPA amount is required for CPA/hybrid deals." };
+    }
+  }
+  if (clickWindowDays < 1 || clickWindowDays > 365) {
+    return { ok: false, error: "Click window must be 1–365 days." };
+  }
+  if (payoutNetDays < 0 || payoutNetDays > 120) {
+    return { ok: false, error: "Payout Net days must be 0–120." };
+  }
+  if (payoutMinimumCents < 0) {
+    return { ok: false, error: "Payout minimum cannot be negative." };
+  }
 
   const admin = createAdminClient();
 
@@ -264,7 +310,9 @@ export async function createPartnerWithDeal(
       display_name: displayName,
       status: "active",
       contact_email: input.contactEmail?.trim() || null,
-      default_landing_path: "/signup",
+      default_landing_path: landing,
+      payout_minimum_cents: payoutMinimumCents,
+      payout_net_days: payoutNetDays,
     })
     .select("id")
     .maybeSingle();
@@ -283,13 +331,15 @@ export async function createPartnerWithDeal(
 
   const { error: dealError } = await admin.from("partner_deals").insert({
     partner_id: partnerId,
-    commission_type: template.commissionType,
+    commission_type: commissionType,
     commission_base: commissionBase,
-    percent_bps: percentBps,
-    cpa_cents: template.cpaCents,
+    percent_bps: commissionType === "cpa" ? null : percentBps,
+    cpa_cents: commissionType === "percent" ? null : cpaCents,
     duration_months: durationMonths,
     click_window_days: clickWindowDays,
-    attribution_model: template.attributionModel,
+    attribution_model: attributionModel,
+    eligible_tiers: eligibleTiers,
+    notes: input.dealNotes?.trim() || null,
   });
 
   if (dealError) {
@@ -322,12 +372,84 @@ export async function createPartnerWithDeal(
       durationMonths,
       clickWindowDays,
       percentBps,
+      cpaCents,
       commissionBase,
+      commissionType,
+      attributionModel,
+      eligibleTiers,
+      payoutMinimumCents,
+      payoutNetDays,
       code,
     },
   });
 
   return { ok: true, partnerId };
+}
+
+export async function deletePartner(input: {
+  adminUserId: string;
+  partnerId: string;
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const admin = createAdminClient();
+
+  const { data: partner, error: fetchError } = await admin
+    .from("partners")
+    .select("id, slug, display_name")
+    .eq("id", input.partnerId)
+    .maybeSingle();
+
+  if (fetchError || !partner) {
+    return { ok: false, error: fetchError?.message ?? "Partner not found." };
+  }
+
+  // Clear denormalized profile refs first
+  await admin
+    .from("profiles")
+    .update({ acquisition_partner_id: null })
+    .eq("acquisition_partner_id", input.partnerId);
+
+  // Child tables with ON DELETE RESTRICT — remove before partner row
+  const steps: Array<{ table: string; column: string }> = [
+    { table: "partner_commissions", column: "partner_id" },
+    { table: "partner_payouts", column: "partner_id" },
+    { table: "user_attributions", column: "partner_id" },
+    { table: "attribution_events", column: "partner_id" },
+  ];
+
+  for (const step of steps) {
+    const { error } = await admin
+      .from(step.table)
+      .delete()
+      .eq(step.column, input.partnerId);
+    if (error) {
+      return {
+        ok: false,
+        error: `Failed clearing ${step.table}: ${error.message}`,
+      };
+    }
+  }
+
+  // partner_deals, partner_codes, partner_portal_users cascade
+  const { error: deleteError } = await admin
+    .from("partners")
+    .delete()
+    .eq("id", input.partnerId);
+
+  if (deleteError) {
+    return { ok: false, error: deleteError.message };
+  }
+
+  await writeAdminAuditLog({
+    adminUserId: input.adminUserId,
+    action: "partner.delete",
+    payload: {
+      partnerId: input.partnerId,
+      slug: partner.slug,
+      displayName: partner.display_name,
+    },
+  });
+
+  return { ok: true };
 }
 
 export async function updatePartnerStatus(input: {
