@@ -5,6 +5,11 @@ import {
 import { ensureUserProfile } from "@/lib/auth/ensure-profile";
 import { consumeAuthRedirectCookie } from "@/lib/auth/redirect-cookie.server";
 import { resolveAuthRedirect } from "@/lib/auth/redirect-path";
+import {
+  PARTNER_REF_COOKIE,
+  parsePartnerRefCookie,
+} from "@/lib/partners/cookie";
+import { stampUserAttributionFromRef } from "@/lib/partners/stamp";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -42,6 +47,21 @@ export async function GET(request: Request) {
   }
 
   await ensureUserProfile(supabase, data.user);
+
+  if (isSignupConversion(data.user)) {
+    const ref = parsePartnerRefCookie(
+      cookieStore.get(PARTNER_REF_COOKIE)?.value
+    );
+    try {
+      await stampUserAttributionFromRef({
+        userId: data.user.id,
+        ref,
+      });
+    } catch (stampError) {
+      console.error("[partners] auth callback stamp failed:", stampError);
+    }
+  }
+
   const nextFromQuery = searchParams.get("next");
   const nextFromCookie = await consumeAuthRedirectCookie();
   const next = nextFromQuery ?? nextFromCookie;

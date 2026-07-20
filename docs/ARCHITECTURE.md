@@ -127,6 +127,31 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 4. `projectWeight()` blends logged trend with evidence-capped goal rate → 30-day chart
 5. Projection JSON cached in `projections` table for fast reload
 
+## Partner Attribution (Phase 14)
+
+First-party **Partner** subsystem for gyms (e.g. EoS), influencers, and affiliates — not a third-party network at launch.
+
+**ADR:** [ADRs/003-partner-attribution-revshare.md](./ADRs/003-partner-attribution-revshare.md) · **Acceptance:** [phases/14-partner-attribution.md](./phases/14-partner-attribution.md)
+
+**Phase 14A (capture) shipped in code** — apply `20260720150000_partner_attribution.sql`. Commission ledger is Phase 14B.
+
+```
+/r/[slug] → cookie + attribution_events → user_attributions on signup/claim
+    → Stripe Checkout metadata (partner_id, attribution_id)
+    → Admin /admin/partners
+    → (14B) invoice.paid → partner_commissions ledger
+```
+
+| Concept | Notes |
+|---------|--------|
+| `partners` + `partner_deals` | Typed partners; versioned % / CPA / windows; `duration_months` null = life of subscription |
+| Commission base | Per deal: `gross`, `net_of_fees`, `net_of_fees_and_tax` |
+| Click windows | Influencer/affiliate 30d · gym 90d (templates; overridable) |
+| vs `profiles.signup_source` | Prior app from onboarding — **not** acquisition partner |
+| Default attribution | First durable touch |
+
+Does not change program-engine / evidence-kb boundaries.
+
 ## API Surface
 
 | Route | Purpose | Phase |
@@ -143,6 +168,10 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 | `/api/measurements` | Log body measurements | 5 |
 | `/api/measurements/caliper` | Jackson-Pollock BF% | 5 |
 | `/api/integrations/*` | OAuth callbacks | 7 |
+| `/r/[slug]` | Partner tracked redirect + cookie | 14A |
+| `/api/partners/claim` | Stamp attribution onto current user | 14A |
+| `/api/admin/partners` | Admin partner CRUD | 14A |
+| `/api/admin/export/partner-commissions` | Partner ledger CSV | 14B (planned) |
 
 ## Security
 

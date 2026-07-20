@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-19 · **Current phase:** Phase 11–13 in progress (custom workouts ops apply, PWA timer QA, interval protocols)
+**Last updated:** 2026-07-20 · **Current phase:** Phase 11–13 in progress · Phase 14A code complete (awaiting migration apply)
 
 ---
 
@@ -144,6 +144,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 - `programs`, `workout_sessions`, `exercise_sets`, `workout_schedule_overrides`
 - `nutrition_logs`, `integrations`, `projections`
 - `achievements`, `leaderboard_entries`, `coaching_messages`
+- **Phase 14 (planned):** `partners`, `partner_deals`, `partner_codes`, `attribution_events`, `user_attributions`, `partner_commissions`, `partner_payouts` — see [ADR 003](./ADRs/003-partner-attribution-revshare.md)
 
 ---
 
@@ -210,6 +211,7 @@ Pro+ includes all Pro features. Code gates: `apps/web/src/lib/billing/gates.ts`.
 | 11 | Custom workouts (Pro builder, templates, CSV import/export) | Code complete — apply Supabase migrations | [docs/phases/11-custom-workouts.md](./phases/11-custom-workouts.md)
 | 12 | PWA timer accuracy when minimized / backgrounded | 12A/12B code complete — device QA; 12C deferred | [docs/phases/12-pwa-timer-background.md](./phases/12-pwa-timer-background.md)
 | 13 | Interval protocols + Gravity Week 1 pack | In progress | [docs/phases/13-interval-protocols.md](./phases/13-interval-protocols.md)
+| 14 | Partner attribution & rev-share (gyms, influencers, affiliates) | 14A code complete — apply migration; 14B ledger next | [docs/phases/14-partner-attribution.md](./phases/14-partner-attribution.md) · [ADR 003](./ADRs/003-partner-attribution-revshare.md)
 | — | **Admin console** (operator tools) | Complete (Phases A–D) | [docs/phases/admin-console.md](./phases/admin-console.md) · [ADR 002](./ADRs/002-forgerep-admin-console.md)
 
 ---

@@ -63,6 +63,15 @@ export function AuthForm({
         setError(signUpError.message);
       } else if (signUpData.session) {
         pushSignupConversionEvent();
+        try {
+          await fetch("/api/partners/claim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+        } catch {
+          // Attribution is best-effort; do not block onboarding.
+        }
         window.location.href = "/onboarding";
         return;
       } else {

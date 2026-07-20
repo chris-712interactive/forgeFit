@@ -9,13 +9,74 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 11 + 12 + 13 in progress |
-| **Last updated** | 2026-07-19 |
-| **Last session focus** | Meal log quantity adjust (servings + ingredient qty) |
+| **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A code complete (migration apply) |
+| **Last updated** | 2026-07-20 |
+| **Last session focus** | Phase 14A partner attribution capture |
 
 ---
 
 ## Session Log
+
+### 2026-07-20 — Phase 14A partner attribution capture
+
+**What was done**
+
+- Locked Phase 0: per-deal commission base; influencer 30d / gym 90d click windows; residual default 12 months **or life of subscription** (`duration_months` null)
+- Migration `20260720150000_partner_attribution.sql` (partners, deals, codes, events, user_attributions)
+- Tracked links `GET /r/[slug]` + cookies; signup/auth claim stamp; Stripe Checkout `partner_id` / `attribution_id` metadata
+- Admin **Partners** page (`/admin/partners`) with create + pause/activate + lifetime residual checkbox
+- Unit tests for templates, residual lifetime, cookie codec
+- Typecheck passes
+
+**What's next**
+
+1. **Ops:** apply `20260720150000_partner_attribution.sql` in Supabase; create a test partner in Admin
+2. Phase 14B: commission ledger on `invoice.paid` + CSV export
+3. Continue Phase 11/12 ops (other migrations, PWA timer QA)
+
+**Blockers**
+
+- Partner tracking live only after migration apply
+
+**Files touched**
+
+- `supabase/migrations/20260720150000_partner_attribution.sql`
+- `apps/web/src/lib/partners/*`, `lib/admin/partners.ts`
+- `apps/web/src/app/r/[slug]/route.ts`, `api/partners/claim`, `api/admin/partners`
+- `apps/web/src/app/api/stripe/checkout/route.ts`, `auth/callback`, `signup`, `admin/.../partners`
+- `apps/web/src/components/admin/admin-partners-panel.tsx`, `admin-shell.tsx`
+- `docs/ADRs/003-*.md`, `docs/phases/14-*.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/supabase-setup.md`, `docs/PROGRESS.md`
+
+---
+
+### 2026-07-20 — Partner attribution & rev-share plan (ADR 003 + Phase 14)
+
+**What was done**
+
+- Accepted **ADR 003** — first-party Partner Attribution + Commission Ledger for gyms (EoS), influencers, and affiliates (deals as data; pay on Stripe `invoice.paid`; first durable touch default)
+- Added **Phase 14** acceptance doc with sub-phases 0 / A–E (capture → ledger → portal → Connect → member referrals)
+- Wired plan into BIBLE phase table + ARCHITECTURE partner section
+- Clarified: `signup_source` (prior app) ≠ acquisition partner
+
+**What's next**
+
+1. **Phase 0 commercial rules** — lock net base, windows, EoS/first-gym term sheet (founder/finance)
+2. Continue Phase 11/12 ops (migrations apply, PWA timer QA) — Phase 14 does not block
+3. When ready to build: Phase 14A (schema + `/r/[slug]` + checkout metadata + admin partner CRUD)
+
+**Blockers**
+
+- Phase 14A code blocked on Phase 0 commercial checklist (net definition, deal templates) — not a product-phase blocker
+
+**Files touched**
+
+- `docs/ADRs/003-partner-attribution-revshare.md`
+- `docs/phases/14-partner-attribution.md`
+- `docs/BIBLE.md`
+- `docs/ARCHITECTURE.md`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-19 — Meal log quantity adjust (servings + ingredients)
 

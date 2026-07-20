@@ -86,6 +86,7 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 46. `20260630100000_signup_source.sql` — optional onboarding “previous app” answer (`profiles.signup_source`)
 47. `20260630130000_sport_practice_schedule.sql` — sport practice days + gym-on-practice policy for schedule blocking
 48. `20260630140000_functional_conditioning_goal.sql` — **Functional conditioning** primary goal (`functional_conditioning`)
+49. `20260720150000_partner_attribution.sql` — **Phase 14A** partners, deals, codes, attribution events, `user_attributions`, `profiles.acquisition_partner_id`
 
 After running SQL in the dashboard, reload the API schema if errors persist: **Project Settings → API → Reload schema cache**.
 
