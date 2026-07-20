@@ -11,11 +11,40 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-07-20 |
-| **Last session focus** | Phase 14C portal + commercial leftovers |
+| **Last session focus** | Partner portal analytics upgrade (charts + demographics) |
 
 ---
 
 ## Session Log
+
+### 2026-07-20 — Partner portal growth dashboard (charts + demographics)
+
+**What was done**
+
+- Richer `/partner` dashboard: hero, copy-link, funnel rates, 6-month trend + commission charts (Recharts)
+- Audience aggregates from attributed profiles: sex (men/women), goals, experience, age bands
+- Privacy gates: demographics unlock at ≥5 attributed members; tiny buckets hidden
+- Actionable “Grow your referrals” tips from conversion + audience mix
+- Stats engine in `lib/partners/portal-stats.ts`
+
+**What's next**
+
+1. Apply Phase 14 migrations if not done; smoke-test portal with a few attributed users
+2. Commit/push when ready
+3. Phase 14D/E only when needed
+
+**Blockers**
+
+- None in code
+
+**Files touched**
+
+- `apps/web/src/lib/partners/portal-stats.ts`, `portal.ts`
+- `apps/web/src/components/partner/partner-portal-dashboard.tsx`
+- `apps/web/src/app/partner/(authenticated)/page.tsx`, `layout.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-20 — Phase 14C portal + commercial leftovers
 

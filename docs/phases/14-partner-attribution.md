@@ -94,8 +94,10 @@ Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affi
 ### Done when
 
 - [x] Partner login via Supabase Auth + `partner_portal_users` (admin grants by email)
-- [x] Read-only dashboard: clicks, signups, paid conversions, estimated / pending / lifetime commission
-- [x] Display unique link + codes
+- [x] Read-only dashboard: clicks, signups, paid conversions, estimated / pending / lifetime commission, funnel rates, 6-month charts
+- [x] Audience aggregates (sex / goals / experience / age) from attributed profiles — privacy-gated
+- [x] Growth tips for partners
+- [x] Display unique link + codes (+ copy)
 - [x] Gym/club breakdown from `?club=` metadata when present
 - [x] No partner write access to deals or ledger status
 - [ ] Migration `20260720170000_partner_portal_commercial.sql` applied in Supabase (ops)

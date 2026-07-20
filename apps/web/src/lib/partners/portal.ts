@@ -6,6 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 import { writeAdminAuditLog } from "@/lib/admin/audit";
 import type { TaxFormStatus } from "@/lib/partners/commercial-policy";
 
+export type {
+  MonthTrendPoint,
+  NamedCount,
+  PartnerPortalStats,
+} from "./portal-stats";
+export { getPartnerPortalStats } from "./portal-stats";
+
 export interface PartnerPortalContext {
   userId: string;
   email: string | undefined;
@@ -73,139 +80,6 @@ export async function requirePartnerPortalUser(): Promise<PartnerPortalContext> 
     notFound();
   }
   return ctx;
-}
-
-export interface PartnerPortalStats {
-  periodMonth: string;
-  clicks: number;
-  signups: number;
-  paidAccruals: number;
-  estimatedCommissionCents: number;
-  pendingCommissionCents: number;
-  lifetimeCommissionCents: number;
-  codes: string[];
-  trackedLinkPath: string;
-  clubBreakdown: Array<{ club: string; clicks: number; signups: number }>;
-}
-
-function currentPeriodMonth(): string {
-  const now = new Date();
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-export async function getPartnerPortalStats(
-  partnerId: string,
-  partnerSlug: string,
-  periodMonth = currentPeriodMonth()
-): Promise<PartnerPortalStats> {
-  const admin = createAdminClient();
-
-  const monthStart = `${periodMonth}-01T00:00:00.000Z`;
-  const [y, m] = periodMonth.split("-").map(Number);
-  const nextMonth =
-    m === 12
-      ? `${y + 1}-01-01T00:00:00.000Z`
-      : `${y}-${String(m + 1).padStart(2, "0")}-01T00:00:00.000Z`;
-
-  const [
-    { count: clicks },
-    { data: attrs },
-    { data: commissions },
-    { data: lifetime },
-    { data: codes },
-    { data: clickEvents },
-  ] = await Promise.all([
-    admin
-      .from("attribution_events")
-      .select("id", { count: "exact", head: true })
-      .eq("partner_id", partnerId)
-      .gte("created_at", monthStart)
-      .lt("created_at", nextMonth),
-    admin
-      .from("user_attributions")
-      .select("id, metadata")
-      .eq("partner_id", partnerId)
-      .gte("attributed_at", monthStart)
-      .lt("attributed_at", nextMonth),
-    admin
-      .from("partner_commissions")
-      .select("entry_kind, commission_cents, status")
-      .eq("partner_id", partnerId)
-      .eq("period_month", periodMonth),
-    admin
-      .from("partner_commissions")
-      .select("commission_cents")
-      .eq("partner_id", partnerId),
-    admin
-      .from("partner_codes")
-      .select("code")
-      .eq("partner_id", partnerId)
-      .eq("active", true),
-    admin
-      .from("attribution_events")
-      .select("metadata")
-      .eq("partner_id", partnerId)
-      .gte("created_at", monthStart)
-      .lt("created_at", nextMonth)
-      .limit(2000),
-  ]);
-
-  let paidAccruals = 0;
-  let estimatedCommissionCents = 0;
-  let pendingCommissionCents = 0;
-  for (const row of commissions ?? []) {
-    estimatedCommissionCents += row.commission_cents as number;
-    if (row.entry_kind === "accrual") paidAccruals += 1;
-    if (row.status === "pending" || row.status === "payable") {
-      pendingCommissionCents += row.commission_cents as number;
-    }
-  }
-
-  const lifetimeCommissionCents = (lifetime ?? []).reduce(
-    (sum, row) => sum + (row.commission_cents as number),
-    0
-  );
-
-  const clubClicks = new Map<string, number>();
-  for (const event of clickEvents ?? []) {
-    const meta = event.metadata as { club?: string | null } | null;
-    const club = meta?.club?.trim();
-    if (club) {
-      clubClicks.set(club, (clubClicks.get(club) ?? 0) + 1);
-    }
-  }
-
-  const clubSignups = new Map<string, number>();
-  for (const attr of attrs ?? []) {
-    const meta = attr.metadata as { club?: string | null } | null;
-    const club = meta?.club?.trim();
-    if (club) {
-      clubSignups.set(club, (clubSignups.get(club) ?? 0) + 1);
-    }
-  }
-
-  const clubKeys = new Set([...clubClicks.keys(), ...clubSignups.keys()]);
-  const clubBreakdown = [...clubKeys]
-    .map((club) => ({
-      club,
-      clicks: clubClicks.get(club) ?? 0,
-      signups: clubSignups.get(club) ?? 0,
-    }))
-    .sort((a, b) => b.clicks - a.clicks)
-    .slice(0, 25);
-
-  return {
-    periodMonth,
-    clicks: clicks ?? 0,
-    signups: attrs?.length ?? 0,
-    paidAccruals,
-    estimatedCommissionCents,
-    pendingCommissionCents,
-    lifetimeCommissionCents,
-    codes: (codes ?? []).map((row) => row.code as string),
-    trackedLinkPath: `/r/${partnerSlug}`,
-    clubBreakdown,
-  };
 }
 
 export async function grantPartnerPortalAccess(input: {
@@ -319,22 +193,4 @@ export async function updatePartnerTaxForm(input: {
   });
 
   return { ok: true };
-}
-
-export async function listPortalUsersForPartner(
-  partnerId: string
-): Promise<Array<{ userId: string; email: string | null }>> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("partner_portal_users")
-    .select("user_id, profiles(email)")
-    .eq("partner_id", partnerId);
-
-  return (data ?? []).map((row) => {
-    const profile = row.profiles as unknown as { email: string | null } | null;
-    return {
-      userId: row.user_id as string,
-      email: profile?.email ?? null,
-    };
-  });
 }

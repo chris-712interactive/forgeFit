@@ -12,7 +12,7 @@ export default async function PartnerPortalLayout({
   return (
     <div className="min-h-dvh bg-forge-surface text-forge-text">
       <header className="border-b border-white/10">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div>
             <p className="font-display text-sm font-bold">ForgeRep Partners</p>
             <p className="text-xs text-forge-muted">
@@ -30,7 +30,7 @@ export default async function PartnerPortalLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
     </div>
   );
 }
