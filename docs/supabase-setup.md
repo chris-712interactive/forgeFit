@@ -87,8 +87,11 @@ Or paste SQL from `supabase/migrations/` into the SQL Editor **in filename order
 47. `20260630130000_sport_practice_schedule.sql` — sport practice days + gym-on-practice policy for schedule blocking
 48. `20260630140000_functional_conditioning_goal.sql` — **Functional conditioning** primary goal (`functional_conditioning`)
 49. `20260720150000_partner_attribution.sql` — **Phase 14A** partners, deals, codes, attribution events, `user_attributions`, `profiles.acquisition_partner_id`
+50. `20260720160000_partner_commissions.sql` — **Phase 14B** `partner_commissions` ledger + `partner_payouts`
 
 After running SQL in the dashboard, reload the API schema if errors persist: **Project Settings → API → Reload schema cache**.
+
+**Stripe webhook (Phase 14B):** ensure the endpoint receives `invoice.paid` and `charge.refunded` in addition to existing subscription events.
 
 ## 4. Auth providers
 

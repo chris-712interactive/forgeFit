@@ -1,6 +1,6 @@
 # Phase 14 — Partner Attribution & Revenue Share
 
-**Status:** Phase 0 locked · Phase 14A in progress  
+**Status:** Phase 0 locked · Phase 14A code complete · Phase 14B code complete (awaiting migration apply)  
 **ADR:** [003-partner-attribution-revshare.md](../ADRs/003-partner-attribution-revshare.md)  
 **Depends on:** Phase 7 billing (Stripe), Admin console (Phases A–D)  
 **Does not block:** Phases 11–13 product / device QA
@@ -62,26 +62,30 @@ Attribute signups and paid conversions to gyms (e.g. EoS), influencers, and affi
 
 ### Done when
 
-- [ ] Migration: `partner_commissions`, `partner_payouts` (+ indexes; unique on Stripe invoice id for accruals)
-- [ ] On `invoice.paid`: resolve user attribution + active deal → insert `pending` commission (idempotent)
-- [ ] Comp accounts (`billing_source = comp`) skipped
-- [ ] Refund / chargeback path inserts reversing ledger rows
-- [ ] Deal `duration_months` and tier eligibility enforced
-- [ ] Admin: commission ledger list/filter by partner + month
-- [ ] Admin: mark payout batch paid (`partner_payouts`)
-- [ ] Admin: CSV export suitable for gym monthly pack (signups, paid conversions, net, commission)
-- [ ] Optional: Inngest job for accrual (preferred over heavy webhook body)
-- [ ] Unit tests for commission math (percent, CPA hybrid, refund reverse, window expiry)
-- [ ] `pnpm turbo typecheck` passes
+- [x] Migration: `partner_commissions`, `partner_payouts` (+ unique indexes on invoice/refund)
+- [x] On `invoice.paid`: resolve user attribution + deal → insert `pending` commission (idempotent)
+- [x] Comp accounts (`billing_source = comp`) skipped
+- [x] Refund path (`charge.refunded`) inserts reversing ledger rows
+- [x] Deal `duration_months` (incl. lifetime null) and tier eligibility enforced
+- [x] Admin: commission ledger list/filter by partner + month on `/admin/partners`
+- [x] Admin: mark payout batch paid (`partner_payouts`)
+- [x] Admin: CSV export summary + detail (`GET /api/admin/export/partner-commissions`)
+- [x] Accrual inline in Stripe webhook (Inngest deferred — no Inngest in repo yet)
+- [x] Unit tests for commission math (percent, CPA, hybrid, residual, tiers)
+- [x] `pnpm turbo typecheck` passes
+- [ ] Migration `20260720160000_partner_commissions.sql` applied in Supabase (ops)
+- [ ] Stripe Dashboard webhook includes `invoice.paid` and `charge.refunded` (ops)
 
-### Files (expected)
+### Files
 
 | Area | Path |
 |------|------|
-| Migration | `supabase/migrations/YYYYMMDDHHMMSS_partner_commissions.sql` |
-| Engine | `apps/web/src/lib/partners/commission.ts` |
+| Migration | `supabase/migrations/20260720160000_partner_commissions.sql` |
+| Engine | `apps/web/src/lib/partners/commission.ts`, `commission-math.ts` |
 | Webhook | `apps/web/src/app/api/stripe/webhook/route.ts` |
-| Admin | revenue/partners ledger UI + `GET /api/admin/export/partner-commissions` |
+| Admin | `lib/admin/partner-ledger.ts`, `admin-partner-ledger-panel.tsx` |
+| Export | `GET /api/admin/export/partner-commissions` |
+| Ledger API | `GET/POST /api/admin/partners/ledger` |
 
 ---
 

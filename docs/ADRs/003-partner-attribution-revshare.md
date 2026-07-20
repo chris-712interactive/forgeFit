@@ -1,6 +1,6 @@
 # ADR 003 — Partner Attribution & Revenue Share
 
-**Status:** Accepted · Phase 14A in progress  
+**Status:** Accepted · Phase 14A + 14B code complete (migrations apply ops)  
 **Date:** 2026-07-20  
 **Last updated:** 2026-07-20  
 **Depends on:** Phase 7 billing (Stripe checkout + webhooks), Admin console (Phases A–D)  

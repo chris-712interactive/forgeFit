@@ -4,6 +4,10 @@ import {
   syncSubscriptionToProfile,
 } from "@/lib/billing/sync-subscription";
 import { getStripe, resolveSubscriptionUserId, retrieveSubscriptionForSync } from "@/lib/billing/stripe";
+import {
+  accrueCommissionFromInvoice,
+  reverseCommissionFromRefund,
+} from "@/lib/partners/commission";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
@@ -57,6 +61,41 @@ export async function POST(request: Request) {
           (await resolveSubscriptionUserId(subscription, stripe));
         if (userId) {
           await clearSubscriptionForUser(userId);
+        }
+        break;
+      }
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const result = await accrueCommissionFromInvoice(invoice, stripe);
+        if (!result.ok) {
+          throw new Error(result.error);
+        }
+        if ("skipped" in result && result.skipped) {
+          console.info(
+            "[stripe webhook] partner commission skipped:",
+            result.reason,
+            invoice.id
+          );
+        }
+        break;
+      }
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        const refunds = charge.refunds?.data ?? [];
+        // Process the latest refund (Stripe may send the charge with all refunds)
+        const refund = refunds[refunds.length - 1];
+        if (refund) {
+          const result = await reverseCommissionFromRefund(charge, refund);
+          if (!result.ok) {
+            throw new Error(result.error);
+          }
+          if ("skipped" in result && result.skipped) {
+            console.info(
+              "[stripe webhook] partner reversal skipped:",
+              result.reason,
+              refund.id
+            );
+          }
         }
         break;
       }

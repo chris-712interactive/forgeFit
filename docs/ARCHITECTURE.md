@@ -133,13 +133,13 @@ First-party **Partner** subsystem for gyms (e.g. EoS), influencers, and affiliat
 
 **ADR:** [ADRs/003-partner-attribution-revshare.md](./ADRs/003-partner-attribution-revshare.md) · **Acceptance:** [phases/14-partner-attribution.md](./phases/14-partner-attribution.md)
 
-**Phase 14A (capture) shipped in code** — apply `20260720150000_partner_attribution.sql`. Commission ledger is Phase 14B.
+**Phase 14A (capture) + 14B (ledger) shipped in code** — apply `20260720150000_partner_attribution.sql` and `20260720160000_partner_commissions.sql`. Enable Stripe webhook events `invoice.paid` and `charge.refunded`.
 
 ```
 /r/[slug] → cookie + attribution_events → user_attributions on signup/claim
     → Stripe Checkout metadata (partner_id, attribution_id)
-    → Admin /admin/partners
-    → (14B) invoice.paid → partner_commissions ledger
+    → invoice.paid → partner_commissions ledger
+    → Admin /admin/partners (CRUD + ledger + CSV + mark paid)
 ```
 
 | Concept | Notes |
@@ -171,7 +171,8 @@ Does not change program-engine / evidence-kb boundaries.
 | `/r/[slug]` | Partner tracked redirect + cookie | 14A |
 | `/api/partners/claim` | Stamp attribution onto current user | 14A |
 | `/api/admin/partners` | Admin partner CRUD | 14A |
-| `/api/admin/export/partner-commissions` | Partner ledger CSV | 14B (planned) |
+| `/api/admin/partners/ledger` | Commission ledger + mark payout paid | 14B |
+| `/api/admin/export/partner-commissions` | Partner summary/detail CSV | 14B |
 
 ## Security
 

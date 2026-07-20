@@ -9,13 +9,47 @@
 
 | Field | Value |
 |-------|-------|
-| **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A code complete (migration apply) |
+| **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A/14B code complete (migrations apply) |
 | **Last updated** | 2026-07-20 |
-| **Last session focus** | Phase 14A partner attribution capture |
+| **Last session focus** | Phase 14B partner commission ledger |
 
 ---
 
 ## Session Log
+
+### 2026-07-20 — Phase 14B partner commission ledger
+
+**What was done**
+
+- Migration `20260720160000_partner_commissions.sql` (`partner_commissions`, `partner_payouts`)
+- Commission engine: percent / CPA / hybrid, gross vs net bases, residual (incl. lifetime), tier gates, comps skipped
+- Stripe webhook: `invoice.paid` accrual + `charge.refunded` proportional reversal (idempotent)
+- Admin Partners: ledger filter by month/partner, mark payout paid, summary + detail CSV export
+- Unit tests for commission math; typecheck passes
+
+**What's next**
+
+1. **Ops:** apply both Phase 14 migrations; add `invoice.paid` + `charge.refunded` to Stripe webhook
+2. Smoke-test: attributed user pays → ledger row; refund → reversal; export CSV; mark paid
+3. Phase 14C portal later if partner volume needs it; continue Phase 11/12 ops
+
+**Blockers**
+
+- Live ledger requires migrations + Stripe webhook event types
+
+**Files touched**
+
+- `supabase/migrations/20260720160000_partner_commissions.sql`
+- `apps/web/src/lib/partners/commission.ts`, `commission-math.ts`, `commission-math.test.ts`
+- `apps/web/src/app/api/stripe/webhook/route.ts`
+- `apps/web/src/lib/admin/partner-ledger.ts`
+- `apps/web/src/app/api/admin/partners/ledger/route.ts`
+- `apps/web/src/app/api/admin/export/partner-commissions/route.ts`
+- `apps/web/src/components/admin/admin-partner-ledger-panel.tsx`
+- `apps/web/src/app/admin/(authenticated)/partners/page.tsx`
+- `docs/phases/14-partner-attribution.md`, `docs/ADRs/003-*.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/supabase-setup.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-20 — Phase 14A partner attribution capture
 
