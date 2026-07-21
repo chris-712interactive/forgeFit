@@ -17,14 +17,14 @@ export function AdminUserFilters({
       method="get"
       className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
     >
-      <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs font-medium text-forge-muted">
+      <label className="flex min-w-0 w-full flex-1 flex-col gap-1 text-xs font-medium text-forge-muted sm:min-w-[220px]">
         Search
         <input
           name="q"
           type="search"
           defaultValue={query}
           placeholder="Email, name, or user ID"
-          className="rounded-xl border border-white/10 bg-forge-surface px-3 py-2.5 text-sm text-forge-text outline-none ring-forge-ember/40 focus:ring-2"
+          className="w-full min-w-0 rounded-xl border border-white/10 bg-forge-surface px-3 py-2.5 text-sm text-forge-text outline-none ring-forge-ember/40 focus:ring-2"
         />
       </label>
 

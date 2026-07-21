@@ -339,7 +339,7 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
   const showCpa = commissionType === "cpa" || commissionType === "hybrid";
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {message ? (
         <p className="rounded-xl border border-forge-success/30 bg-forge-success/10 px-3 py-2 text-sm text-forge-success">
           {message}
@@ -351,7 +351,7 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
         </p>
       ) : null}
 
-      <section className="rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
+      <section className="min-w-0 rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-lg font-bold text-forge-text">
           Create partner
         </h2>
@@ -361,7 +361,7 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
         </p>
         <form
           onSubmit={handleCreate}
-          className="mt-4 grid gap-3 sm:grid-cols-2"
+          className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2"
         >
           <label className="block text-sm">
             <span className="text-forge-muted">Slug (URL)</span>
@@ -624,8 +624,8 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
           <ul className="mt-4 divide-y divide-white/10">
             {partners.map((partner) => (
               <li key={partner.id} className="space-y-3 py-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0 break-words">
                     <p className="font-medium text-forge-text">
                       {partner.displayName}{" "}
                       <span className="text-forge-muted">
@@ -635,7 +635,7 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
                     <p className="mt-1 text-sm text-forge-muted">
                       Status: {partner.status} · Link:{" "}
                       <a
-                        className="text-forge-steel hover:underline"
+                        className="break-all text-forge-steel hover:underline"
                         href={`/r/${partner.slug}`}
                       >
                         /r/{partner.slug}
@@ -746,7 +746,7 @@ export function AdminPartnersPanel({ partners }: AdminPartnersPanelProps) {
                           [partner.id]: e.target.value,
                         }))
                       }
-                      className="min-w-[14rem] flex-1 rounded-lg border border-white/10 bg-forge-surface px-2 py-1.5 text-sm text-forge-text"
+                      className="min-w-0 w-full flex-1 rounded-lg border border-white/10 bg-forge-surface px-2 py-1.5 text-sm text-forge-text sm:min-w-[14rem]"
                     />
                     <button
                       type="button"

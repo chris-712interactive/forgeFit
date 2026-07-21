@@ -84,7 +84,7 @@ export function AdminUsersTable({ users }: AdminUsersTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-forge-surface-raised">
+    <div className="max-w-full overflow-hidden rounded-2xl border border-white/10 bg-forge-surface-raised">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead>
@@ -104,7 +104,7 @@ export function AdminUsersTable({ users }: AdminUsersTableProps) {
                 <td className="px-4 py-3">
                   <Link
                     href={`/admin/users/${user.id}`}
-                    className="font-medium text-forge-text hover:text-forge-ember"
+                    className="break-all font-medium text-forge-text hover:text-forge-ember"
                   >
                     {user.email ?? "No email"}
                   </Link>

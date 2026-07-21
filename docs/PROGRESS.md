@@ -10,12 +10,49 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-20 |
-| **Last session focus** | Admin partner create: full deal/payout overrides + hard delete |
+| **Last updated** | 2026-07-21 |
+| **Last session focus** | Admin console mobile overflow / responsive layout |
 
 ---
 
 ## Session Log
+
+### 2026-07-21 — Admin mobile overflow fix
+
+**What was done**
+
+- `AdminShell`: clip horizontal overflow, `min-w-0` / `minmax(0,1fr)` grid so wide tables no longer expand the page
+- Mobile nav: horizontal scroll contained without growing the viewport; hide scrollbars
+- Tables/filters/forms: `max-w-full` scroll wrappers; drop rigid `min-w-*` on narrow screens; break long emails/UUIDs/deal copy
+- KPI cards + user detail: `min-w-0` + `break-words` so hints and IDs wrap
+
+**What's next**
+
+1. Smoke-test `/admin` at 375px across Overview, Users, Partners, Ingredients
+2. Apply Phase 14 migrations if not done; continue partner/admin polish
+3. Phase 14D/E only when needed
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/components/admin/admin-shell.tsx`
+- `apps/web/src/components/admin/admin-user-filters.tsx`
+- `apps/web/src/components/admin/admin-partners-panel.tsx`
+- `apps/web/src/components/admin/admin-partner-ledger-panel.tsx`
+- `apps/web/src/components/admin/admin-overview-cards.tsx`
+- `apps/web/src/components/admin/admin-revenue-dashboard.tsx`
+- `apps/web/src/components/admin/admin-growth-dashboard.tsx`
+- `apps/web/src/components/admin/admin-user-detail-panel.tsx`
+- `apps/web/src/components/admin/admin-users-table.tsx`
+- `apps/web/src/components/admin/admin-audit-table.tsx`
+- `apps/web/src/components/admin/admin-ingredient-suggestions-table.tsx`
+- `apps/web/src/app/admin/(authenticated)/partners/page.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-20 — Admin partner full terms + delete
 

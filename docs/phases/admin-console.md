@@ -37,7 +37,7 @@ One browser profile holds one Supabase session at a time. Impersonation lets ope
 - [x] `profiles.is_admin`, comp columns (`billing_source`, `comp_reason`, `comp_expires_at`), `admin_audit_log` table
 - [x] `requireAdminUser()` / `getAdminApiActor()` guard all `/admin` pages and `/api/admin/*`
 - [x] Non-admins receive **404** (not 403)
-- [x] `/admin` desktop layout with sidebar (`AdminShell`)
+- [x] `/admin` layout with sidebar (`AdminShell`) — desktop sidebar; mobile horizontal nav + overflow-safe main
 - [x] **`/admin/login`** — operator sign-in separate from member `/login`
 - [x] Middleware skips onboarding/disclaimer redirects on `/admin/*`
 - [x] **Read-only impersonation** — view member app as target user; audit `impersonation_start` / `impersonation_end`; block mutations

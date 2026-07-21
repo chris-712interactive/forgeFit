@@ -25,20 +25,20 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-dvh bg-forge-surface text-forge-text">
-      <div className="mx-auto grid min-h-dvh max-w-[1400px] lg:grid-cols-[240px_1fr]">
-        <aside className="border-b border-white/10 bg-forge-surface lg:border-b-0 lg:border-r">
-          <div className="flex items-center gap-3 px-5 py-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-forge-ember to-forge-gold font-display text-sm font-extrabold text-white">
+    <div className="min-h-dvh overflow-x-clip bg-forge-surface text-forge-text">
+      <div className="mx-auto grid min-h-dvh w-full min-w-0 max-w-[1400px] lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="min-w-0 border-b border-white/10 bg-forge-surface lg:border-b-0 lg:border-r">
+          <div className="flex items-center gap-3 px-4 py-4 sm:px-5 sm:py-5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-forge-ember to-forge-gold font-display text-sm font-extrabold text-white">
               F
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="font-display text-sm font-bold">ForgeRep</p>
               <p className="text-xs text-forge-muted">Admin Console</p>
             </div>
           </div>
 
-          <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:px-2 lg:pb-0">
+          <nav className="flex max-w-full gap-1 overflow-x-auto overscroll-x-contain px-3 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:px-2 lg:pb-0 [&::-webkit-scrollbar]:hidden">
             {NAV_ITEMS.map((item) => {
               const active = item.exact
                 ? pathname === item.href
@@ -47,7 +47,7 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`shrink-0 whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
                       ? "bg-forge-ember/15 text-forge-text ring-1 ring-inset ring-forge-ember/30"
                       : "text-forge-muted hover:bg-white/5 hover:text-forge-text"
@@ -73,7 +73,9 @@ export function AdminShell({ adminEmail, children }: AdminShellProps) {
           </div>
         </aside>
 
-        <main className="px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+        <main className="min-w-0 max-w-full overflow-x-auto px-4 py-6 sm:px-8 sm:py-8">
+          <div className="mx-auto w-full min-w-0 max-w-full">{children}</div>
+        </main>
       </div>
     </div>
   );

@@ -27,8 +27,7 @@ export default async function AdminPartnersPage() {
         </h1>
         <p className="mt-1 text-sm text-forge-muted">
           Gyms, influencers, and affiliates — tracked links at{" "}
-          <code className="text-forge-text">/r/&#123;slug&#125;</code>. Commissions
-          Commissions accrue on paid Stripe invoices. Partners view stats at{" "}
+          <code className="text-forge-text">/r/&#123;slug&#125;</code>.           Commissions accrue on paid Stripe invoices. Partners view stats at{" "}
           <code className="text-forge-text">/partner</code>.
         </p>
       </header>

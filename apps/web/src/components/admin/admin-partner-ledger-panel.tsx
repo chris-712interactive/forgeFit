@@ -130,7 +130,7 @@ export function AdminPartnerLedgerPanel({
             <select
               value={partnerId}
               onChange={(e) => setPartnerId(e.target.value)}
-              className="mt-1 block min-w-[12rem] rounded-xl border border-white/10 bg-forge-surface px-3 py-2 text-forge-text"
+              className="mt-1 block w-full min-w-0 max-w-full rounded-xl border border-white/10 bg-forge-surface px-3 py-2 text-forge-text sm:min-w-[12rem]"
             >
               <option value="">All partners</option>
               {partners.map((partner) => (
@@ -162,7 +162,7 @@ export function AdminPartnerLedgerPanel({
           </a>
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 max-w-full overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead className="text-forge-muted">
               <tr>

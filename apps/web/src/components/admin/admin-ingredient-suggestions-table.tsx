@@ -63,7 +63,7 @@ export function AdminIngredientSuggestionsTable({
         </p>
       ) : null}
 
-      <div className="overflow-x-auto rounded-2xl border border-white/10">
+      <div className="max-w-full overflow-x-auto rounded-2xl border border-white/10">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-white/10 bg-forge-surface-raised text-xs text-forge-muted">

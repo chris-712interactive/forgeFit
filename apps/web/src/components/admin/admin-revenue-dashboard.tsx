@@ -33,12 +33,14 @@ function KpiCard({
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
+    <div className="min-w-0 rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
       <p className="text-xs font-medium text-forge-muted">{label}</p>
-      <p className="font-display mt-1 text-2xl font-extrabold text-forge-text sm:text-3xl">
+      <p className="font-display mt-1 break-words text-2xl font-extrabold text-forge-text sm:text-3xl">
         {value}
       </p>
-      {hint ? <p className="mt-1 text-xs text-forge-muted">{hint}</p> : null}
+      {hint ? (
+        <p className="mt-1 break-words text-xs text-forge-muted">{hint}</p>
+      ) : null}
     </div>
   );
 }
@@ -152,7 +154,7 @@ export function AdminRevenueDashboard({ metrics }: AdminRevenueDashboardProps) {
               </Link>
             </div>
           </div>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 max-w-full overflow-x-auto">
             <table className="w-full min-w-[420px] text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-xs text-forge-muted">

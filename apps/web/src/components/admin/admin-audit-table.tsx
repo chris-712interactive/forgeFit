@@ -36,7 +36,7 @@ export function AdminAuditTable({ entries }: AdminAuditTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-forge-surface-raised">
+    <div className="max-w-full overflow-hidden rounded-2xl border border-white/10 bg-forge-surface-raised">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead>

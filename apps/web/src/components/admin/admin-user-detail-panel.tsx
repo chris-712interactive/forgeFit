@@ -34,14 +34,14 @@ export function AdminUserDetailPanel({
     : null;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-      <section className="rounded-2xl border border-white/10 bg-forge-surface-raised p-5">
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
+      <section className="min-w-0 rounded-2xl border border-white/10 bg-forge-surface-raised p-4 sm:p-5">
         <h2 className="font-display text-lg font-bold text-forge-text">
           {user.email ?? "No email on file"}
         </h2>
-        <p className="mt-1 text-sm text-forge-muted">
+        <p className="mt-1 break-words text-sm text-forge-muted">
           {user.displayName ?? "No display name"} ·{" "}
-          <span className="font-mono text-xs">{user.id}</span>
+          <span className="break-all font-mono text-xs">{user.id}</span>
         </p>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -98,7 +98,7 @@ export function AdminUserDetailPanel({
         ) : null}
       </section>
 
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <AdminImpersonateButton userId={user.id} email={user.email} />
         <AdminFeatureFlagsForm userId={user.id} initialFlags={featureFlags} />
         <AdminBillingActionsForm userId={user.id} context={billingContext} />
