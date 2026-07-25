@@ -10,8 +10,8 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-21 |
-| **Last session focus** | Admin console mobile overflow / responsive layout |
+| **Last updated** | 2026-07-25 |
+| **Last session focus** | Fat-loss incline-walk-only session bug (equipment matching) |
 
 ---
 
