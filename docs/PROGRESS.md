@@ -17,6 +17,25 @@
 
 ## Session Log
 
+### 2026-07-25 — Fix deploy: start-date server boundary
+
+**What was done**
+
+- Split timezone-aware `resolveProgramStartDate` into `start-date-server.ts` so client components no longer import `next/headers` via `start-date.ts` (Vercel/CI build break)
+
+**What's next**
+
+1. Confirm Vercel deploy succeeds on main
+2. Hard-refresh Workout and retry Move → Start
+
+**Files touched**
+
+- `apps/web/src/lib/programs/start-date.ts`, `start-date-server.ts`, `start-date.test.ts`
+- `apps/web/src/app/actions/program.ts`, `progression.ts`, `equipment.ts`
+- `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-25 — Rescheduled workout stuck on Upcoming
 
 **What was done**

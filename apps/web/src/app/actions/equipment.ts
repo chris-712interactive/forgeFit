@@ -6,8 +6,8 @@ import {
   replaceUserEquipment,
 } from "@/lib/equipment/service";
 import { generateAndSaveProgram } from "@/lib/programs/service";
+import { resolveProgramStartDate } from "@/lib/programs/start-date-server";
 import {
-  resolveProgramStartDate,
   SCHEDULE_START_DATE_SCHEMA,
 } from "@/lib/programs/start-date";
 import { createClient } from "@/lib/supabase/server";

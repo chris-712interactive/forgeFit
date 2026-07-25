@@ -8,9 +8,9 @@ import {
   loadUserProgramContext,
 } from "@/lib/programs/service";
 import {
-  resolveProgramStartDate,
   SCHEDULE_START_DATE_SCHEMA,
 } from "@/lib/programs/start-date";
+import { resolveProgramStartDate } from "@/lib/programs/start-date-server";
 import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import { friendlySupabaseError } from "@/lib/supabase/schema-errors";

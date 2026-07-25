@@ -4,9 +4,9 @@ import { parseScheduleStartIso, toScheduleStartIso } from "@forgefit/program-eng
 import {
   earliestAllowedPlanStartIso,
   isValidPlanStartDate,
-  resolveProgramStartDate,
   todayScheduleStartIso,
 } from "./start-date.ts";
+import { resolveProgramStartDate } from "./start-date-server.ts";
 
 test("resolveProgramStartDate defaults to now when omitted", async () => {
   const result = await resolveProgramStartDate();

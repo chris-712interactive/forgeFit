@@ -4,7 +4,7 @@ import {
   generateAndSaveProgram,
   getActiveProgram,
 } from "@/lib/programs/service";
-import { resolveProgramStartDate } from "@/lib/programs/start-date";
+import { resolveProgramStartDate } from "@/lib/programs/start-date-server";
 import { evaluatePromotion } from "@/lib/progression/evaluate";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
