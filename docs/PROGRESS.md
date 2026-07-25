@@ -17,6 +17,34 @@
 
 ## Session Log
 
+### 2026-07-25 — Fat-loss sessions only showing Incline Walk
+
+**What was done**
+
+- Diagnosed fat-loss regenerate bug: strength picks failed under strict equipment AND-matching + missing implicit bodyweight, while fat-loss splits still appended Incline Walk (15–25 min)
+- Fixed `isExerciseAvailable`: load modalities are OR; `bench`/`squat_rack` supports are AND; bodyweight always available
+- Dumbbell row no longer requires a bench; added curated Inverted Row for bodyweight horizontal pull
+- Regression tests for treadmill-only / dumbbells+treadmill / legacy `cardio_machines` fat-loss plans
+- ADR 004 documents the matching rules
+
+**What's next**
+
+1. User: regenerate program (Profile → Program plan → rebuild, or save equipment with regenerate) to replace incline-walk-only sessions
+2. Optional: audit curated exercise equipment tags for any remaining AND-vs-OR confusion
+3. Optional: investigate mirrored warmup/main/recovery labels on workout detail (UI glitch in screenshot)
+
+**Blockers**
+
+- None — existing active plans keep the bad JSON until regenerate
+
+**Files touched**
+
+- `packages/exercise-db/src/availability.ts`, `availability.test.ts`, `exercises.ts`, `resolve.ts`
+- `packages/program-engine/src/fat-loss-cardio.test.ts`
+- `docs/ADRs/004-exercise-equipment-matching.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
+
 ### 2026-07-21 — Admin mobile overflow fix
 
 **What was done**

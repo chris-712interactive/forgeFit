@@ -15,6 +15,7 @@ const CURATED_CATALOG_ALIASES: Record<string, string> = {
   machine_shoulder_press: "machine_shoulder_military_press",
   barbell_row: "bent_over_barbell_row",
   dumbbell_row: "bent_over_two_dumbbell_row",
+  bodyweight_row: "inverted_row",
   cable_row: "seated_cable_rows",
   pull_up: "pullups",
   lat_pulldown: "wide_grip_lat_pulldown",

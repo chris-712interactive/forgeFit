@@ -115,9 +115,10 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 2. `/exercises` searches `@forgefit/exercise-db` by name, pattern, muscle
 3. `/exercises/[id]` resolves curated program ids → catalog aliases for demos
 4. `getSubstitutions()` ranks same-pattern exercises by muscle overlap + user equipment; optional `excludeEquipment` for in-session "equipment busy" swaps
-5. Active workout: **Equipment busy?** bottom sheet → `swapExerciseInSession()` updates remaining sets offline-first; syncs `planned_exercise_id` to Supabase
-6. `react-body-highlighter` renders muscle activation from `highlightMuscles`
-7. Serwist caches GitHub-hosted demo frames for offline viewing
+5. `isExerciseAvailable` treats load modalities as **OR** and supports (`bench`, `squat_rack`) as **AND**; bodyweight movements are always eligible (see [ADR 004](./ADRs/004-exercise-equipment-matching.md))
+6. Active workout: **Equipment busy?** bottom sheet → `swapExerciseInSession()` updates remaining sets offline-first; syncs `planned_exercise_id` to Supabase
+7. `react-body-highlighter` renders muscle activation from `highlightMuscles`
+8. Serwist caches GitHub-hosted demo frames for offline viewing
 
 ## Measurements + Projections (Phase 5)
 

@@ -141,9 +141,19 @@ export const EXERCISES: Exercise[] = [
     name: "Dumbbell Row",
     movementPattern: "horizontal_pull",
     primaryMuscles: ["back", "biceps"],
-    equipment: ["dumbbells", "bench"],
+    // Bent-over DB row does not require a bench — keep accessible for home dumbbells.
+    equipment: ["dumbbells"],
     difficulty: "beginner",
     priority: 8,
+  },
+  {
+    id: "bodyweight_row",
+    name: "Inverted Row",
+    movementPattern: "horizontal_pull",
+    primaryMuscles: ["back", "biceps"],
+    equipment: ["bodyweight_only"],
+    difficulty: "beginner",
+    priority: 6,
   },
   {
     id: "cable_row",
