@@ -11,11 +11,40 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-07-25 |
-| **Last session focus** | Fat-loss incline-walk-only session bug (equipment matching) |
+| **Last session focus** | Rescheduled workout stuck Upcoming (start-lock / TZ skew) |
 
 ---
 
 ## Session Log
+
+### 2026-07-25 — Rescheduled workout stuck on Upcoming
+
+**What was done**
+
+- Fixed start-lock so workouts moved onto today are startable even when `scheduleStartDate` is “tomorrow” from UTC/server skew
+- `isPlanScheduleStarted` allows a 1-day grace for timezone boundaries
+- Program regenerate now anchors “today” to the member timezone cookie (not UTC server clock); rebuild modal always sends the chosen start date
+- Week cards show the **effective** weekday after Move (not the original plan day label)
+
+**What's next**
+
+1. Deploy; hard-refresh Workout; Move the session onto today again if needed, then Start
+2. If plan was regenerated last night US-time, rebuild once with “Start today” so `scheduleStartDate` matches local today
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/lib/workouts/schedule-overrides.ts`, `schedule-overrides.test.ts`, `schedule-dates.ts`, `schedule-dates.test.ts`
+- `apps/web/src/lib/programs/service.ts`, `start-date.ts`, `start-date.test.ts`
+- `apps/web/src/app/actions/program.ts`, `progression.ts`, `equipment.ts`
+- `apps/web/src/components/workout/week-plan-card.tsx`
+- `apps/web/src/components/profile/rebuild-plan-modal.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-25 — Fat-loss sessions only showing Incline Walk
 

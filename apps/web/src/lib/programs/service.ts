@@ -1,6 +1,7 @@
 import {
   generateProgram,
   isDeloadTrainingWeek,
+  parseScheduleStartIso,
   toScheduleStartIso,
   type ProgramPlan,
   type ProgramUserProfile,
@@ -10,6 +11,8 @@ import {
   maxMinutesPerSessionForAge,
   maxSessionsPerWeekForAge,
 } from "@forgefit/program-engine";
+import { todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 import { resolveProfileAge } from "@/lib/profile/identity";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
@@ -132,15 +135,19 @@ export async function generateAndSaveProgram(
     ctx.userProfile.sessionsPerWeek
   );
 
-  const startDateInput = options.startDate ?? new Date();
-  const todayIso = toScheduleStartIso(new Date());
+  const timeZone = await getUserTimeZone().catch(() => "UTC");
+  const todayIso = todayLocalIsoDate(new Date(), timeZone);
+  const startDateInput = options.startDate ?? parseScheduleStartIso(todayIso);
   const startIso = toScheduleStartIso(startDateInput);
   const isFutureStart = startIso > todayIso;
   const isRegenerate = priorPlan != null;
-  /** Regenerate for today: anchor weekdays to server now (matches workout UI "today"). */
+  /**
+   * Regenerate for today: anchor weekdays to the member's local "today"
+   * (timezone cookie), not the UTC server clock.
+   */
   const startDate =
     isRegenerate && !isFutureStart && startIso <= todayIso
-      ? new Date()
+      ? parseScheduleStartIso(todayIso)
       : startDateInput;
 
   let recentTraining;

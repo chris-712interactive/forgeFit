@@ -34,7 +34,7 @@ async function regenerateWithStartDate(
   userId: string,
   scheduleStartDate?: string
 ) {
-  const start = resolveProgramStartDate(scheduleStartDate);
+  const start = await resolveProgramStartDate(scheduleStartDate);
   if ("error" in start) {
     return { error: start.error };
   }

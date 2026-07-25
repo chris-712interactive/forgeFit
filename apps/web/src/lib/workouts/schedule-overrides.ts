@@ -373,16 +373,27 @@ export function formatPlanSessionDateWithOverrides(
   });
 }
 
+/** Short weekday label for the effective (possibly rescheduled) date. */
+export function effectiveDayLabel(
+  dayIndex: number,
+  plan: ProgramPlan,
+  overrides: WorkoutScheduleOverride[] = [],
+  referenceDate = new Date()
+): string {
+  return effectiveScheduledDate(
+    dayIndex,
+    plan,
+    overrides,
+    referenceDate
+  ).toLocaleDateString(undefined, { weekday: "short" });
+}
+
 export function canStartPlanSessionWithOverrides(
   dayIndex: number,
   plan: ProgramPlan,
   overrides: WorkoutScheduleOverride[] = [],
   referenceDate = new Date()
 ): boolean {
-  if (!isPlanScheduleStarted(plan, referenceDate)) {
-    return false;
-  }
-
   const sessionDate = effectiveScheduledDate(
     dayIndex,
     plan,
@@ -392,7 +403,19 @@ export function canStartPlanSessionWithOverrides(
   const today = new Date(referenceDate);
   today.setHours(0, 0, 0, 0);
   sessionDate.setHours(0, 0, 0, 0);
-  return sessionDate <= today;
+
+  // Effective calendar date is the source of truth after Move/reschedule.
+  if (sessionDate > today) {
+    return false;
+  }
+
+  // Plan not started yet (beyond TZ grace): still allow sessions the user
+  // explicitly moved onto today or an earlier day this week.
+  if (!isPlanScheduleStarted(plan, referenceDate)) {
+    return isScheduleAdjusted(dayIndex, plan, overrides, referenceDate);
+  }
+
+  return true;
 }
 
 export function addDaysWithinWeek(

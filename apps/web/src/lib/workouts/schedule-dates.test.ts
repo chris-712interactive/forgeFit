@@ -3,6 +3,7 @@ import test from "node:test";
 import type { ProgramPlan } from "@forgefit/program-engine";
 import {
   canStartPlanSession,
+  isPlanScheduleStarted,
   formatPlanSessionDate,
   planScheduleReferenceDate,
 } from "./schedule-dates";
@@ -41,5 +42,16 @@ test("canStartPlanSession blocks workouts before scheduleStartDate", () => {
   assert.equal(
     canStartPlanSession(1, futurePlan, new Date(2026, 6, 14, 12, 0, 0, 0)),
     true
+  );
+});
+
+test("isPlanScheduleStarted allows one-day timezone grace", () => {
+  assert.equal(
+    isPlanScheduleStarted(futurePlan, new Date(2026, 6, 13, 12, 0, 0, 0)),
+    true
+  );
+  assert.equal(
+    isPlanScheduleStarted(futurePlan, new Date(2026, 6, 12, 12, 0, 0, 0)),
+    false
   );
 });

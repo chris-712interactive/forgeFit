@@ -3,9 +3,22 @@ import {
   toScheduleStartIso,
   type ProgramPlan,
 } from "@forgefit/program-engine";
+import { todayLocalIsoDate } from "@/lib/datetime/local-date";
+import { getUserTimeZone } from "@/lib/datetime/timezone";
 
+/** Local calendar today — browser when no timezone cookie, else member TZ. */
 export function todayScheduleStartIso(): string {
   return toScheduleStartIso(new Date());
+}
+
+export async function todayScheduleStartIsoForUser(): Promise<string> {
+  try {
+    const timeZone = await getUserTimeZone();
+    return todayLocalIsoDate(new Date(), timeZone);
+  } catch {
+    // Outside a request (tests) — fall back to the runtime local calendar.
+    return todayScheduleStartIso();
+  }
 }
 
 export function parsePlanStartDateInput(isoDate: string): Date | null {
@@ -17,16 +30,19 @@ export function parsePlanStartDateInput(isoDate: string): Date | null {
 }
 
 /** Earliest allowed start (yesterday) to tolerate client/server timezone skew. */
-export function earliestAllowedPlanStartIso(): string {
-  const earliest = parseScheduleStartIso(todayScheduleStartIso());
+export function earliestAllowedPlanStartIso(todayIso = todayScheduleStartIso()): string {
+  const earliest = parseScheduleStartIso(todayIso);
   earliest.setDate(earliest.getDate() - 1);
   return toScheduleStartIso(earliest);
 }
 
-export function isValidPlanStartDate(isoDate: string): boolean {
+export function isValidPlanStartDate(
+  isoDate: string,
+  todayIso = todayScheduleStartIso()
+): boolean {
   const parsed = parsePlanStartDateInput(isoDate);
   if (!parsed) return false;
-  return toScheduleStartIso(parsed) >= earliestAllowedPlanStartIso();
+  return toScheduleStartIso(parsed) >= earliestAllowedPlanStartIso(todayIso);
 }
 
 export function planScheduleStartIso(plan: ProgramPlan): string {
@@ -41,14 +57,16 @@ export function formatPlanStartDateLabel(isoDate: string): string {
   });
 }
 
-export function resolveProgramStartDate(
+export async function resolveProgramStartDate(
   isoDate?: string
-): { startDate: Date } | { error: string } {
+): Promise<{ startDate: Date } | { error: string }> {
+  const todayIso = await todayScheduleStartIsoForUser();
+
   if (!isoDate) {
-    return { startDate: new Date() };
+    return { startDate: parseScheduleStartIso(todayIso) };
   }
 
-  if (!isValidPlanStartDate(isoDate)) {
+  if (!isValidPlanStartDate(isoDate, todayIso)) {
     return {
       error: "Choose today or a future date for your new plan to start.",
     };

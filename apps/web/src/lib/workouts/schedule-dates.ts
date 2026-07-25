@@ -109,12 +109,24 @@ export function sessionMatchesScheduledPlanDay(
   return sessionTime >= start.getTime() && sessionTime <= end.getTime();
 }
 
+/**
+ * Whether the plan's start date has been reached.
+ * Allows a 1-day grace so UTC server stamps vs local "today" do not lock
+ * every workout as Upcoming across timezone boundaries.
+ */
 export function isPlanScheduleStarted(
   plan: ProgramPlan,
   referenceDate = new Date()
 ): boolean {
-  const startDate = parseScheduleStartIso(planScheduleStartIso(plan));
-  return startOfDay(referenceDate) >= startOfDay(startDate);
+  const startDate = startOfDay(parseScheduleStartIso(planScheduleStartIso(plan)));
+  const today = startOfDay(referenceDate);
+  if (today >= startDate) return true;
+
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysUntilStart = Math.round(
+    (startDate.getTime() - today.getTime()) / msPerDay
+  );
+  return daysUntilStart <= 1;
 }
 
 export function isSessionScheduledOnOrBeforeToday(

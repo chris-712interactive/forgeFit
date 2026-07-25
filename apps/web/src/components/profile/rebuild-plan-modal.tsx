@@ -58,7 +58,7 @@ export function RebuildPlanModal({
       }
 
       const result = await rebuildProgram({
-        schedule_start_date: startsToday ? undefined : scheduleStartDate,
+        schedule_start_date: scheduleStartDate,
         last_completed_session_kind: lastCompletedSessionKind,
       });
 

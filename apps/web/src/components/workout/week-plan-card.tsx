@@ -6,6 +6,7 @@ import { useOfflineStatus } from "@/hooks/use-online-status";
 import { formatShortDate } from "@/lib/workouts/comparison";
 import {
   canStartPlanSessionWithOverrides,
+  effectiveDayLabel,
   formatPlanSessionDateWithOverrides,
   isScheduleAdjusted,
   type WorkoutScheduleOverride,
@@ -101,7 +102,11 @@ export function WeekPlanCard({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">
-                {session.dayLabel}
+                {effectiveDayLabel(
+                  session.dayIndex,
+                  plan,
+                  scheduleOverrides
+                )}
               </p>
               <p className="text-xs text-forge-muted">
                 {formatPlanSessionDateWithOverrides(

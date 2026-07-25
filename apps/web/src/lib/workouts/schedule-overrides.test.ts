@@ -81,7 +81,11 @@ test("resetWeekScheduleAdjustments clears the active week only", () => {
 test("canStartPlanSession respects adjusted dates for early and delayed starts", () => {
   const moved = applyScheduleAdjustment(4, "2026-07-09", plan, [], wednesday);
 
-  assert.equal(canStartPlanSessionWithOverrides(4, plan, moved.overrides, wednesday), false);
+  // Default Friday slot moved onto Thursday (reference day) → startable.
+  assert.equal(
+    canStartPlanSessionWithOverrides(4, plan, moved.overrides, wednesday),
+    true
+  );
   assert.equal(
     canStartPlanSessionWithOverrides(
       4,
@@ -94,6 +98,29 @@ test("canStartPlanSession respects adjusted dates for early and delayed starts",
   assert.equal(
     canStartPlanSessionWithOverrides(0, plan, moved.overrides, wednesday),
     true
+  );
+});
+
+test("canStartPlanSession allows moved-to-today even when plan start is tomorrow", () => {
+  const skewPlan = {
+    scheduleStartDate: "2026-07-10",
+    generatedAt: "2026-07-09T12:00:00.000Z",
+    week: [
+      { dayIndex: 3, name: "Full Body A", dayLabel: "Thu" },
+      { dayIndex: 4, name: "Full Body B", dayLabel: "Fri" },
+    ],
+  } as ProgramPlan;
+
+  const thursday = new Date(2026, 6, 9, 12, 0, 0, 0);
+  const moved = applyScheduleAdjustment(4, "2026-07-09", skewPlan, [], thursday);
+
+  assert.equal(
+    canStartPlanSessionWithOverrides(4, skewPlan, moved.overrides, thursday),
+    true
+  );
+  assert.equal(
+    canStartPlanSessionWithOverrides(4, skewPlan, [], thursday),
+    false
   );
 });
 

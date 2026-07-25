@@ -88,7 +88,7 @@ export async function acceptExperiencePromotion(input?: {
     };
   }
 
-  const start = resolveProgramStartDate(input?.schedule_start_date);
+  const start = await resolveProgramStartDate(input?.schedule_start_date);
   if ("error" in start) {
     return { error: start.error };
   }

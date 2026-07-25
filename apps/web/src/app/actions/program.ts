@@ -192,7 +192,7 @@ export async function rebuildProgram(input?: {
   if (impersonationBlock) return impersonationBlock;
 
 
-  const start = resolveProgramStartDate(input?.schedule_start_date);
+  const start = await resolveProgramStartDate(input?.schedule_start_date);
   if ("error" in start) {
     return { error: start.error };
   }
@@ -321,7 +321,7 @@ export async function updatePlanSettings(input: {
     return { success: true as const, regenerated: false as const };
   }
 
-  const start = resolveProgramStartDate(parsed.data.schedule_start_date);
+  const start = await resolveProgramStartDate(parsed.data.schedule_start_date);
   if ("error" in start) {
     return { error: start.error };
   }
