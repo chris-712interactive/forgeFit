@@ -7,6 +7,7 @@ import {
   datesReplacingProgram,
   type WorkoutDayAssignmentView,
 } from "./day-assignments-core";
+import { clearedWeekProgramDayIndexes } from "./week-clears-core";
 
 export type { WorkoutDayAssignmentView } from "./day-assignments-core";
 export {
@@ -23,8 +24,14 @@ export function suppressedProgramDayIndexes(
   assignments: Array<
     Pick<WorkoutDayAssignmentView, "scheduledDateIso" | "replacesProgram">
   >,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  /** When true, hide every program session for the active plan week. */
+  weekCleared = false
 ): Set<number> {
+  if (weekCleared) {
+    return clearedWeekProgramDayIndexes(plan, true);
+  }
+
   const replacedDates = datesReplacingProgram(assignments);
   if (replacedDates.size === 0) return new Set();
 
