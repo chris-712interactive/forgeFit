@@ -10,12 +10,44 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-25 |
-| **Last session focus** | Rescheduled workout stuck Upcoming (start-lock / TZ skew) |
+| **Last updated** | 2026-07-30 |
+| **Last session focus** | Clear week & replace with custom workouts |
 
 ---
 
 ## Session Log
+
+### 2026-07-30 — Clear week & use custom workouts
+
+**What was done**
+
+- Pro Workout hub: **Clear week & use custom** sheet — hides the active plan week’s program sessions and replaces that week’s custom day assignments with chosen templates (blank = rest)
+- Schema `user_workout_week_program_clears` + API `GET/POST/DELETE /api/workout-week-clear`; Dexie v7 offline mirror
+- **Restore program week** removes the clear flag; customs with Replace still suppress those dates
+- Unit tests for week-clear / suppress / validation helpers
+- Docs: Phase 11, ARCHITECTURE, PROGRESS
+
+**What's next**
+
+1. Apply migration `20260730120000_workout_week_program_clears.sql` in Supabase (plus prior Phase 11 migrations if missing)
+2. Smoke-test: Pro user → Clear week → assign templates → hub shows customs only → Restore program
+3. Clarify if clearing should also cancel in-progress program sessions for the week (left as open question)
+
+**Blockers**
+
+- None in code — week-clear table must be applied before the CTA works online
+
+**Files touched**
+
+- `supabase/migrations/20260730120000_workout_week_program_clears.sql`
+- `apps/web/src/lib/workouts/week-program-clear-core.ts`, `week-program-clear-core.test.ts`, `week-program-clear-server.ts`, `day-assignments.ts`
+- `apps/web/src/app/api/workout-week-clear/route.ts`
+- `apps/web/src/components/workout/clear-week-custom-sheet.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/(app)/workout/page.tsx`
+- `packages/offline-sync/src/db.ts`, `week-program-clear-*`, `day-assignment-store.ts`, `clear-user-data.ts`, `index.ts`
+- `docs/phases/11-custom-workouts.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-25 — Fix deploy: start-date server boundary
 

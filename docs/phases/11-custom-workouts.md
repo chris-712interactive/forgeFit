@@ -30,8 +30,10 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [x] Custom sessions excluded from week plan `buildDayStatusMap`
 - [ ] Migration `20260714120000_custom_workouts.sql` applied in Supabase (ops — required before marking phase Complete)
 - [ ] Migration `20260714210000_workout_day_assignments.sql` applied in Supabase (ops)
+- [ ] Migration `20260730120000_workout_week_program_clears.sql` applied in Supabase (ops)
 - [x] Assign templates to calendar days (today/future) with Replace vs Keep both
 - [x] Assigned customs appear on Workout hub and are startable
+- [x] Clear week & use custom (hide program week + bulk-assign templates)
 - [x] Unit tests for CSV parser + session source
 - [x] `pnpm turbo typecheck` passes
 
@@ -43,6 +45,19 @@ Pro users can **Assign to a day** from the custom builder (saves template if nee
 - **Keep both** — show program + custom side by side
 
 Schema: `user_workout_day_assignments` (`template_id`, `scheduled_date`, `replaces_program`). See migration `20260714210000_workout_day_assignments.sql`.
+
+### Clear week & use custom
+
+Pro users can **Clear week & use custom** on the Workout hub (“This week”):
+
+1. Marks the active plan week as program-cleared (`user_workout_week_program_clears`) so all engine sessions for that week are hidden
+2. Replaces custom day assignments in that Mon–Sun window with the templates the user picks (each with `replaces_program = true`)
+3. Days left blank stay rest / cleared — no custom card
+4. **Restore program week** removes the week-clear flag; custom assignments remain (and still hide program cards on dates with Replace)
+
+Does **not** delete completed workout history. Applies to the current plan week only.
+
+API: `GET/POST/DELETE /api/workout-week-clear` · migration `20260730120000_workout_week_program_clears.sql`.
 
 Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
 
@@ -65,7 +80,8 @@ rest_seconds,120
 
 - `supabase/migrations/20260714120000_custom_workouts.sql`
 - `supabase/migrations/20260714210000_workout_day_assignments.sql`
-- `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`, `day-assignment-*`
-- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`
-- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`
-- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`
+- `supabase/migrations/20260730120000_workout_week_program_clears.sql`
+- `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`, `day-assignment-*`, `week-program-clear-*`
+- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`, `week-program-clear-core.ts`
+- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`, `clear-week-custom-sheet.tsx`
+- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`, `api/workout-week-clear`
