@@ -7,6 +7,7 @@ import {
   datesReplacingProgram,
   type WorkoutDayAssignmentView,
 } from "./day-assignments-core";
+import { clearedWeekProgramDayIndexes } from "./week-clears";
 
 export type { WorkoutDayAssignmentView } from "./day-assignments-core";
 export {
@@ -23,13 +24,22 @@ export function suppressedProgramDayIndexes(
   assignments: Array<
     Pick<WorkoutDayAssignmentView, "scheduledDateIso" | "replacesProgram">
   >,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  clearedWeekStarts: readonly string[] = []
 ): Set<number> {
+  const suppressed = clearedWeekProgramDayIndexes(
+    plan,
+    clearedWeekStarts,
+    referenceDate
+  );
+  if (suppressed.size > 0) {
+    return suppressed;
+  }
+
   const replacedDates = datesReplacingProgram(assignments);
   if (replacedDates.size === 0) return new Set();
 
   const effective = buildEffectiveScheduleMap(plan, overrides, referenceDate);
-  const suppressed = new Set<number>();
   for (const [dayIndex, dateIso] of effective) {
     if (replacedDates.has(dateIso)) {
       suppressed.add(dayIndex);
@@ -43,11 +53,21 @@ export function dateHasProgramSession(
   plan: ProgramPlan,
   overrides: WorkoutScheduleOverride[],
   scheduledDateIso: string,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  clearedWeekStarts: readonly string[] = []
 ): boolean {
+  const suppressed = suppressedProgramDayIndexes(
+    plan,
+    overrides,
+    [],
+    referenceDate,
+    clearedWeekStarts
+  );
   const effective = buildEffectiveScheduleMap(plan, overrides, referenceDate);
-  for (const dateIso of effective.values()) {
-    if (dateIso === scheduledDateIso) return true;
+  for (const [dayIndex, dateIso] of effective) {
+    if (dateIso === scheduledDateIso && !suppressed.has(dayIndex)) {
+      return true;
+    }
   }
   return false;
 }
