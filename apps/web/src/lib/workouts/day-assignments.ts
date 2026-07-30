@@ -1,12 +1,11 @@
 import type { ProgramPlan } from "@forgefit/program-engine";
 import {
   buildEffectiveScheduleMap,
+  planWeekStartIso,
   type WorkoutScheduleOverride,
 } from "@/lib/workouts/schedule-overrides";
-import {
-  datesReplacingProgram,
-  type WorkoutDayAssignmentView,
-} from "./day-assignments-core";
+import type { WorkoutDayAssignmentView } from "./day-assignments-core";
+import { suppressedProgramDayIndexesForWeek } from "./week-program-clear-core";
 
 export type { WorkoutDayAssignmentView } from "./day-assignments-core";
 export {
@@ -16,26 +15,27 @@ export {
   inProgressCustomSessionForAssignment,
 } from "./day-assignments-core";
 
-/** Program dayIndexes whose effective date is replaced by a custom assignment. */
+/**
+ * Program dayIndexes hidden on the hub — either the whole week is cleared,
+ * or individual dates have replaces_program custom assignments.
+ */
 export function suppressedProgramDayIndexes(
   plan: ProgramPlan,
   overrides: WorkoutScheduleOverride[],
   assignments: Array<
     Pick<WorkoutDayAssignmentView, "scheduledDateIso" | "replacesProgram">
   >,
-  referenceDate = new Date()
+  referenceDate = new Date(),
+  clearedWeekStarts: Iterable<string> = []
 ): Set<number> {
-  const replacedDates = datesReplacingProgram(assignments);
-  if (replacedDates.size === 0) return new Set();
-
-  const effective = buildEffectiveScheduleMap(plan, overrides, referenceDate);
-  const suppressed = new Set<number>();
-  for (const [dayIndex, dateIso] of effective) {
-    if (replacedDates.has(dateIso)) {
-      suppressed.add(dayIndex);
-    }
-  }
-  return suppressed;
+  return suppressedProgramDayIndexesForWeek({
+    plan,
+    overrides,
+    assignments,
+    weekStartIso: planWeekStartIso(plan, referenceDate),
+    clearedWeekStarts,
+    referenceDate,
+  });
 }
 
 /** True when a calendar date already has a program session this week. */

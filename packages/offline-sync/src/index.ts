@@ -7,5 +7,7 @@ export * from "./schedule-override-store";
 export * from "./schedule-override-types";
 export * from "./day-assignment-types";
 export * from "./day-assignment-store";
+export * from "./week-program-clear-types";
+export * from "./week-program-clear-store";
 export * from "./clear-user-data";
 export * from "./template-store";

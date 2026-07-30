@@ -65,6 +65,27 @@ export async function deleteLocalDayAssignmentsForDate(
   });
 }
 
+export async function deleteLocalDayAssignmentsInDateRange(
+  userId: string,
+  startIso: string,
+  endIso: string
+): Promise<void> {
+  const db = getOfflineDb();
+  const rows = await db.workoutDayAssignments
+    .where("userId")
+    .equals(userId)
+    .filter(
+      (row) =>
+        row.scheduledDateIso >= startIso && row.scheduledDateIso <= endIso
+    )
+    .toArray();
+  await db.transaction("rw", db.workoutDayAssignments, async () => {
+    for (const row of rows) {
+      await db.workoutDayAssignments.delete(row.id);
+    }
+  });
+}
+
 export async function replaceDayAssignmentsFromServer(
   userId: string,
   assignments: LocalWorkoutDayAssignment[]
