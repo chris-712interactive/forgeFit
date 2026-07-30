@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-20 · **Current phase:** Phase 11–13 in progress · Phase 14A–14C code complete (awaiting migrations apply)
+**Last updated:** 2026-07-30 · **Current phase:** Phase 11–13 in progress · Phase 14A–14C code complete (awaiting migrations apply)
 
 ---
 

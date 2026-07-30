@@ -17,6 +17,7 @@ import { getWorkoutReadinessContext } from "@/lib/workouts/readiness";
 import { getServerSessionRecords } from "@/lib/workouts/sessions-server";
 import { listWorkoutScheduleOverrides } from "@/lib/workouts/schedule-overrides-server";
 import { listWorkoutDayAssignmentsForUser } from "@/lib/workouts/day-assignments-server";
+import { listProgramWeekClearsForUser } from "@/lib/workouts/week-clears-server";
 import { listWorkoutTemplatesForUser } from "@/lib/workouts/templates-server";
 
 export default async function WorkoutPage() {
@@ -85,6 +86,9 @@ export default async function WorkoutPage() {
   const dayAssignmentsResult = userId
     ? await listWorkoutDayAssignmentsForUser(userId)
     : { assignments: [], tableReady: true };
+  const weekClearsResult = userId
+    ? await listProgramWeekClearsForUser(userId)
+    : { clears: [], tableReady: true };
   const canCustomWorkouts = hasFeature(subscription, "custom_workouts");
   const canImportWorkouts = hasFeature(subscription, "workout_import");
 
@@ -114,6 +118,8 @@ export default async function WorkoutPage() {
       workoutTemplates={templatesResult.templates}
       dayAssignments={dayAssignmentsResult.assignments}
       dayAssignmentsTableReady={dayAssignmentsResult.tableReady}
+      weekClears={weekClearsResult.clears}
+      weekClearsTableReady={weekClearsResult.tableReady}
     />
   );
 }

@@ -100,7 +100,8 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 7. **Custom workouts (Phase 11, Pro)** — builder on Workout hub; `session_source` + `day_index = -1`; equipment-filtered exercise picker; optional warmup; templates in `user_workout_templates`; native CSV import (`workout_import`) and export (`data_export`)
 8. **Interval protocols (Phase 13, Pro)** — optional `intervalProtocol` on templates/sessions (`density` / `tabata` / `superset_block`); `IntervalTimer` with gym-loud GO/STOP cues + 3s countdown; CSV v2; Gravity Week 1 install pack on Workout hub
 9. **Custom day assignments (Phase 11, Pro)** — assign templates to calendar dates; Replace vs Keep both when a day already has a program/custom; hub merges assigned cards into “This week”
-10. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
+10. **Clear week for customs (Phase 11, Pro)** — `user_program_week_clears` hides all program sessions for the active plan week; optional bulk assign of saved templates as replacements; restore returns the generated plan
+11. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
 
 ## Nutrition Diary (Phase 4)
 
@@ -168,6 +169,8 @@ Does not change program-engine / evidence-kb boundaries.
 | `/api/workouts/import` | Native ForgeRep workout template CSV (Pro) | 11 |
 | `/api/workouts/export` | Completed workout CSV export (Pro) | 11 |
 | `/api/workout-templates` | Saved custom workout templates (Pro) | 11 |
+| `/api/workout-day-assignments` | Assign custom templates to calendar days (Pro) | 11 |
+| `/api/workout-week-clears` | Clear / restore program week for custom replacements (Pro) | 11 |
 | `/api/programs/generate` | Create program from profile | 2 |
 | `/api/nutrition/search` | Food lookup | 4 |
 | `/api/measurements` | Log body measurements | 5 |

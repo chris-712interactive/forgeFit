@@ -30,8 +30,11 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [x] Custom sessions excluded from week plan `buildDayStatusMap`
 - [ ] Migration `20260714120000_custom_workouts.sql` applied in Supabase (ops — required before marking phase Complete)
 - [ ] Migration `20260714210000_workout_day_assignments.sql` applied in Supabase (ops)
+- [ ] Migration `20260730120000_program_week_clears.sql` applied in Supabase (ops)
 - [x] Assign templates to calendar days (today/future) with Replace vs Keep both
 - [x] Assigned customs appear on Workout hub and are startable
+- [x] Clear active plan week (hide program workouts) and optionally assign custom replacements
+- [x] Restore cleared week to show generated program again
 - [x] Unit tests for CSV parser + session source
 - [x] `pnpm turbo typecheck` passes
 
@@ -43,6 +46,18 @@ Pro users can **Assign to a day** from the custom builder (saves template if nee
 - **Keep both** — show program + custom side by side
 
 Schema: `user_workout_day_assignments` (`template_id`, `scheduled_date`, `replaces_program`). See migration `20260714210000_workout_day_assignments.sql`.
+
+## Clear week for customs
+
+Pro users can **Clear week for customs** on the Workout hub “This week” section:
+
+1. Hides all program workouts for the active plan week (`user_program_week_clears`)
+2. Optionally assigns saved templates to those dates (with `replaces_program`)
+3. **Restore program week** removes the clear so generated sessions reappear
+
+Does not delete the generated program JSON or schedule overrides. Generated plan remains available after restore.
+
+Schema: `user_program_week_clears` (`program_id`, `week_start_date`). See migration `20260730120000_program_week_clears.sql`.
 
 Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
 
@@ -65,7 +80,8 @@ rest_seconds,120
 
 - `supabase/migrations/20260714120000_custom_workouts.sql`
 - `supabase/migrations/20260714210000_workout_day_assignments.sql`
+- `supabase/migrations/20260730120000_program_week_clears.sql`
 - `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`, `day-assignment-*`
-- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`
-- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`
-- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`
+- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`, `week-clears-*.ts`
+- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`, `clear-week-sheet.tsx`
+- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`, `api/workout-week-clears`

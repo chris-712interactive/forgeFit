@@ -10,12 +10,44 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-25 |
-| **Last session focus** | Rescheduled workout stuck Upcoming (start-lock / TZ skew) |
+| **Last updated** | 2026-07-30 |
+| **Last session focus** | Clear week for custom workouts |
 
 ---
 
 ## Session Log
+
+### 2026-07-30 — Clear week for custom workouts
+
+**What was done**
+
+- Pro users can clear the active plan week on Workout hub (“Clear week for customs”), hiding all program workouts while keeping the generated plan
+- Optional bulk assign of saved templates as replacements (`replaces_program`) in the same sheet
+- Restore returns program sessions; assign conflict UI ignores program when the week is cleared
+- Migration `user_program_week_clears` + `GET/POST/DELETE /api/workout-week-clears`
+- Unit tests for week-clear helpers and suppression
+
+**What's next**
+
+1. Apply Supabase migration `20260730120000_program_week_clears.sql` (and prior Phase 11 migrations if not applied)
+2. Smoke-test: clear week → assign customs → restore program week
+3. Optional follow-ups (see PR): Home “next workout” awareness of cleared weeks; offline week-clear sync
+
+**Blockers**
+
+- Migration must be applied in Supabase before the feature works in production
+
+**Files touched**
+
+- `supabase/migrations/20260730120000_program_week_clears.sql`
+- `apps/web/src/lib/workouts/week-clears-core.ts`, `week-clears-core.test.ts`, `week-clears-server.ts`
+- `apps/web/src/lib/workouts/day-assignments.ts`, `day-assignments.test.ts`
+- `apps/web/src/app/api/workout-week-clears/route.ts`
+- `apps/web/src/components/workout/clear-week-sheet.tsx`, `workout-hub.tsx`
+- `apps/web/src/app/(app)/workout/page.tsx`
+- `docs/phases/11-custom-workouts.md`, `docs/ARCHITECTURE.md`, `docs/PROGRESS.md`, `docs/BIBLE.md`
+
+---
 
 ### 2026-07-25 — Fix deploy: start-date server boundary
 
