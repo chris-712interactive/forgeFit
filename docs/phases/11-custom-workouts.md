@@ -32,6 +32,8 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [ ] Migration `20260714210000_workout_day_assignments.sql` applied in Supabase (ops)
 - [x] Assign templates to calendar days (today/future) with Replace vs Keep both
 - [x] Assigned customs appear on Workout hub and are startable
+- [x] Clear week's program workouts (Pro) → assign customs; restore anytime
+- [ ] Migration `20260730000000_program_week_clears.sql` applied in Supabase (ops)
 - [x] Unit tests for CSV parser + session source
 - [x] `pnpm turbo typecheck` passes
 
@@ -43,6 +45,12 @@ Pro users can **Assign to a day** from the custom builder (saves template if nee
 - **Keep both** — show program + custom side by side
 
 Schema: `user_workout_day_assignments` (`template_id`, `scheduled_date`, `replaces_program`). See migration `20260714210000_workout_day_assignments.sql`.
+
+## Clear week
+
+Pro users can **Clear week's plan** on the Workout hub. This hides all program sessions for the active plan week (history kept) so they can fill the calendar with custom workouts. **Restore program week** brings the plan cards back. Assignments made while cleared auto-prefer Replace for underlying program days.
+
+Schema: `user_program_week_clears` (`week_start_date`). See migration `20260730000000_program_week_clears.sql`.
 
 Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
 
@@ -65,7 +73,8 @@ rest_seconds,120
 
 - `supabase/migrations/20260714120000_custom_workouts.sql`
 - `supabase/migrations/20260714210000_workout_day_assignments.sql`
+- `supabase/migrations/20260730000000_program_week_clears.sql`
 - `packages/offline-sync/src/types.ts`, `db.ts`, `workout-store.ts`, `template-store.ts`, `day-assignment-*`
-- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`
-- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`
-- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`
+- `apps/web/src/lib/workouts/session-source.ts`, `workout-csv-parser.ts`, `export-csv.ts`, `custom-warmup.ts`, `day-assignments.ts`, `week-clears.ts`
+- `apps/web/src/components/workout/custom-workout-*.tsx`, `assign-custom-workout-sheet.tsx`, `assigned-custom-workout-card.tsx`, `clear-week-banner.tsx`
+- `apps/web/src/app/api/workouts/import|export`, `api/workout-templates`, `api/workout-day-assignments`, `api/workout-week-clears`

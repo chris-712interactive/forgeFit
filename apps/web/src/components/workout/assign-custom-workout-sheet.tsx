@@ -9,6 +9,8 @@ export type AssignConflictChoice = "replace" | "keep_both";
 export interface AssignConflictInfo {
   hasConflict: boolean;
   label: string;
+  /** When no visible conflict, still save as replace (e.g. cleared program week). */
+  preferReplace?: boolean;
 }
 
 interface AssignCustomWorkoutSheetProps {
@@ -171,7 +173,11 @@ export function AssignCustomWorkoutSheet({
             onClick={() =>
               onConfirm({
                 scheduledDateIso: dateIso,
-                choice: conflict.hasConflict ? choice : "keep_both",
+                choice: conflict.hasConflict
+                  ? choice
+                  : conflict.preferReplace
+                    ? "replace"
+                    : "keep_both",
               })
             }
             className="min-h-[48px] w-full rounded-xl bg-forge-ember px-4 text-sm font-semibold text-white disabled:opacity-50"
