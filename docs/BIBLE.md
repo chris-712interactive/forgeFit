@@ -3,7 +3,7 @@
 > **Authoritative source of truth** for architecture, phases, features, and design.
 > Read this before any build session. When the Bible and code disagree, update both in the same change.
 
-**Last updated:** 2026-07-20 · **Current phase:** Phase 11–13 in progress · Phase 14A–14C code complete (awaiting migrations apply)
+**Last updated:** 2026-07-30 · **Current phase:** Phase 11–13 in progress · Phase 14A–14C code complete (awaiting migrations apply)
 
 ---
 
@@ -141,7 +141,7 @@ Versioned, citable rule engine in `packages/evidence-kb/`. Program logic is **ne
 
 - `profiles`, `body_measurements`, `caliper_measurements`
 - `equipment_inventory`, `recovery_equipment`
-- `programs`, `workout_sessions`, `exercise_sets`, `workout_schedule_overrides`
+- `programs`, `workout_sessions`, `exercise_sets`, `workout_schedule_overrides`, `user_program_week_clears`
 - `nutrition_logs`, `integrations`, `projections`
 - `achievements`, `leaderboard_entries`, `coaching_messages`
 - **Phase 14 (planned):** `partners`, `partner_deals`, `partner_codes`, `attribution_events`, `user_attributions`, `partner_commissions`, `partner_payouts` — see [ADR 003](./ADRs/003-partner-attribution-revshare.md)
