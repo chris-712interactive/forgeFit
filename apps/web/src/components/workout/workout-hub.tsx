@@ -8,9 +8,13 @@ import {
   cacheProgramPlan,
   cancelInProgressSessionsForDay,
   cancelWorkoutSession,
+  deleteLocalDayAssignmentsInDateRange,
+  deleteLocalWeekProgramClear,
   getCachedProgramPlan,
   getSession,
+  saveLocalDayAssignment,
   saveLocalTemplate,
+  saveLocalWeekProgramClear,
   startWorkoutSession,
 } from "@forgefit/offline-sync";
 import { reconcileLocalWorkoutsWithServer } from "@/lib/workouts/reconcile-local";
@@ -23,6 +27,8 @@ import {
   compareSessionsByEffectiveDate,
   canStartPlanSessionWithOverrides,
   effectiveScheduledDateIso,
+  planWeekEndIso,
+  planWeekStartIso,
   type WorkoutScheduleOverride,
 } from "@/lib/workouts/schedule-overrides";
 import {
@@ -77,6 +83,10 @@ import {
 import { MaxTestLauncher } from "./max-test-launcher";
 import { AssignedCustomWorkoutCard } from "./assigned-custom-workout-card";
 import {
+  buildClearWeekDaySlots,
+  ClearWeekCustomSheet,
+} from "./clear-week-custom-sheet";
+import {
   GRAVITY_WEEK1_TEMPLATE_NAMES,
   GRAVITY_WEEK1_TEMPLATES,
 } from "@/lib/workouts/packs/gravity-week1";
@@ -87,6 +97,9 @@ import {
   suppressedProgramDayIndexes,
   type WorkoutDayAssignmentView,
 } from "@/lib/workouts/day-assignments";
+import {
+  isProgramWeekCleared,
+} from "@/lib/workouts/week-program-clear-core";
 import { CUSTOM_DAY_INDEX } from "@/lib/workouts/session-source";
 import { browserTimeZone, addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
 import { getWeekBounds } from "@/lib/home/weekly-stats";
@@ -128,6 +141,8 @@ interface WorkoutHubProps {
   }>;
   dayAssignments?: WorkoutDayAssignmentView[];
   dayAssignmentsTableReady?: boolean;
+  clearedProgramWeekStarts?: string[];
+  weekProgramClearsTableReady?: boolean;
 }
 
 const OFFLINE_ACTIVE_KEY = "forgefit:active-workout";
@@ -190,6 +205,8 @@ export function WorkoutHub({
   workoutTemplates = [],
   dayAssignments: serverDayAssignments = [],
   dayAssignmentsTableReady = true,
+  clearedProgramWeekStarts: serverClearedWeekStarts = [],
+  weekProgramClearsTableReady = true,
 }: WorkoutHubProps) {
   const router = useRouter();
   const sync = useWorkoutSyncContext();
@@ -225,6 +242,12 @@ export function WorkoutHub({
   const [dayAssignments, setDayAssignments] = useState<WorkoutDayAssignmentView[]>(
     serverDayAssignments
   );
+  const [clearedWeekStarts, setClearedWeekStarts] = useState<string[]>(
+    serverClearedWeekStarts
+  );
+  const [clearWeekOpen, setClearWeekOpen] = useState(false);
+  const [clearWeekSaving, setClearWeekSaving] = useState(false);
+  const [clearWeekError, setClearWeekError] = useState<string | null>(null);
   const [startingAssignmentId, setStartingAssignmentId] = useState<string | null>(
     null
   );
@@ -238,6 +261,10 @@ export function WorkoutHub({
   useEffect(() => {
     setDayAssignments(serverDayAssignments);
   }, [serverDayAssignments]);
+
+  useEffect(() => {
+    setClearedWeekStarts(serverClearedWeekStarts);
+  }, [serverClearedWeekStarts]);
 
   const templateById = useMemo(() => {
     return new Map(workoutTemplates.map((row) => [row.id, row]));
@@ -373,16 +400,14 @@ export function WorkoutHub({
 
   const suppressedDayIndexes = useMemo(() => {
     if (!plan) return new Set<number>();
-    return suppressedProgramDayIndexes(plan, scheduleOverrides, dayAssignments);
-  }, [plan, scheduleOverrides, dayAssignments]);
-
-  const visiblePlanSessions = useMemo(
-    () =>
-      sortedPlanSessions.filter(
-        (session) => !suppressedDayIndexes.has(session.dayIndex)
-      ),
-    [sortedPlanSessions, suppressedDayIndexes]
-  );
+    return suppressedProgramDayIndexes(
+      plan,
+      scheduleOverrides,
+      dayAssignments,
+      undefined,
+      clearedWeekStarts
+    );
+  }, [plan, scheduleOverrides, dayAssignments, clearedWeekStarts]);
 
   const weekAssignmentWindow = useMemo(() => {
     if (plan) {
@@ -402,6 +427,55 @@ export function WorkoutHub({
       )
       .sort((a, b) => a.scheduledDateIso.localeCompare(b.scheduledDateIso));
   }, [dayAssignments, weekAssignmentWindow]);
+
+  const activeWeekStartIso = useMemo(() => {
+    if (plan) return planWeekStartIso(plan);
+    return weekAssignmentWindow.startIso;
+  }, [plan, weekAssignmentWindow.startIso]);
+
+  const activeWeekEndIso = useMemo(() => {
+    if (plan) return planWeekEndIso(plan);
+    return weekAssignmentWindow.endIso;
+  }, [plan, weekAssignmentWindow.endIso]);
+
+  const programWeekCleared = useMemo(
+    () => isProgramWeekCleared(activeWeekStartIso, clearedWeekStarts),
+    [activeWeekStartIso, clearedWeekStarts]
+  );
+
+  const clearWeekDaySlots = useMemo(() => {
+    const programByDate = new Map<string, string>();
+    if (plan) {
+      for (const session of plan.week) {
+        const dateIso = effectiveScheduledDateIso(
+          session.dayIndex,
+          plan,
+          scheduleOverrides
+        );
+        programByDate.set(dateIso, session.name);
+      }
+    }
+    return buildClearWeekDaySlots({
+      weekStartIso: activeWeekStartIso,
+      programByDate,
+    });
+  }, [plan, scheduleOverrides, activeWeekStartIso]);
+
+  const clearWeekInitialTemplates = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const row of weekDayAssignments) {
+      map[row.scheduledDateIso] = row.templateId;
+    }
+    return map;
+  }, [weekDayAssignments]);
+
+  const visiblePlanSessions = useMemo(
+    () =>
+      sortedPlanSessions.filter(
+        (session) => !suppressedDayIndexes.has(session.dayIndex)
+      ),
+    [sortedPlanSessions, suppressedDayIndexes]
+  );
 
   type HubWeekItem =
     | { kind: "program"; sortDate: string; session: WorkoutSession }
@@ -731,6 +805,108 @@ export function WorkoutHub({
     },
     [router]
   );
+
+  const handleClearWeekConfirm = useCallback(
+    async (input: {
+      assignments: Array<{ scheduledDateIso: string; templateId: string }>;
+    }) => {
+      setClearWeekSaving(true);
+      setClearWeekError(null);
+      try {
+        const response = await fetch("/api/workout-week-clear", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            weekStartIso: activeWeekStartIso,
+            clearProgramWeek: true,
+            assignments: input.assignments,
+          }),
+        });
+        const body = (await response.json()) as {
+          error?: string;
+          programWeekCleared?: boolean;
+          assignments?: WorkoutDayAssignmentView[];
+        };
+        if (!response.ok) {
+          throw new Error(body.error ?? "Could not clear week.");
+        }
+
+        await deleteLocalDayAssignmentsInDateRange(
+          userId,
+          activeWeekStartIso,
+          activeWeekEndIso
+        );
+        await saveLocalWeekProgramClear({
+          userId,
+          weekStartIso: activeWeekStartIso,
+        });
+        for (const assignment of body.assignments ?? []) {
+          await saveLocalDayAssignment({
+            userId,
+            id: assignment.id,
+            templateId: assignment.templateId,
+            scheduledDateIso: assignment.scheduledDateIso,
+            replacesProgram: assignment.replacesProgram,
+          });
+        }
+
+        setClearedWeekStarts((current) =>
+          current.includes(activeWeekStartIso)
+            ? current
+            : [...current, activeWeekStartIso]
+        );
+        setDayAssignments((current) => {
+          const outside = current.filter(
+            (row) =>
+              row.scheduledDateIso < activeWeekStartIso ||
+              row.scheduledDateIso > activeWeekEndIso
+          );
+          return [...outside, ...(body.assignments ?? [])];
+        });
+        setClearWeekOpen(false);
+        router.refresh();
+      } catch (err) {
+        setClearWeekError(
+          err instanceof Error ? err.message : "Could not clear week."
+        );
+      } finally {
+        setClearWeekSaving(false);
+      }
+    },
+    [activeWeekEndIso, activeWeekStartIso, router, userId]
+  );
+
+  const handleRestoreProgramWeek = useCallback(async () => {
+    const confirmed = window.confirm(
+      "Restore this week's program workouts? Custom assignments stay on the calendar."
+    );
+    if (!confirmed) return;
+
+    setClearWeekSaving(true);
+    setClearWeekError(null);
+    try {
+      const response = await fetch(
+        `/api/workout-week-clear?weekStartIso=${encodeURIComponent(activeWeekStartIso)}`,
+        { method: "DELETE" }
+      );
+      const body = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(body.error ?? "Could not restore program week.");
+      }
+      await deleteLocalWeekProgramClear(userId, activeWeekStartIso);
+      setClearedWeekStarts((current) =>
+        current.filter((week) => week !== activeWeekStartIso)
+      );
+      setClearWeekOpen(false);
+      router.refresh();
+    } catch (err) {
+      setClearWeekError(
+        err instanceof Error ? err.message : "Could not restore program week."
+      );
+    } finally {
+      setClearWeekSaving(false);
+    }
+  }, [activeWeekStartIso, router, userId]);
 
   const openReview = useCallback((clientId: string) => {
     setActiveClientId(null);
@@ -1178,10 +1354,44 @@ export function WorkoutHub({
               </p>
             )}
 
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
-              This week
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-forge-muted">
+                This week
+              </h2>
+              {canCustomWorkouts && weekProgramClearsTableReady && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setClearWeekError(null);
+                    setClearWeekOpen(true);
+                  }}
+                  className="min-h-[36px] rounded-lg border border-forge-ember/40 px-3 text-xs font-semibold text-forge-ember hover:border-forge-ember"
+                >
+                  {programWeekCleared
+                    ? "Customize cleared week"
+                    : "Clear week & use custom"}
+                </button>
+              )}
+            </div>
+            {programWeekCleared && (
+              <p className="rounded-xl border border-forge-ember/30 bg-forge-ember/5 px-4 py-2 text-sm text-forge-muted">
+                Program workouts are cleared for this week. Your custom
+                assignments are shown below.{" "}
+                <button
+                  type="button"
+                  onClick={() => void handleRestoreProgramWeek()}
+                  className="font-semibold text-forge-ember underline-offset-2 hover:underline"
+                >
+                  Restore program
+                </button>
+              </p>
+            )}
             {!dayAssignmentsTableReady && canCustomWorkouts && (
+              <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm text-forge-steel">
+                {FEATURE_SYNC_TEMPORARILY_LIMITED}
+              </p>
+            )}
+            {!weekProgramClearsTableReady && canCustomWorkouts && (
               <p className="rounded-xl border border-forge-steel/30 bg-forge-surface-raised px-4 py-2 text-sm text-forge-steel">
                 {FEATURE_SYNC_TEMPORARILY_LIMITED}
               </p>
@@ -1356,6 +1566,28 @@ export function WorkoutHub({
             setMaxTestOpen(false);
             openWorkout(clientId);
           }}
+        />
+      )}
+
+      {clearWeekOpen && (
+        <ClearWeekCustomSheet
+          open
+          weekStartIso={activeWeekStartIso}
+          weekEndIso={activeWeekEndIso}
+          programCleared={programWeekCleared}
+          daySlots={clearWeekDaySlots}
+          templates={workoutTemplates.map((row) => ({
+            id: row.id,
+            name: row.name,
+          }))}
+          initialTemplateByDate={clearWeekInitialTemplates}
+          saving={clearWeekSaving}
+          error={clearWeekError}
+          onClose={() => {
+            if (!clearWeekSaving) setClearWeekOpen(false);
+          }}
+          onConfirm={(input) => void handleClearWeekConfirm(input)}
+          onRestoreProgramWeek={() => void handleRestoreProgramWeek()}
         />
       )}
 
