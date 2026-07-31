@@ -10,12 +10,39 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-25 |
-| **Last session focus** | Rescheduled workout stuck Upcoming (start-lock / TZ skew) |
+| **Last updated** | 2026-07-31 |
+| **Last session focus** | Exploration: dichotic / per-ear frequency player (not a product phase) |
 
 ---
 
 ## Session Log
+
+### 2026-07-31 — Dichotic tones feasibility exploration
+
+**What was done**
+
+- Confirmed independent left/right frequency playback is feasible via Web Audio (`OscillatorNode` + `ChannelMergerNode`)
+- Added exploration write-up: architecture, constraints, forgeFit product-fit options, risks
+- Built interactive prototype with per-ear Hz controls, mute, waveform, binaural presets, live Δ readout
+
+**What's next**
+
+1. Open `prototypes/dichotic-tones/index.html` with headphones and validate L/R independence
+2. Decide product home (standalone PWA vs forgeFit lab vs defer) — do **not** merge into workout phases without an explicit product decision
+3. Resume Phase 11–13 / 14 migrations work on main product track
+
+**Blockers**
+
+- None — exploration only; headphones required to hear stereo split
+
+**Files touched**
+
+- `docs/explorations/dichotic-tones.md`
+- `prototypes/README.md`
+- `prototypes/dichotic-tones/index.html`, `app.js`, `styles.css`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-25 — Fix deploy: start-date server boundary
 
