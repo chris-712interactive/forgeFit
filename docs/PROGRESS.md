@@ -10,12 +10,59 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-25 |
-| **Last session focus** | Rescheduled workout stuck Upcoming (start-lock / TZ skew) |
+| **Last updated** | 2026-08-01 |
+| **Last session focus** | Move dichotic tones exploration out to focusTones repo |
 
 ---
 
 ## Session Log
+
+### 2026-08-01 — Spin dichotic tones out to focusTones
+
+**What was done**
+
+- Prepared standalone **focusTones** app (ready to push once the GitHub repo exists / Cursor app has access)
+- Removed in-repo `prototypes/dichotic-tones/` from forgeFit; exploration doc now points at the external repo
+- Left `prototypes/README.md` + `docs/explorations/dichotic-tones.md` as pointers only
+
+**What's next**
+
+1. Create empty GitHub repo `chris-712interactive/focusTones` and grant the Cursor GitHub App access
+2. Push the staged focusTones codebase; close or update forgeFit PR #24 as “moved out”
+3. Resume Phase 11–13 / 14 migrations on the main product track
+
+**Blockers**
+
+- Cloud agent token can push to forgeFit only — cannot `repo create` under the user account (403)
+
+**Files touched**
+
+- `docs/explorations/dichotic-tones.md` (pointer)
+- `prototypes/README.md`
+- `prototypes/dichotic-tones/*` (removed)
+- `docs/PROGRESS.md`
+
+---
+
+### 2026-07-31 — Dichotic tones feasibility exploration
+
+**What was done**
+
+- Confirmed independent left/right frequency playback is feasible via Web Audio (`OscillatorNode` + `ChannelMergerNode`)
+- Added exploration write-up + interactive prototype under `prototypes/dichotic-tones/`
+
+**What's next**
+
+- Superseded — moving to focusTones repo (see 2026-08-01)
+
+**Files touched**
+
+- `docs/explorations/dichotic-tones.md`
+- `prototypes/README.md`
+- `prototypes/dichotic-tones/index.html`, `app.js`, `styles.css`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-07-25 — Fix deploy: start-date server boundary
 
