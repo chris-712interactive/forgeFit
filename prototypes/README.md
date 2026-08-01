@@ -2,8 +2,8 @@
 
 Isolated experiments that are **not** part of forgeFit product phases.
 
-| Folder | What |
-|--------|------|
-| [`dichotic-tones/`](./dichotic-tones/) | Per-ear frequency player (Web Audio). Open `index.html` in a browser with headphones. |
+| Folder / link | What |
+|---------------|------|
+| **[focusTones](https://github.com/chris-712interactive/focusTones)** (external) | Per-ear frequency / binaural tone player — moved out of this monorepo |
 
 See also: [`docs/explorations/dichotic-tones.md`](../docs/explorations/dichotic-tones.md).
