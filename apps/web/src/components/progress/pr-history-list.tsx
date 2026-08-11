@@ -44,7 +44,10 @@ export function PrHistoryList({ records }: PrHistoryListProps) {
               {record.reps}
             </p>
             <p className="text-xs text-forge-muted">
-              ~{kgToDisplayValue(record.e1rmKg, unit)} {weightLabel} e1RM
+              {record.reps === 1 &&
+              Math.abs(record.e1rmKg - record.weightKg) < 0.05
+                ? `${kgToDisplayValue(record.weightKg, unit)} ${weightLabel} 1RM`
+                : `~${kgToDisplayValue(record.e1rmKg, unit)} ${weightLabel} e1RM`}
             </p>
           </div>
         </li>

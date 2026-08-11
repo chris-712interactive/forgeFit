@@ -169,6 +169,7 @@ export function ActiveWorkout({
   const [toastPr, setToastPr] = useState<DetectedWorkoutPr | null>(null);
   const [prSavePending, setPrSavePending] = useState(false);
   const [prSaveMessage, setPrSaveMessage] = useState<string | null>(null);
+  const [prAlreadySavedAsMax, setPrAlreadySavedAsMax] = useState(false);
   const [maxTestResult, setMaxTestResult] = useState<{
     exerciseId: string;
     exerciseLabel: string;
@@ -679,6 +680,70 @@ export function ActiveWorkout({
     goToStep(currentStepIndex - 1);
   }
 
+  function announceDetectedPr(
+    exerciseId: string,
+    exerciseName: string,
+    weightKg: number,
+    reps: number,
+    rir: number | undefined
+  ): DetectedWorkoutPr | null {
+    if (
+      !coaching ||
+      !(coaching.prCelebrationEnabled || coaching.prToastEnabled)
+    ) {
+      return null;
+    }
+
+    const historicalBest = coaching.priorBestE1rmKg[exerciseId] ?? 0;
+    const sessionBest =
+      sessionBestE1rmRef.current.get(exerciseId) ?? historicalBest;
+    const detected = detectSetPr(
+      exerciseId,
+      exerciseName,
+      weightKg,
+      reps,
+      rir,
+      sessionBest
+    );
+
+    if (!detected) return null;
+
+    sessionBestE1rmRef.current.set(exerciseId, detected.e1rmKg);
+    if (coaching.prCelebrationEnabled) {
+      setCelebrationPr(detected);
+    } else if (coaching.prToastEnabled) {
+      setToastPr(detected);
+    }
+
+    if (coaching.gamificationOptIn) {
+      const headline = pickPrCelebrationHeadline({
+        exerciseLabel: detected.label,
+        weightKg: detected.weightKg,
+        reps: detected.reps,
+        e1rmKg: detected.e1rmKg,
+        goal: coaching.goal as CoachingGoal,
+        displayName: coaching.displayName,
+        unitSystem: unit,
+      });
+      const detail = pickPrCelebrationBody({
+        exerciseLabel: detected.label,
+        weightKg: detected.weightKg,
+        reps: detected.reps,
+        e1rmKg: detected.e1rmKg,
+        goal: coaching.goal as CoachingGoal,
+        displayName: coaching.displayName,
+        unitSystem: unit,
+      });
+      void publishWorkoutPrWin({
+        headline,
+        detail,
+        e1rmKg: detected.e1rmKg,
+      });
+    }
+
+    return detected;
+  }
+
   async function handleSetUpdate(
     setClientId: string,
     patch: Partial<
@@ -735,6 +800,20 @@ export function ActiveWorkout({
         updated.weightKg > 0
       ) {
         const recordedWeightKg = updated.weightKg;
+        // Max attempts are true singles — include them in PR detection.
+        const pr = announceDetectedPr(
+          setRow.exerciseId,
+          setRow.exerciseName,
+          recordedWeightKg,
+          1,
+          0
+        );
+        if (pr) {
+          // Max is persisted below; skip the redundant "Save as training max" CTA.
+          setPrAlreadySavedAsMax(true);
+          setPrSaveMessage("Saved to your training maxes.");
+        }
+
         void (async () => {
           const result = await saveUserOneRepMax(
             setRow.exerciseId,
@@ -742,75 +821,37 @@ export function ActiveWorkout({
             "max_test"
           );
           const actionError = readActionError(result);
-          setMaxTestResult({
-            exerciseId: setRow.exerciseId,
-            exerciseLabel: resolveOneRepMaxLabel(
-              setRow.exerciseId,
-              setRow.exerciseName
-            ),
-            weightKg: recordedWeightKg,
-            saved: !actionError,
-          });
+          // PR celebration covers the success path; otherwise confirm the save.
+          if (!pr) {
+            setMaxTestResult({
+              exerciseId: setRow.exerciseId,
+              exerciseLabel: resolveOneRepMaxLabel(
+                setRow.exerciseId,
+                setRow.exerciseName
+              ),
+              weightKg: recordedWeightKg,
+              saved: !actionError,
+            });
+          } else if (actionError) {
+            setPrAlreadySavedAsMax(false);
+            setPrSaveMessage(actionError);
+          }
         })();
-      }
-
-      if (
+      } else if (
         setRow &&
         updated?.weightKg != null &&
         updated.reps != null &&
         updated.weightKg > 0 &&
         updated.reps > 0 &&
-        !maxTestMode &&
-        coaching &&
-        (coaching.prCelebrationEnabled || coaching.prToastEnabled)
+        !maxTestMode
       ) {
-        const historicalBest =
-          coaching.priorBestE1rmKg[setRow.exerciseId] ?? 0;
-        const sessionBest =
-          sessionBestE1rmRef.current.get(setRow.exerciseId) ?? historicalBest;
-        const detected = detectSetPr(
+        announceDetectedPr(
           setRow.exerciseId,
           setRow.exerciseName,
           updated.weightKg,
           updated.reps,
-          updated.rir,
-          sessionBest
+          updated.rir
         );
-
-        if (detected) {
-          sessionBestE1rmRef.current.set(setRow.exerciseId, detected.e1rmKg);
-          if (coaching.prCelebrationEnabled) {
-            setCelebrationPr(detected);
-          } else if (coaching.prToastEnabled) {
-            setToastPr(detected);
-          }
-
-          if (coaching.gamificationOptIn) {
-            const headline = pickPrCelebrationHeadline({
-              exerciseLabel: detected.label,
-              weightKg: detected.weightKg,
-              reps: detected.reps,
-              e1rmKg: detected.e1rmKg,
-              goal: coaching.goal as CoachingGoal,
-              displayName: coaching.displayName,
-              unitSystem: unit,
-            });
-            const detail = pickPrCelebrationBody({
-              exerciseLabel: detected.label,
-              weightKg: detected.weightKg,
-              reps: detected.reps,
-              e1rmKg: detected.e1rmKg,
-              goal: coaching.goal as CoachingGoal,
-              displayName: coaching.displayName,
-              unitSystem: unit,
-            });
-            void publishWorkoutPrWin({
-              headline,
-              detail,
-              e1rmKg: detected.e1rmKg,
-            });
-          }
-        }
       }
     }
 
@@ -1696,31 +1737,36 @@ export function ActiveWorkout({
             displayName: coaching.displayName,
             unitSystem: unit,
           })}
-          onSaveAsMax={() => {
-            setPrSavePending(true);
-            setPrSaveMessage(null);
-            void (async () => {
-              // True singles save the lifted load; multi-rep PRs save estimated 1RM.
-              const actualMax = isActualOneRepMaxPr(celebrationPr);
-              const result = await saveUserOneRepMax(
-                celebrationPr.exerciseId,
-                actualMax ? celebrationPr.weightKg : celebrationPr.e1rmKg,
-                actualMax ? "max_test" : "log_derived"
-              );
-              const actionError = readActionError(result);
-              setPrSavePending(false);
-              if (actionError) {
-                setPrSaveMessage(actionError);
-                return;
-              }
-              setPrSaveMessage("Saved to your training maxes.");
-            })();
-          }}
+          onSaveAsMax={
+            prAlreadySavedAsMax
+              ? undefined
+              : () => {
+                  setPrSavePending(true);
+                  setPrSaveMessage(null);
+                  void (async () => {
+                    // True singles save the lifted load; multi-rep PRs save estimated 1RM.
+                    const actualMax = isActualOneRepMaxPr(celebrationPr);
+                    const result = await saveUserOneRepMax(
+                      celebrationPr.exerciseId,
+                      actualMax ? celebrationPr.weightKg : celebrationPr.e1rmKg,
+                      actualMax ? "max_test" : "log_derived"
+                    );
+                    const actionError = readActionError(result);
+                    setPrSavePending(false);
+                    if (actionError) {
+                      setPrSaveMessage(actionError);
+                      return;
+                    }
+                    setPrSaveMessage("Saved to your training maxes.");
+                  })();
+                }
+          }
           savePending={prSavePending}
           saveMessage={prSaveMessage}
           onClose={() => {
             setCelebrationPr(null);
             setPrSaveMessage(null);
+            setPrAlreadySavedAsMax(false);
           }}
         />
       )}

@@ -11,11 +11,38 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-08-11 |
-| **Last session focus** | Actual 1RM should not be re-estimated |
+| **Last session focus** | Max-test 1RM should celebrate as a PR |
 
 ---
 
 ## Session Log
+
+### 2026-08-11 — Max-test 1RM triggers PR celebration
+
+**What was done**
+
+- Test 1RM max attempts now run the same PR detection as normal sets (previously skipped via `!maxTestMode`)
+- Beating your prior best shows PR celebration/toast + community win; max is still auto-saved
+- Non-PR max tests keep the existing “1RM recorded” modal
+- Progress PR history only counts singles from max-test sessions (warmups ignored) and labels true singles as 1RM
+
+**What's next**
+
+1. Smoke-test: Test 1RM above prior max → PR celebration; re-test same weight → “1RM recorded” only
+2. Confirm Progress → PR history lists the new max-test single
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/components/workout/active-workout.tsx`
+- `apps/web/src/lib/analytics/pr-history.ts`
+- `apps/web/src/components/progress/pr-history-list.tsx`
+- `docs/PROGRESS.md`
+
+---
 
 ### 2026-08-11 — Actual 1RM recorded as training max (not re-estimated)
 

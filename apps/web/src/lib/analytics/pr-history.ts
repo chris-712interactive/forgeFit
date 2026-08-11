@@ -1,9 +1,9 @@
 import { exerciseTracksWeight } from "@forgefit/exercise-db";
 import {
-  ONE_REP_MAX_LIFTS,
   resolveOneRepMaxLabel,
 } from "@/lib/progression/one-rep-max-lifts";
 import { estimateE1rmFromSet } from "@/lib/progression/one-rep-max";
+import { isMaxTestSession } from "@/lib/progression/max-test";
 import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
 import type { PrRecord } from "./types";
 
@@ -27,6 +27,7 @@ export function buildPrHistory(
 
   for (const session of completed) {
     const date = (session.completedAt ?? session.startedAt).slice(0, 10);
+    const maxTest = isMaxTestSession(session.sessionName);
 
     for (const set of session.sets) {
       if (
@@ -37,6 +38,11 @@ export function buildPrHistory(
         set.reps == null ||
         set.reps <= 0
       ) {
+        continue;
+      }
+
+      // Max-test warmups are not PRs — only count the recorded single.
+      if (maxTest && set.reps !== 1) {
         continue;
       }
 
