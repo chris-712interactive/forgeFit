@@ -292,7 +292,7 @@ function applyE1rmGuardrails(
 
 function e1rmReasonPrefix(entry: EffectiveE1rmEntry): string {
   if (entry.source === "user_declared") {
-    return "Your entered 1RM";
+    return "Your training max";
   }
   if (entry.source === "blended") {
     return "Updated max from your logs (above profile 1RM)";

@@ -1,7 +1,10 @@
 "use client";
 
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
-import type { DetectedWorkoutPr } from "@/lib/coaching/detect-pr";
+import {
+  isActualOneRepMaxPr,
+  type DetectedWorkoutPr,
+} from "@/lib/coaching/detect-pr";
 import {
   kgToDisplayValue,
   weightUnitLabel,
@@ -29,6 +32,7 @@ export function PrCelebrationModal({
 }: PrCelebrationModalProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
+  const actualMax = isActualOneRepMaxPr(pr);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -58,7 +62,9 @@ export function PrCelebrationModal({
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/95">{body}</p>
           <p className="mt-4 font-display text-3xl font-bold text-white">
-            ~{kgToDisplayValue(pr.e1rmKg, unit)} {weightLabel} e1RM
+            {actualMax
+              ? `${kgToDisplayValue(pr.weightKg, unit)} ${weightLabel} 1RM`
+              : `~${kgToDisplayValue(pr.e1rmKg, unit)} ${weightLabel} e1RM`}
           </p>
         </div>
         <div className="space-y-2 bg-forge-surface-raised px-6 py-4">

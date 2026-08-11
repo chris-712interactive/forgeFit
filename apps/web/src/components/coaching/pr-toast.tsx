@@ -1,7 +1,10 @@
 "use client";
 
 import { useUnitPreference } from "@/components/units/unit-preference-provider";
-import type { DetectedWorkoutPr } from "@/lib/coaching/detect-pr";
+import {
+  isActualOneRepMaxPr,
+  type DetectedWorkoutPr,
+} from "@/lib/coaching/detect-pr";
 import {
   kgToDisplayValue,
   weightUnitLabel,
@@ -17,6 +20,7 @@ interface PrToastProps {
 export function PrToast({ pr, headline, onClose }: PrToastProps) {
   const unit = useUnitPreference();
   const weightLabel = weightUnitLabel(unit);
+  const actualMax = isActualOneRepMaxPr(pr);
 
   useEffect(() => {
     const timer = window.setTimeout(onClose, 4500);
@@ -38,7 +42,9 @@ export function PrToast({ pr, headline, onClose }: PrToastProps) {
             {headline}
           </p>
           <p className="mt-1 text-xs text-forge-muted">
-            ~{kgToDisplayValue(pr.e1rmKg, unit)} {weightLabel} e1RM
+            {actualMax
+              ? `${kgToDisplayValue(pr.weightKg, unit)} ${weightLabel} 1RM`
+              : `~${kgToDisplayValue(pr.e1rmKg, unit)} ${weightLabel} e1RM`}
           </p>
         </div>
         <button

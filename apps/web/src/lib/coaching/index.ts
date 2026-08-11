@@ -26,4 +26,8 @@ export {
 
 export { getWorkoutCoachingFeatures } from "./workout-features";
 
-export { detectSetPr, type DetectedWorkoutPr } from "./detect-pr";
+export {
+  detectSetPr,
+  isActualOneRepMaxPr,
+  type DetectedWorkoutPr,
+} from "./detect-pr";

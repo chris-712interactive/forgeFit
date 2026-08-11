@@ -10,12 +10,43 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-07-25 |
-| **Last session focus** | Rescheduled workout stuck Upcoming (start-lock / TZ skew) |
+| **Last updated** | 2026-08-11 |
+| **Last session focus** | Actual 1RM should not be re-estimated |
 
 ---
 
 ## Session Log
+
+### 2026-08-11 — Actual 1RM recorded as training max (not re-estimated)
+
+**What was done**
+
+- Fixed `estimateE1rmFromSet`: a true single (1 rep, RIR ≤ 0) is the 1RM — no Epley inflation
+- Max-test sessions are excluded from log-derived e1RM maps so warmup sets cannot override the saved max
+- Declared/tested maxes only lose to log estimates when the estimate is clearly higher (>0.25 kg)
+- PR toast/celebration show **1RM** (not ~e1RM) for true singles; “Save as training max” stores the lifted weight with `max_test`
+- Profile training-maxes copy updated to match
+
+**What's next**
+
+1. Smoke-test: Test 1RM → confirm profile max equals the recorded load and next workout uses “Your training max” (not estimated)
+2. Optional: persist `setRole` on synced sets so warmups can be filtered outside max-test session names too
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/lib/progression/one-rep-max.ts`, `one-rep-max.test.ts`
+- `apps/web/src/lib/progression/rir-progression.ts`
+- `apps/web/src/lib/coaching/detect-pr.ts`, `detect-pr.test.ts`, `index.ts`
+- `apps/web/src/components/coaching/pr-celebration-modal.tsx`, `pr-toast.tsx`
+- `apps/web/src/components/workout/active-workout.tsx`
+- `apps/web/src/components/profile/one-rep-max-setting.tsx`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`
+
+---
 
 ### 2026-07-25 — Fix deploy: start-date server boundary
 

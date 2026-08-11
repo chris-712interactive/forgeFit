@@ -233,8 +233,9 @@ export function OneRepMaxSetting({
         Known one-rep maxes
       </h2>
       <p className="mt-1 text-xs text-forge-muted">
-        Optional — anchors weekly weight suggestions as a % of your max. We still
-        update from logged sets and max tests when you prove you&apos;re stronger.
+        Optional — anchors weekly weight suggestions as a % of your max. A logged
+        or tested single becomes your training max for that lift; multi-rep sets
+        can raise it only when they clearly estimate higher.
       </p>
 
       <div className="mt-4 space-y-3">

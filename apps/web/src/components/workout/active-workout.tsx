@@ -29,6 +29,7 @@ import { PrToast } from "@/components/coaching/pr-toast";
 import { MaxTestResultModal } from "@/components/workout/max-test-result-modal";
 import {
   detectSetPr,
+  isActualOneRepMaxPr,
   type DetectedWorkoutPr,
 } from "@/lib/coaching/detect-pr";
 import { isMaxTestSession, isMaxTestAttemptSet } from "@/lib/progression/max-test";
@@ -1699,10 +1700,12 @@ export function ActiveWorkout({
             setPrSavePending(true);
             setPrSaveMessage(null);
             void (async () => {
+              // True singles save the lifted load; multi-rep PRs save estimated 1RM.
+              const actualMax = isActualOneRepMaxPr(celebrationPr);
               const result = await saveUserOneRepMax(
                 celebrationPr.exerciseId,
-                celebrationPr.e1rmKg,
-                "log_derived"
+                actualMax ? celebrationPr.weightKg : celebrationPr.e1rmKg,
+                actualMax ? "max_test" : "log_derived"
               );
               const actionError = readActionError(result);
               setPrSavePending(false);

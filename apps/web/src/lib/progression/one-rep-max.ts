@@ -6,6 +6,10 @@ import {
 import type { FitnessGoal } from "@/lib/types/profile";
 import type { ExperienceLevel } from "@/lib/types/profile";
 import type { WorkoutSessionRecord, WorkoutSetRecord } from "@/lib/workouts/sessions";
+import { isMaxTestSession } from "./max-test";
+
+/** Log estimate must beat a declared/tested max by this much to override it. */
+const DECLARED_MAX_OVERRIDE_KG = 0.25;
 
 type LevelRatios = Record<ExperienceLevel, number>;
 
@@ -42,14 +46,24 @@ const PATTERN_BW_RATIO: Partial<Record<string, LevelRatios>> = {
   core: { beginner: 0.06, intermediate: 0.09, advanced: 0.12 },
 };
 
+/**
+ * Estimate 1RM from a logged set (Epley, with RIR counted as latent reps).
+ * A true single at failure (1 rep, RIR ≤ 0 / unset) *is* the 1RM — do not inflate.
+ */
 export function estimateE1rmFromSet(
   weightKg: number,
   reps: number,
   rir?: number
 ): number {
-  const effectiveReps = reps + (rir ?? 0);
-  if (effectiveReps <= 0) return weightKg;
-  // Epley formula
+  if (weightKg <= 0 || reps <= 0) return Math.max(0, weightKg);
+
+  const reserve = rir ?? 0;
+  // Actual 1RM attempt: the load on the bar is the training max.
+  if (reps === 1 && reserve <= 0) {
+    return weightKg;
+  }
+
+  const effectiveReps = reps + reserve;
   return weightKg * (1 + effectiveReps / 30);
 }
 
@@ -122,7 +136,7 @@ export interface EffectiveE1rmEntry {
   source: "user_declared" | "estimated" | "blended";
 }
 
-/** Merge user-declared maxes with log estimates (higher value wins per lift). */
+/** Merge user-declared / max-tested maxes with log estimates (higher value wins). */
 export function mergeEffectiveE1rmMap(
   declared: Map<string, number>,
   estimated: Map<string, number>
@@ -135,7 +149,8 @@ export function mergeEffectiveE1rmMap(
     const logEst = estimated.get(exerciseId);
 
     if (userMax != null && logEst != null) {
-      if (logEst > userMax) {
+      // Prefer the declared/tested max unless logs clearly prove a higher max.
+      if (logEst > userMax + DECLARED_MAX_OVERRIDE_KG) {
         merged.set(exerciseId, { e1rmKg: logEst, source: "blended" });
       } else {
         merged.set(exerciseId, { e1rmKg: userMax, source: "user_declared" });
@@ -164,6 +179,9 @@ export function buildExerciseE1rmMap(
 
   for (const session of sessions) {
     if (session.status !== "completed") continue;
+    // Max tests persist the true 1RM to user_one_rep_maxes. Skip them so
+    // warmup sets in that session cannot inflate log-derived estimates.
+    if (isMaxTestSession(session.sessionName)) continue;
     for (const set of workingSets(session.sets)) {
       const estimate = estimateE1rmFromSet(
         set.weightKg!,

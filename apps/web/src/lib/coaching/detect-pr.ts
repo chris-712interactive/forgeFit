@@ -13,6 +13,13 @@ export interface DetectedWorkoutPr {
 
 const PR_THRESHOLD_KG = 0.25;
 
+/** True single at failure — e1RM equals the load lifted (not an estimate). */
+export function isActualOneRepMaxPr(
+  pr: Pick<DetectedWorkoutPr, "reps" | "weightKg" | "e1rmKg">
+): boolean {
+  return pr.reps === 1 && Math.abs(pr.e1rmKg - pr.weightKg) < 0.05;
+}
+
 export function detectSetPr(
   exerciseId: string,
   exerciseName: string,
