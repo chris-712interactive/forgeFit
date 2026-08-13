@@ -10,12 +10,35 @@
 | Field | Value |
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
-| **Last updated** | 2026-08-11 |
-| **Last session focus** | Max-test 1RM should celebrate as a PR |
+| **Last updated** | 2026-08-13 |
+| **Last session focus** | Custom treadmill walk asked for reps/sets instead of minutes |
 
 ---
 
 ## Session Log
+
+### 2026-08-13 — Custom cardio (Walking, Treadmill) logs minutes, not reps
+
+**What was done**
+
+- `isTimedCardioExercise` now treats catalog `category: cardio` as timed (Walking/Jogging/Running treadmill, bikes, rower, stairmill, etc.), not only curated ids like `treadmill_incline_walk`
+- Custom builder defaults those picks to 1 bout of `15-25 min` and labels Duration instead of Reps
+- Strength moves whose names contain walk/run (lunges, crunches) stay sets×reps — catalog `movementPattern` is not used for this check
+
+**What's next**
+
+1. Smoke-test: Custom workout → add Walking, Treadmill → Duration minutes in builder and logger
+2. Optional: fix catalog `inferPattern` so `/run|walk/` no longer tags crunches and walking lunges as cardio
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `packages/exercise-db/src/holds.ts`, `holds.test.ts`, `index.ts`
+- `apps/web/src/components/workout/custom-workout-builder.tsx`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/phases/11-custom-workouts.md`
 
 ### 2026-08-11 — Max-test 1RM triggers PR celebration
 

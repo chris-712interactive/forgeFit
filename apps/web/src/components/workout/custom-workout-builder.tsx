@@ -1,8 +1,11 @@
 "use client";
 
 import {
+  defaultCustomExerciseTargets,
   expandUserEquipment,
   isExerciseAvailable,
+  isTimedCardioExercise,
+  isTimedExercise,
   searchCatalog,
   type CatalogExercise,
 } from "@forgefit/exercise-db";
@@ -84,9 +87,7 @@ function defaultExercise(exercise: CatalogExercise): WorkoutTemplateExercise {
   return {
     exerciseId: exercise.id,
     name: exercise.name,
-    sets: 3,
-    reps: "8-12",
-    restSeconds: 90,
+    ...defaultCustomExerciseTargets(exercise.id),
   };
 }
 
@@ -643,7 +644,9 @@ export function CustomWorkoutBuilder({
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-2">
                       <label className="space-y-1 text-xs text-forge-muted">
-                        Sets
+                        {isTimedCardioExercise(exercise.exerciseId)
+                          ? "Bouts"
+                          : "Sets"}
                         <input
                           type="number"
                           min={1}
@@ -656,9 +659,20 @@ export function CustomWorkoutBuilder({
                         />
                       </label>
                       <label className="space-y-1 text-xs text-forge-muted">
-                        Reps
+                        {isTimedCardioExercise(exercise.exerciseId)
+                          ? "Duration"
+                          : isTimedExercise(exercise.exerciseId)
+                            ? "Hold"
+                            : "Reps"}
                         <input
                           className={inputClass}
+                          placeholder={
+                            isTimedCardioExercise(exercise.exerciseId)
+                              ? "15-25 min"
+                              : isTimedExercise(exercise.exerciseId)
+                                ? "30-45 sec"
+                                : "8-12"
+                          }
                           value={exercise.reps}
                           onChange={(event) =>
                             updateExercise(index, { reps: event.target.value })

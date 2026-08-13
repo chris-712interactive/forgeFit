@@ -1,9 +1,16 @@
+import { getCatalogExerciseById } from "./catalog";
 import { EXERCISES } from "./exercises";
 
 export type HoldExperience = "beginner" | "intermediate" | "advanced";
 export type TimedPrescriptionUnit = "seconds" | "minutes";
 
 const DURATION_HOLD_EXERCISE_IDS = new Set(["plank"]);
+const DEFAULT_CARDIO_PRESCRIPTION = "15-25 min";
+const DEFAULT_STRENGTH_TARGETS = {
+  sets: 3,
+  reps: "8-12",
+  restSeconds: 90,
+} as const;
 
 const HOLD_DURATION_BY_LEVEL: Record<HoldExperience, string> = {
   beginner: "30-45 sec",
@@ -15,8 +22,14 @@ function exerciseById(exerciseId: string) {
   return EXERCISES.find((exercise) => exercise.id === exerciseId);
 }
 
+/**
+ * Timed cardio is curated `movementPattern: cardio` or catalog `category: cardio`.
+ * Catalog `movementPattern` is not used — the importer over-matches names like
+ * "walk" / "run" (walking lunges, crunches).
+ */
 export function isTimedCardioExercise(exerciseId: string): boolean {
-  return exerciseById(exerciseId)?.movementPattern === "cardio";
+  if (exerciseById(exerciseId)?.movementPattern === "cardio") return true;
+  return getCatalogExerciseById(exerciseId)?.category === "cardio";
 }
 
 export function isDurationHoldExercise(exerciseId: string): boolean {
@@ -68,9 +81,28 @@ export function resolveTimedPrescription(
   }
   if (isTimedCardioExercise(exerciseId)) {
     if (/sec|min/i.test(prescribedReps)) return prescribedReps;
-    return "15-25 min";
+    return DEFAULT_CARDIO_PRESCRIPTION;
   }
   return prescribedReps;
+}
+
+/** Default sets / duration / rest when adding an exercise in the custom builder. */
+export function defaultCustomExerciseTargets(exerciseId: string): {
+  sets: number;
+  reps: string;
+  restSeconds: number;
+} {
+  if (isTimedCardioExercise(exerciseId)) {
+    return { sets: 1, reps: DEFAULT_CARDIO_PRESCRIPTION, restSeconds: 0 };
+  }
+  if (isDurationHoldExercise(exerciseId)) {
+    return {
+      sets: 3,
+      reps: holdDurationPrescription(exerciseId, "beginner") ?? "30-45 sec",
+      restSeconds: 90,
+    };
+  }
+  return { ...DEFAULT_STRENGTH_TARGETS };
 }
 
 export function timedTargetSeconds(

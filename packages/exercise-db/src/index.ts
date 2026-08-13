@@ -39,6 +39,7 @@ export {
 } from "./equipment";
 export { pickCardioExercise, type CardioPrescription } from "./cardio";
 export {
+  defaultCustomExerciseTargets,
   holdDurationPrescription,
   isDurationHoldExercise,
   isTimedCardioExercise,

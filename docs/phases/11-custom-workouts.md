@@ -23,6 +23,7 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [x] `session_source` on `workout_sessions` + `user_workout_templates` migration
 - [x] Dexie v5: `sessionSource` on sessions, `workoutTemplates` table
 - [x] Custom builder UI with equipment filter
+- [x] Catalog cardio (Walking, Treadmill, bikes, etc.) defaults to duration in minutes, not sets×reps
 - [x] Optional warmup presets on custom workouts
 - [x] `POST /api/workouts/import` (native CSV, Pro gate)
 - [x] `GET /api/workouts/export` + history per-session CSV (Pro `data_export`)
