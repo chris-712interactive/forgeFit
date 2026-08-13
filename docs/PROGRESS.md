@@ -11,11 +11,36 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-08-13 |
-| **Last session focus** | Custom treadmill walk asked for reps/sets instead of minutes |
+| **Last session focus** | Remove Gravity Transformations workout pack (IP) |
 
 ---
 
 ## Session Log
+
+### 2026-08-13 — Remove Gravity Transformations pack
+
+**What was done**
+
+- Deleted seeded Gravity Week 1 templates (Full Body, Cardio Acceleration, Metcon) and the Workout hub Install CTA
+- Interval protocols (density / tabata / superset) stay; users build or import their own custom workouts
+- CSV v2 fixture renamed off the Gravity workout name; catalog fallback comment no longer references the brand
+- Phase 13 docs no longer plan Weeks 2–6 of that pack
+
+**What's next**
+
+1. Confirm Workout hub no longer shows a Gravity Transformations install card
+2. Users who already installed those templates still have them in their account — they can delete saved templates in the custom builder if they want them gone
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/lib/workouts/packs/gravity-week1.ts` (deleted)
+- `apps/web/src/components/workout/workout-hub.tsx`
+- `apps/web/src/lib/workouts/workout-csv-parser.ts`, `workout-csv-parser.test.ts`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/phases/13-interval-protocols.md`, `docs/phases/11-custom-workouts.md`
 
 ### 2026-08-13 — Custom cardio (Walking, Treadmill) logs minutes, not reps
 
@@ -588,7 +613,7 @@
 | 10 | Functional Conditioning | ✅ Complete | 2026-07-06 |
 | 11 | Custom Workouts | ⏳ Code complete — apply Supabase migrations | — |
 | 12 | PWA timer background accuracy | ⏳ 12A/12B code complete — device QA; 12C deferred | — |
-| 13 | Interval Protocols + Gravity pack | ⏳ In progress | — |
+| 13 | Interval Protocols | ⏳ In progress | — |
 | — | Community expansion (Phases 1–7) | ✅ Complete | 2026-06 |
 
 ---

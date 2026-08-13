@@ -10,7 +10,6 @@ import {
   cancelWorkoutSession,
   getCachedProgramPlan,
   getSession,
-  saveLocalTemplate,
   startWorkoutSession,
 } from "@forgefit/offline-sync";
 import { reconcileLocalWorkoutsWithServer } from "@/lib/workouts/reconcile-local";
@@ -76,10 +75,6 @@ import {
 } from "./custom-workout-builder";
 import { MaxTestLauncher } from "./max-test-launcher";
 import { AssignedCustomWorkoutCard } from "./assigned-custom-workout-card";
-import {
-  GRAVITY_WEEK1_TEMPLATE_NAMES,
-  GRAVITY_WEEK1_TEMPLATES,
-} from "@/lib/workouts/packs/gravity-week1";
 import {
   completedCustomSessionForAssignment,
   dateHasProgramSession,
@@ -218,10 +213,6 @@ export function WorkoutHub({
   const [maxTestOpen, setMaxTestOpen] = useState(false);
   const [customBuilderDraft, setCustomBuilderDraft] =
     useState<CustomWorkoutDraft | null>(null);
-  const [installingGravity, setInstallingGravity] = useState(false);
-  const [gravityInstallMessage, setGravityInstallMessage] = useState<
-    string | null
-  >(null);
   const [dayAssignments, setDayAssignments] = useState<WorkoutDayAssignmentView[]>(
     serverDayAssignments
   );
@@ -242,78 +233,6 @@ export function WorkoutHub({
   const templateById = useMemo(() => {
     return new Map(workoutTemplates.map((row) => [row.id, row]));
   }, [workoutTemplates]);
-
-  const gravityInstalledCount = useMemo(() => {
-    const names = new Set(workoutTemplates.map((row) => row.name));
-    return GRAVITY_WEEK1_TEMPLATE_NAMES.filter((name) => names.has(name)).length;
-  }, [workoutTemplates]);
-
-  const installGravityWeek1 = useCallback(async () => {
-    if (!canCustomWorkouts || installingGravity) return;
-    setInstallingGravity(true);
-    setGravityInstallMessage(null);
-    try {
-      let created = 0;
-      let skipped = 0;
-      const existing = new Set(workoutTemplates.map((row) => row.name));
-
-      for (const template of GRAVITY_WEEK1_TEMPLATES) {
-        if (existing.has(template.name)) {
-          skipped += 1;
-          continue;
-        }
-
-        const response = await fetch("/api/workout-templates", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: template.name,
-            exercises: template.exercises,
-            intervalProtocol: template.intervalProtocol,
-          }),
-        });
-        const body = (await response.json()) as {
-          error?: string;
-          template?: { id: string };
-        };
-        if (!response.ok) {
-          throw new Error(body.error ?? "Could not install Gravity templates.");
-        }
-
-        await saveLocalTemplate({
-          userId,
-          id: body.template?.id,
-          name: template.name,
-          exercises: template.exercises,
-          intervalProtocol: template.intervalProtocol,
-        });
-        created += 1;
-      }
-
-      if (created === 0 && skipped > 0) {
-        setGravityInstallMessage("Gravity Week 1 templates already installed.");
-      } else {
-        setGravityInstallMessage(
-          `Installed ${created} Gravity Week 1 template${created === 1 ? "" : "s"}${
-            skipped ? ` (${skipped} already present)` : ""
-          }.`
-        );
-      }
-      router.refresh();
-    } catch (err) {
-      setGravityInstallMessage(
-        err instanceof Error ? err.message : "Install failed."
-      );
-    } finally {
-      setInstallingGravity(false);
-    }
-  }, [
-    canCustomWorkouts,
-    installingGravity,
-    router,
-    userId,
-    workoutTemplates,
-  ]);
 
   const allSessions = useMemo(
     () => mergeSessionRecords(localSessions, serverSessions),
@@ -1118,35 +1037,6 @@ export function WorkoutHub({
             setCustomBuilderOpen(true);
           }}
         />
-
-        {canCustomWorkouts && (
-          <section className="rounded-2xl border border-forge-ember/30 bg-forge-ember/5 px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-forge-ember">
-              Gravity Transformations
-            </p>
-            <p className="mt-1 text-sm text-forge-muted">
-              Install Week 1 Full Body, Cardio Acceleration, and Metabolic
-              Conditioning with matching interval timers.
-            </p>
-            <button
-              type="button"
-              disabled={installingGravity || gravityInstalledCount === 3}
-              onClick={() => void installGravityWeek1()}
-              className="mt-3 min-h-[44px] w-full rounded-xl bg-forge-ember px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {installingGravity
-                ? "Installing…"
-                : gravityInstalledCount === 3
-                  ? "Week 1 installed"
-                  : "Install Gravity Week 1"}
-            </button>
-            {gravityInstallMessage && (
-              <p className="mt-2 text-sm text-forge-success" role="status">
-                {gravityInstallMessage}
-              </p>
-            )}
-          </section>
-        )}
 
         {plan ? (
           <section className={appSectionStackTight}>

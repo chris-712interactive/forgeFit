@@ -93,7 +93,7 @@ function resolveExerciseId(
     return { id: matches[0].id, name: matches[0].name };
   }
 
-  // Fall back to synthetic custom id so Gravity-style names still import.
+  // Fall back to a synthetic custom id so names not in the catalog still import.
   const slug = needle
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_|_$/g, "")

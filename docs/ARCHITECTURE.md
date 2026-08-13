@@ -98,7 +98,7 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
 6. **Schedule adjuster** — per-week overrides in Dexie + `workout_schedule_overrides`; `Move` on each day card opens a week picker; occupied days auto-swap; `GET/POST /api/workout-schedule` syncs overrides
 7. **Custom workouts (Phase 11, Pro)** — builder on Workout hub; `session_source` + `day_index = -1`; equipment-filtered exercise picker; optional warmup; templates in `user_workout_templates`; native CSV import (`workout_import`) and export (`data_export`). Catalog cardio (e.g. Walking, Treadmill) defaults to 1 bout of `15-25 min`, not 3×8–12 reps.
-8. **Interval protocols (Phase 13, Pro)** — optional `intervalProtocol` on templates/sessions (`density` / `tabata` / `superset_block`); `IntervalTimer` with gym-loud GO/STOP cues + 3s countdown; CSV v2; Gravity Week 1 install pack on Workout hub
+8. **Interval protocols (Phase 13, Pro)** — optional `intervalProtocol` on templates/sessions (`density` / `tabata` / `superset_block`); `IntervalTimer` with gym-loud GO/STOP cues + 3s countdown; CSV v2. No third-party branded workout packs.
 9. **Custom day assignments (Phase 11, Pro)** — assign templates to calendar dates; Replace vs Keep both when a day already has a program/custom; hub merges assigned cards into “This week”
 10. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes
 

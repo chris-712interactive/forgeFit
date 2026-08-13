@@ -59,7 +59,7 @@ test("buildForgeRepWorkoutTemplateCsv round-trips key fields", () => {
 
 test("parseForgeRepWorkoutCsv reads v2 interval protocol and custom ids", () => {
   const csv = `# forgerep-workout-template v2
-workout_name,Gravity W1 Full Body
+workout_name,Density Full Body
 protocol_mode,density
 work_seconds,30
 rest_seconds,45

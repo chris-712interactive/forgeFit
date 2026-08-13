@@ -45,7 +45,7 @@ Pro users can **Assign to a day** from the custom builder (saves template if nee
 
 Schema: `user_workout_day_assignments` (`template_id`, `scheduled_date`, `replaces_program`). See migration `20260714210000_workout_day_assignments.sql`.
 
-Interval protocols (density / tabata / superset blocks), gym-loud timers, and Gravity packs live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
+Interval protocols (density / tabata / superset blocks) and gym-loud timers live in **Phase 13** — see [13-interval-protocols.md](./13-interval-protocols.md) (CSV v2).
 
 ## CSV formats
 
