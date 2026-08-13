@@ -11,11 +11,34 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-08-13 |
-| **Last session focus** | Persist in-progress custom workouts across navigation |
+| **Last session focus** | Last-time weight hint on movements with history |
 
 ---
 
 ## Session Log
+
+### 2026-08-13 — Last-time load hint on every movement with history
+
+**What was done**
+
+- Active workout shows `Last time (Aug 10): 32 kg × 6` (or duration / reps) under the aim line when this movement has a prior completed set
+- Uses the best working set from the most recent completed session (program or custom); matches swapped `plannedExerciseId` and same exercise name
+- Dumbbell lifts append “per dumbbell” when that is how weight is logged
+
+**What's next**
+
+1. Smoke-test: log a weighted custom or program lift, start it again later — hint shows last load
+2. Confirm first-time movements stay hint-free
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/lib/workouts/last-logged-set.ts`, `last-logged-set.test.ts`, `set-display.ts`
+- `apps/web/src/components/workout/active-workout.tsx`, `workout-hub.tsx`
+- `docs/PROGRESS.md`, `docs/BIBLE.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/phases/03-workout-offline.md`
 
 ### 2026-08-13 — Persist custom workouts when leaving the Workout tab
 

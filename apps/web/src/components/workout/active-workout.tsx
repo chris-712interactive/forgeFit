@@ -35,6 +35,11 @@ import {
 import { isMaxTestSession, isMaxTestAttemptSet } from "@/lib/progression/max-test";
 import { resolveOneRepMaxLabel } from "@/lib/progression/one-rep-max-lifts";
 import type { WorkoutCoachingFeatures } from "@/lib/coaching/types";
+import type { WorkoutSessionRecord } from "@/lib/workouts/sessions";
+import {
+  findLastLoggedSet,
+  formatLastLoggedSetHint,
+} from "@/lib/workouts/last-logged-set";
 import {
   buildWorkoutSteps,
   canAdvanceFromStep,
@@ -113,6 +118,7 @@ interface ActiveWorkoutProps {
   coaching?: WorkoutCoachingFeatures | null;
   readiness?: WorkoutReadinessContext | null;
   spotifyConnected?: boolean;
+  priorSessions?: WorkoutSessionRecord[];
   onBack?: () => void;
   onFinished?: (clientId: string) => void | Promise<void>;
 }
@@ -124,6 +130,7 @@ export function ActiveWorkout({
   coaching = null,
   readiness = null,
   spotifyConnected = false,
+  priorSessions = [],
   onBack,
   onFinished,
 }: ActiveWorkoutProps) {
@@ -372,6 +379,23 @@ export function ActiveWorkout({
     () => (session ? collectSessionEquipment(session) : []),
     [session]
   );
+
+  const lastLoggedHintByExerciseId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!session) return map;
+
+    for (const exercise of session.exercises) {
+      const last = findLastLoggedSet(priorSessions, exercise.exerciseId, {
+        excludeClientId: clientId,
+        exerciseName: exercise.name,
+      });
+      if (!last) continue;
+      const hint = formatLastLoggedSetHint(last, unit);
+      if (hint) map.set(exercise.exerciseId, hint);
+    }
+
+    return map;
+  }, [clientId, priorSessions, session, unit]);
 
   const completedCount = sets.filter((s) => s.completed).length;
   const totalCount = sets.length;
@@ -1091,6 +1115,7 @@ export function ActiveWorkout({
     const timerLabel = isCardio ? "Cardio" : "Hold";
     const exerciseSetsComplete =
       exerciseSets.length > 0 && exerciseSets.every((set) => set.completed);
+    const lastLoggedHint = lastLoggedHintByExerciseId.get(exercise.exerciseId);
     const completedOnOriginal = completedSetsOnOriginalExercise(sets, exercise);
     const swappedFromName =
       exercise.plannedExerciseName &&
@@ -1152,6 +1177,11 @@ export function ActiveWorkout({
               </span>
             ) : null}
           </p>
+          {lastLoggedHint ? (
+            <p className="mt-2 text-sm font-medium text-forge-steel">
+              {lastLoggedHint}
+            </p>
+          ) : null}
           {exercise.notes && (
             <p className="mt-2 rounded-lg border border-forge-gold/20 bg-forge-gold/5 px-3 py-2 text-xs text-forge-muted">
               {exercise.notes}

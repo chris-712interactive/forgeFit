@@ -933,6 +933,7 @@ export function WorkoutHub({
         coaching={coachingFeatures}
         readiness={readiness}
         spotifyConnected={spotifyConnected}
+        priorSessions={allSessions}
         onBack={closeToHub}
         onFinished={handleWorkoutFinished}
       />

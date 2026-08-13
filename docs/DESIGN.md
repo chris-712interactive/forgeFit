@@ -80,6 +80,10 @@ The SVG logo recreates the forged metallic **F** with ember glow, weight plates,
 - **Deferred:** Community feed, scorecard, pro insights, PWA prompt, and full metric grids live on their tabs — not on home scroll
 - **Sleep shortfall:** When Fitbit sleep averages under 7h, Activity card and Progress sleep panel suggest a lights-out time from 7-day wake pattern
 
+## Active workout
+
+- **Last time hint:** `text-sm font-medium text-forge-steel` under the aim line when this movement has a prior completed set — e.g. `Last time (Aug 10): 32 kg × 6`. Not a second coaching card; progression notes stay in the steel/gold note boxes.
+
 ## Community tab (`/community`)
 
 - **Layout:** Single-scroll arena — no week/squad/feed tabs; competition and involvement on one page

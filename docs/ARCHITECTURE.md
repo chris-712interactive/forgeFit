@@ -92,7 +92,7 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 ## Workout Tracking (Phase 3)
 
 1. User starts a session from `/workout` → `startWorkoutSession()` writes to Dexie (IndexedDB)
-2. Active workout at `/workout/[clientId]` logs sets/reps/RIR per exercise; timed cardio logs minutes and holds log seconds (`isTimedCardioExercise` / `isDurationHoldExercise`). The active `clientId` stays in `sessionStorage` so returning to Workout resumes; custom sessions also get a hub Continue card (they are excluded from week-plan `buildDayStatusMap`).
+2. Active workout at `/workout/[clientId]` logs sets/reps/RIR per exercise; timed cardio logs minutes and holds log seconds (`isTimedCardioExercise` / `isDurationHoldExercise`). The active `clientId` stays in `sessionStorage` so returning to Workout resumes; custom sessions also get a hub Continue card (they are excluded from week-plan `buildDayStatusMap`). Each exercise with prior completed sets shows a **Last time** hint (`findLastLoggedSet`) — best working set from the most recent session, including custom workouts.
 3. Rest timer auto-starts after each completed set (program `restSeconds`); deadline-based countdown reconciles on app resume (Phase 12)
 4. `SyncManager` in app layout calls `syncWorkoutData()` on load and `online` event
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`

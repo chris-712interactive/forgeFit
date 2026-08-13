@@ -4,8 +4,8 @@ import {
   isTimedExercise,
   timedSetTotalMs,
 } from "@forgefit/exercise-db";
-import { formatWeight } from "@/lib/units/measurements";
-import type { UnitSystem } from "@/lib/types/profile";
+import { formatWeight } from "../units/measurements";
+import type { UnitSystem } from "../types/profile";
 
 interface LoggedSetFields {
   reps?: number | null;
