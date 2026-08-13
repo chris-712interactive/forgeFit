@@ -92,12 +92,12 @@ Requires `SUPABASE_SERVICE_ROLE_KEY`. Impersonation signing uses `ADMIN_IMPERSON
 ## Workout Tracking (Phase 3)
 
 1. User starts a session from `/workout` → `startWorkoutSession()` writes to Dexie (IndexedDB)
-2. Active workout at `/workout/[clientId]` logs sets/reps/RIR per exercise; timed cardio logs minutes and holds log seconds (`isTimedCardioExercise` / `isDurationHoldExercise`)
+2. Active workout at `/workout/[clientId]` logs sets/reps/RIR per exercise; timed cardio logs minutes and holds log seconds (`isTimedCardioExercise` / `isDurationHoldExercise`). The active `clientId` stays in `sessionStorage` so returning to Workout resumes; custom sessions also get a hub Continue card (they are excluded from week-plan `buildDayStatusMap`).
 3. Rest timer auto-starts after each completed set (program `restSeconds`); deadline-based countdown reconciles on app resume (Phase 12)
 4. `SyncManager` in app layout calls `syncWorkoutData()` on load and `online` event
 5. `POST /api/sync` upserts `workout_sessions` + `exercise_sets` by `client_id`
 6. **Schedule adjuster** — per-week overrides in Dexie + `workout_schedule_overrides`; `Move` on each day card opens a week picker; occupied days auto-swap; `GET/POST /api/workout-schedule` syncs overrides
-7. **Custom workouts (Phase 11, Pro)** — builder on Workout hub; `session_source` + `day_index = -1`; equipment-filtered exercise picker; optional warmup; templates in `user_workout_templates`; native CSV import (`workout_import`) and export (`data_export`). Catalog cardio (e.g. Walking, Treadmill) defaults to 1 bout of `15-25 min`, not 3×8–12 reps.
+7. **Custom workouts (Phase 11, Pro)** — builder on Workout hub; `session_source` + `day_index = -1`; equipment-filtered exercise picker; optional warmup; templates in `user_workout_templates`; native CSV import (`workout_import`) and export (`data_export`). Catalog cardio (e.g. Walking, Treadmill) defaults to 1 bout of `15-25 min`, not 3×8–12 reps. In-progress custom sessions persist like program workouts (`sessionStorage` + Continue card on the hub).
 8. **Interval protocols (Phase 13, Pro)** — optional `intervalProtocol` on templates/sessions (`density` / `tabata` / `superset_block`); `IntervalTimer` with gym-loud GO/STOP cues + 3s countdown; CSV v2. No third-party branded workout packs.
 9. **Custom day assignments (Phase 11, Pro)** — assign templates to calendar dates; Replace vs Keep both when a day already has a program/custom; hub merges assigned cards into “This week”
 10. Serwist service worker at `/serwist/sw.js` precaches shell + workout routes

@@ -33,6 +33,7 @@ Free tier: upgrade prompt on Workout hub only — no templates on free.
 - [ ] Migration `20260714210000_workout_day_assignments.sql` applied in Supabase (ops)
 - [x] Assign templates to calendar days (today/future) with Replace vs Keep both
 - [x] Assigned customs appear on Workout hub and are startable
+- [x] In-progress custom sessions persist across navigation (Continue on hub, same as program days)
 - [x] Unit tests for CSV parser + session source
 - [x] `pnpm turbo typecheck` passes
 

@@ -11,11 +11,35 @@
 |-------|-------|
 | **Active phase** | Phase 11 + 12 + 13 in progress · Phase 14A–14C code complete (migrations apply) |
 | **Last updated** | 2026-08-13 |
-| **Last session focus** | Remove Gravity Transformations workout pack (IP) |
+| **Last session focus** | Persist in-progress custom workouts across navigation |
 
 ---
 
 ## Session Log
+
+### 2026-08-13 — Persist custom workouts when leaving the Workout tab
+
+**What was done**
+
+- Active workout id is kept in `sessionStorage` online and offline (previously cleared whenever the URL updated while online)
+- Returning to Workout restores an in-progress session from the URL or that stored id — custom builder sessions included
+- Unassigned in-progress custom workouts show a Continue / Discard card on the hub (program days already had this via week cards; customs were excluded from `buildDayStatusMap`)
+
+**What's next**
+
+1. Smoke-test: start a custom workout → Home or Nutrition → Workout — should resume, not dump
+2. Back to hub from a custom session should show Continue; Discard still cancels
+
+**Blockers**
+
+- None
+
+**Files touched**
+
+- `apps/web/src/lib/workouts/session-source.ts`, `session-source.test.ts`
+- `apps/web/src/components/workout/workout-hub.tsx`
+- `apps/web/src/components/workout/in-progress-custom-workout-card.tsx`
+- `docs/PROGRESS.md`, `docs/ARCHITECTURE.md`, `docs/phases/11-custom-workouts.md`
 
 ### 2026-08-13 — Remove Gravity Transformations pack
 

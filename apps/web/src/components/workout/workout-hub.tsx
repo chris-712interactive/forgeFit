@@ -75,6 +75,7 @@ import {
 } from "./custom-workout-builder";
 import { MaxTestLauncher } from "./max-test-launcher";
 import { AssignedCustomWorkoutCard } from "./assigned-custom-workout-card";
+import { InProgressCustomWorkoutCard } from "./in-progress-custom-workout-card";
 import {
   completedCustomSessionForAssignment,
   dateHasProgramSession,
@@ -82,7 +83,10 @@ import {
   suppressedProgramDayIndexes,
   type WorkoutDayAssignmentView,
 } from "@/lib/workouts/day-assignments";
-import { CUSTOM_DAY_INDEX } from "@/lib/workouts/session-source";
+import {
+  CUSTOM_DAY_INDEX,
+  listUnassignedInProgressCustomSessions,
+} from "@/lib/workouts/session-source";
 import { browserTimeZone, addDaysIso, browserTodayIsoDate } from "@/lib/datetime/local-date";
 import { getWeekBounds } from "@/lib/home/weekly-stats";
 import { planScheduleReferenceDate } from "@/lib/workouts/schedule-dates";
@@ -132,6 +136,7 @@ function isOfflineNow() {
 }
 
 function persistActiveWorkout(clientId: string | null) {
+  if (typeof sessionStorage === "undefined") return;
   if (clientId) {
     sessionStorage.setItem(OFFLINE_ACTIVE_KEY, clientId);
   } else {
@@ -143,16 +148,14 @@ function replaceWorkoutUrl(
   mode: "hub" | "active" | "review",
   clientId: string | null
 ) {
+  if (mode === "active" && clientId) {
+    persistActiveWorkout(clientId);
+  }
+
   if (isOfflineNow()) {
-    if (mode === "active") {
-      persistActiveWorkout(clientId);
-    } else {
-      persistActiveWorkout(null);
-    }
     return;
   }
 
-  persistActiveWorkout(null);
   let url = "/workout";
   if (mode === "active" && clientId) {
     url = `/workout?active=${clientId}`;
@@ -254,6 +257,15 @@ export function WorkoutHub({
     }
     return map;
   }, [allSessions, dayAssignments]);
+
+  const unassignedInProgressCustoms = useMemo(
+    () =>
+      listUnassignedInProgressCustomSessions(
+        allSessions,
+        inProgressCustomByAssignmentId.values()
+      ),
+    [allSessions, inProgressCustomByAssignmentId]
+  );
 
   const completedCustomByAssignmentId = useMemo(() => {
     const map = new Map<
@@ -434,8 +446,7 @@ export function WorkoutHub({
       const activeFromUrl = params.get("active");
       const reviewFromUrl = params.get("review");
       const fromStorage = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
-      const activeClientIdCandidate =
-        activeFromUrl ?? (isOfflineNow() ? fromStorage : null);
+      const activeClientIdCandidate = activeFromUrl ?? fromStorage;
 
       if (reviewFromUrl) {
         setReviewClientId(reviewFromUrl);
@@ -446,7 +457,15 @@ export function WorkoutHub({
 
       const session = await getSession(activeClientIdCandidate);
       if (session?.status === "in_progress") {
+        persistActiveWorkout(activeClientIdCandidate);
         setActiveClientId(activeClientIdCandidate);
+        if (!activeFromUrl && !isOfflineNow()) {
+          window.history.replaceState(
+            window.history.state,
+            "",
+            `/workout?active=${activeClientIdCandidate}`
+          );
+        }
         return;
       }
 
@@ -470,23 +489,32 @@ export function WorkoutHub({
     }
 
     const storedClientId = sessionStorage.getItem(OFFLINE_ACTIVE_KEY);
-    if (!storedClientId) {
-      setResumeSession(null);
-      return;
-    }
+    const fallbackCustom = unassignedInProgressCustoms[0];
 
-    void getSession(storedClientId).then((session) => {
-      if (session?.status === "in_progress") {
-        setResumeSession({
-          clientId: storedClientId,
-          sessionName: session.sessionName,
-        });
-      } else {
+    void (async () => {
+      if (storedClientId) {
+        const session = await getSession(storedClientId);
+        if (session?.status === "in_progress") {
+          setResumeSession({
+            clientId: storedClientId,
+            sessionName: session.sessionName,
+          });
+          return;
+        }
         persistActiveWorkout(null);
-        setResumeSession(null);
       }
-    });
-  }, [activeClientId, reviewClientId, sessionsReady]);
+
+      if (fallbackCustom) {
+        setResumeSession({
+          clientId: fallbackCustom.clientId,
+          sessionName: fallbackCustom.sessionName,
+        });
+        return;
+      }
+
+      setResumeSession(null);
+    })();
+  }, [activeClientId, reviewClientId, sessionsReady, unassignedInProgressCustoms]);
 
   const refreshSessions = useCallback(async () => {
     await reconcileLocalWorkoutsWithServer(
@@ -979,7 +1007,10 @@ export function WorkoutHub({
 
         <PwaInstallPrompt />
 
-        {resumeSession && (
+        {resumeSession &&
+          !unassignedInProgressCustoms.some(
+            (session) => session.clientId === resumeSession.clientId
+          ) && (
           <section className="rounded-2xl border border-forge-ember/40 bg-forge-ember/10 px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-forge-ember">
               Workout in progress
@@ -1011,6 +1042,18 @@ export function WorkoutHub({
             </div>
           </section>
         )}
+
+        {unassignedInProgressCustoms.map((session) => (
+          <InProgressCustomWorkoutCard
+            key={session.clientId}
+            sessionName={session.sessionName}
+            completedSets={session.sets.filter((set) => set.completed).length}
+            totalSets={session.sets.length}
+            discarding={discardingClientId === session.clientId}
+            onContinue={() => openWorkout(session.clientId)}
+            onDiscard={() => void handleDiscard(session.clientId)}
+          />
+        ))}
 
         <section className="rounded-2xl border border-forge-gold/30 bg-forge-gold/5 px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-forge-gold">

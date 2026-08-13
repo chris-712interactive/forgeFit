@@ -17,3 +17,31 @@ export function isCustomWorkoutSession(
     session.dayIndex === CUSTOM_DAY_INDEX
   );
 }
+
+/** In-progress custom/imported sessions, newest first. */
+export function listInProgressCustomSessions<
+  T extends Pick<
+    WorkoutSessionRecord,
+    "status" | "dayIndex" | "sessionSource" | "startedAt"
+  >,
+>(sessions: T[]): T[] {
+  return sessions
+    .filter(
+      (session) =>
+        session.status === "in_progress" && isCustomWorkoutSession(session)
+    )
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+}
+
+/** Custom in-progress sessions that are not already shown on an assigned-day card. */
+export function listUnassignedInProgressCustomSessions<
+  T extends Pick<
+    WorkoutSessionRecord,
+    "clientId" | "status" | "dayIndex" | "sessionSource" | "startedAt"
+  >,
+>(sessions: T[], assignedClientIds: Iterable<string>): T[] {
+  const assigned = new Set(assignedClientIds);
+  return listInProgressCustomSessions(sessions).filter(
+    (session) => !assigned.has(session.clientId)
+  );
+}
